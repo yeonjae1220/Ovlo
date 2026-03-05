@@ -58,6 +58,31 @@ public class Member {
         return member;
     }
 
+    /** persistence 계층 전용: DB에서 모든 필드를 복원할 때 사용 */
+    public static Member restore(MemberId id, String name, String hometown, Email email, Password password,
+                                 UniversityId homeUniversityId, Major major, MemberStatus status,
+                                 String profileImageMediaId, String bio, LocalDate birthDate,
+                                 List<LanguageSkill> languageSkills,
+                                 List<UniversityExperience> universityExperiences,
+                                 List<ContactInfo> contactInfos) {
+        Member member = new Member();
+        member.id = id;
+        member.name = name;
+        member.hometown = hometown;
+        member.email = email;
+        member.password = password;
+        member.homeUniversityId = homeUniversityId;
+        member.major = major;
+        member.status = status;
+        member.profileImageMediaId = profileImageMediaId;
+        member.bio = bio;
+        member.birthDate = birthDate;
+        member.languageSkills = new ArrayList<>(languageSkills);
+        member.universityExperiences = new ArrayList<>(universityExperiences);
+        member.contactInfos = new ArrayList<>(contactInfos);
+        return member;
+    }
+
     // ── 도메인 행위 ──────────────────────────────────────────────────────────
 
     public void updateProfile(String name, String hometown, Major major) {
