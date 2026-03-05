@@ -1,0 +1,32 @@
+spring:
+  datasource:
+    url: jdbc:h2:mem:ovlo_test;MODE=PostgreSQL;DB_CLOSE_DELAY=-1
+    username: sa
+    password:
+    driver-class-name: org.h2.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.H2Dialect
+
+  flyway:
+    enabled: false
+
+  autoconfigure:
+    exclude:
+      - org.springdoc.webmvc.ui.SwaggerUiWebMvcConfigurer
+      - org.springdoc.core.configuration.SpringDocConfiguration
+      - org.springdoc.webmvc.core.configuration.SpringDocWebMvcConfiguration
+
+jwt:
+  secret: dGVzdC1zZWNyZXQta2V5LXRoYXQtaXMtbG9uZy1lbm91Z2gtZm9yLUhTMjU2
+  access-token-ttl-minutes: 15
+  refresh-token-ttl-minutes: 10080
+
+logging:
+  level:
+    me.yeonjae.ovlo: DEBUG
+    org.springframework.security: WARN
