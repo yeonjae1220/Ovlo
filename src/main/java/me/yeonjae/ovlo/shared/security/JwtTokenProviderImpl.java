@@ -60,6 +60,9 @@ public class JwtTokenProviderImpl implements JwtTokenProvider {
                 .getPayload();
 
         Long memberId = claims.get(MEMBER_ID_CLAIM, Long.class);
+        if (memberId == null) {
+            throw new IllegalArgumentException("JWT 토큰에 memberId 클레임이 없습니다");
+        }
         return new MemberId(memberId);
     }
 

@@ -45,7 +45,8 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(BoardException.class)
     public ResponseEntity<Map<String, String>> handleBoardException(BoardException ex) {
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(error(ex.getMessage()));
+        HttpStatus status = isConflictMessage(ex.getMessage()) ? HttpStatus.CONFLICT : HttpStatus.NOT_FOUND;
+        return ResponseEntity.status(status).body(error(ex.getMessage()));
     }
 
     @ExceptionHandler(PostException.class)
@@ -66,7 +67,10 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(ChatException.class)
     public ResponseEntity<Map<String, String>> handleChatException(ChatException ex) {
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error(ex.getMessage()));
+        HttpStatus status = isConflictMessage(ex.getMessage()) ? HttpStatus.CONFLICT
+                : isNotFoundMessage(ex.getMessage()) ? HttpStatus.NOT_FOUND
+                : HttpStatus.BAD_REQUEST;
+        return ResponseEntity.status(status).body(error(ex.getMessage()));
     }
 
     @ExceptionHandler(ResponseStatusException.class)
@@ -107,6 +111,10 @@ public class GlobalExceptionHandler {
 
     private boolean isConflictMessage(String message) {
         return message != null && (message.contains("already") || message.contains("이미"));
+    }
+
+    private boolean isNotFoundMessage(String message) {
+        return message != null && (message.contains("찾을 수 없습니다") || message.contains("not found"));
     }
 
     private Map<String, String> error(String message) {

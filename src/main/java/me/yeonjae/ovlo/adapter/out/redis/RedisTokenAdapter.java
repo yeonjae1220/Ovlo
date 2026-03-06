@@ -92,11 +92,20 @@ public class RedisTokenAdapter implements TokenStorePort {
     }
 
     private AuthSession toAuthSession(Map<Object, Object> fields) {
-        AuthSessionId sessionId = new AuthSessionId((String) fields.get("sessionId"));
-        MemberId memberId = new MemberId(Long.valueOf((String) fields.get("memberId")));
-        String refreshToken = (String) fields.get("refreshToken");
-        Instant expiresAt = Instant.ofEpochMilli(Long.parseLong((String) fields.get("expiresAt")));
-        boolean revoked = Boolean.parseBoolean((String) fields.get("revoked"));
+        String sessionIdStr  = (String) fields.get("sessionId");
+        String memberIdStr   = (String) fields.get("memberId");
+        String refreshToken  = (String) fields.get("refreshToken");
+        String expiresAtStr  = (String) fields.get("expiresAt");
+        String revokedStr    = (String) fields.get("revoked");
+
+        if (sessionIdStr == null || memberIdStr == null || refreshToken == null || expiresAtStr == null) {
+            throw new IllegalStateException("Redis 세션 데이터가 손상되었습니다");
+        }
+
+        AuthSessionId sessionId = new AuthSessionId(sessionIdStr);
+        MemberId memberId = new MemberId(Long.valueOf(memberIdStr));
+        Instant expiresAt = Instant.ofEpochMilli(Long.parseLong(expiresAtStr));
+        boolean revoked = Boolean.parseBoolean(revokedStr);
 
         return AuthSession.restore(sessionId, memberId, refreshToken, expiresAt, revoked);
     }

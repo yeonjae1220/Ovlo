@@ -3,6 +3,8 @@ package me.yeonjae.ovlo.adapter.in.web;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 import me.yeonjae.ovlo.adapter.in.web.dto.request.CreateCommentRequest;
 import me.yeonjae.ovlo.adapter.in.web.dto.request.CreatePostRequest;
 import me.yeonjae.ovlo.adapter.in.web.dto.request.ReactToPostRequest;
@@ -36,9 +38,11 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.RestController;
 
 @Tag(name = "Post", description = "게시글 API")
+@Validated
 @RestController
 @RequestMapping("/api/v1/posts")
 public class PostApiController {
@@ -90,8 +94,8 @@ public class PostApiController {
     @GetMapping
     public ResponseEntity<PostPageResult> listByBoard(
             @RequestParam Long boardId,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "20") int size
+            @RequestParam(defaultValue = "0") @Min(0) int page,
+            @RequestParam(defaultValue = "20") @Min(1) @Max(100) int size
     ) {
         return ResponseEntity.ok(getPostQuery.listByBoard(boardId, page, size));
     }

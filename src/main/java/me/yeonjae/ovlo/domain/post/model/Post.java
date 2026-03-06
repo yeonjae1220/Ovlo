@@ -88,12 +88,11 @@ public class Post {
             throw new PostException("삭제된 게시글에는 반응할 수 없습니다");
         }
 
-        reactions.stream()
-                .filter(r -> r.memberId().equals(memberId) && r.type() == type)
-                .findFirst()
-                .ifPresent(r -> {
-                    throw new PostException("이미 동일한 반응을 했습니다");
-                });
+        boolean alreadyReacted = reactions.stream()
+                .anyMatch(r -> r.memberId().equals(memberId) && r.type() == type);
+        if (alreadyReacted) {
+            throw new PostException("이미 동일한 반응을 했습니다");
+        }
 
         // 반대 반응이 있으면 제거 후 새 반응 추가
         reactions.removeIf(r -> r.memberId().equals(memberId));

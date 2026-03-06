@@ -39,6 +39,9 @@ public class ChatCommandService implements CreateChatRoomUseCase, SendMessageUse
                 .toList();
 
         if (command.type() == ChatRoomType.DM) {
+            if (participants.size() < 2) {
+                throw new ChatException("DM 채팅방은 참여자 2명이 필요합니다");
+            }
             MemberId m1 = participants.get(0);
             MemberId m2 = participants.get(1);
             if (loadChatPort.existsDmRoom(m1, m2)) {

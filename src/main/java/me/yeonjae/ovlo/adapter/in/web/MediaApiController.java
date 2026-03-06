@@ -7,6 +7,7 @@ import me.yeonjae.ovlo.application.dto.result.MediaDownloadResult;
 import me.yeonjae.ovlo.application.dto.result.MediaResult;
 import me.yeonjae.ovlo.application.port.in.media.GetMediaQuery;
 import me.yeonjae.ovlo.application.port.in.media.UploadMediaUseCase;
+import me.yeonjae.ovlo.domain.media.exception.MediaException;
 import me.yeonjae.ovlo.domain.media.model.MediaType;
 import org.springframework.http.ContentDisposition;
 import org.springframework.http.HttpHeaders;
@@ -74,15 +75,22 @@ public class MediaApiController {
             @RequestParam("file") MultipartFile file,
             @RequestParam("mediaType") String mediaType,
             @AuthenticationPrincipal Long memberId
-    ) throws IOException {
+    ) {
         MediaType type = MediaType.valueOf(mediaType);
+
+        byte[] data;
+        try {
+            data = file.getBytes();
+        } catch (IOException e) {
+            throw new MediaException("파일을 읽는 중 오류가 발생했습니다: " + file.getOriginalFilename());
+        }
 
         MediaResult result = uploadMediaUseCase.upload(
                 new UploadMediaCommand(
                         memberId,
                         file.getOriginalFilename(),
                         type,
-                        file.getBytes()
+                        data
                 )
         );
         return ResponseEntity.status(HttpStatus.CREATED).body(result);
