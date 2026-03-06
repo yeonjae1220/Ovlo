@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Tag(name = "Chat", description = "채팅 API")
@@ -52,8 +53,12 @@ public class ChatApiController {
             @AuthenticationPrincipal Long memberId
     ) {
         ChatRoomType type = ChatRoomType.valueOf(request.type());
+        List<Long> participantIds = new ArrayList<>(request.participantIds());
+        if (!participantIds.contains(memberId)) {
+            participantIds.add(memberId);
+        }
         ChatRoomResult result = createChatRoomUseCase.createChatRoom(
-                new CreateChatRoomCommand(type, request.name(), request.participantIds())
+                new CreateChatRoomCommand(type, request.name(), participantIds)
         );
         return ResponseEntity.status(HttpStatus.CREATED).body(result);
     }

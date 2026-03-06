@@ -2,6 +2,8 @@ package me.yeonjae.ovlo.adapter.in.web;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 import me.yeonjae.ovlo.application.dto.command.SearchUniversityCommand;
 import me.yeonjae.ovlo.application.dto.result.UniversityPageResult;
 import me.yeonjae.ovlo.application.dto.result.UniversityResult;
@@ -11,11 +13,13 @@ import me.yeonjae.ovlo.domain.university.model.UniversityId;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @Tag(name = "University", description = "대학 API")
+@Validated
 @RestController
 @RequestMapping("/api/v1/universities")
 public class UniversityApiController {
@@ -36,8 +40,8 @@ public class UniversityApiController {
     public ResponseEntity<UniversityPageResult> search(
             @RequestParam(required = false) String keyword,
             @RequestParam(required = false) String countryCode,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "20") int size
+            @RequestParam(defaultValue = "0") @Min(0) int page,
+            @RequestParam(defaultValue = "20") @Min(1) @Max(100) int size
     ) {
         UniversityPageResult result = searchUniversityQuery.search(
                 new SearchUniversityCommand(keyword, countryCode, page, size)

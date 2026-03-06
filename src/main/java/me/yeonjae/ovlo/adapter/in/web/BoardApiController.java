@@ -3,6 +3,8 @@ package me.yeonjae.ovlo.adapter.in.web;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 import me.yeonjae.ovlo.adapter.in.web.dto.request.CreateBoardRequest;
 import me.yeonjae.ovlo.application.dto.command.CreateBoardCommand;
 import me.yeonjae.ovlo.application.dto.command.SearchBoardCommand;
@@ -25,9 +27,11 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.RestController;
 
 @Tag(name = "Board", description = "게시판 API")
+@Validated
 @RestController
 @RequestMapping("/api/v1/boards")
 public class BoardApiController {
@@ -84,8 +88,8 @@ public class BoardApiController {
             @RequestParam(required = false) String keyword,
             @RequestParam(required = false) String category,
             @RequestParam(required = false) String scope,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "20") int size
+            @RequestParam(defaultValue = "0") @Min(0) int page,
+            @RequestParam(defaultValue = "20") @Min(1) @Max(100) int size
     ) {
         BoardPageResult result = searchBoardQuery.search(
                 new SearchBoardCommand(keyword, category, scope, page, size)
@@ -94,7 +98,7 @@ public class BoardApiController {
     }
 
     @Operation(summary = "게시판 구독")
-    @PostMapping("/{id}/subscribe")
+    @PostMapping("/{id}/subscriptions")
     public ResponseEntity<Void> subscribe(
             @PathVariable Long id,
             @AuthenticationPrincipal Long memberId
@@ -104,7 +108,7 @@ public class BoardApiController {
     }
 
     @Operation(summary = "게시판 구독 취소")
-    @DeleteMapping("/{id}/subscribe")
+    @DeleteMapping("/{id}/subscriptions")
     public ResponseEntity<Void> unsubscribe(
             @PathVariable Long id,
             @AuthenticationPrincipal Long memberId

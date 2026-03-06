@@ -6,7 +6,6 @@ public record MediaResult(
         Long mediaId,
         Long uploaderId,
         String mediaType,
-        String storagePath,
         String storageType,
         String originalFilename,
         long fileSize) {
@@ -16,7 +15,6 @@ public record MediaResult(
                 mediaFile.getId() != null ? mediaFile.getId().value() : null,
                 mediaFile.getUploaderId().value(),
                 mediaFile.getMediaType().name(),
-                mediaFile.getStoragePath().path(),
                 mediaFile.getStoragePath().storageType().name(),
                 mediaFile.getOriginalFilename(),
                 mediaFile.getFileSize()

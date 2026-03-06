@@ -164,7 +164,7 @@ public class PostApiController {
         reactToPostUseCase.react(
                 new ReactToPostCommand(id, memberId, request.reactionType())
         );
-        return ResponseEntity.ok().build();
+        return ResponseEntity.noContent().build();
     }
 
     @Operation(summary = "게시글 반응 취소")
