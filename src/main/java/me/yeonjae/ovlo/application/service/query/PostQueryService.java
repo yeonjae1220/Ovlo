@@ -8,10 +8,12 @@ import me.yeonjae.ovlo.domain.board.model.BoardId;
 import me.yeonjae.ovlo.domain.post.exception.PostException;
 import me.yeonjae.ovlo.domain.post.model.PostId;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
 @Service
+@Transactional(readOnly = true)
 public class PostQueryService implements GetPostQuery {
 
     private final LoadPostPort loadPostPort;

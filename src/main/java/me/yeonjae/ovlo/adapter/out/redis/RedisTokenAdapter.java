@@ -4,7 +4,9 @@ import me.yeonjae.ovlo.application.port.out.auth.TokenStorePort;
 import me.yeonjae.ovlo.domain.auth.model.AuthSession;
 import me.yeonjae.ovlo.domain.auth.model.AuthSessionId;
 import me.yeonjae.ovlo.domain.member.model.MemberId;
+import org.springframework.data.redis.core.RedisOperations;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.SessionCallback;
 import org.springframework.stereotype.Component;
 
 import java.time.Duration;
@@ -40,10 +42,21 @@ public class RedisTokenAdapter implements TokenStorePort {
         fields.put("expiresAt", String.valueOf(session.getExpiresAt().toEpochMilli()));
         fields.put("revoked", String.valueOf(session.isRevoked()));
 
-        redisTemplate.opsForHash().putAll(memberKey, fields);
-        redisTemplate.expire(memberKey, ttl);
+        // MULTI/EXEC: putAll + expire를 원자적으로 실행 (expire 실패 시 TTL 누락 방지)
+        redisTemplate.execute(new SessionCallback<Void>() {
+            @Override
+            @SuppressWarnings("unchecked")
+            public <K, V> Void execute(RedisOperations<K, V> ops) {
+                RedisOperations<String, String> operations = (RedisOperations<String, String>) ops;
+                operations.multi();
+                operations.opsForHash().putAll(memberKey, fields);
+                operations.expire(memberKey, ttl);
+                operations.exec();
+                return null;
+            }
+        });
 
-        // token → memberId 역인덱스 (빠른 조회용)
+        // token → memberId 역인덱스 (빠른 조회용, SET + TTL은 단일 명령으로 원자적)
         redisTemplate.opsForValue().set(tokenIndexKey, String.valueOf(session.getMemberId().value()), ttl);
     }
 

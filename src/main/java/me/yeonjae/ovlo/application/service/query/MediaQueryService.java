@@ -9,8 +9,10 @@ import me.yeonjae.ovlo.domain.media.exception.MediaException;
 import me.yeonjae.ovlo.domain.media.model.MediaFile;
 import me.yeonjae.ovlo.domain.media.model.MediaId;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
+@Transactional(readOnly = true)
 public class MediaQueryService implements GetMediaQuery {
 
     private final LoadMediaPort loadMediaPort;

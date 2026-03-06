@@ -12,10 +12,12 @@ import me.yeonjae.ovlo.domain.board.model.BoardCategory;
 import me.yeonjae.ovlo.domain.board.model.BoardId;
 import me.yeonjae.ovlo.domain.board.model.LocationScope;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
 @Service
+@Transactional(readOnly = true)
 public class BoardQueryService implements SearchBoardQuery, GetBoardQuery {
 
     private final LoadBoardPort loadBoardPort;

@@ -12,9 +12,12 @@ import me.yeonjae.ovlo.domain.board.exception.BoardException;
 import me.yeonjae.ovlo.domain.board.model.*;
 import me.yeonjae.ovlo.domain.member.model.MemberId;
 import me.yeonjae.ovlo.domain.university.model.UniversityId;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
+@Transactional
 public class BoardCommandService implements
         CreateBoardUseCase, SubscribeBoardUseCase, UnsubscribeBoardUseCase {
 
@@ -58,7 +61,11 @@ public class BoardCommandService implements
         }
 
         BoardSubscription subscription = BoardSubscription.create(boardId, memberId);
-        saveBoardPort.saveSubscription(subscription);
+        try {
+            saveBoardPort.saveSubscription(subscription);
+        } catch (DataIntegrityViolationException e) {
+            throw new BoardException("이미 구독 중인 게시판입니다");
+        }
     }
 
     @Override

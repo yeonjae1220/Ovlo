@@ -5,10 +5,12 @@ import me.yeonjae.ovlo.application.port.in.follow.GetFollowQuery;
 import me.yeonjae.ovlo.application.port.out.follow.LoadFollowPort;
 import me.yeonjae.ovlo.domain.member.model.MemberId;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
 @Service
+@Transactional(readOnly = true)
 public class FollowQueryService implements GetFollowQuery {
 
     private final LoadFollowPort loadFollowPort;

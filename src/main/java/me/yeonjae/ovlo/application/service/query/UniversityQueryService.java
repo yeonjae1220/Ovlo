@@ -11,10 +11,12 @@ import me.yeonjae.ovlo.domain.university.exception.UniversityException;
 import me.yeonjae.ovlo.domain.university.model.University;
 import me.yeonjae.ovlo.domain.university.model.UniversityId;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
 @Service
+@Transactional(readOnly = true)
 public class UniversityQueryService implements SearchUniversityQuery, GetUniversityQuery {
 
     private final LoadUniversityPort loadUniversityPort;

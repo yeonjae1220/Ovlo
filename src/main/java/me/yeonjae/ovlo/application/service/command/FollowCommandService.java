@@ -8,9 +8,12 @@ import me.yeonjae.ovlo.application.port.out.follow.SaveFollowPort;
 import me.yeonjae.ovlo.domain.follow.exception.FollowException;
 import me.yeonjae.ovlo.domain.follow.model.Follow;
 import me.yeonjae.ovlo.domain.member.model.MemberId;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
+@Transactional
 public class FollowCommandService implements FollowMemberUseCase, UnfollowMemberUseCase {
 
     private final LoadFollowPort loadFollowPort;
@@ -31,7 +34,11 @@ public class FollowCommandService implements FollowMemberUseCase, UnfollowMember
         }
 
         Follow follow = Follow.create(followerId, followeeId);
-        saveFollowPort.save(follow);
+        try {
+            saveFollowPort.save(follow);
+        } catch (DataIntegrityViolationException e) {
+            throw new FollowException("이미 팔로우 중인 회원입니다");
+        }
     }
 
     @Override

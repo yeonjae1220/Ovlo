@@ -16,10 +16,12 @@ import me.yeonjae.ovlo.domain.auth.model.AuthSession;
 import me.yeonjae.ovlo.shared.security.JwtTokenProvider;
 import org.springframework.stereotype.Service;
 
+import org.springframework.transaction.annotation.Transactional;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 
 @Service
+@Transactional
 public class AuthCommandService implements LoginUseCase, LogoutUseCase, RefreshTokenUseCase {
 
     private static final long REFRESH_TOKEN_TTL_DAYS = 7L;

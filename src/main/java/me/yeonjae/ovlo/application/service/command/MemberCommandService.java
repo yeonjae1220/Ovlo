@@ -13,9 +13,12 @@ import me.yeonjae.ovlo.application.port.out.member.SaveMemberPort;
 import me.yeonjae.ovlo.domain.member.exception.MemberException;
 import me.yeonjae.ovlo.domain.member.model.*;
 import me.yeonjae.ovlo.domain.university.model.UniversityId;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
+@Transactional
 public class MemberCommandService implements
         RegisterMemberUseCase, UpdateMemberProfileUseCase, WithdrawMemberUseCase {
 
@@ -51,8 +54,12 @@ public class MemberCommandService implements
                 new UniversityId(command.homeUniversityId()),
                 major);
 
-        Member saved = saveMemberPort.save(member);
-        return MemberResult.from(saved);
+        try {
+            Member saved = saveMemberPort.save(member);
+            return MemberResult.from(saved);
+        } catch (DataIntegrityViolationException e) {
+            throw new MemberException("이미 사용 중인 이메일입니다: " + command.email());
+        }
     }
 
     @Override

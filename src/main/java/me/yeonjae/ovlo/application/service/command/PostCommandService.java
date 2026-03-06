@@ -25,8 +25,10 @@ import me.yeonjae.ovlo.domain.post.model.Post;
 import me.yeonjae.ovlo.domain.post.model.PostId;
 import me.yeonjae.ovlo.domain.post.model.ReactionType;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
+@Transactional
 public class PostCommandService
         implements CreatePostUseCase, UpdatePostUseCase, CreateCommentUseCase,
                    DeleteCommentUseCase, ReactToPostUseCase, DeletePostUseCase {
