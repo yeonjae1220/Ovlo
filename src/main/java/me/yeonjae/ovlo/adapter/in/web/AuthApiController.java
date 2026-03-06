@@ -13,7 +13,6 @@ import me.yeonjae.ovlo.application.port.in.auth.LoginUseCase;
 import me.yeonjae.ovlo.application.port.in.auth.LogoutUseCase;
 import me.yeonjae.ovlo.application.port.in.auth.RefreshTokenUseCase;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -58,10 +57,7 @@ public class AuthApiController {
 
     @Operation(summary = "로그아웃")
     @PostMapping("/logout")
-    public ResponseEntity<Void> logout(
-            @AuthenticationPrincipal Long memberId,
-            @Valid @RequestBody RefreshTokenRequest request
-    ) {
+    public ResponseEntity<Void> logout(@Valid @RequestBody RefreshTokenRequest request) {
         logoutUseCase.logout(new LogoutCommand(request.refreshToken()));
         return ResponseEntity.noContent().build();
     }

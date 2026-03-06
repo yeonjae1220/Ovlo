@@ -3,6 +3,7 @@ package me.yeonjae.ovlo.adapter.out.persistence;
 import me.yeonjae.ovlo.adapter.out.persistence.mapper.ChatMapper;
 import me.yeonjae.ovlo.adapter.out.persistence.repository.ChatRoomJpaRepository;
 import me.yeonjae.ovlo.adapter.out.persistence.repository.MessageJpaRepository;
+import me.yeonjae.ovlo.domain.chat.model.Message;
 import me.yeonjae.ovlo.application.port.out.chat.LoadChatPort;
 import me.yeonjae.ovlo.application.port.out.chat.SaveChatPort;
 import me.yeonjae.ovlo.domain.chat.model.ChatRoom;
@@ -10,6 +11,7 @@ import me.yeonjae.ovlo.domain.chat.model.ChatRoomId;
 import me.yeonjae.ovlo.domain.chat.model.ChatRoomType;
 import me.yeonjae.ovlo.domain.member.model.MemberId;
 import org.springframework.stereotype.Component;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -41,7 +43,7 @@ public class ChatPersistenceAdapter implements LoadChatPort, SaveChatPort {
         // 목록 조회: 메시지 로드 없음 (ChatRoomResult에 메시지 미포함)
         return chatRoomJpaRepository.findByMemberId(memberId.value())
                 .stream()
-                .map(entity -> chatMapper.toDomain(entity, java.util.Collections.emptyList()))
+                .map(entity -> chatMapper.toDomain(entity, Collections.emptyList()))
                 .toList();
     }
 
@@ -54,13 +56,14 @@ public class ChatPersistenceAdapter implements LoadChatPort, SaveChatPort {
     public ChatRoom save(ChatRoom chatRoom) {
         var entity = chatMapper.toJpaEntity(chatRoom);
         var saved = chatRoomJpaRepository.save(entity);
-
-        // Save new messages (id == null)
-        chatRoom.getMessages().stream()
-                .filter(m -> m.getId() == null)
-                .forEach(m -> messageJpaRepository.save(chatMapper.toMessageJpaEntity(saved.getId(), m)));
-
+        saveNewMessages(saved.getId(), chatRoom.getMessages());
         var messages = messageJpaRepository.findByChatRoomIdOrderBySentAtAsc(saved.getId());
         return chatMapper.toDomain(saved, messages);
+    }
+
+    private void saveNewMessages(Long chatRoomId, List<Message> messages) {
+        messages.stream()
+                .filter(m -> m.getId() == null)
+                .forEach(m -> messageJpaRepository.save(chatMapper.toMessageJpaEntity(chatRoomId, m)));
     }
 }

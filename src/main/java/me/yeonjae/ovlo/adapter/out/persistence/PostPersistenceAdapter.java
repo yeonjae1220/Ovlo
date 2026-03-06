@@ -9,7 +9,10 @@ import me.yeonjae.ovlo.adapter.out.persistence.repository.PostReactionJpaReposit
 import me.yeonjae.ovlo.application.port.out.post.LoadPostPort;
 import me.yeonjae.ovlo.application.port.out.post.SavePostPort;
 import me.yeonjae.ovlo.domain.board.model.BoardId;
-import me.yeonjae.ovlo.domain.post.model.*;
+import me.yeonjae.ovlo.domain.post.model.Comment;
+import me.yeonjae.ovlo.domain.post.model.Post;
+import me.yeonjae.ovlo.domain.post.model.PostId;
+import me.yeonjae.ovlo.domain.post.model.Reaction;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Component;
@@ -84,20 +87,25 @@ public class PostPersistenceAdapter implements LoadPostPort, SavePostPort {
         var saved = postJpaRepository.save(entity);
         Long postId = saved.getId();
 
-        // Save new comments (id == null)
-        post.getComments().stream()
-                .filter(c -> c.getId() == null)
-                .forEach(c -> commentJpaRepository.save(postMapper.toCommentJpaEntity(postId, c)));
-
-        // Sync reactions: delete all and re-insert
-        postReactionJpaRepository.deleteByIdPostId(postId);
-        List<PostReactionJpaEntity> reactionEntities = post.getReactions().stream()
-                .map(r -> postMapper.toReactionJpaEntity(postId, r))
-                .toList();
-        postReactionJpaRepository.saveAll(reactionEntities);
+        saveNewComments(postId, post.getComments());
+        syncReactions(postId, post.getReactions());
 
         var comments = commentJpaRepository.findByPostId(postId);
         var reactions = postReactionJpaRepository.findByIdPostId(postId);
         return postMapper.toDomain(saved, comments, reactions);
+    }
+
+    private void saveNewComments(Long postId, List<Comment> comments) {
+        comments.stream()
+                .filter(c -> c.getId() == null)
+                .forEach(c -> commentJpaRepository.save(postMapper.toCommentJpaEntity(postId, c)));
+    }
+
+    private void syncReactions(Long postId, List<Reaction> reactions) {
+        postReactionJpaRepository.deleteByIdPostId(postId);
+        List<PostReactionJpaEntity> entities = reactions.stream()
+                .map(r -> postMapper.toReactionJpaEntity(postId, r))
+                .toList();
+        postReactionJpaRepository.saveAll(entities);
     }
 }
