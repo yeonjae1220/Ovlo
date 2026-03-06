@@ -32,8 +32,13 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/api/v1/members").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/v1/auth/login").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/v1/auth/refresh").permitAll()
+                        // 대학 조회 (인증 없이 접근 가능)
+                        .requestMatchers(HttpMethod.GET, "/api/v1/universities/**").permitAll()
+                        // WebSocket
+                        .requestMatchers("/ws/**").permitAll()
                         // 개발/문서 도구
-                        .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
+                        .requestMatchers("/swagger-ui.html", "/swagger-ui/**", "/v3/api-docs/**").permitAll()
+                        .requestMatchers("/webjars/**").permitAll()
                         .requestMatchers("/actuator/health").permitAll()
                         .requestMatchers("/h2-console/**").permitAll()
                         // 나머지는 인증 필요
