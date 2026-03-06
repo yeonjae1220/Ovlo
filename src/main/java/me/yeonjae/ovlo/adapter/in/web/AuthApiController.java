@@ -4,6 +4,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import me.yeonjae.ovlo.adapter.in.web.dto.request.LoginRequest;
+import me.yeonjae.ovlo.adapter.in.web.dto.request.RefreshTokenRequest;
 import me.yeonjae.ovlo.application.dto.command.LoginCommand;
 import me.yeonjae.ovlo.application.dto.command.LogoutCommand;
 import me.yeonjae.ovlo.application.dto.command.RefreshTokenCommand;
@@ -17,8 +18,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-
-import java.util.Map;
 
 @Tag(name = "Auth", description = "인증/인가 API")
 @RestController
@@ -50,10 +49,9 @@ public class AuthApiController {
 
     @Operation(summary = "토큰 갱신")
     @PostMapping("/refresh")
-    public ResponseEntity<TokenPairResult> refresh(@RequestBody Map<String, String> body) {
-        String refreshToken = body.get("refreshToken");
+    public ResponseEntity<TokenPairResult> refresh(@Valid @RequestBody RefreshTokenRequest request) {
         TokenPairResult result = refreshTokenUseCase.refresh(
-                new RefreshTokenCommand(refreshToken)
+                new RefreshTokenCommand(request.refreshToken())
         );
         return ResponseEntity.ok(result);
     }
@@ -62,10 +60,9 @@ public class AuthApiController {
     @PostMapping("/logout")
     public ResponseEntity<Void> logout(
             @AuthenticationPrincipal Long memberId,
-            @RequestBody(required = false) Map<String, String> body
+            @Valid @RequestBody RefreshTokenRequest request
     ) {
-        String refreshToken = body != null ? body.get("refreshToken") : null;
-        logoutUseCase.logout(new LogoutCommand(refreshToken));
+        logoutUseCase.logout(new LogoutCommand(request.refreshToken()));
         return ResponseEntity.noContent().build();
     }
 }

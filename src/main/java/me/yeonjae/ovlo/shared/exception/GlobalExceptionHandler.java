@@ -12,6 +12,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.server.ResponseStatusException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -28,11 +29,8 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(MemberException.class)
     public ResponseEntity<Map<String, String>> handleMemberException(MemberException ex) {
-        String message = ex.getMessage();
-        boolean isConflict = message != null &&
-                (message.contains("already") || message.contains("이미"));
-        HttpStatus status = isConflict ? HttpStatus.CONFLICT : HttpStatus.NOT_FOUND;
-        return ResponseEntity.status(status).body(error(message));
+        HttpStatus status = isConflictMessage(ex.getMessage()) ? HttpStatus.CONFLICT : HttpStatus.NOT_FOUND;
+        return ResponseEntity.status(status).body(error(ex.getMessage()));
     }
 
     @ExceptionHandler(AuthException.class)
@@ -52,11 +50,8 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(PostException.class)
     public ResponseEntity<Map<String, String>> handlePostException(PostException ex) {
-        String message = ex.getMessage();
-        boolean isConflict = message != null &&
-                (message.contains("already") || message.contains("이미"));
-        HttpStatus status = isConflict ? HttpStatus.CONFLICT : HttpStatus.NOT_FOUND;
-        return ResponseEntity.status(status).body(error(message));
+        HttpStatus status = isConflictMessage(ex.getMessage()) ? HttpStatus.CONFLICT : HttpStatus.NOT_FOUND;
+        return ResponseEntity.status(status).body(error(ex.getMessage()));
     }
 
     @ExceptionHandler(FollowException.class)
@@ -72,6 +67,11 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(ChatException.class)
     public ResponseEntity<Map<String, String>> handleChatException(ChatException ex) {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error(ex.getMessage()));
+    }
+
+    @ExceptionHandler(ResponseStatusException.class)
+    public ResponseEntity<Map<String, String>> handleResponseStatus(ResponseStatusException ex) {
+        return ResponseEntity.status(ex.getStatusCode()).body(error(ex.getReason()));
     }
 
     @ExceptionHandler(IllegalArgumentException.class)
@@ -90,7 +90,12 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(HandlerMethodValidationException.class)
     public ResponseEntity<Map<String, String>> handleMethodValidation(HandlerMethodValidationException ex) {
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error(ex.getMessage()));
+        Map<String, String> errors = new HashMap<>();
+        ex.getValueResults().forEach(result ->
+                result.getResolvableErrors().forEach(err ->
+                        errors.put(result.getMethodParameter().getParameterName(),
+                                err.getDefaultMessage())));
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errors.isEmpty() ? error(ex.getMessage()) : errors);
     }
 
     @ExceptionHandler(Exception.class)
@@ -98,6 +103,10 @@ public class GlobalExceptionHandler {
         log.error("Unhandled exception [{}]: {}", ex.getClass().getName(), ex.getMessage(), ex);
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(error("Internal server error"));
+    }
+
+    private boolean isConflictMessage(String message) {
+        return message != null && (message.contains("already") || message.contains("이미"));
     }
 
     private Map<String, String> error(String message) {
