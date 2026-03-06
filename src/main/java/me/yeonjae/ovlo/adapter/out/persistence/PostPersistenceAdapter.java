@@ -1,5 +1,6 @@
 package me.yeonjae.ovlo.adapter.out.persistence;
 
+import me.yeonjae.ovlo.adapter.out.persistence.entity.PostJpaEntity;
 import me.yeonjae.ovlo.adapter.out.persistence.entity.PostReactionJpaEntity;
 import me.yeonjae.ovlo.adapter.out.persistence.mapper.PostMapper;
 import me.yeonjae.ovlo.adapter.out.persistence.repository.CommentJpaRepository;
@@ -7,11 +8,18 @@ import me.yeonjae.ovlo.adapter.out.persistence.repository.PostJpaRepository;
 import me.yeonjae.ovlo.adapter.out.persistence.repository.PostReactionJpaRepository;
 import me.yeonjae.ovlo.application.port.out.post.LoadPostPort;
 import me.yeonjae.ovlo.application.port.out.post.SavePostPort;
+import me.yeonjae.ovlo.domain.board.model.BoardId;
 import me.yeonjae.ovlo.domain.post.model.*;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Component
 public class PostPersistenceAdapter implements LoadPostPort, SavePostPort {
@@ -38,6 +46,35 @@ public class PostPersistenceAdapter implements LoadPostPort, SavePostPort {
             var reactions = postReactionJpaRepository.findByIdPostId(entity.getId());
             return postMapper.toDomain(entity, comments, reactions);
         });
+    }
+
+    @Override
+    public List<Post> findByBoardId(BoardId boardId, int offset, int limit) {
+        // 쿼리 1: 게시글 페이지 로드 (최신순)
+        PageRequest pageable = PageRequest.of(offset / limit, limit, Sort.by("id").descending());
+        List<PostJpaEntity> entities = postJpaRepository.findByBoardIdAndDeletedFalse(boardId.value(), pageable);
+
+        if (entities.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        // 쿼리 2: 해당 페이지 게시글의 반응 배치 로드 (N+1 방지)
+        List<Long> postIds = entities.stream().map(PostJpaEntity::getId).toList();
+        Map<Long, List<PostReactionJpaEntity>> reactionsByPostId = postReactionJpaRepository
+                .findByIdPostIdIn(postIds)
+                .stream()
+                .collect(Collectors.groupingBy(PostReactionJpaEntity::getPostId));
+
+        return entities.stream()
+                .map(e -> postMapper.toDomain(e,
+                        Collections.emptyList(),
+                        reactionsByPostId.getOrDefault(e.getId(), Collections.emptyList())))
+                .toList();
+    }
+
+    @Override
+    public long countByBoardId(BoardId boardId) {
+        return postJpaRepository.countByBoardIdAndDeletedFalse(boardId.value());
     }
 
     @Override

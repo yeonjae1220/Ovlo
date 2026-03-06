@@ -11,6 +11,7 @@ import me.yeonjae.ovlo.application.dto.command.CreatePostCommand;
 import me.yeonjae.ovlo.application.dto.command.DeletePostCommand;
 import me.yeonjae.ovlo.application.dto.command.ReactToPostCommand;
 import me.yeonjae.ovlo.application.dto.result.CommentResult;
+import me.yeonjae.ovlo.application.dto.result.PostPageResult;
 import me.yeonjae.ovlo.application.dto.result.PostResult;
 import me.yeonjae.ovlo.application.port.in.post.CreateCommentUseCase;
 import me.yeonjae.ovlo.application.port.in.post.CreatePostUseCase;
@@ -27,6 +28,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @Tag(name = "Post", description = "게시글 API")
@@ -69,6 +71,16 @@ public class PostApiController {
                 )
         );
         return ResponseEntity.status(HttpStatus.CREATED).body(result);
+    }
+
+    @Operation(summary = "게시판 게시글 목록 조회")
+    @GetMapping
+    public ResponseEntity<PostPageResult> listByBoard(
+            @RequestParam Long boardId,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size
+    ) {
+        return ResponseEntity.ok(getPostQuery.listByBoard(boardId, page, size));
     }
 
     @Operation(summary = "게시글 단건 조회")

@@ -19,6 +19,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.List;
+
 @Tag(name = "Chat", description = "채팅 API")
 @RestController
 @RequestMapping("/api/v1/chat/rooms")
@@ -33,6 +35,14 @@ public class ChatApiController {
     ) {
         this.createChatRoomUseCase = createChatRoomUseCase;
         this.getChatRoomQuery = getChatRoomQuery;
+    }
+
+    @Operation(summary = "내 채팅방 목록 조회")
+    @GetMapping
+    public ResponseEntity<List<ChatRoomResult>> getMyChatRooms(
+            @AuthenticationPrincipal Long memberId
+    ) {
+        return ResponseEntity.ok(getChatRoomQuery.getChatRooms(memberId));
     }
 
     @Operation(summary = "채팅방 생성")

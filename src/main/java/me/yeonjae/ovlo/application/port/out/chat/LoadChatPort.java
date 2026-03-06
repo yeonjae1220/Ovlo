@@ -4,6 +4,7 @@ import me.yeonjae.ovlo.domain.chat.model.ChatRoom;
 import me.yeonjae.ovlo.domain.chat.model.ChatRoomId;
 import me.yeonjae.ovlo.domain.member.model.MemberId;
 
+import java.util.List;
 import java.util.Optional;
 
 public interface LoadChatPort {
@@ -11,4 +12,6 @@ public interface LoadChatPort {
     Optional<ChatRoom> findById(ChatRoomId chatRoomId);
 
     boolean existsDmRoom(MemberId memberId1, MemberId memberId2);
+
+    List<ChatRoom> findByMemberId(MemberId memberId);
 }

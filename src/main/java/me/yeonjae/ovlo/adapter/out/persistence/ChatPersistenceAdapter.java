@@ -10,6 +10,7 @@ import me.yeonjae.ovlo.domain.chat.model.ChatRoomId;
 import me.yeonjae.ovlo.domain.chat.model.ChatRoomType;
 import me.yeonjae.ovlo.domain.member.model.MemberId;
 import org.springframework.stereotype.Component;
+import java.util.List;
 import java.util.Optional;
 
 @Component
@@ -33,6 +34,15 @@ public class ChatPersistenceAdapter implements LoadChatPort, SaveChatPort {
             var messages = messageJpaRepository.findByChatRoomIdOrderBySentAtAsc(entity.getId());
             return chatMapper.toDomain(entity, messages);
         });
+    }
+
+    @Override
+    public List<ChatRoom> findByMemberId(MemberId memberId) {
+        // 목록 조회: 메시지 로드 없음 (ChatRoomResult에 메시지 미포함)
+        return chatRoomJpaRepository.findByMemberId(memberId.value())
+                .stream()
+                .map(entity -> chatMapper.toDomain(entity, java.util.Collections.emptyList()))
+                .toList();
     }
 
     @Override
