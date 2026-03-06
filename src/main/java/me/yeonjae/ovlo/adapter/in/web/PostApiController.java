@@ -6,18 +6,24 @@ import jakarta.validation.Valid;
 import me.yeonjae.ovlo.adapter.in.web.dto.request.CreateCommentRequest;
 import me.yeonjae.ovlo.adapter.in.web.dto.request.CreatePostRequest;
 import me.yeonjae.ovlo.adapter.in.web.dto.request.ReactToPostRequest;
+import me.yeonjae.ovlo.adapter.in.web.dto.request.UpdatePostRequest;
 import me.yeonjae.ovlo.application.dto.command.CreateCommentCommand;
 import me.yeonjae.ovlo.application.dto.command.CreatePostCommand;
+import me.yeonjae.ovlo.application.dto.command.DeleteCommentCommand;
 import me.yeonjae.ovlo.application.dto.command.DeletePostCommand;
 import me.yeonjae.ovlo.application.dto.command.ReactToPostCommand;
+import me.yeonjae.ovlo.application.dto.command.UnreactToPostCommand;
+import me.yeonjae.ovlo.application.dto.command.UpdatePostCommand;
 import me.yeonjae.ovlo.application.dto.result.CommentResult;
 import me.yeonjae.ovlo.application.dto.result.PostPageResult;
 import me.yeonjae.ovlo.application.dto.result.PostResult;
 import me.yeonjae.ovlo.application.port.in.post.CreateCommentUseCase;
 import me.yeonjae.ovlo.application.port.in.post.CreatePostUseCase;
+import me.yeonjae.ovlo.application.port.in.post.DeleteCommentUseCase;
 import me.yeonjae.ovlo.application.port.in.post.DeletePostUseCase;
 import me.yeonjae.ovlo.application.port.in.post.GetPostQuery;
 import me.yeonjae.ovlo.application.port.in.post.ReactToPostUseCase;
+import me.yeonjae.ovlo.application.port.in.post.UpdatePostUseCase;
 import me.yeonjae.ovlo.domain.post.model.PostId;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -26,6 +32,7 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -37,22 +44,28 @@ import org.springframework.web.bind.annotation.RestController;
 public class PostApiController {
 
     private final CreatePostUseCase createPostUseCase;
+    private final UpdatePostUseCase updatePostUseCase;
     private final GetPostQuery getPostQuery;
     private final DeletePostUseCase deletePostUseCase;
     private final CreateCommentUseCase createCommentUseCase;
+    private final DeleteCommentUseCase deleteCommentUseCase;
     private final ReactToPostUseCase reactToPostUseCase;
 
     public PostApiController(
             CreatePostUseCase createPostUseCase,
+            UpdatePostUseCase updatePostUseCase,
             GetPostQuery getPostQuery,
             DeletePostUseCase deletePostUseCase,
             CreateCommentUseCase createCommentUseCase,
+            DeleteCommentUseCase deleteCommentUseCase,
             ReactToPostUseCase reactToPostUseCase
     ) {
         this.createPostUseCase = createPostUseCase;
+        this.updatePostUseCase = updatePostUseCase;
         this.getPostQuery = getPostQuery;
         this.deletePostUseCase = deletePostUseCase;
         this.createCommentUseCase = createCommentUseCase;
+        this.deleteCommentUseCase = deleteCommentUseCase;
         this.reactToPostUseCase = reactToPostUseCase;
     }
 
@@ -90,6 +103,19 @@ public class PostApiController {
         return ResponseEntity.ok(result);
     }
 
+    @Operation(summary = "게시글 수정")
+    @PutMapping("/{id}")
+    public ResponseEntity<PostResult> update(
+            @PathVariable Long id,
+            @Valid @RequestBody UpdatePostRequest request,
+            @AuthenticationPrincipal Long memberId
+    ) {
+        PostResult result = updatePostUseCase.update(
+                new UpdatePostCommand(id, memberId, request.title(), request.content())
+        );
+        return ResponseEntity.ok(result);
+    }
+
     @Operation(summary = "게시글 삭제")
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(
@@ -113,6 +139,17 @@ public class PostApiController {
         return ResponseEntity.status(HttpStatus.CREATED).body(result);
     }
 
+    @Operation(summary = "댓글 삭제")
+    @DeleteMapping("/{id}/comments/{commentId}")
+    public ResponseEntity<Void> deleteComment(
+            @PathVariable Long id,
+            @PathVariable Long commentId,
+            @AuthenticationPrincipal Long memberId
+    ) {
+        deleteCommentUseCase.deleteComment(new DeleteCommentCommand(id, commentId, memberId));
+        return ResponseEntity.noContent().build();
+    }
+
     @Operation(summary = "게시글 반응 (좋아요/싫어요)")
     @PostMapping("/{id}/reactions")
     public ResponseEntity<Void> react(
@@ -124,5 +161,15 @@ public class PostApiController {
                 new ReactToPostCommand(id, memberId, request.reactionType())
         );
         return ResponseEntity.ok().build();
+    }
+
+    @Operation(summary = "게시글 반응 취소")
+    @DeleteMapping("/{id}/reactions")
+    public ResponseEntity<Void> unreact(
+            @PathVariable Long id,
+            @AuthenticationPrincipal Long memberId
+    ) {
+        reactToPostUseCase.unreact(new UnreactToPostCommand(id, memberId));
+        return ResponseEntity.noContent().build();
     }
 }

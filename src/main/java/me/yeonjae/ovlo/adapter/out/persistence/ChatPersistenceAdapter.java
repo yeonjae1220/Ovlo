@@ -11,6 +11,7 @@ import me.yeonjae.ovlo.domain.chat.model.ChatRoomId;
 import me.yeonjae.ovlo.domain.chat.model.ChatRoomType;
 import me.yeonjae.ovlo.domain.member.model.MemberId;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -53,6 +54,7 @@ public class ChatPersistenceAdapter implements LoadChatPort, SaveChatPort {
     }
 
     @Override
+    @Transactional
     public ChatRoom save(ChatRoom chatRoom) {
         var entity = chatMapper.toJpaEntity(chatRoom);
         var saved = chatRoomJpaRepository.save(entity);

@@ -33,10 +33,8 @@ public class Post {
 
         Objects.requireNonNull(boardId, "게시판 ID는 필수입니다");
         Objects.requireNonNull(authorId, "게시글 작성자 ID는 필수입니다");
-        Objects.requireNonNull(title, "게시글 제목은 필수입니다");
-        if (title.isBlank()) throw new IllegalArgumentException("게시글 제목은 빈 값일 수 없습니다");
-        Objects.requireNonNull(content, "게시글 내용은 필수입니다");
-        if (content.isBlank()) throw new IllegalArgumentException("게시글 내용은 빈 값일 수 없습니다");
+        validateTitle(title);
+        validateContent(content);
 
         Post post = new Post();
         post.boardId = boardId;
@@ -102,11 +100,43 @@ public class Post {
         reactions.add(new Reaction(memberId, type));
     }
 
+    public void deleteComment(CommentId commentId, MemberId requesterId) {
+        Comment comment = comments.stream()
+                .filter(c -> commentId.equals(c.getId()))
+                .findFirst()
+                .orElseThrow(() -> new PostException("댓글을 찾을 수 없습니다: " + commentId.value()));
+
+        if (!comment.getAuthorId().equals(requesterId)) {
+            throw new PostException("댓글을 삭제할 권한이 없습니다");
+        }
+        comment.delete();
+    }
+
     public void unreact(MemberId memberId) {
         boolean removed = reactions.removeIf(r -> r.memberId().equals(memberId));
         if (!removed) {
             throw new PostException("반응을 찾을 수 없습니다");
         }
+    }
+
+    public void update(String title, String content) {
+        if (deleted) {
+            throw new PostException("삭제된 게시글은 수정할 수 없습니다");
+        }
+        validateTitle(title);
+        validateContent(content);
+        this.title = title;
+        this.content = content;
+    }
+
+    private static void validateTitle(String title) {
+        Objects.requireNonNull(title, "게시글 제목은 필수입니다");
+        if (title.isBlank()) throw new IllegalArgumentException("게시글 제목은 빈 값일 수 없습니다");
+    }
+
+    private static void validateContent(String content) {
+        Objects.requireNonNull(content, "게시글 내용은 필수입니다");
+        if (content.isBlank()) throw new IllegalArgumentException("게시글 내용은 빈 값일 수 없습니다");
     }
 
     public void delete() {

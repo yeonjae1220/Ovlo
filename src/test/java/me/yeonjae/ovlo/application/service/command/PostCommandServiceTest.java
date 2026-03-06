@@ -4,6 +4,7 @@ import me.yeonjae.ovlo.application.dto.command.CreateCommentCommand;
 import me.yeonjae.ovlo.application.dto.command.CreatePostCommand;
 import me.yeonjae.ovlo.application.dto.command.DeletePostCommand;
 import me.yeonjae.ovlo.application.dto.command.ReactToPostCommand;
+import me.yeonjae.ovlo.application.dto.command.UnreactToPostCommand;
 import me.yeonjae.ovlo.application.dto.result.CommentResult;
 import me.yeonjae.ovlo.application.dto.result.PostResult;
 import me.yeonjae.ovlo.application.port.out.post.LoadPostPort;
@@ -141,7 +142,7 @@ class PostCommandServiceTest {
             given(loadPostPort.findById(postId)).willReturn(Optional.of(post));
             given(savePostPort.save(any())).willReturn(post);
 
-            service.unreact(new ReactToPostCommand(1L, 1L, null));
+            service.unreact(new UnreactToPostCommand(1L, 1L));
 
             assertThat(post.likeCount()).isEqualTo(0);
             verify(savePostPort).save(post);

@@ -3,10 +3,13 @@ package me.yeonjae.ovlo.adapter.in.web;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import me.yeonjae.ovlo.application.dto.command.UploadMediaCommand;
+import me.yeonjae.ovlo.application.dto.result.MediaDownloadResult;
 import me.yeonjae.ovlo.application.dto.result.MediaResult;
 import me.yeonjae.ovlo.application.port.in.media.GetMediaQuery;
 import me.yeonjae.ovlo.application.port.in.media.UploadMediaUseCase;
 import me.yeonjae.ovlo.domain.media.model.MediaType;
+import org.springframework.http.ContentDisposition;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -19,6 +22,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 
 @Tag(name = "Media", description = "미디어 파일 API")
 @RestController
@@ -33,10 +37,35 @@ public class MediaApiController {
         this.getMediaQuery = getMediaQuery;
     }
 
-    @Operation(summary = "미디어 파일 조회")
+    @Operation(summary = "미디어 파일 메타데이터 조회")
     @GetMapping("/{id}")
     public ResponseEntity<MediaResult> getById(@PathVariable Long id) {
         return ResponseEntity.ok(getMediaQuery.getMedia(id));
+    }
+
+    @Operation(summary = "미디어 파일 바이너리 다운로드")
+    @GetMapping("/{id}/file")
+    public ResponseEntity<byte[]> downloadFile(@PathVariable Long id) {
+        MediaDownloadResult download = getMediaQuery.downloadMedia(id);
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(resolveContentType(download.mediaType()));
+        headers.setContentDisposition(
+                ContentDisposition.inline()
+                        .filename(download.originalFilename(), StandardCharsets.UTF_8)
+                        .build()
+        );
+        return ResponseEntity.ok().headers(headers).body(download.data());
+    }
+
+    private org.springframework.http.MediaType resolveContentType(String mediaTypeName) {
+        return switch (mediaTypeName) {
+            case "IMAGE_JPEG" -> org.springframework.http.MediaType.IMAGE_JPEG;
+            case "IMAGE_PNG"  -> org.springframework.http.MediaType.IMAGE_PNG;
+            case "IMAGE_WEBP" -> org.springframework.http.MediaType.parseMediaType("image/webp");
+            case "VIDEO_MP4"  -> org.springframework.http.MediaType.parseMediaType("video/mp4");
+            default           -> org.springframework.http.MediaType.APPLICATION_OCTET_STREAM;
+        };
     }
 
     @Operation(summary = "미디어 파일 업로드")

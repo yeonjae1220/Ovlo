@@ -87,7 +87,7 @@ public class PostPersistenceAdapter implements LoadPostPort, SavePostPort {
         var saved = postJpaRepository.save(entity);
         Long postId = saved.getId();
 
-        saveNewComments(postId, post.getComments());
+        saveAllComments(postId, post.getComments());
         syncReactions(postId, post.getReactions());
 
         var comments = commentJpaRepository.findByPostId(postId);
@@ -95,10 +95,9 @@ public class PostPersistenceAdapter implements LoadPostPort, SavePostPort {
         return postMapper.toDomain(saved, comments, reactions);
     }
 
-    private void saveNewComments(Long postId, List<Comment> comments) {
-        comments.stream()
-                .filter(c -> c.getId() == null)
-                .forEach(c -> commentJpaRepository.save(postMapper.toCommentJpaEntity(postId, c)));
+    // JPA save()는 ID 유무에 따라 INSERT/UPDATE 자동 판단 — 신규/기존 구분 불필요
+    private void saveAllComments(Long postId, List<Comment> comments) {
+        comments.forEach(c -> commentJpaRepository.save(postMapper.toCommentJpaEntity(postId, c)));
     }
 
     private void syncReactions(Long postId, List<Reaction> reactions) {

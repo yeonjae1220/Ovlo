@@ -14,11 +14,14 @@ import me.yeonjae.ovlo.domain.chat.model.ChatRoomId;
 import me.yeonjae.ovlo.domain.chat.model.ChatRoomType;
 import me.yeonjae.ovlo.domain.chat.model.Message;
 import me.yeonjae.ovlo.domain.member.model.MemberId;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
 @Service
+@Transactional
 public class ChatCommandService implements CreateChatRoomUseCase, SendMessageUseCase {
 
     private final LoadChatPort loadChatPort;
@@ -44,8 +47,13 @@ public class ChatCommandService implements CreateChatRoomUseCase, SendMessageUse
         }
 
         ChatRoom room = ChatRoom.create(command.type(), command.name(), participants);
-        ChatRoom saved = saveChatPort.save(room);
-        return ChatRoomResult.from(saved);
+        try {
+            ChatRoom saved = saveChatPort.save(room);
+            return ChatRoomResult.from(saved);
+        } catch (DataIntegrityViolationException e) {
+            // TODO: V7 migration에 DM unique constraint 추가 시 이 catch가 TOCTOU race condition 최종 방어선 역할
+            throw new ChatException("이미 해당 두 회원 간의 DM 채팅방이 존재합니다");
+        }
     }
 
     @Override
