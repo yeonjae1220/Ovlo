@@ -31,6 +31,8 @@ export const useAuthStore = create<AuthState>()(
     }),
     {
       name: 'ovlo-auth',
+      version: 2, // bump when Member type changes to clear stale localStorage
+      migrate: () => ({ accessToken: null, refreshToken: null, currentUser: null }),
       partialize: (state) => ({
         accessToken: state.accessToken,
         refreshToken: state.refreshToken,
