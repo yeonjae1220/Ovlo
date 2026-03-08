@@ -2,6 +2,7 @@ package me.yeonjae.ovlo.shared.config;
 
 import me.yeonjae.ovlo.shared.security.JwtAuthenticationFilter;
 import me.yeonjae.ovlo.shared.security.JwtTokenProvider;
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -82,6 +83,11 @@ public class SecurityConfig {
                         .requestMatchers("/h2-console/**").authenticated()
                         // 나머지는 인증 필요
                         .anyRequest().authenticated()
+                )
+                .exceptionHandling(ex -> ex
+                        // Return 401 (not 403) when JWT is missing or invalid
+                        .authenticationEntryPoint((req, res, e) ->
+                                res.sendError(HttpServletResponse.SC_UNAUTHORIZED))
                 )
                 .addFilterBefore(
                         new JwtAuthenticationFilter(jwtTokenProvider),

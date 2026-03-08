@@ -35,7 +35,15 @@ apiClient.interceptors.response.use(
   async (error) => {
     const original = error.config
 
-    if (error.response?.status !== 401 || original._retry) {
+    const status = error.response?.status
+    // 403 with no authentication entry point configured returns 403 instead of 401;
+    // treat it as an auth failure and clear state immediately.
+    if (status === 403) {
+      useAuthStore.getState().clearAuth()
+      window.location.href = '/login'
+      return Promise.reject(error)
+    }
+    if (status !== 401 || original._retry) {
       return Promise.reject(error)
     }
 
