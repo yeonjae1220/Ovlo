@@ -9,6 +9,7 @@ import me.yeonjae.ovlo.domain.member.model.Member;
 import me.yeonjae.ovlo.domain.member.model.MemberId;
 import org.springframework.stereotype.Component;
 
+import java.util.List;
 import java.util.Optional;
 
 @Component
@@ -37,6 +38,18 @@ public class MemberPersistenceAdapter implements LoadMemberPort, SaveMemberPort 
     @Override
     public boolean existsByEmail(String email) {
         return memberJpaRepository.existsByEmail(email);
+    }
+
+    @Override
+    public boolean existsByNickname(String nickname) {
+        return memberJpaRepository.existsByNickname(nickname);
+    }
+
+    @Override
+    public List<Member> searchByNickname(String keyword) {
+        return memberJpaRepository.findByNicknameContainingIgnoreCase(keyword).stream()
+                .map(memberMapper::toDomain)
+                .toList();
     }
 
     @Override

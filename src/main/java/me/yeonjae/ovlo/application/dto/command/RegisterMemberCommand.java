@@ -1,6 +1,7 @@
 package me.yeonjae.ovlo.application.dto.command;
 
 public record RegisterMemberCommand(
+        String nickname,
         String name,
         String hometown,
         String email,
@@ -8,5 +9,5 @@ public record RegisterMemberCommand(
         Long homeUniversityId,
         String majorName,
         String degreeType,
-        int gradeLevel
+        Integer gradeLevel
 ) {}

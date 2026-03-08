@@ -11,6 +11,7 @@ import java.util.Objects;
 public class Member {
 
     private MemberId id;
+    private String nickname;
     private String name;
     private String hometown;
     private Email email;
@@ -29,8 +30,12 @@ public class Member {
 
     private Member() {}
 
-    public static Member create(String name, String hometown, Email email, Password password,
+    public static Member create(String nickname, String name, String hometown, Email email, Password password,
                                 UniversityId homeUniversityId, Major major) {
+        Objects.requireNonNull(nickname, "닉네임은 null일 수 없습니다");
+        if (nickname.isBlank()) {
+            throw new IllegalArgumentException("닉네임은 빈 값일 수 없습니다");
+        }
         Objects.requireNonNull(name, "이름은 null일 수 없습니다");
         if (name.isBlank()) {
             throw new IllegalArgumentException("이름은 빈 값일 수 없습니다");
@@ -45,6 +50,7 @@ public class Member {
         Objects.requireNonNull(major, "전공 정보는 null일 수 없습니다");
 
         Member member = new Member();
+        member.nickname = nickname;
         member.name = name;
         member.hometown = hometown;
         member.email = email;
@@ -59,7 +65,7 @@ public class Member {
     }
 
     /** persistence 계층 전용: DB에서 모든 필드를 복원할 때 사용 */
-    public static Member restore(MemberId id, String name, String hometown, Email email, Password password,
+    public static Member restore(MemberId id, String nickname, String name, String hometown, Email email, Password password,
                                  UniversityId homeUniversityId, Major major, MemberStatus status,
                                  String profileImageMediaId, String bio, LocalDate birthDate,
                                  List<LanguageSkill> languageSkills,
@@ -67,6 +73,7 @@ public class Member {
                                  List<ContactInfo> contactInfos) {
         Member member = new Member();
         member.id = id;
+        member.nickname = nickname;
         member.name = name;
         member.hometown = hometown;
         member.email = email;
@@ -84,6 +91,13 @@ public class Member {
     }
 
     // ── 도메인 행위 ──────────────────────────────────────────────────────────
+
+    public void updateNickname(String nickname) {
+        validateActive();
+        if (nickname != null && !nickname.isBlank()) {
+            this.nickname = nickname;
+        }
+    }
 
     public void updateProfile(String name, String hometown, Major major) {
         validateActive();
@@ -154,6 +168,7 @@ public class Member {
     public MemberId getId() { return id; }
     public void assignId(MemberId id) { this.id = id; } // persistence 계층 전용
 
+    public String getNickname() { return nickname; }
     public String getName() { return name; }
     public String getHometown() { return hometown; }
     public Email getEmail() { return email; }

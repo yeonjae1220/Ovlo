@@ -7,6 +7,7 @@ import java.util.List;
 
 public record MemberResult(
         Long id,
+        String nickname,
         String name,
         String hometown,
         String email,
@@ -51,6 +52,7 @@ public record MemberResult(
 
         return new MemberResult(
                 member.getId() != null ? member.getId().value() : null,
+                member.getNickname(),
                 member.getName(),
                 member.getHometown(),
                 member.getEmail().value(),

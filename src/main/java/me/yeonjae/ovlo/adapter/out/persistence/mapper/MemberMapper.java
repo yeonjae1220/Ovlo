@@ -15,6 +15,7 @@ public class MemberMapper {
         if (member.getId() != null) {
             entity.setId(member.getId().value());
         }
+        entity.setNickname(member.getNickname());
         entity.setName(member.getName());
         entity.setHometown(member.getHometown());
         entity.setEmail(member.getEmail().value());
@@ -58,6 +59,7 @@ public class MemberMapper {
 
         return Member.restore(
                 new MemberId(entity.getId()),
+                entity.getNickname(),
                 entity.getName(),
                 entity.getHometown(),
                 new Email(entity.getEmail()),

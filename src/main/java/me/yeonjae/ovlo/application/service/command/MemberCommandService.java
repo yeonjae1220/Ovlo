@@ -39,6 +39,9 @@ public class MemberCommandService implements
         if (loadMemberPort.existsByEmail(command.email())) {
             throw new MemberException("이미 사용 중인 이메일입니다: " + command.email());
         }
+        if (loadMemberPort.existsByNickname(command.nickname())) {
+            throw new MemberException("이미 사용 중인 닉네임입니다: " + command.nickname());
+        }
 
         String hashed = passwordHasherPort.encode(command.rawPassword());
         Major major = new Major(
@@ -47,6 +50,7 @@ public class MemberCommandService implements
                 command.gradeLevel());
 
         Member member = Member.create(
+                command.nickname(),
                 command.name(),
                 command.hometown(),
                 new Email(command.email()),
@@ -58,7 +62,7 @@ public class MemberCommandService implements
             Member saved = saveMemberPort.save(member);
             return MemberResult.from(saved);
         } catch (DataIntegrityViolationException e) {
-            throw new MemberException("이미 사용 중인 이메일입니다: " + command.email());
+            throw new MemberException("이미 사용 중인 이메일 또는 닉네임입니다.");
         }
     }
 
@@ -67,14 +71,22 @@ public class MemberCommandService implements
         Member member = loadMemberPort.findById(new MemberId(command.memberId()))
                 .orElseThrow(() -> new MemberException("회원을 찾을 수 없습니다: " + command.memberId()));
 
-        Major major = null;
-        if (command.majorName() != null && command.degreeType() != null && command.gradeLevel() != null) {
-            major = new Major(command.majorName(), DegreeType.valueOf(command.degreeType()), command.gradeLevel());
+        if (command.nickname() != null && !command.nickname().equals(member.getNickname())) {
+            if (loadMemberPort.existsByNickname(command.nickname())) {
+                throw new MemberException("이미 사용 중인 닉네임입니다: " + command.nickname());
+            }
+            member.updateNickname(command.nickname());
+        }
+        if (command.bio() != null) {
+            member.updateBio(command.bio());
         }
 
-        member.updateProfile(command.name(), command.hometown(), major);
-        Member saved = saveMemberPort.save(member);
-        return MemberResult.from(saved);
+        try {
+            Member saved = saveMemberPort.save(member);
+            return MemberResult.from(saved);
+        } catch (DataIntegrityViolationException e) {
+            throw new MemberException("이미 사용 중인 닉네임입니다.");
+        }
     }
 
     @Override

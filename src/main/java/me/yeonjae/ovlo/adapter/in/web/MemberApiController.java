@@ -18,14 +18,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.server.ResponseStatusException;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @Tag(name = "Member", description = "회원 API")
 @RestController
@@ -54,6 +49,7 @@ public class MemberApiController {
     public ResponseEntity<MemberResult> register(@Valid @RequestBody RegisterMemberRequest request) {
         MemberResult result = registerMemberUseCase.register(
                 new RegisterMemberCommand(
+                        request.nickname(),
                         request.name(),
                         request.hometown(),
                         request.email(),
@@ -74,6 +70,19 @@ public class MemberApiController {
         return ResponseEntity.ok(result);
     }
 
+    @Operation(summary = "닉네임으로 회원 검색")
+    @GetMapping("/search")
+    public ResponseEntity<List<MemberResult>> search(
+            @RequestParam String nickname,
+            @AuthenticationPrincipal Long memberId
+    ) {
+        if (nickname == null || nickname.isBlank()) {
+            return ResponseEntity.ok(List.of());
+        }
+        List<MemberResult> results = getMemberQuery.searchByNickname(nickname);
+        return ResponseEntity.ok(results);
+    }
+
     @Operation(summary = "회원 프로필 수정")
     @PutMapping("/{id}")
     public ResponseEntity<MemberResult> updateProfile(
@@ -85,14 +94,7 @@ public class MemberApiController {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "본인 프로필만 수정할 수 있습니다");
         }
         MemberResult result = updateMemberProfileUseCase.updateProfile(
-                new UpdateMemberProfileCommand(
-                        id,
-                        request.name(),
-                        request.hometown(),
-                        request.majorName(),
-                        request.degreeType(),
-                        request.gradeLevel()
-                )
+                new UpdateMemberProfileCommand(id, request.nickname(), request.bio())
         );
         return ResponseEntity.ok(result);
     }

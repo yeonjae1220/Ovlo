@@ -57,7 +57,7 @@ public class AuthCommandService implements LoginUseCase, LogoutUseCase, RefreshT
         AuthSession session = AuthSession.create(credentials.memberId(), refreshToken, expiresAt);
         tokenStorePort.save(session);
 
-        return new TokenPairResult(accessToken, refreshToken);
+        return new TokenPairResult(accessToken, refreshToken, credentials.memberId().value());
     }
 
     @Override
@@ -84,6 +84,6 @@ public class AuthCommandService implements LoginUseCase, LogoutUseCase, RefreshT
         session.rotate(newRefreshToken, newExpiry);
         tokenStorePort.save(session);
 
-        return new TokenPairResult(newAccessToken, newRefreshToken);
+        return new TokenPairResult(newAccessToken, newRefreshToken, session.getMemberId().value());
     }
 }

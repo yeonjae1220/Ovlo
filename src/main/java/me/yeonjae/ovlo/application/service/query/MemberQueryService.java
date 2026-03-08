@@ -9,6 +9,8 @@ import me.yeonjae.ovlo.domain.member.model.MemberId;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+
 @Service
 @Transactional(readOnly = true)
 public class MemberQueryService implements GetMemberQuery {
@@ -24,5 +26,12 @@ public class MemberQueryService implements GetMemberQuery {
         Member member = loadMemberPort.findById(memberId)
                 .orElseThrow(() -> new MemberException("회원을 찾을 수 없습니다: " + memberId.value()));
         return MemberResult.from(member);
+    }
+
+    @Override
+    public List<MemberResult> searchByNickname(String keyword) {
+        return loadMemberPort.searchByNickname(keyword).stream()
+                .map(MemberResult::from)
+                .toList();
     }
 }
