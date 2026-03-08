@@ -103,6 +103,16 @@ spring:
     console:
       enabled: false
 
+management:
+  endpoints:
+    web:
+      exposure:
+        # 운영 환경에서는 health만 공개; metrics/prometheus는 내부 네트워크 전용으로 별도 보호 필요
+        include: health
+  endpoint:
+    health:
+      show-details: never
+
 logging:
   level:
     me.yeonjae.ovlo: INFO

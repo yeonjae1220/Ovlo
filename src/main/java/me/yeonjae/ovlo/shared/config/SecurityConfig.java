@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
+import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
@@ -53,6 +54,15 @@ public class SecurityConfig {
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .csrf(AbstractHttpConfigurer::disable)
                 .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .headers(headers -> headers
+                        .contentTypeOptions(Customizer.withDefaults())
+                        .frameOptions(frame -> frame.sameOrigin())  // H2 console iframe 허용 (개발용)
+                        .httpStrictTransportSecurity(hsts -> hsts
+                                .maxAgeInSeconds(31536000)
+                                .includeSubDomains(true))
+                        .contentSecurityPolicy(csp -> csp
+                                .policyDirectives("default-src 'self'; frame-ancestors 'self'"))
+                )
                 .authorizeHttpRequests(auth -> auth
                         // 인증 없이 접근 가능한 엔드포인트
                         .requestMatchers(HttpMethod.POST, "/api/v1/members").permitAll()
@@ -62,11 +72,14 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/api/v1/universities/**").permitAll()
                         // WebSocket
                         .requestMatchers("/ws/**").permitAll()
-                        // 개발/문서 도구
+                        // 문서 (개발 환경 전용 — 운영은 별도 프록시에서 차단 권장)
                         .requestMatchers("/swagger-ui.html", "/swagger-ui/**", "/v3/api-docs/**").permitAll()
                         .requestMatchers("/webjars/**").permitAll()
+                        // Actuator: health만 공개, metrics/prometheus는 인증 필요
                         .requestMatchers("/actuator/health").permitAll()
-                        .requestMatchers("/h2-console/**").permitAll()
+                        .requestMatchers("/actuator/**").authenticated()
+                        // H2 Console: 인증 필요 (개발 프로파일에서만 활성화)
+                        .requestMatchers("/h2-console/**").authenticated()
                         // 나머지는 인증 필요
                         .anyRequest().authenticated()
                 )
