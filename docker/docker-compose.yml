@@ -9,13 +9,16 @@ services:
       SPRING_PROFILES_ACTIVE: prod
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/ovlo
       SPRING_DATASOURCE_USERNAME: ovlo
-      SPRING_DATASOURCE_PASSWORD: ovlo
+      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD:ovlo}
       SPRING_DATASOURCE_DRIVER: org.postgresql.Driver
       JPA_DIALECT: org.hibernate.dialect.PostgreSQLDialect
       SPRING_DATA_REDIS_HOST: redis
       SPRING_DATA_REDIS_PORT: 6379
       FLYWAY_ENABLED: "true"
       JWT_SECRET: ${JWT_SECRET}
+      CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:http://localhost:3000}
+    volumes:
+      - media_data:/tmp/ovlo-media
     depends_on:
       postgres:
         condition: service_healthy
@@ -28,7 +31,7 @@ services:
     environment:
       POSTGRES_DB: ovlo
       POSTGRES_USER: ovlo
-      POSTGRES_PASSWORD: ovlo
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:ovlo}
     ports:
       - "5433:5432"
     volumes:
@@ -84,3 +87,4 @@ volumes:
   postgres_data:
   redis_data:
   grafana_data:
+  media_data:
