@@ -83,7 +83,19 @@ public class PostPersistenceAdapter implements LoadPostPort, SavePostPort {
     @Override
     @Transactional
     public Post save(Post post) {
-        var entity = postMapper.toJpaEntity(post);
+        // For existing posts, load the entity first to preserve the @Version value.
+        // Creating a new PostJpaEntity with only the id set leaves version=null,
+        // which causes Hibernate to throw PropertyValueException on save.
+        PostJpaEntity entity;
+        if (post.getId() != null) {
+            entity = postJpaRepository.findById(post.getId().value())
+                    .orElseThrow(() -> new IllegalStateException("Post not found: " + post.getId().value()));
+            entity.setTitle(post.getTitle());
+            entity.setContent(post.getContent());
+            entity.setDeleted(post.isDeleted());
+        } else {
+            entity = postMapper.toJpaEntity(post);
+        }
         var saved = postJpaRepository.save(entity);
         Long postId = saved.getId();
 
