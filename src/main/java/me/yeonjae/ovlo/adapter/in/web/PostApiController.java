@@ -102,8 +102,11 @@ public class PostApiController {
 
     @Operation(summary = "게시글 단건 조회")
     @GetMapping("/{id}")
-    public ResponseEntity<PostResult> getById(@PathVariable Long id) {
-        PostResult result = getPostQuery.getById(new PostId(id));
+    public ResponseEntity<PostResult> getById(
+            @PathVariable Long id,
+            @AuthenticationPrincipal Long memberId
+    ) {
+        PostResult result = getPostQuery.getById(new PostId(id), memberId);
         return ResponseEntity.ok(result);
     }
 

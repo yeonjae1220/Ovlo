@@ -27,9 +27,18 @@ export default function PostDetailPage() {
   if (!post) return <p>게시글을 찾을 수 없습니다.</p>
 
   const isMyPost = currentUser && String(post.authorId) === currentUser.id
+  const likedByMe = post.likedByMe ?? false
 
   const handleDelete = () => {
     deletePost.mutate(id!, { onSuccess: () => navigate(-1) })
+  }
+
+  const handleLikeToggle = () => {
+    if (likedByMe) {
+      unreact.mutate(id!)
+    } else {
+      react.mutate({ postId: id!, reactionType: 'LIKE' })
+    }
   }
 
   const handleComment = () => {
@@ -42,21 +51,26 @@ export default function PostDetailPage() {
   return (
     <div style={{ maxWidth: 700, margin: '0 auto' }}>
       <h1>{post.deleted ? '[삭제된 게시글]' : post.title}</h1>
-      <p style={{ color: '#888', fontSize: 13 }}>작성자 {post.authorId}</p>
+      <p style={{ color: '#888', fontSize: 13 }}>작성자 #{post.authorId}</p>
 
       {!post.deleted && (
         <>
           <div style={{ lineHeight: 1.6, marginBottom: 24 }}>{post.content}</div>
 
-          <div style={{ display: 'flex', gap: 12, marginBottom: 24 }}>
-            <button onClick={() => react.mutate({ postId: id!, reactionType: 'LIKE' })}>
+          <div style={{ display: 'flex', gap: 12, marginBottom: 24, alignItems: 'center' }}>
+            <button
+              onClick={handleLikeToggle}
+              disabled={react.isPending || unreact.isPending}
+              style={{
+                padding: '6px 14px',
+                background: likedByMe ? '#4a90e2' : '#f0f0f0',
+                color: likedByMe ? 'white' : 'inherit',
+                border: 'none',
+                borderRadius: 6,
+                cursor: 'pointer',
+              }}
+            >
               👍 {post.likeCount}
-            </button>
-            <button onClick={() => react.mutate({ postId: id!, reactionType: 'DISLIKE' })}>
-              👎 {post.dislikeCount}
-            </button>
-            <button onClick={() => unreact.mutate(id!)} style={{ fontSize: 12, color: '#888' }}>
-              취소
             </button>
             {isMyPost && (
               <button onClick={handleDelete} style={{ marginLeft: 'auto', color: 'red' }}>
@@ -67,20 +81,22 @@ export default function PostDetailPage() {
         </>
       )}
 
-      <h3>댓글 {post.comments.length}</h3>
+      <h3>댓글 {post.comments.filter((c) => !c.deleted).length}</h3>
       <ul style={{ listStyle: 'none', padding: 0 }}>
         {post.comments.filter((c) => !c.deleted).map((c) => (
-          <li key={c.id} style={{ padding: '8px 0', borderBottom: '1px solid #eee' }}>
-            <span style={{ fontWeight: 'bold', marginRight: 8 }}>{c.authorId}</span>
-            {c.content}
-            {currentUser && String(c.authorId) === currentUser.id && (
-              <button
-                onClick={() => deleteComment.mutate({ postId: id!, commentId: String(c.id) })}
-                style={{ marginLeft: 8, color: 'red', fontSize: 12 }}
-              >
-                삭제
-              </button>
-            )}
+          <li key={c.id} style={{ padding: '10px 0', borderBottom: '1px solid #eee' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
+              <span style={{ fontWeight: 'bold', fontSize: 13, color: '#555' }}>#{c.authorId}</span>
+              {currentUser && String(c.authorId) === currentUser.id && (
+                <button
+                  onClick={() => deleteComment.mutate({ postId: id!, commentId: String(c.id) })}
+                  style={{ color: 'red', fontSize: 12, background: 'none', border: 'none', cursor: 'pointer' }}
+                >
+                  삭제
+                </button>
+              )}
+            </div>
+            <p style={{ margin: 0, lineHeight: 1.5 }}>{c.content}</p>
           </li>
         ))}
       </ul>

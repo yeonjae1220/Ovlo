@@ -24,8 +24,13 @@ public class PostQueryService implements GetPostQuery {
 
     @Override
     public PostResult getById(PostId postId) {
+        return getById(postId, null);
+    }
+
+    @Override
+    public PostResult getById(PostId postId, Long requesterId) {
         return loadPostPort.findById(postId)
-                .map(PostResult::from)
+                .map(post -> PostResult.from(post, requesterId))
                 .orElseThrow(() -> new PostException("게시글을 찾을 수 없습니다: " + postId.value()));
     }
 

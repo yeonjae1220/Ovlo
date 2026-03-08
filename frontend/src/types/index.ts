@@ -133,6 +133,7 @@ export interface Post {
   likeCount: number
   dislikeCount: number
   deleted: boolean
+  likedByMe?: boolean
 }
 
 export interface CreatePostRequest {
