@@ -24,8 +24,8 @@ export default function ProfilePage() {
   const [nickname, setNickname] = useState('')
   const [bio, setBio] = useState('')
 
-  const isOwner = currentUser?.id === id
-  const isFollowing = followers?.some((f) => f.id === currentUser?.id)
+  const isOwner = String(currentUser?.id) === id
+  const isFollowing = followers?.some((f) => String(f.id) === String(currentUser?.id))
 
   const { getRootProps, getInputProps } = useDropzone({
     accept: { 'image/*': [] },

@@ -202,6 +202,7 @@ export interface ChatRoom {
   type: ChatRoomType
   name?: string
   participantIds: number[]
+  participantNicknames: Record<number, string>
 }
 
 export interface CreateChatRoomRequest {

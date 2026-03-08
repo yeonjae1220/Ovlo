@@ -5,7 +5,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import me.yeonjae.ovlo.adapter.in.web.dto.request.FollowRequest;
 import me.yeonjae.ovlo.application.dto.command.FollowCommand;
-import me.yeonjae.ovlo.application.dto.result.FollowResult;
+import me.yeonjae.ovlo.application.dto.result.MemberResult;
 import me.yeonjae.ovlo.application.port.in.follow.FollowMemberUseCase;
 import me.yeonjae.ovlo.application.port.in.follow.GetFollowQuery;
 import me.yeonjae.ovlo.application.port.in.follow.UnfollowMemberUseCase;
@@ -60,21 +60,15 @@ public class FollowApiController {
         return ResponseEntity.noContent().build();
     }
 
-    @Operation(summary = "팔로워 목록 조회")
-    @GetMapping("/followers")
-    public ResponseEntity<List<FollowResult>> getFollowers(
-            @AuthenticationPrincipal Long memberId
-    ) {
-        List<FollowResult> result = getFollowQuery.getFollowers(memberId);
-        return ResponseEntity.ok(result);
+    @Operation(summary = "특정 회원의 팔로워 목록 조회")
+    @GetMapping("/followers/{memberId}")
+    public ResponseEntity<List<MemberResult>> getFollowers(@PathVariable Long memberId) {
+        return ResponseEntity.ok(getFollowQuery.getFollowers(memberId));
     }
 
-    @Operation(summary = "팔로잉 목록 조회")
-    @GetMapping("/followings")
-    public ResponseEntity<List<FollowResult>> getFollowings(
-            @AuthenticationPrincipal Long memberId
-    ) {
-        List<FollowResult> result = getFollowQuery.getFollowings(memberId);
-        return ResponseEntity.ok(result);
+    @Operation(summary = "특정 회원의 팔로잉 목록 조회")
+    @GetMapping("/followings/{memberId}")
+    public ResponseEntity<List<MemberResult>> getFollowings(@PathVariable Long memberId) {
+        return ResponseEntity.ok(getFollowQuery.getFollowings(memberId));
     }
 }

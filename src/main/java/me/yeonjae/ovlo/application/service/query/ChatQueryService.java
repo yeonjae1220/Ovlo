@@ -3,36 +3,51 @@ package me.yeonjae.ovlo.application.service.query;
 import me.yeonjae.ovlo.application.dto.result.ChatRoomResult;
 import me.yeonjae.ovlo.application.port.in.chat.GetChatRoomQuery;
 import me.yeonjae.ovlo.application.port.out.chat.LoadChatPort;
+import me.yeonjae.ovlo.application.port.out.member.LoadMemberPort;
 import me.yeonjae.ovlo.domain.chat.exception.ChatException;
+import me.yeonjae.ovlo.domain.chat.model.ChatRoom;
 import me.yeonjae.ovlo.domain.chat.model.ChatRoomId;
 import me.yeonjae.ovlo.domain.member.model.MemberId;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 @Transactional(readOnly = true)
 public class ChatQueryService implements GetChatRoomQuery {
 
     private final LoadChatPort loadChatPort;
+    private final LoadMemberPort loadMemberPort;
 
-    public ChatQueryService(LoadChatPort loadChatPort) {
+    public ChatQueryService(LoadChatPort loadChatPort, LoadMemberPort loadMemberPort) {
         this.loadChatPort = loadChatPort;
+        this.loadMemberPort = loadMemberPort;
     }
 
     @Override
     public ChatRoomResult getChatRoom(Long chatRoomId) {
-        return loadChatPort.findById(new ChatRoomId(chatRoomId))
-                .map(ChatRoomResult::from)
+        ChatRoom room = loadChatPort.findById(new ChatRoomId(chatRoomId))
                 .orElseThrow(() -> new ChatException("채팅방을 찾을 수 없습니다"));
+        return ChatRoomResult.from(room, buildNicknameMap(room));
     }
 
     @Override
     public List<ChatRoomResult> getChatRooms(Long memberId) {
         return loadChatPort.findByMemberId(new MemberId(memberId))
                 .stream()
-                .map(ChatRoomResult::from)
+                .map(room -> ChatRoomResult.from(room, buildNicknameMap(room)))
                 .toList();
+    }
+
+    private Map<Long, String> buildNicknameMap(ChatRoom room) {
+        return room.getParticipants().stream()
+                .flatMap(pid -> loadMemberPort.findById(pid).stream())
+                .collect(Collectors.toMap(
+                        m -> m.getId().value(),
+                        m -> m.getNickname()
+                ));
     }
 }

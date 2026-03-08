@@ -1,9 +1,9 @@
 import apiClient from '../utils/axios'
-import type { Follow, Member } from '../types'
+import type { Member } from '../types'
 
 export const followApi = {
   follow: (followeeId: string) =>
-    apiClient.post<Follow>('/follows', { followeeId }).then((r) => r.data),
+    apiClient.post('/follows', { followeeId: Number(followeeId) }),
 
   unfollow: (followeeId: string) => apiClient.delete(`/follows/${followeeId}`),
 

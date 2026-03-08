@@ -125,7 +125,9 @@ export default function ChatListPage() {
       <ul style={{ listStyle: 'none', padding: 0 }}>
         {rooms?.map((room) => {
           const otherParticipants = room.participantIds.filter((p) => p !== currentUserId)
-          const displayName = room.name ?? otherParticipants.join(', ')
+          const displayName = room.name ?? otherParticipants
+            .map((id) => `#${id} ${room.participantNicknames?.[id] ?? ''}`.trim())
+            .join(', ')
 
           return (
             <li key={room.chatRoomId} style={{ borderBottom: '1px solid #eee' }}>
