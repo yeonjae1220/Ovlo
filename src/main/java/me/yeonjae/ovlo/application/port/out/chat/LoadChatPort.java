@@ -5,7 +5,9 @@ import me.yeonjae.ovlo.domain.chat.model.ChatRoomId;
 import me.yeonjae.ovlo.domain.chat.model.Message;
 import me.yeonjae.ovlo.domain.member.model.MemberId;
 
+import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 public interface LoadChatPort {
@@ -17,4 +19,13 @@ public interface LoadChatPort {
     List<ChatRoom> findByMemberId(MemberId memberId);
 
     List<Message> findMessages(ChatRoomId chatRoomId, int page, int size);
+
+    /** 채팅방 전체 참여자의 마지막 읽음 시각 (memberId → lastReadAt) */
+    Map<Long, LocalDateTime> findAllLastReadAt(ChatRoomId chatRoomId);
+
+    /** 특정 회원의 마지막 읽음 시각 */
+    Optional<LocalDateTime> findLastReadAt(ChatRoomId chatRoomId, MemberId memberId);
+
+    /** since 이후에 senderId가 아닌 사람이 보낸 메시지 수 */
+    long countUnread(ChatRoomId chatRoomId, MemberId memberId, LocalDateTime since);
 }

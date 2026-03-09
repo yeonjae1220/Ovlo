@@ -1,35 +1,45 @@
 package me.yeonjae.ovlo.adapter.out.persistence;
 
+import me.yeonjae.ovlo.adapter.out.persistence.entity.ChatRoomReadMarkerJpaEntity;
 import me.yeonjae.ovlo.adapter.out.persistence.mapper.ChatMapper;
 import me.yeonjae.ovlo.adapter.out.persistence.repository.ChatRoomJpaRepository;
+import me.yeonjae.ovlo.adapter.out.persistence.repository.ChatRoomReadMarkerRepository;
 import me.yeonjae.ovlo.adapter.out.persistence.repository.MessageJpaRepository;
-import me.yeonjae.ovlo.domain.chat.model.Message;
 import me.yeonjae.ovlo.application.port.out.chat.LoadChatPort;
 import me.yeonjae.ovlo.application.port.out.chat.SaveChatPort;
+import me.yeonjae.ovlo.application.port.out.chat.SaveReadMarkerPort;
 import me.yeonjae.ovlo.domain.chat.model.ChatRoom;
 import me.yeonjae.ovlo.domain.chat.model.ChatRoomId;
 import me.yeonjae.ovlo.domain.chat.model.ChatRoomType;
+import me.yeonjae.ovlo.domain.chat.model.Message;
 import me.yeonjae.ovlo.domain.chat.model.MessageId;
 import me.yeonjae.ovlo.domain.member.model.MemberId;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Component
-public class ChatPersistenceAdapter implements LoadChatPort, SaveChatPort {
+public class ChatPersistenceAdapter implements LoadChatPort, SaveChatPort, SaveReadMarkerPort {
 
     private final ChatRoomJpaRepository chatRoomJpaRepository;
     private final MessageJpaRepository messageJpaRepository;
+    private final ChatRoomReadMarkerRepository readMarkerRepository;
     private final ChatMapper chatMapper;
 
     public ChatPersistenceAdapter(ChatRoomJpaRepository chatRoomJpaRepository,
                                   MessageJpaRepository messageJpaRepository,
+                                  ChatRoomReadMarkerRepository readMarkerRepository,
                                   ChatMapper chatMapper) {
         this.chatRoomJpaRepository = chatRoomJpaRepository;
         this.messageJpaRepository = messageJpaRepository;
+        this.readMarkerRepository = readMarkerRepository;
         this.chatMapper = chatMapper;
     }
 
@@ -43,7 +53,6 @@ public class ChatPersistenceAdapter implements LoadChatPort, SaveChatPort {
 
     @Override
     public List<ChatRoom> findByMemberId(MemberId memberId) {
-        // 목록 조회: 메시지 로드 없음 (ChatRoomResult에 메시지 미포함)
         return chatRoomJpaRepository.findByMemberId(memberId.value())
                 .stream()
                 .map(entity -> chatMapper.toDomain(entity, Collections.emptyList()))
@@ -69,7 +78,6 @@ public class ChatPersistenceAdapter implements LoadChatPort, SaveChatPort {
     public List<Message> findMessages(ChatRoomId chatRoomId, int page, int size) {
         var entities = messageJpaRepository.findByChatRoomIdOrderBySentAtDesc(
                 chatRoomId.value(), PageRequest.of(page, size));
-        // DESC for pagination → reverse to chronological ASC order for display
         return entities.reversed().stream()
                 .map(m -> Message.restore(
                         new MessageId(m.getId()),
@@ -77,6 +85,37 @@ public class ChatPersistenceAdapter implements LoadChatPort, SaveChatPort {
                         m.getContent(),
                         m.getSentAt()))
                 .toList();
+    }
+
+    @Override
+    public Map<Long, LocalDateTime> findAllLastReadAt(ChatRoomId chatRoomId) {
+        return readMarkerRepository.findAllByChatRoomId(chatRoomId.value()).stream()
+                .collect(Collectors.toMap(
+                        m -> m.getId().getMemberId(),
+                        ChatRoomReadMarkerJpaEntity::getLastReadAt
+                ));
+    }
+
+    @Override
+    public Optional<LocalDateTime> findLastReadAt(ChatRoomId chatRoomId, MemberId memberId) {
+        return readMarkerRepository.findById(
+                new ChatRoomReadMarkerJpaEntity.ReadMarkerId(chatRoomId.value(), memberId.value())
+        ).map(ChatRoomReadMarkerJpaEntity::getLastReadAt);
+    }
+
+    @Override
+    public long countUnread(ChatRoomId chatRoomId, MemberId memberId, LocalDateTime since) {
+        return messageJpaRepository.countUnread(chatRoomId.value(), memberId.value(), since);
+    }
+
+    @Override
+    @Transactional
+    public void markRead(ChatRoomId chatRoomId, MemberId memberId) {
+        var id = new ChatRoomReadMarkerJpaEntity.ReadMarkerId(chatRoomId.value(), memberId.value());
+        var marker = readMarkerRepository.findById(id)
+                .orElse(new ChatRoomReadMarkerJpaEntity(chatRoomId.value(), memberId.value()));
+        marker.setLastReadAt(LocalDateTime.now());
+        readMarkerRepository.save(marker);
     }
 
     private void saveNewMessages(Long chatRoomId, List<Message> messages) {

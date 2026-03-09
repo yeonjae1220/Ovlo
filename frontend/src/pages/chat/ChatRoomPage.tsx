@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { useChatRoom, useChatMessages } from '../../hooks/useChat'
+import { useChatRoom, useChatMessages, useMarkRead } from '../../hooks/useChat'
 import { useAuthStore } from '../../store/authStore'
 import { stompClient } from '../../utils/stomp'
 import type { HistoryMessage, Message } from '../../types'
@@ -22,6 +22,7 @@ export default function ChatRoomPage() {
   const navigate = useNavigate()
   const { data: room, isLoading } = useChatRoom(id!)
   const { currentUser, accessToken } = useAuthStore()
+  const markRead = useMarkRead()
 
   const [messages, setMessages] = useState<Message[]>([])
   const [page, setPage] = useState(0)
@@ -101,6 +102,12 @@ export default function ChatRoomPage() {
     return () => stompClient.disconnect()
   }, [id, accessToken])
 
+  // 채팅방 입장 + 새 WS 메시지 도착 시 읽음 처리
+  useEffect(() => {
+    if (id) markRead.mutate(id)
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [id, wsCount])
+
   // 신규 WS 메시지 도착 시에만 자동 스크롤 (이전 메시지 로드 시 스크롤 유지)
   useEffect(() => {
     if (wsCount > 0) {
@@ -119,6 +126,16 @@ export default function ChatRoomPage() {
 
   const currentUserId = currentUser?.id ? Number(currentUser.id) : null
   const otherParticipants = room.participantIds.filter((p) => p !== currentUserId)
+
+  // 내 메시지의 읽음 여부: 상대방 전원의 lastReadAt >= sentAt 이면 ✓✓
+  const getReadStatus = (sentAt: string): '✓✓' | '✓' => {
+    const allRead = otherParticipants.every((pid) => {
+      const lastReadStr = room.participantLastReadAt?.[pid]
+      if (!lastReadStr) return false
+      return new Date(lastReadStr) >= new Date(sentAt)
+    })
+    return allRead ? '✓✓' : '✓'
+  }
   const roomTitle =
     room.name ??
     (otherParticipants
@@ -192,7 +209,10 @@ export default function ChatRoomPage() {
                   <div style={{ fontSize: 11, marginBottom: 2, color: '#888' }}>{nickname}</div>
                 )}
                 {msg.content}
-                <div style={{ fontSize: 10, color: isMine ? 'rgba(255,255,255,0.7)' : '#aaa', marginTop: 4, textAlign: 'right' }}>
+                <div style={{ fontSize: 10, color: isMine ? 'rgba(255,255,255,0.7)' : '#aaa', marginTop: 4, textAlign: 'right', display: 'flex', justifyContent: 'flex-end', gap: 4, alignItems: 'center' }}>
+                  {isMine && (
+                    <span style={{ opacity: 0.8 }}>{getReadStatus(msg.sentAt)}</span>
+                  )}
                   {new Date(msg.sentAt).toLocaleTimeString()}
                 </div>
               </div>

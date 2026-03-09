@@ -9,6 +9,7 @@ import me.yeonjae.ovlo.application.dto.result.ChatRoomResult;
 import me.yeonjae.ovlo.application.dto.result.MessageResult;
 import me.yeonjae.ovlo.application.port.in.chat.CreateChatRoomUseCase;
 import me.yeonjae.ovlo.application.port.in.chat.GetChatRoomQuery;
+import me.yeonjae.ovlo.application.port.in.chat.MarkMessagesReadUseCase;
 import me.yeonjae.ovlo.domain.chat.model.ChatRoomType;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -31,13 +32,16 @@ public class ChatApiController {
 
     private final CreateChatRoomUseCase createChatRoomUseCase;
     private final GetChatRoomQuery getChatRoomQuery;
+    private final MarkMessagesReadUseCase markMessagesReadUseCase;
 
     public ChatApiController(
             CreateChatRoomUseCase createChatRoomUseCase,
-            GetChatRoomQuery getChatRoomQuery
+            GetChatRoomQuery getChatRoomQuery,
+            MarkMessagesReadUseCase markMessagesReadUseCase
     ) {
         this.createChatRoomUseCase = createChatRoomUseCase;
         this.getChatRoomQuery = getChatRoomQuery;
+        this.markMessagesReadUseCase = markMessagesReadUseCase;
     }
 
     @Operation(summary = "내 채팅방 목록 조회")
@@ -70,6 +74,16 @@ public class ChatApiController {
     public ResponseEntity<ChatRoomResult> getById(@PathVariable Long id) {
         ChatRoomResult result = getChatRoomQuery.getChatRoom(id);
         return ResponseEntity.ok(result);
+    }
+
+    @Operation(summary = "채팅방 메시지 읽음 처리")
+    @PostMapping("/{id}/read")
+    public ResponseEntity<Void> markRead(
+            @PathVariable Long id,
+            @AuthenticationPrincipal Long memberId
+    ) {
+        markMessagesReadUseCase.markRead(id, memberId);
+        return ResponseEntity.noContent().build();
     }
 
     @Operation(summary = "채팅방 메시지 목록 조회")

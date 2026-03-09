@@ -5,9 +5,11 @@ import me.yeonjae.ovlo.application.dto.command.SendMessageCommand;
 import me.yeonjae.ovlo.application.dto.result.ChatRoomResult;
 import me.yeonjae.ovlo.application.dto.result.MessageResult;
 import me.yeonjae.ovlo.application.port.in.chat.CreateChatRoomUseCase;
+import me.yeonjae.ovlo.application.port.in.chat.MarkMessagesReadUseCase;
 import me.yeonjae.ovlo.application.port.in.chat.SendMessageUseCase;
 import me.yeonjae.ovlo.application.port.out.chat.LoadChatPort;
 import me.yeonjae.ovlo.application.port.out.chat.SaveChatPort;
+import me.yeonjae.ovlo.application.port.out.chat.SaveReadMarkerPort;
 import me.yeonjae.ovlo.domain.chat.exception.ChatException;
 import me.yeonjae.ovlo.domain.chat.model.ChatRoom;
 import me.yeonjae.ovlo.domain.chat.model.ChatRoomId;
@@ -22,14 +24,17 @@ import java.util.List;
 
 @Service
 @Transactional
-public class ChatCommandService implements CreateChatRoomUseCase, SendMessageUseCase {
+public class ChatCommandService implements CreateChatRoomUseCase, SendMessageUseCase, MarkMessagesReadUseCase {
 
     private final LoadChatPort loadChatPort;
     private final SaveChatPort saveChatPort;
+    private final SaveReadMarkerPort saveReadMarkerPort;
 
-    public ChatCommandService(LoadChatPort loadChatPort, SaveChatPort saveChatPort) {
+    public ChatCommandService(LoadChatPort loadChatPort, SaveChatPort saveChatPort,
+                              SaveReadMarkerPort saveReadMarkerPort) {
         this.loadChatPort = loadChatPort;
         this.saveChatPort = saveChatPort;
+        this.saveReadMarkerPort = saveReadMarkerPort;
     }
 
     @Override
@@ -57,6 +62,11 @@ public class ChatCommandService implements CreateChatRoomUseCase, SendMessageUse
             // TODO: V7 migration에 DM unique constraint 추가 시 이 catch가 TOCTOU race condition 최종 방어선 역할
             throw new ChatException("이미 해당 두 회원 간의 DM 채팅방이 존재합니다");
         }
+    }
+
+    @Override
+    public void markRead(Long chatRoomId, Long memberId) {
+        saveReadMarkerPort.markRead(new ChatRoomId(chatRoomId), new MemberId(memberId));
     }
 
     @Override

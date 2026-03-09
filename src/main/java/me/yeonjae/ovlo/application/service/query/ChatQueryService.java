@@ -13,6 +13,7 @@ import me.yeonjae.ovlo.domain.member.model.MemberId;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -34,7 +35,8 @@ public class ChatQueryService implements GetChatRoomQuery {
         ChatRoom room = loadChatPort.findById(new ChatRoomId(chatRoomId))
                 .orElseThrow(() -> new ChatException("채팅방을 찾을 수 없습니다"));
         var info = buildParticipantInfo(room);
-        return ChatRoomResult.from(room, info.nicknames(), info.profileImages());
+        var lastReadAt = loadChatPort.findAllLastReadAt(new ChatRoomId(chatRoomId));
+        return ChatRoomResult.from(room, info.nicknames(), info.profileImages(), 0, lastReadAt);
     }
 
     @Override
@@ -43,7 +45,13 @@ public class ChatQueryService implements GetChatRoomQuery {
                 .stream()
                 .map(room -> {
                     var info = buildParticipantInfo(room);
-                    return ChatRoomResult.from(room, info.nicknames(), info.profileImages());
+                    ChatRoomId roomId = room.getId();
+                    var lastReadAt = loadChatPort.findAllLastReadAt(roomId);
+                    LocalDateTime myLastRead = loadChatPort
+                            .findLastReadAt(roomId, new MemberId(memberId))
+                            .orElse(LocalDateTime.MIN);
+                    int unread = (int) loadChatPort.countUnread(roomId, new MemberId(memberId), myLastRead);
+                    return ChatRoomResult.from(room, info.nicknames(), info.profileImages(), unread, lastReadAt);
                 })
                 .toList();
     }

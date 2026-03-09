@@ -131,8 +131,16 @@ export default function ChatListPage() {
 
           return (
             <li key={room.chatRoomId} style={{ borderBottom: '1px solid #eee' }}>
-              <Link to={`/chat/${room.chatRoomId}`} style={{ display: 'block', padding: '12px 0', textDecoration: 'none', color: 'inherit' }}>
+              <Link to={`/chat/${room.chatRoomId}`} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 0', textDecoration: 'none', color: 'inherit' }}>
                 <div style={{ fontWeight: 'bold' }}>{displayName || '채팅방'}</div>
+                {room.unreadCount > 0 && (
+                  <span style={{
+                    background: '#ff3b30', color: '#fff', borderRadius: 12,
+                    padding: '2px 8px', fontSize: 12, fontWeight: 'bold', minWidth: 20, textAlign: 'center',
+                  }}>
+                    {room.unreadCount > 99 ? '99+' : room.unreadCount}
+                  </span>
+                )}
               </Link>
             </li>
           )

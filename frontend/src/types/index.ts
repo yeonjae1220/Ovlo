@@ -209,6 +209,8 @@ export interface ChatRoom {
   participantIds: number[]
   participantNicknames: Record<number, string>
   participantProfileImageMediaIds?: Record<number, string>
+  unreadCount: number
+  participantLastReadAt: Record<number, string> // ISO datetime per memberId
 }
 
 export interface CreateChatRoomRequest {

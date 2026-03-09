@@ -2,6 +2,14 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { chatApi } from '../api/chat'
 import type { CreateChatRoomRequest, HistoryMessage } from '../types'
 
+export function useMarkRead() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (roomId: string) => chatApi.markRead(roomId),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['chatRooms'] }),
+  })
+}
+
 export function useChatRooms() {
   return useQuery({
     queryKey: ['chatRooms'],

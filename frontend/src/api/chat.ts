@@ -14,4 +14,7 @@ export const chatApi = {
     apiClient
       .get<HistoryMessage[]>(`/chat/rooms/${roomId}/messages`, { params: { page, size } })
       .then((r) => r.data),
+
+  markRead: (roomId: string) =>
+    apiClient.post(`/chat/rooms/${roomId}/read`),
 }
