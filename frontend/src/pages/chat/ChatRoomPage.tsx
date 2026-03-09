@@ -145,7 +145,7 @@ export default function ChatRoomPage() {
 
       <div style={{ flex: 1, overflowY: 'auto', padding: '8px 0' }}>
         {messages.map((msg) => {
-          const isMine = msg.senderId === currentUser?.id
+          const isMine = String(msg.senderId) === String(currentUser?.id)
           const senderIdNum = Number(msg.senderId)
           const nickname = room.participantNicknames?.[senderIdNum] ?? `#${msg.senderId}`
           const mediaId = room.participantProfileImageMediaIds?.[senderIdNum]
