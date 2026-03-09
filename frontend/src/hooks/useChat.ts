@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { chatApi } from '../api/chat'
-import type { CreateChatRoomRequest, Message } from '../types'
+import type { CreateChatRoomRequest } from '../types'
 
 export function useChatRooms() {
   return useQuery({
