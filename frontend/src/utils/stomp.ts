@@ -12,6 +12,8 @@ export const stompClient = {
         webSocketFactory: () => new SockJS('/ws'),
         connectHeaders: { Authorization: `Bearer ${token}` },
         reconnectDelay: 5000,
+        heartbeatIncoming: 25000,
+        heartbeatOutgoing: 25000,
         // 자동 재연결 포함 매 CONNECT 직전에 최신 토큰으로 헤더 갱신
         beforeConnect: () => {
           const freshToken = useAuthStore.getState().accessToken

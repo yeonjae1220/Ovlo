@@ -49,15 +49,33 @@ export function useProactiveRefresh() {
     const msUntilRefresh = expiryMs - Date.now() - 60_000
     if (msUntilRefresh <= 0) return
 
-    const timer = setTimeout(async () => {
-      try {
-        // 인터셉터 루프를 피하기 위해 raw axios 사용
-        const { data } = await axios.post<{ accessToken: string }>('/api/v1/auth/refresh', { refreshToken })
-        setAccessToken(data.accessToken)
-      } catch {
-        clearAuth()
-        window.location.href = '/login'
+    const timer = setTimeout(() => {
+      // 인터셉터 루프를 피하기 위해 raw axios 사용
+      // 4xx: 즉시 로그아웃 / 5xx·네트워크: 최대 3회 exponential backoff 재시도
+      let attempts = 0
+      const tryRefresh = async () => {
+        try {
+          const { data } = await axios.post<{ accessToken: string }>('/api/v1/auth/refresh', { refreshToken })
+          setAccessToken(data.accessToken)
+        } catch (err: unknown) {
+          const status = (err as { response?: { status?: number } })?.response?.status
+          if (status && status >= 400 && status < 500) {
+            // 토큰 자체가 유효하지 않음 → 즉시 로그아웃
+            clearAuth()
+            window.location.href = '/login'
+            return
+          }
+          // 일시적 오류 → 재시도 (최대 3회, 2s / 4s / 6s 간격)
+          attempts++
+          if (attempts < 3) {
+            setTimeout(tryRefresh, 2000 * attempts)
+          } else {
+            clearAuth()
+            window.location.href = '/login'
+          }
+        }
       }
+      tryRefresh()
     }, msUntilRefresh)
 
     return () => clearTimeout(timer)

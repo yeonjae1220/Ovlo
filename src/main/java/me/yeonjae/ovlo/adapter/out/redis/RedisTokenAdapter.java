@@ -35,6 +35,15 @@ public class RedisTokenAdapter implements TokenStorePort {
         Duration ttl = Duration.between(Instant.now(), session.getExpiresAt());
         if (ttl.isNegative() || ttl.isZero()) return;
 
+        // Rotation 시 구 토큰 역인덱스 삭제 — 구 토큰으로 재인증 방지
+        Map<Object, Object> existing = redisTemplate.opsForHash().entries(memberKey);
+        if (!existing.isEmpty()) {
+            String oldToken = (String) existing.get("refreshToken");
+            if (oldToken != null && !oldToken.equals(session.getRefreshToken())) {
+                redisTemplate.delete(tokenIndexKey(oldToken));
+            }
+        }
+
         Map<String, String> fields = new HashMap<>();
         fields.put("sessionId", session.getId().value());
         fields.put("memberId", String.valueOf(session.getMemberId().value()));

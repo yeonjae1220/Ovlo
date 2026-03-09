@@ -1,6 +1,7 @@
 package me.yeonjae.ovlo.shared.exception;
 
 import me.yeonjae.ovlo.domain.auth.exception.AuthException;
+import me.yeonjae.ovlo.shared.exception.TooManyRequestsException;
 import me.yeonjae.ovlo.domain.board.exception.BoardException;
 import me.yeonjae.ovlo.domain.chat.exception.ChatException;
 import me.yeonjae.ovlo.domain.follow.exception.FollowException;
@@ -71,6 +72,11 @@ public class GlobalExceptionHandler {
                 : isNotFoundMessage(ex.getMessage()) ? HttpStatus.NOT_FOUND
                 : HttpStatus.BAD_REQUEST;
         return ResponseEntity.status(status).body(error(ex.getMessage()));
+    }
+
+    @ExceptionHandler(TooManyRequestsException.class)
+    public ResponseEntity<Map<String, String>> handleTooManyRequests(TooManyRequestsException ex) {
+        return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS).body(error(ex.getMessage()));
     }
 
     @ExceptionHandler(ResponseStatusException.class)

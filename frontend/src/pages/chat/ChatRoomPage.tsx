@@ -1,8 +1,7 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState, useCallback } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useQueryClient } from '@tanstack/react-query'
 import { useChatRoom, useChatMessages, useMarkRead } from '../../hooks/useChat'
-import { useProactiveRefresh } from '../../hooks/useAuth'
 import { useAuthStore } from '../../store/authStore'
 import { stompClient } from '../../utils/stomp'
 import type { HistoryMessage, Message } from '../../types'
@@ -22,7 +21,6 @@ function toMessage(m: HistoryMessage, chatRoomId: string): Message {
 export default function ChatRoomPage() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
-  useProactiveRefresh()
   const queryClient = useQueryClient()
   const { data: room, isLoading } = useChatRoom(id!)
   const { currentUser, accessToken } = useAuthStore()
@@ -38,8 +36,13 @@ export default function ChatRoomPage() {
   const bottomRef = useRef<HTMLDivElement>(null)
   const historyLoadedRef = useRef(false)
   const wsBufferRef = useRef<Message[]>([])
-  // Dedup by DB messageId (WebSocket도 MessageResult를 브로드캐스트하므로 동일 ID 사용)
   const seenIdsRef = useRef(new Set<string>())
+
+  // 최신 accessToken/id를 ref에 유지 — visibilitychange 핸들러의 stale closure 방지
+  const accessTokenRef = useRef(accessToken)
+  const idRef = useRef(id)
+  useEffect(() => { accessTokenRef.current = accessToken }, [accessToken])
+  useEffect(() => { idRef.current = id }, [id])
 
   const { data: history, isFetching: loadingHistory } = useChatMessages(id!, page, PAGE_SIZE)
 
@@ -75,41 +78,62 @@ export default function ChatRoomPage() {
     historyLoadedRef.current = true
   }, [history, page, id])
 
-  // STOMP WebSocket 연결
+  // connect + subscribe 로직을 콜백으로 추출 — 메인 effect와 visibilitychange 핸들러에서 공유
+  const doConnect = useCallback(async (token: string, roomId: string) => {
+    try {
+      await stompClient.connect(token, {
+        onDisconnect: () => setConnected(false),
+      })
+      setConnected(true)
+
+      // 재연결 시 오프라인 중 수신된 메시지 재조회
+      setPage(0)
+      historyLoadedRef.current = false
+      wsBufferRef.current = []
+      queryClient.invalidateQueries({ queryKey: ['chatMessages', roomId, 0] })
+
+      stompClient.subscribeRead(roomId, () => {
+        queryClient.invalidateQueries({ queryKey: ['chatRoom', roomId] })
+      })
+      stompClient.subscribe(roomId, (incoming) => {
+        const msgId = String(incoming.messageId)
+        if (seenIdsRef.current.has(msgId)) return
+        seenIdsRef.current.add(msgId)
+
+        const msg = toMessage(incoming, roomId)
+        if (!historyLoadedRef.current) {
+          wsBufferRef.current.push(msg)
+        } else {
+          setMessages((prev) => [...prev, msg])
+          setWsCount((c) => c + 1)
+        }
+      })
+    } catch {
+      setConnected(false)
+    }
+  }, [queryClient])
+
+  // STOMP WebSocket 연결 (accessToken 갱신 시 재연결 포함)
   useEffect(() => {
     if (!accessToken || !id) return
-
-    const connect = async () => {
-      try {
-        await stompClient.connect(accessToken, {
-          onDisconnect: () => setConnected(false),
-        })
-        setConnected(true)
-        stompClient.subscribeRead(id, () => {
-          queryClient.invalidateQueries({ queryKey: ['chatRoom', id] })
-        })
-        stompClient.subscribe(id, (incoming) => {
-          const msgId = String(incoming.messageId)
-          if (seenIdsRef.current.has(msgId)) return // 이미 히스토리에 있는 메시지
-          seenIdsRef.current.add(msgId)
-
-          const msg = toMessage(incoming, id)
-
-          if (!historyLoadedRef.current) {
-            wsBufferRef.current.push(msg)
-          } else {
-            setMessages((prev) => [...prev, msg])
-            setWsCount((c) => c + 1)
-          }
-        })
-      } catch {
-        setConnected(false)
-      }
-    }
-
-    connect()
+    doConnect(accessToken, id)
     return () => stompClient.disconnect()
-  }, [id, accessToken])
+  }, [id, accessToken, doConnect])
+
+  // 탭 복귀 시 WebSocket 재연결 (모바일 백그라운드 처리)
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (document.visibilityState !== 'visible') return
+      if (stompClient.isConnected()) return
+      const token = accessTokenRef.current
+      const roomId = idRef.current
+      if (!token || !roomId) return
+      stompClient.disconnect() // 기존 재연결 루프 정리
+      doConnect(token, roomId)
+    }
+    document.addEventListener('visibilitychange', handleVisibilityChange)
+    return () => document.removeEventListener('visibilitychange', handleVisibilityChange)
+  }, [doConnect])
 
   // 채팅방 입장 + 새 WS 메시지 도착 시 읽음 처리
   useEffect(() => {

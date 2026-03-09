@@ -64,6 +64,14 @@ public class ChatQueryService implements GetChatRoomQuery {
                 .toList();
     }
 
+    @Override
+    public boolean isMemberOfRoom(Long chatRoomId, Long memberId) {
+        return loadChatPort.findById(new ChatRoomId(chatRoomId))
+                .map(room -> room.getParticipants().stream()
+                        .anyMatch(pid -> pid.value().equals(memberId)))
+                .orElse(false);
+    }
+
     private record ParticipantInfo(Map<Long, String> nicknames, Map<Long, String> profileImages) {}
 
     private ParticipantInfo buildParticipantInfo(ChatRoom room) {
