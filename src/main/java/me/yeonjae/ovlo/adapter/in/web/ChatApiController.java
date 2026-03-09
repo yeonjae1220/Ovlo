@@ -4,6 +4,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import me.yeonjae.ovlo.adapter.in.web.dto.request.CreateChatRoomRequest;
+import me.yeonjae.ovlo.adapter.in.web.dto.response.ReadMarkerEvent;
 import me.yeonjae.ovlo.application.dto.command.CreateChatRoomCommand;
 import me.yeonjae.ovlo.application.dto.result.ChatRoomResult;
 import me.yeonjae.ovlo.application.dto.result.MessageResult;
@@ -13,6 +14,7 @@ import me.yeonjae.ovlo.application.port.in.chat.MarkMessagesReadUseCase;
 import me.yeonjae.ovlo.domain.chat.model.ChatRoomType;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -22,6 +24,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -33,15 +36,18 @@ public class ChatApiController {
     private final CreateChatRoomUseCase createChatRoomUseCase;
     private final GetChatRoomQuery getChatRoomQuery;
     private final MarkMessagesReadUseCase markMessagesReadUseCase;
+    private final SimpMessagingTemplate messagingTemplate;
 
     public ChatApiController(
             CreateChatRoomUseCase createChatRoomUseCase,
             GetChatRoomQuery getChatRoomQuery,
-            MarkMessagesReadUseCase markMessagesReadUseCase
+            MarkMessagesReadUseCase markMessagesReadUseCase,
+            SimpMessagingTemplate messagingTemplate
     ) {
         this.createChatRoomUseCase = createChatRoomUseCase;
         this.getChatRoomQuery = getChatRoomQuery;
         this.markMessagesReadUseCase = markMessagesReadUseCase;
+        this.messagingTemplate = messagingTemplate;
     }
 
     @Operation(summary = "내 채팅방 목록 조회")
@@ -83,6 +89,10 @@ public class ChatApiController {
             @AuthenticationPrincipal Long memberId
     ) {
         markMessagesReadUseCase.markRead(id, memberId);
+        messagingTemplate.convertAndSend(
+                "/topic/chat/" + id + "/read",
+                new ReadMarkerEvent(memberId, LocalDateTime.now())
+        );
         return ResponseEntity.noContent().build();
     }
 

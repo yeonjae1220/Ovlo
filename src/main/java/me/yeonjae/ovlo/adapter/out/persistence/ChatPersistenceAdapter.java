@@ -60,8 +60,9 @@ public class ChatPersistenceAdapter implements LoadChatPort, SaveChatPort, SaveR
     }
 
     @Override
-    public boolean existsDmRoom(MemberId memberId1, MemberId memberId2) {
-        return chatRoomJpaRepository.findDmRoomId(ChatRoomType.DM, memberId1.value(), memberId2.value()).isPresent();
+    public Optional<ChatRoomId> findDmRoomId(MemberId memberId1, MemberId memberId2) {
+        return chatRoomJpaRepository.findDmRoomId(ChatRoomType.DM, memberId1.value(), memberId2.value())
+                .map(ChatRoomId::new);
     }
 
     @Override

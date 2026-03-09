@@ -14,7 +14,7 @@ public interface LoadChatPort {
 
     Optional<ChatRoom> findById(ChatRoomId chatRoomId);
 
-    boolean existsDmRoom(MemberId memberId1, MemberId memberId2);
+    Optional<ChatRoomId> findDmRoomId(MemberId memberId1, MemberId memberId2);
 
     List<ChatRoom> findByMemberId(MemberId memberId);
 

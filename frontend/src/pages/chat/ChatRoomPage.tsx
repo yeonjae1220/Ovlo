@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
+import { useQueryClient } from '@tanstack/react-query'
 import { useChatRoom, useChatMessages, useMarkRead } from '../../hooks/useChat'
 import { useAuthStore } from '../../store/authStore'
 import { stompClient } from '../../utils/stomp'
@@ -20,6 +21,7 @@ function toMessage(m: HistoryMessage, chatRoomId: string): Message {
 export default function ChatRoomPage() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
+  const queryClient = useQueryClient()
   const { data: room, isLoading } = useChatRoom(id!)
   const { currentUser, accessToken } = useAuthStore()
   const markRead = useMarkRead()
@@ -79,6 +81,9 @@ export default function ChatRoomPage() {
       try {
         await stompClient.connect(accessToken)
         setConnected(true)
+        stompClient.subscribeRead(id, () => {
+          queryClient.invalidateQueries({ queryKey: ['chatRoom', id] })
+        })
         stompClient.subscribe(id, (incoming) => {
           const msgId = String(incoming.messageId)
           if (seenIdsRef.current.has(msgId)) return // 이미 히스토리에 있는 메시지

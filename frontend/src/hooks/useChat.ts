@@ -6,7 +6,10 @@ export function useMarkRead() {
   const queryClient = useQueryClient()
   return useMutation({
     mutationFn: (roomId: string) => chatApi.markRead(roomId),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['chatRooms'] }),
+    onSuccess: (_, roomId) => {
+      queryClient.invalidateQueries({ queryKey: ['chatRooms'] })
+      queryClient.invalidateQueries({ queryKey: ['chatRoom', roomId] })
+    },
   })
 }
 

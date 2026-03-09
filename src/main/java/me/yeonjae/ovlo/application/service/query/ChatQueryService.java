@@ -49,7 +49,7 @@ public class ChatQueryService implements GetChatRoomQuery {
                     var lastReadAt = loadChatPort.findAllLastReadAt(roomId);
                     LocalDateTime myLastRead = loadChatPort
                             .findLastReadAt(roomId, new MemberId(memberId))
-                            .orElse(LocalDateTime.MIN);
+                            .orElse(LocalDateTime.of(1970, 1, 1, 0, 0, 0));
                     int unread = (int) loadChatPort.countUnread(roomId, new MemberId(memberId), myLastRead);
                     return ChatRoomResult.from(room, info.nicknames(), info.profileImages(), unread, lastReadAt);
                 })

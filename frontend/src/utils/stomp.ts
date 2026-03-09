@@ -32,6 +32,16 @@ export const stompClient = {
     })
   },
 
+  subscribeRead(
+    roomId: string,
+    callback: (event: { memberId: number; lastReadAt: string }) => void
+  ): StompSubscription | null {
+    if (!client?.connected) return null
+    return client.subscribe(`/topic/chat/${roomId}/read`, (frame) => {
+      callback(JSON.parse(frame.body))
+    })
+  },
+
   publish(roomId: string, content: string): void {
     if (!client?.connected) return
     client.publish({

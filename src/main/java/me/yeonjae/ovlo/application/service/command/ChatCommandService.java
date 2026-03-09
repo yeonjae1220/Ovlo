@@ -21,6 +21,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @Transactional
@@ -49,8 +50,11 @@ public class ChatCommandService implements CreateChatRoomUseCase, SendMessageUse
             }
             MemberId m1 = participants.get(0);
             MemberId m2 = participants.get(1);
-            if (loadChatPort.existsDmRoom(m1, m2)) {
-                throw new ChatException("이미 해당 두 회원 간의 DM 채팅방이 존재합니다");
+            Optional<ChatRoomId> existingRoomId = loadChatPort.findDmRoomId(m1, m2);
+            if (existingRoomId.isPresent()) {
+                ChatRoom existingRoom = loadChatPort.findById(existingRoomId.get())
+                        .orElseThrow(() -> new ChatException("채팅방을 찾을 수 없습니다"));
+                return ChatRoomResult.from(existingRoom);
             }
         }
 
