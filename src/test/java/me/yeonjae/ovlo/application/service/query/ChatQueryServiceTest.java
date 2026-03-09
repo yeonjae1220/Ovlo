@@ -2,6 +2,7 @@ package me.yeonjae.ovlo.application.service.query;
 
 import me.yeonjae.ovlo.application.dto.result.ChatRoomResult;
 import me.yeonjae.ovlo.application.port.out.chat.LoadChatPort;
+import me.yeonjae.ovlo.application.port.out.member.LoadMemberPort;
 import me.yeonjae.ovlo.domain.chat.exception.ChatException;
 import me.yeonjae.ovlo.domain.chat.model.ChatRoom;
 import me.yeonjae.ovlo.domain.chat.model.ChatRoomId;
@@ -26,6 +27,7 @@ import static org.mockito.BDDMockito.given;
 class ChatQueryServiceTest {
 
     @Mock LoadChatPort loadChatPort;
+    @Mock LoadMemberPort loadMemberPort;
 
     @InjectMocks
     ChatQueryService service;

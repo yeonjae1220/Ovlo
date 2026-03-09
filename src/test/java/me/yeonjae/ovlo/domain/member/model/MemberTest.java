@@ -34,7 +34,7 @@ class MemberTest {
         @Test
         @DisplayName("필수 정보로 회원을 생성하면 ACTIVE 상태로 시작한다")
         void shouldCreate_withActiveStatus() {
-            Member member = Member.create("김연재", "서울", email, password, homeUniversityId, major);
+            Member member = Member.create("yeonjae", "김연재", "서울", email, password, homeUniversityId, major);
 
             assertThat(member.getStatus()).isEqualTo(MemberStatus.ACTIVE);
             assertThat(member.getName()).isEqualTo("김연재");
@@ -47,7 +47,7 @@ class MemberTest {
         @Test
         @DisplayName("생성 시 언어 스킬, 교류 대학, 연락처 목록은 비어있다")
         void shouldCreate_withEmptyCollections() {
-            Member member = Member.create("김연재", "서울", email, password, homeUniversityId, major);
+            Member member = Member.create("yeonjae", "김연재", "서울", email, password, homeUniversityId, major);
 
             assertThat(member.getLanguageSkills()).isEmpty();
             assertThat(member.getUniversityExperiences()).isEmpty();
@@ -57,14 +57,14 @@ class MemberTest {
         @Test
         @DisplayName("이름이 null이면 예외가 발생한다")
         void shouldThrow_whenNullName() {
-            assertThatThrownBy(() -> Member.create(null, "서울", email, password, homeUniversityId, major))
+            assertThatThrownBy(() -> Member.create("yeonjae", null, "서울", email, password, homeUniversityId, major))
                     .isInstanceOf(NullPointerException.class);
         }
 
         @Test
         @DisplayName("이름이 빈 값이면 예외가 발생한다")
         void shouldThrow_whenBlankName() {
-            assertThatThrownBy(() -> Member.create("  ", "서울", email, password, homeUniversityId, major))
+            assertThatThrownBy(() -> Member.create("yeonjae", "  ", "서울", email, password, homeUniversityId, major))
                     .isInstanceOf(IllegalArgumentException.class)
                     .hasMessageContaining("이름은 빈 값일 수 없습니다");
         }
@@ -72,7 +72,7 @@ class MemberTest {
         @Test
         @DisplayName("홈 대학이 null이면 예외가 발생한다")
         void shouldThrow_whenNullHomeUniversity() {
-            assertThatThrownBy(() -> Member.create("김연재", "서울", email, password, null, major))
+            assertThatThrownBy(() -> Member.create("yeonjae", "김연재", "서울", email, password, null, major))
                     .isInstanceOf(NullPointerException.class);
         }
     }
@@ -84,7 +84,7 @@ class MemberTest {
         @Test
         @DisplayName("활성 회원은 이름과 출신지를 수정할 수 있다")
         void shouldUpdateProfile_whenActive() {
-            Member member = Member.create("김연재", "서울", email, password, homeUniversityId, major);
+            Member member = Member.create("yeonjae", "김연재", "서울", email, password, homeUniversityId, major);
 
             member.updateProfile("이연재", "부산", major);
 
@@ -95,7 +95,7 @@ class MemberTest {
         @Test
         @DisplayName("탈퇴한 회원은 프로필을 수정할 수 없다")
         void shouldThrow_whenWithdrawn() {
-            Member member = Member.create("김연재", "서울", email, password, homeUniversityId, major);
+            Member member = Member.create("yeonjae", "김연재", "서울", email, password, homeUniversityId, major);
             member.withdraw();
 
             assertThatThrownBy(() -> member.updateProfile("이연재", "부산", major))
@@ -111,7 +111,7 @@ class MemberTest {
         @Test
         @DisplayName("언어 스킬을 추가할 수 있다")
         void shouldAddLanguageSkill() {
-            Member member = Member.create("김연재", "서울", email, password, homeUniversityId, major);
+            Member member = Member.create("yeonjae", "김연재", "서울", email, password, homeUniversityId, major);
             LanguageSkill english = new LanguageSkill("en", CefrLevel.B2);
 
             member.addLanguageSkill(english);
@@ -122,7 +122,7 @@ class MemberTest {
         @Test
         @DisplayName("여러 언어 스킬을 추가할 수 있다")
         void shouldAddMultipleLanguageSkills() {
-            Member member = Member.create("김연재", "서울", email, password, homeUniversityId, major);
+            Member member = Member.create("yeonjae", "김연재", "서울", email, password, homeUniversityId, major);
 
             member.addLanguageSkill(new LanguageSkill("en", CefrLevel.B2));
             member.addLanguageSkill(new LanguageSkill("fr", CefrLevel.A2));
@@ -138,7 +138,7 @@ class MemberTest {
         @Test
         @DisplayName("교류 대학 경험을 추가할 수 있다")
         void shouldAddUniversityExperience() {
-            Member member = Member.create("김연재", "서울", email, password, homeUniversityId, major);
+            Member member = Member.create("yeonjae", "김연재", "서울", email, password, homeUniversityId, major);
             UniversityExperience exp = new UniversityExperience(
                     new UniversityId(2L),
                     LocalDate.of(2024, 9, 1),
@@ -158,7 +158,7 @@ class MemberTest {
         @Test
         @DisplayName("연락처 목록을 업데이트할 수 있다")
         void shouldUpdateContactInfos() {
-            Member member = Member.create("김연재", "서울", email, password, homeUniversityId, major);
+            Member member = Member.create("yeonjae", "김연재", "서울", email, password, homeUniversityId, major);
             List<ContactInfo> contacts = List.of(
                     new ContactInfo(ContactType.EMAIL, "contact@example.com"),
                     new ContactInfo(ContactType.SNS, "@yeonjae_kim")
@@ -177,7 +177,7 @@ class MemberTest {
         @Test
         @DisplayName("활성 회원은 탈퇴할 수 있고 WITHDRAWN 상태가 된다")
         void shouldWithdraw_whenActive() {
-            Member member = Member.create("김연재", "서울", email, password, homeUniversityId, major);
+            Member member = Member.create("yeonjae", "김연재", "서울", email, password, homeUniversityId, major);
 
             member.withdraw();
 
@@ -187,7 +187,7 @@ class MemberTest {
         @Test
         @DisplayName("이미 탈퇴한 회원은 다시 탈퇴할 수 없다")
         void shouldThrow_whenAlreadyWithdrawn() {
-            Member member = Member.create("김연재", "서울", email, password, homeUniversityId, major);
+            Member member = Member.create("yeonjae", "김연재", "서울", email, password, homeUniversityId, major);
             member.withdraw();
 
             assertThatThrownBy(() -> member.withdraw())
@@ -203,7 +203,7 @@ class MemberTest {
         @Test
         @DisplayName("자기소개를 업데이트할 수 있다")
         void shouldUpdateBio() {
-            Member member = Member.create("김연재", "서울", email, password, homeUniversityId, major);
+            Member member = Member.create("yeonjae", "김연재", "서울", email, password, homeUniversityId, major);
 
             member.updateBio("교환학생 좋아해요!");
 
@@ -213,7 +213,7 @@ class MemberTest {
         @Test
         @DisplayName("생일이 미래이면 예외가 발생한다")
         void shouldThrow_whenFutureBirthDate() {
-            Member member = Member.create("김연재", "서울", email, password, homeUniversityId, major);
+            Member member = Member.create("yeonjae", "김연재", "서울", email, password, homeUniversityId, major);
 
             assertThatThrownBy(() -> member.updateBirthDate(LocalDate.now().plusDays(1)))
                     .isInstanceOf(IllegalArgumentException.class)

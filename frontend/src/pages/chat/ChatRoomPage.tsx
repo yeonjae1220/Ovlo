@@ -32,6 +32,7 @@ export default function ChatRoomPage() {
   const [input, setInput] = useState('')
   const [connected, setConnected] = useState(false)
   const [wsCount, setWsCount] = useState(0)
+  const [reconnectVersion, setReconnectVersion] = useState(0)
 
   const bottomRef = useRef<HTMLDivElement>(null)
   const historyLoadedRef = useRef(false)
@@ -61,22 +62,28 @@ export default function ChatRoomPage() {
     if (!history) return
 
     const historyMsgs = history.map((m) => toMessage(m, id!))
+    const historyIdSet = new Set(historyMsgs.map((m) => m.id))
     historyMsgs.forEach((m) => seenIdsRef.current.add(m.id))
 
-    setMessages((prev) => {
-      if (page === 0) {
-        // 첫 페이지: 히스토리 + 히스토리 로드 전 도착한 WS 버퍼 메시지
-        const buffered = wsBufferRef.current.filter((m) => !seenIdsRef.current.has(m.id))
-        wsBufferRef.current = []
-        return [...historyMsgs, ...buffered]
-      }
+    if (page === 0) {
+      // 히스토리에 없는 버퍼 메시지 flush (seenIds 대신 historyIdSet으로 판별)
+      const buffered = wsBufferRef.current.filter((m) => !historyIdSet.has(m.id))
+      wsBufferRef.current = []
+      setMessages((prev) => {
+        // 이미 화면에 있는 WS 메시지 중 히스토리에 없는 것도 유지 (refetch 직후 도착한 메시지)
+        const stateExtra = prev.filter((m) => !historyIdSet.has(m.id))
+        return [...historyMsgs, ...buffered, ...stateExtra]
+      })
+    } else {
       // 이전 페이지: 앞에 추가 (이전 메시지 불러오기)
-      return [...historyMsgs, ...prev]
-    })
+      setMessages((prev) => [...historyMsgs, ...prev])
+    }
 
     setHasMore(history.length === PAGE_SIZE)
     historyLoadedRef.current = true
-  }, [history, page, id])
+  // reconnectVersion: doConnect 후 history 데이터가 바뀌지 않아도 effect 재실행 보장
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [history, page, id, reconnectVersion])
 
   // connect + subscribe 로직을 콜백으로 추출 — 메인 effect와 visibilitychange 핸들러에서 공유
   const doConnect = useCallback(async (token: string, roomId: string) => {
@@ -90,7 +97,9 @@ export default function ChatRoomPage() {
       setPage(0)
       historyLoadedRef.current = false
       wsBufferRef.current = []
+      seenIdsRef.current = new Set()
       queryClient.invalidateQueries({ queryKey: ['chatMessages', roomId, 0] })
+      setReconnectVersion((v) => v + 1)
 
       stompClient.subscribeRead(roomId, () => {
         queryClient.invalidateQueries({ queryKey: ['chatRoom', roomId] })
@@ -106,6 +115,7 @@ export default function ChatRoomPage() {
         } else {
           setMessages((prev) => [...prev, msg])
           setWsCount((c) => c + 1)
+          queryClient.invalidateQueries({ queryKey: ['chatRooms'] })
         }
       })
     } catch {

@@ -34,7 +34,7 @@ class MemberQueryServiceTest {
     @BeforeEach
     void setUp() {
         member = Member.create(
-                "김연재", "Seoul",
+                "yeonjae", "김연재", "Seoul",
                 new Email("test@example.com"),
                 new Password("hashedPassword"),
                 new UniversityId(1L),

@@ -10,6 +10,8 @@ import me.yeonjae.ovlo.domain.chat.exception.ChatException;
 import me.yeonjae.ovlo.domain.chat.model.ChatRoom;
 import me.yeonjae.ovlo.domain.chat.model.ChatRoomId;
 import me.yeonjae.ovlo.domain.chat.model.ChatRoomType;
+import me.yeonjae.ovlo.domain.chat.model.Message;
+import me.yeonjae.ovlo.domain.chat.model.MessageId;
 import me.yeonjae.ovlo.domain.member.model.MemberId;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -19,6 +21,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -58,15 +61,19 @@ class ChatCommandServiceTest {
         }
 
         @Test
-        @DisplayName("이미 DM 방이 존재하면 예외가 발생한다")
-        void shouldThrow_whenDmRoomAlreadyExists() {
+        @DisplayName("이미 DM 방이 존재하면 기존 방을 반환한다")
+        void shouldReturnExisting_whenDmRoomAlreadyExists() {
             CreateChatRoomCommand command = new CreateChatRoomCommand(
                     ChatRoomType.DM, null, List.of(1L, 2L));
-            given(loadChatPort.existsDmRoom(any(), any())).willReturn(true);
+            ChatRoomId existingId = new ChatRoomId(42L);
+            ChatRoom existingRoom = ChatRoom.restore(existingId, ChatRoomType.DM, null,
+                    List.of(new MemberId(1L), new MemberId(2L)), List.of());
+            given(loadChatPort.findDmRoomId(any(), any())).willReturn(Optional.of(existingId));
+            given(loadChatPort.findById(existingId)).willReturn(Optional.of(existingRoom));
 
-            assertThatThrownBy(() -> service.createChatRoom(command))
-                    .isInstanceOf(ChatException.class)
-                    .hasMessageContaining("이미");
+            ChatRoomResult result = service.createChatRoom(command);
+
+            assertThat(result.chatRoomId()).isEqualTo(42L);
         }
     }
 
@@ -81,15 +88,19 @@ class ChatCommandServiceTest {
             MemberId other = new MemberId(2L);
             ChatRoom room = ChatRoom.restore(new ChatRoomId(1L), ChatRoomType.DM, null,
                     List.of(sender, other), List.of());
+            Message savedMsg = Message.restore(new MessageId(10L), sender, "안녕하세요", LocalDateTime.now());
+            ChatRoom savedRoom = ChatRoom.restore(new ChatRoomId(1L), ChatRoomType.DM, null,
+                    List.of(sender, other), List.of(savedMsg));
             given(loadChatPort.findById(any())).willReturn(Optional.of(room));
-            given(saveChatPort.save(any())).willReturn(room);
+            given(saveChatPort.save(any())).willReturn(savedRoom);
 
             SendMessageCommand command = new SendMessageCommand(1L, 1L, "안녕하세요");
             MessageResult result = service.sendMessage(command);
 
+            assertThat(result.messageId()).isEqualTo(10L);
             assertThat(result.content()).isEqualTo("안녕하세요");
             assertThat(result.senderId()).isEqualTo(1L);
-            verify(saveChatPort).save(room);
+            verify(saveChatPort).save(any());
         }
 
         @Test

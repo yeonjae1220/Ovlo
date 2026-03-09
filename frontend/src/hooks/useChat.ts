@@ -17,6 +17,7 @@ export function useChatRooms() {
   return useQuery({
     queryKey: ['chatRooms'],
     queryFn: chatApi.list,
+    refetchInterval: 5_000,
   })
 }
 

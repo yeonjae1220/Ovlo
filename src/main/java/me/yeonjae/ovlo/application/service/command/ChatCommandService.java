@@ -79,8 +79,9 @@ public class ChatCommandService implements CreateChatRoomUseCase, SendMessageUse
                 .orElseThrow(() -> new ChatException("채팅방을 찾을 수 없습니다"));
 
         MemberId senderId = new MemberId(command.senderId());
-        Message message = room.addMessage(senderId, command.content());
-        saveChatPort.save(room);
-        return MessageResult.from(message);
+        room.addMessage(senderId, command.content());
+        ChatRoom saved = saveChatPort.save(room);
+        List<Message> savedMessages = saved.getMessages();
+        return MessageResult.from(savedMessages.get(savedMessages.size() - 1));
     }
 }

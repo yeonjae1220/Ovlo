@@ -44,11 +44,11 @@ class MemberCommandServiceTest {
     @BeforeEach
     void setUp() {
         registerCommand = new RegisterMemberCommand(
-                "김연재", "Seoul", "test@example.com", "rawPassword123",
+                "yeonjae", "김연재", "Seoul", "test@example.com", "rawPassword123",
                 1L, "Computer Science", "BACHELOR", 3);
 
         savedMember = Member.create(
-                "김연재", "Seoul",
+                "yeonjae", "김연재", "Seoul",
                 new Email("test@example.com"),
                 new Password("hashedPassword"),
                 new UniversityId(1L),
@@ -97,7 +97,7 @@ class MemberCommandServiceTest {
             given(saveMemberPort.save(any(Member.class))).willReturn(savedMember);
 
             UpdateMemberProfileCommand command = new UpdateMemberProfileCommand(
-                    1L, "이연재", "Busan", null, null, null);
+                    1L, "newNickname", null);
 
             MemberResult result = memberCommandService.updateProfile(command);
 
@@ -111,7 +111,7 @@ class MemberCommandServiceTest {
             given(loadMemberPort.findById(new MemberId(999L))).willReturn(Optional.empty());
 
             UpdateMemberProfileCommand command = new UpdateMemberProfileCommand(
-                    999L, "test", null, null, null, null);
+                    999L, "test", null);
 
             assertThatThrownBy(() -> memberCommandService.updateProfile(command))
                     .isInstanceOf(MemberException.class)
