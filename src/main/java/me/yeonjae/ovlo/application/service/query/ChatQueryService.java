@@ -8,6 +8,7 @@ import me.yeonjae.ovlo.application.port.out.member.LoadMemberPort;
 import me.yeonjae.ovlo.domain.chat.exception.ChatException;
 import me.yeonjae.ovlo.domain.chat.model.ChatRoom;
 import me.yeonjae.ovlo.domain.chat.model.ChatRoomId;
+import me.yeonjae.ovlo.domain.member.model.Member;
 import me.yeonjae.ovlo.domain.member.model.MemberId;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -32,14 +33,18 @@ public class ChatQueryService implements GetChatRoomQuery {
     public ChatRoomResult getChatRoom(Long chatRoomId) {
         ChatRoom room = loadChatPort.findById(new ChatRoomId(chatRoomId))
                 .orElseThrow(() -> new ChatException("채팅방을 찾을 수 없습니다"));
-        return ChatRoomResult.from(room, buildNicknameMap(room));
+        var info = buildParticipantInfo(room);
+        return ChatRoomResult.from(room, info.nicknames(), info.profileImages());
     }
 
     @Override
     public List<ChatRoomResult> getChatRooms(Long memberId) {
         return loadChatPort.findByMemberId(new MemberId(memberId))
                 .stream()
-                .map(room -> ChatRoomResult.from(room, buildNicknameMap(room)))
+                .map(room -> {
+                    var info = buildParticipantInfo(room);
+                    return ChatRoomResult.from(room, info.nicknames(), info.profileImages());
+                })
                 .toList();
     }
 
@@ -51,12 +56,17 @@ public class ChatQueryService implements GetChatRoomQuery {
                 .toList();
     }
 
-    private Map<Long, String> buildNicknameMap(ChatRoom room) {
-        return room.getParticipants().stream()
+    private record ParticipantInfo(Map<Long, String> nicknames, Map<Long, String> profileImages) {}
+
+    private ParticipantInfo buildParticipantInfo(ChatRoom room) {
+        List<Member> members = room.getParticipants().stream()
                 .flatMap(pid -> loadMemberPort.findById(pid).stream())
-                .collect(Collectors.toMap(
-                        m -> m.getId().value(),
-                        m -> m.getNickname()
-                ));
+                .toList();
+        Map<Long, String> nicknames = members.stream().collect(
+                Collectors.toMap(m -> m.getId().value(), Member::getNickname));
+        Map<Long, String> profileImages = members.stream()
+                .filter(m -> m.getProfileImageMediaId() != null)
+                .collect(Collectors.toMap(m -> m.getId().value(), Member::getProfileImageMediaId));
+        return new ParticipantInfo(nicknames, profileImages);
     }
 }

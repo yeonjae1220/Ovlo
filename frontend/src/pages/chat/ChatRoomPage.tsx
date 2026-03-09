@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { useParams } from 'react-router-dom'
+import { useParams, useNavigate } from 'react-router-dom'
 import { useChatRoom, useChatMessages } from '../../hooks/useChat'
 import { useAuthStore } from '../../store/authStore'
 import { stompClient } from '../../utils/stomp'
@@ -19,6 +19,7 @@ function toMessage(m: HistoryMessage, chatRoomId: string): Message {
 
 export default function ChatRoomPage() {
   const { id } = useParams<{ id: string }>()
+  const navigate = useNavigate()
   const { data: room, isLoading } = useChatRoom(id!)
   const { currentUser, accessToken } = useAuthStore()
 
@@ -145,11 +146,39 @@ export default function ChatRoomPage() {
       <div style={{ flex: 1, overflowY: 'auto', padding: '8px 0' }}>
         {messages.map((msg) => {
           const isMine = msg.senderId === currentUser?.id
+          const senderIdNum = Number(msg.senderId)
+          const nickname = room.participantNicknames?.[senderIdNum] ?? `#${msg.senderId}`
+          const mediaId = room.participantProfileImageMediaIds?.[senderIdNum]
+          const avatarUrl = mediaId ? `/api/v1/media/${mediaId}/file` : null
+
           return (
             <div
               key={msg.id}
-              style={{ display: 'flex', justifyContent: isMine ? 'flex-end' : 'flex-start', marginBottom: 8 }}
+              style={{ display: 'flex', justifyContent: isMine ? 'flex-end' : 'flex-start', alignItems: 'flex-end', gap: 8, marginBottom: 8 }}
             >
+              {!isMine && (
+                <div
+                  onClick={() => navigate(`/profile/${msg.senderId}`)}
+                  style={{ cursor: 'pointer', flexShrink: 0 }}
+                  title={nickname}
+                >
+                  {avatarUrl ? (
+                    <img
+                      src={avatarUrl}
+                      alt={nickname}
+                      style={{ width: 32, height: 32, borderRadius: '50%', objectFit: 'cover' }}
+                    />
+                  ) : (
+                    <div style={{
+                      width: 32, height: 32, borderRadius: '50%', background: '#6c757d',
+                      color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      fontSize: 13, fontWeight: 'bold',
+                    }}>
+                      {nickname[0]?.toUpperCase() ?? '?'}
+                    </div>
+                  )}
+                </div>
+              )}
               <div
                 style={{
                   maxWidth: '70%',
@@ -160,9 +189,7 @@ export default function ChatRoomPage() {
                 }}
               >
                 {!isMine && (
-                  <div style={{ fontSize: 11, marginBottom: 2, color: '#888' }}>
-                    {room.participantNicknames?.[Number(msg.senderId)] ?? `#${msg.senderId}`}
-                  </div>
+                  <div style={{ fontSize: 11, marginBottom: 2, color: '#888' }}>{nickname}</div>
                 )}
                 {msg.content}
                 <div style={{ fontSize: 10, color: isMine ? 'rgba(255,255,255,0.7)' : '#aaa', marginTop: 4, textAlign: 'right' }}>

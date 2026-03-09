@@ -208,6 +208,7 @@ export interface ChatRoom {
   name?: string
   participantIds: number[]
   participantNicknames: Record<number, string>
+  participantProfileImageMediaIds?: Record<number, string>
 }
 
 export interface CreateChatRoomRequest {

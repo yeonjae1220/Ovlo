@@ -22,7 +22,6 @@ export function useChatMessages(roomId: string, page = 0, size = 50) {
     queryKey: ['chatMessages', roomId, page],
     queryFn: () => chatApi.getMessages(roomId, page, size),
     enabled: !!roomId,
-    staleTime: Infinity, // append-only; WebSocket handles new messages
   })
 }
 

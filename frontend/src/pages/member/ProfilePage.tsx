@@ -7,6 +7,7 @@ import { useDropzone } from 'react-dropzone'
 import { useUploadMedia } from '../../hooks/useMedia'
 import { memberApi } from '../../api/member'
 import { authApi } from '../../api/auth'
+import { useQueryClient } from '@tanstack/react-query'
 
 export default function ProfilePage() {
   const { id } = useParams<{ id: string }>()
@@ -24,6 +25,7 @@ export default function ProfilePage() {
   const [nickname, setNickname] = useState('')
   const [bio, setBio] = useState('')
 
+  const queryClient = useQueryClient()
   const isOwner = String(currentUser?.id) === id
   const isFollowing = followers?.some((f) => String(f.id) === String(currentUser?.id))
 
@@ -52,6 +54,7 @@ export default function ProfilePage() {
     try {
       if (refreshToken) await authApi.logout(refreshToken)
     } finally {
+      queryClient.clear()
       clearAuth()
       navigate('/login')
     }

@@ -10,6 +10,7 @@ import BoardDetailPage from '../pages/board/BoardDetailPage'
 import CreatePostPage from '../pages/post/CreatePostPage'
 import PostDetailPage from '../pages/post/PostDetailPage'
 import ProfilePage from '../pages/member/ProfilePage'
+import SearchPage from '../pages/member/SearchPage'
 import FollowPage from '../pages/follow/FollowPage'
 import ChatListPage from '../pages/chat/ChatListPage'
 import ChatRoomPage from '../pages/chat/ChatRoomPage'
@@ -32,6 +33,7 @@ export const router = createBrowserRouter([
           { path: '/posts/new', element: <CreatePostPage /> },
           { path: '/posts/:id', element: <PostDetailPage /> },
           { path: '/profile/:id', element: <ProfilePage /> },
+          { path: '/search', element: <SearchPage /> },
           { path: '/follow', element: <FollowPage /> },
           { path: '/chat', element: <ChatListPage /> },
           { path: '/chat/:id', element: <ChatRoomPage /> },
