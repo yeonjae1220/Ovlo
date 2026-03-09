@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useQueryClient } from '@tanstack/react-query'
 import { useChatRoom, useChatMessages, useMarkRead } from '../../hooks/useChat'
+import { useProactiveRefresh } from '../../hooks/useAuth'
 import { useAuthStore } from '../../store/authStore'
 import { stompClient } from '../../utils/stomp'
 import type { HistoryMessage, Message } from '../../types'
@@ -21,6 +22,7 @@ function toMessage(m: HistoryMessage, chatRoomId: string): Message {
 export default function ChatRoomPage() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
+  useProactiveRefresh()
   const queryClient = useQueryClient()
   const { data: room, isLoading } = useChatRoom(id!)
   const { currentUser, accessToken } = useAuthStore()
@@ -79,7 +81,9 @@ export default function ChatRoomPage() {
 
     const connect = async () => {
       try {
-        await stompClient.connect(accessToken)
+        await stompClient.connect(accessToken, {
+          onDisconnect: () => setConnected(false),
+        })
         setConnected(true)
         stompClient.subscribeRead(id, () => {
           queryClient.invalidateQueries({ queryKey: ['chatRoom', id] })
