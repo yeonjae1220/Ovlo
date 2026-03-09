@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { useParams } from 'react-router-dom'
-import { useChatRoom } from '../../hooks/useChat'
+import { useChatRoom, useChatMessages } from '../../hooks/useChat'
 import { useAuthStore } from '../../store/authStore'
 import { stompClient } from '../../utils/stomp'
 import type { Message } from '../../types'
@@ -8,12 +8,26 @@ import type { Message } from '../../types'
 export default function ChatRoomPage() {
   const { id } = useParams<{ id: string }>()
   const { data: room, isLoading } = useChatRoom(id!)
+  const { data: history } = useChatMessages(id!)
   const { currentUser, accessToken } = useAuthStore()
 
   const [messages, setMessages] = useState<Message[]>([])
   const [input, setInput] = useState('')
   const [connected, setConnected] = useState(false)
   const bottomRef = useRef<HTMLDivElement>(null)
+
+  // Load message history
+  useEffect(() => {
+    if (history && history.length > 0) {
+      setMessages(history.map((m: any) => ({
+        id: String(m.messageId),
+        chatRoomId: id!,
+        senderId: String(m.senderId),
+        content: m.content,
+        sentAt: m.sentAt,
+      })))
+    }
+  }, [history, id])
 
   // Connect STOMP
   useEffect(() => {

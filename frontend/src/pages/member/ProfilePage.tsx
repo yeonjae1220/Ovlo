@@ -11,7 +11,7 @@ import { authApi } from '../../api/auth'
 export default function ProfilePage() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
-  const { currentUser, clearAuth } = useAuthStore()
+  const { currentUser, refreshToken, clearAuth } = useAuthStore()
   const { data: member, isLoading } = useMember(id!)
   const { data: followers } = useFollowers(id!)
   const { data: followings } = useFollowings(id!)
@@ -33,7 +33,7 @@ export default function ProfilePage() {
     onDrop: async (files) => {
       if (!files[0] || !id) return
       const media = await uploadMedia.mutateAsync(files[0])
-      await memberApi.updateProfileImage(id, media.id)
+      await memberApi.updateProfileImage(id, String(media.mediaId))
     },
   })
 
@@ -50,7 +50,7 @@ export default function ProfilePage() {
 
   const handleLogout = async () => {
     try {
-      await authApi.logout()
+      if (refreshToken) await authApi.logout(refreshToken)
     } finally {
       clearAuth()
       navigate('/login')

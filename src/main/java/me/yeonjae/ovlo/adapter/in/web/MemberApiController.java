@@ -7,11 +7,13 @@ import me.yeonjae.ovlo.adapter.in.web.dto.request.RegisterMemberRequest;
 import me.yeonjae.ovlo.adapter.in.web.dto.request.UpdateMemberProfileRequest;
 import me.yeonjae.ovlo.application.dto.command.RegisterMemberCommand;
 import me.yeonjae.ovlo.application.dto.command.UpdateMemberProfileCommand;
+import me.yeonjae.ovlo.application.dto.command.UpdateProfileImageCommand;
 import me.yeonjae.ovlo.application.dto.command.WithdrawMemberCommand;
 import me.yeonjae.ovlo.application.dto.result.MemberResult;
 import me.yeonjae.ovlo.application.port.in.member.GetMemberQuery;
 import me.yeonjae.ovlo.application.port.in.member.RegisterMemberUseCase;
 import me.yeonjae.ovlo.application.port.in.member.UpdateMemberProfileUseCase;
+import me.yeonjae.ovlo.application.port.in.member.UpdateProfileImageUseCase;
 import me.yeonjae.ovlo.application.port.in.member.WithdrawMemberUseCase;
 import me.yeonjae.ovlo.domain.member.model.MemberId;
 import org.springframework.http.HttpStatus;
@@ -19,6 +21,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.server.ResponseStatusException;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.Map;
 
 import java.util.List;
 
@@ -29,17 +33,20 @@ public class MemberApiController {
 
     private final RegisterMemberUseCase registerMemberUseCase;
     private final UpdateMemberProfileUseCase updateMemberProfileUseCase;
+    private final UpdateProfileImageUseCase updateProfileImageUseCase;
     private final WithdrawMemberUseCase withdrawMemberUseCase;
     private final GetMemberQuery getMemberQuery;
 
     public MemberApiController(
             RegisterMemberUseCase registerMemberUseCase,
             UpdateMemberProfileUseCase updateMemberProfileUseCase,
+            UpdateProfileImageUseCase updateProfileImageUseCase,
             WithdrawMemberUseCase withdrawMemberUseCase,
             GetMemberQuery getMemberQuery
     ) {
         this.registerMemberUseCase = registerMemberUseCase;
         this.updateMemberProfileUseCase = updateMemberProfileUseCase;
+        this.updateProfileImageUseCase = updateProfileImageUseCase;
         this.withdrawMemberUseCase = withdrawMemberUseCase;
         this.getMemberQuery = getMemberQuery;
     }
@@ -95,6 +102,22 @@ public class MemberApiController {
         }
         MemberResult result = updateMemberProfileUseCase.updateProfile(
                 new UpdateMemberProfileCommand(id, request.nickname(), request.bio())
+        );
+        return ResponseEntity.ok(result);
+    }
+
+    @Operation(summary = "프로필 이미지 수정")
+    @PatchMapping("/{id}/profile-image")
+    public ResponseEntity<MemberResult> updateProfileImage(
+            @PathVariable Long id,
+            @AuthenticationPrincipal Long memberId,
+            @RequestBody Map<String, String> body
+    ) {
+        if (!id.equals(memberId)) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "본인 프로필만 수정할 수 있습니다");
+        }
+        MemberResult result = updateProfileImageUseCase.updateProfileImage(
+                new UpdateProfileImageCommand(id, body.get("mediaId"))
         );
         return ResponseEntity.ok(result);
     }

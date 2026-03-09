@@ -28,7 +28,7 @@ export default function CreatePostPage() {
   const handleSubmit = () => {
     if (!title || !content || !boardId) return
     createPost.mutate(
-      { boardId, title, content, mediaIds: uploadedMedia.map((m) => m.id) },
+      { boardId: Number(boardId), title, content },
       { onSuccess: (post) => navigate(`/posts/${post.id}`) }
     )
   }
@@ -68,7 +68,7 @@ export default function CreatePostPage() {
       {uploadedMedia.length > 0 && (
         <ul style={{ marginBottom: 12 }}>
           {uploadedMedia.map((m) => (
-            <li key={m.id}>{m.originalFilename}</li>
+            <li key={m.mediaId}>{m.originalFilename}</li>
           ))}
         </ul>
       )}

@@ -6,6 +6,7 @@ import jakarta.validation.Valid;
 import me.yeonjae.ovlo.adapter.in.web.dto.request.CreateChatRoomRequest;
 import me.yeonjae.ovlo.application.dto.command.CreateChatRoomCommand;
 import me.yeonjae.ovlo.application.dto.result.ChatRoomResult;
+import me.yeonjae.ovlo.application.dto.result.MessageResult;
 import me.yeonjae.ovlo.application.port.in.chat.CreateChatRoomUseCase;
 import me.yeonjae.ovlo.application.port.in.chat.GetChatRoomQuery;
 import me.yeonjae.ovlo.domain.chat.model.ChatRoomType;
@@ -68,5 +69,11 @@ public class ChatApiController {
     public ResponseEntity<ChatRoomResult> getById(@PathVariable Long id) {
         ChatRoomResult result = getChatRoomQuery.getChatRoom(id);
         return ResponseEntity.ok(result);
+    }
+
+    @Operation(summary = "채팅방 메시지 목록 조회")
+    @GetMapping("/{id}/messages")
+    public ResponseEntity<List<MessageResult>> getMessages(@PathVariable Long id) {
+        return ResponseEntity.ok(getChatRoomQuery.getMessages(id));
     }
 }

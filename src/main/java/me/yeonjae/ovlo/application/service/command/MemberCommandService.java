@@ -2,10 +2,12 @@ package me.yeonjae.ovlo.application.service.command;
 
 import me.yeonjae.ovlo.application.dto.command.RegisterMemberCommand;
 import me.yeonjae.ovlo.application.dto.command.UpdateMemberProfileCommand;
+import me.yeonjae.ovlo.application.dto.command.UpdateProfileImageCommand;
 import me.yeonjae.ovlo.application.dto.command.WithdrawMemberCommand;
 import me.yeonjae.ovlo.application.dto.result.MemberResult;
 import me.yeonjae.ovlo.application.port.in.member.RegisterMemberUseCase;
 import me.yeonjae.ovlo.application.port.in.member.UpdateMemberProfileUseCase;
+import me.yeonjae.ovlo.application.port.in.member.UpdateProfileImageUseCase;
 import me.yeonjae.ovlo.application.port.in.member.WithdrawMemberUseCase;
 import me.yeonjae.ovlo.application.port.out.auth.PasswordHasherPort;
 import me.yeonjae.ovlo.application.port.out.member.LoadMemberPort;
@@ -20,7 +22,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 @Transactional
 public class MemberCommandService implements
-        RegisterMemberUseCase, UpdateMemberProfileUseCase, WithdrawMemberUseCase {
+        RegisterMemberUseCase, UpdateMemberProfileUseCase, UpdateProfileImageUseCase, WithdrawMemberUseCase {
 
     private final LoadMemberPort loadMemberPort;
     private final SaveMemberPort saveMemberPort;
@@ -87,6 +89,15 @@ public class MemberCommandService implements
         } catch (DataIntegrityViolationException e) {
             throw new MemberException("이미 사용 중인 닉네임입니다.");
         }
+    }
+
+    @Override
+    public MemberResult updateProfileImage(UpdateProfileImageCommand command) {
+        Member member = loadMemberPort.findById(new MemberId(command.memberId()))
+                .orElseThrow(() -> new MemberException("회원을 찾을 수 없습니다: " + command.memberId()));
+        member.updateProfileImage(command.mediaId());
+        Member saved = saveMemberPort.save(member);
+        return MemberResult.from(saved);
     }
 
     @Override

@@ -2,7 +2,7 @@
 export interface AuthToken {
   accessToken: string
   refreshToken: string
-  memberId: string
+  memberId: number
 }
 
 // ─── Member ─────────────────────────────────────────────────────────────────
@@ -11,8 +11,8 @@ export type DegreeType = 'BACHELOR' | 'MASTER' | 'DOCTOR'
 export type GradeLevel = 'FRESHMAN' | 'SOPHOMORE' | 'JUNIOR' | 'SENIOR' | 'GRADUATE'
 
 export interface LanguageSkill {
-  language: string
-  proficiency: 'BEGINNER' | 'INTERMEDIATE' | 'ADVANCED' | 'NATIVE'
+  languageCode: string
+  cefrLevel: string
 }
 
 export interface UniversityExperience {
@@ -137,10 +137,9 @@ export interface Post {
 }
 
 export interface CreatePostRequest {
-  boardId: string
+  boardId: number
   title: string
   content: string
-  mediaIds?: string[]
 }
 
 export interface UpdatePostRequest {
@@ -176,14 +175,12 @@ export type MediaType =
 export type StorageType = 'LOCAL' | 'S3'
 
 export interface MediaFile {
-  id: string
-  uploaderId: string
+  mediaId: number
+  uploaderId: number
   mediaType: MediaType
+  storageType: StorageType
   originalFilename: string
   fileSize: number
-  storagePath: string
-  storageType: StorageType
-  createdAt: string
 }
 
 // ─── Chat ───────────────────────────────────────────────────────────────────

@@ -1,6 +1,7 @@
 package me.yeonjae.ovlo.application.service.query;
 
 import me.yeonjae.ovlo.application.dto.result.ChatRoomResult;
+import me.yeonjae.ovlo.application.dto.result.MessageResult;
 import me.yeonjae.ovlo.application.port.in.chat.GetChatRoomQuery;
 import me.yeonjae.ovlo.application.port.out.chat.LoadChatPort;
 import me.yeonjae.ovlo.application.port.out.member.LoadMemberPort;
@@ -39,6 +40,15 @@ public class ChatQueryService implements GetChatRoomQuery {
         return loadChatPort.findByMemberId(new MemberId(memberId))
                 .stream()
                 .map(room -> ChatRoomResult.from(room, buildNicknameMap(room)))
+                .toList();
+    }
+
+    @Override
+    public List<MessageResult> getMessages(Long chatRoomId) {
+        ChatRoom room = loadChatPort.findById(new ChatRoomId(chatRoomId))
+                .orElseThrow(() -> new ChatException("채팅방을 찾을 수 없습니다"));
+        return room.getMessages().stream()
+                .map(MessageResult::from)
                 .toList();
     }
 
