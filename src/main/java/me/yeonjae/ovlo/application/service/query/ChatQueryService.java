@@ -44,10 +44,9 @@ public class ChatQueryService implements GetChatRoomQuery {
     }
 
     @Override
-    public List<MessageResult> getMessages(Long chatRoomId) {
-        ChatRoom room = loadChatPort.findById(new ChatRoomId(chatRoomId))
-                .orElseThrow(() -> new ChatException("채팅방을 찾을 수 없습니다"));
-        return room.getMessages().stream()
+    public List<MessageResult> getMessages(Long chatRoomId, int page, int size) {
+        return loadChatPort.findMessages(new ChatRoomId(chatRoomId), page, size)
+                .stream()
                 .map(MessageResult::from)
                 .toList();
     }

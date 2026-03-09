@@ -11,5 +11,5 @@ public interface GetChatRoomQuery {
 
     List<ChatRoomResult> getChatRooms(Long memberId);
 
-    List<MessageResult> getMessages(Long chatRoomId);
+    List<MessageResult> getMessages(Long chatRoomId, int page, int size);
 }

@@ -9,7 +9,9 @@ import me.yeonjae.ovlo.application.port.out.chat.SaveChatPort;
 import me.yeonjae.ovlo.domain.chat.model.ChatRoom;
 import me.yeonjae.ovlo.domain.chat.model.ChatRoomId;
 import me.yeonjae.ovlo.domain.chat.model.ChatRoomType;
+import me.yeonjae.ovlo.domain.chat.model.MessageId;
 import me.yeonjae.ovlo.domain.member.model.MemberId;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 import java.util.Collections;
@@ -61,6 +63,20 @@ public class ChatPersistenceAdapter implements LoadChatPort, SaveChatPort {
         saveNewMessages(saved.getId(), chatRoom.getMessages());
         var messages = messageJpaRepository.findByChatRoomIdOrderBySentAtAsc(saved.getId());
         return chatMapper.toDomain(saved, messages);
+    }
+
+    @Override
+    public List<Message> findMessages(ChatRoomId chatRoomId, int page, int size) {
+        var entities = messageJpaRepository.findByChatRoomIdOrderBySentAtDesc(
+                chatRoomId.value(), PageRequest.of(page, size));
+        // DESC for pagination → reverse to chronological ASC order for display
+        return entities.reversed().stream()
+                .map(m -> Message.restore(
+                        new MessageId(m.getId()),
+                        new MemberId(m.getSenderId()),
+                        m.getContent(),
+                        m.getSentAt()))
+                .toList();
     }
 
     private void saveNewMessages(Long chatRoomId, List<Message> messages) {

@@ -194,6 +194,14 @@ export interface Message {
   sentAt: string
 }
 
+/** Backend MessageResult — REST history API 및 WebSocket 브로드캐스트 형식 */
+export interface HistoryMessage {
+  messageId: number
+  senderId: number
+  content: string
+  sentAt: string
+}
+
 export interface ChatRoom {
   chatRoomId: number
   type: ChatRoomType

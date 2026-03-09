@@ -24,7 +24,7 @@ export const stompClient = {
 
   subscribe(
     roomId: string,
-    callback: (message: { senderId: string; content: string; sentAt: string }) => void
+    callback: (message: { messageId: number; senderId: number; content: string; sentAt: string }) => void
   ): StompSubscription | null {
     if (!client?.connected) return null
     return client.subscribe(`/topic/chat/${roomId}`, (frame) => {

@@ -2,6 +2,7 @@ package me.yeonjae.ovlo.application.port.out.chat;
 
 import me.yeonjae.ovlo.domain.chat.model.ChatRoom;
 import me.yeonjae.ovlo.domain.chat.model.ChatRoomId;
+import me.yeonjae.ovlo.domain.chat.model.Message;
 import me.yeonjae.ovlo.domain.member.model.MemberId;
 
 import java.util.List;
@@ -14,4 +15,6 @@ public interface LoadChatPort {
     boolean existsDmRoom(MemberId memberId1, MemberId memberId2);
 
     List<ChatRoom> findByMemberId(MemberId memberId);
+
+    List<Message> findMessages(ChatRoomId chatRoomId, int page, int size);
 }

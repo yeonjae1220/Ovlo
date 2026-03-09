@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { chatApi } from '../api/chat'
-import type { CreateChatRoomRequest } from '../types'
+import type { CreateChatRoomRequest, HistoryMessage } from '../types'
 
 export function useChatRooms() {
   return useQuery({
@@ -17,11 +17,12 @@ export function useChatRoom(id: string) {
   })
 }
 
-export function useChatMessages(roomId: string) {
-  return useQuery({
-    queryKey: ['chatMessages', roomId],
-    queryFn: () => chatApi.getMessages(roomId),
+export function useChatMessages(roomId: string, page = 0, size = 50) {
+  return useQuery<HistoryMessage[]>({
+    queryKey: ['chatMessages', roomId, page],
+    queryFn: () => chatApi.getMessages(roomId, page, size),
     enabled: !!roomId,
+    staleTime: Infinity, // append-only; WebSocket handles new messages
   })
 }
 

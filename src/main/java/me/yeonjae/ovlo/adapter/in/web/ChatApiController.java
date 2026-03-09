@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.ArrayList;
@@ -73,7 +74,11 @@ public class ChatApiController {
 
     @Operation(summary = "채팅방 메시지 목록 조회")
     @GetMapping("/{id}/messages")
-    public ResponseEntity<List<MessageResult>> getMessages(@PathVariable Long id) {
-        return ResponseEntity.ok(getChatRoomQuery.getMessages(id));
+    public ResponseEntity<List<MessageResult>> getMessages(
+            @PathVariable Long id,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "50") int size
+    ) {
+        return ResponseEntity.ok(getChatRoomQuery.getMessages(id, page, size));
     }
 }

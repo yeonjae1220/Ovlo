@@ -1,5 +1,5 @@
 import apiClient from '../utils/axios'
-import type { ChatRoom, CreateChatRoomRequest } from '../types'
+import type { ChatRoom, CreateChatRoomRequest, HistoryMessage } from '../types'
 
 export const chatApi = {
   list: () => apiClient.get<ChatRoom[]>('/chat/rooms').then((r) => r.data),
@@ -12,6 +12,6 @@ export const chatApi = {
 
   getMessages: (roomId: string, page = 0, size = 50) =>
     apiClient
-      .get(`/chat/rooms/${roomId}/messages`, { params: { page, size } })
+      .get<HistoryMessage[]>(`/chat/rooms/${roomId}/messages`, { params: { page, size } })
       .then((r) => r.data),
 }
