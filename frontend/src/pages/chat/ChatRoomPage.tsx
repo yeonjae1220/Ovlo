@@ -121,10 +121,10 @@ export default function ChatRoomPage() {
   const otherParticipants = room.participantIds.filter((p) => p !== currentUserId)
   const roomTitle =
     room.name ??
-    otherParticipants
+    (otherParticipants
       .map((pid) => `${room.participantNicknames?.[pid] ?? `#${pid}`}`)
       .join(', ') ||
-    '채팅방'
+    '채팅방')
 
   return (
     <div style={{ maxWidth: 700, margin: '0 auto', display: 'flex', flexDirection: 'column', height: '80vh' }}>
