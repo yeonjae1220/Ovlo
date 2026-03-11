@@ -29,7 +29,7 @@ public class ChatWebSocketHandler {
             ChatMessagePayload payload,
             SimpMessageHeaderAccessor headerAccessor
     ) {
-        Long memberId = (Long) headerAccessor.getSessionAttributes().get("memberId");
+        Long memberId = (Long) headerAccessor.getSessionAttributes().get(WsSessionKeys.MEMBER_ID);
         if (memberId == null) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "인증이 필요합니다");
         }

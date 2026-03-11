@@ -45,6 +45,7 @@ public class ChatPersistenceAdapter implements LoadChatPort, SaveChatPort, SaveR
 
     @Override
     public Optional<ChatRoom> findById(ChatRoomId chatRoomId) {
+        // 단건 조회: 메시지 전체 로딩 (채팅방 상세 화면용, 페이지네이션은 findMessages() 사용)
         return chatRoomJpaRepository.findById(chatRoomId.value()).map(entity -> {
             var messages = messageJpaRepository.findByChatRoomIdOrderBySentAtAsc(entity.getId());
             return chatMapper.toDomain(entity, messages);
@@ -53,6 +54,7 @@ public class ChatPersistenceAdapter implements LoadChatPort, SaveChatPort, SaveR
 
     @Override
     public List<ChatRoom> findByMemberId(MemberId memberId) {
+        // 목록 조회: 메시지 로딩 생략 (N×M 로딩 방지 — 메시지는 입장 시 별도 조회)
         return chatRoomJpaRepository.findByMemberId(memberId.value())
                 .stream()
                 .map(entity -> chatMapper.toDomain(entity, Collections.emptyList()))

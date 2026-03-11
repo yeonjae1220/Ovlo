@@ -1,6 +1,7 @@
 package me.yeonjae.ovlo.shared.security;
 
 import me.yeonjae.ovlo.shared.exception.TooManyRequestsException;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.script.RedisScript;
 import org.springframework.stereotype.Component;
@@ -14,10 +15,6 @@ import java.util.List;
 @Component
 public class RateLimiterService {
 
-    private static final int LOGIN_LIMIT = 10;    // 10분 내 최대 10회
-    private static final int REFRESH_LIMIT = 30;  // 10분 내 최대 30회
-    private static final int WINDOW_SECONDS = 600;
-
     /**
      * INCR 후 키가 새로 생성(count == 1)될 때만 EXPIRE 설정.
      * 두 명령이 원자적으로 실행되므로 크래시가 발생해도 TTL 누락 없음.
@@ -29,21 +26,32 @@ public class RateLimiterService {
             Long.class);
 
     private final RedisTemplate<String, String> redisTemplate;
+    private final int loginLimit;
+    private final int refreshLimit;
+    private final int windowSeconds;
 
-    public RateLimiterService(RedisTemplate<String, String> redisTemplate) {
+    public RateLimiterService(
+            RedisTemplate<String, String> redisTemplate,
+            @Value("${ovlo.rate-limit.login-limit:10}") int loginLimit,
+            @Value("${ovlo.rate-limit.refresh-limit:30}") int refreshLimit,
+            @Value("${ovlo.rate-limit.window-seconds:600}") int windowSeconds
+    ) {
         this.redisTemplate = redisTemplate;
+        this.loginLimit = loginLimit;
+        this.refreshLimit = refreshLimit;
+        this.windowSeconds = windowSeconds;
     }
 
     public void checkLoginRate(String clientIp) {
-        check("rl:login:" + clientIp, LOGIN_LIMIT);
+        check("rl:login:" + clientIp, loginLimit);
     }
 
     public void checkRefreshRate(String clientIp) {
-        check("rl:refresh:" + clientIp, REFRESH_LIMIT);
+        check("rl:refresh:" + clientIp, refreshLimit);
     }
 
     private void check(String key, int limit) {
-        Long count = redisTemplate.execute(INCREMENT_SCRIPT, List.of(key), String.valueOf(WINDOW_SECONDS));
+        Long count = redisTemplate.execute(INCREMENT_SCRIPT, List.of(key), String.valueOf(windowSeconds));
         if (count != null && count > limit) {
             throw new TooManyRequestsException("요청이 너무 많습니다. 잠시 후 다시 시도해주세요");
         }

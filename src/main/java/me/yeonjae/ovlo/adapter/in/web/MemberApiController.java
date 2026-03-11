@@ -5,6 +5,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import me.yeonjae.ovlo.adapter.in.web.dto.request.RegisterMemberRequest;
 import me.yeonjae.ovlo.adapter.in.web.dto.request.UpdateMemberProfileRequest;
+import me.yeonjae.ovlo.adapter.in.web.dto.request.UpdateProfileImageRequest;
 import me.yeonjae.ovlo.application.dto.command.RegisterMemberCommand;
 import me.yeonjae.ovlo.application.dto.command.UpdateMemberProfileCommand;
 import me.yeonjae.ovlo.application.dto.command.UpdateProfileImageCommand;
@@ -21,8 +22,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.server.ResponseStatusException;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.Map;
 
 import java.util.List;
 
@@ -111,13 +110,13 @@ public class MemberApiController {
     public ResponseEntity<MemberResult> updateProfileImage(
             @PathVariable Long id,
             @AuthenticationPrincipal Long memberId,
-            @RequestBody Map<String, String> body
+            @Valid @RequestBody UpdateProfileImageRequest request
     ) {
         if (!id.equals(memberId)) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "본인 프로필만 수정할 수 있습니다");
         }
         MemberResult result = updateProfileImageUseCase.updateProfileImage(
-                new UpdateProfileImageCommand(id, body.get("mediaId"))
+                new UpdateProfileImageCommand(id, request.mediaId())
         );
         return ResponseEntity.ok(result);
     }

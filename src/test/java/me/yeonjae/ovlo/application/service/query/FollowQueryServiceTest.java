@@ -22,7 +22,6 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.List;
-import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
@@ -66,7 +65,7 @@ class FollowQueryServiceTest {
         void shouldGetFollowers() {
             Follow follow = Follow.restore(new FollowId(1L), new MemberId(1L), new MemberId(2L));
             given(loadFollowPort.findFollowersByFolloweeId(any())).willReturn(List.of(follow));
-            given(loadMemberPort.findById(new MemberId(1L))).willReturn(Optional.of(follower));
+            given(loadMemberPort.findAllByIds(any())).willReturn(List.of(follower));
 
             List<MemberResult> results = service.getFollowers(2L);
 
@@ -84,7 +83,7 @@ class FollowQueryServiceTest {
         void shouldGetFollowings() {
             Follow follow = Follow.restore(new FollowId(1L), new MemberId(1L), new MemberId(2L));
             given(loadFollowPort.findFollowingsByFollowerId(any())).willReturn(List.of(follow));
-            given(loadMemberPort.findById(new MemberId(2L))).willReturn(Optional.of(followee));
+            given(loadMemberPort.findAllByIds(any())).willReturn(List.of(followee));
 
             List<MemberResult> results = service.getFollowings(1L);
 

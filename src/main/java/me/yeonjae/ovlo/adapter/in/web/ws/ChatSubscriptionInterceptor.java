@@ -45,7 +45,7 @@ public class ChatSubscriptionInterceptor implements ChannelInterceptor {
         if (!matcher.matches()) return message;
 
         Map<String, Object> sessionAttrs = accessor.getSessionAttributes();
-        Long memberId = (sessionAttrs != null) ? (Long) sessionAttrs.get("memberId") : null;
+        Long memberId = (sessionAttrs != null) ? (Long) sessionAttrs.get(WsSessionKeys.MEMBER_ID) : null;
         if (memberId == null) {
             throw new MessageDeliveryException(message, "인증이 필요합니다");
         }

@@ -54,6 +54,10 @@ ovlo:
   storage:
     local:
       path: ${STORAGE_LOCAL_PATH:/tmp/ovlo-media}
+  rate-limit:
+    login-limit: ${RATE_LIMIT_LOGIN:10}
+    refresh-limit: ${RATE_LIMIT_REFRESH:30}
+    window-seconds: ${RATE_LIMIT_WINDOW_SECONDS:600}
 
 management:
   endpoints:

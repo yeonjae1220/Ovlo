@@ -94,9 +94,7 @@ public class ChatQueryService implements GetChatRoomQuery {
     private record ParticipantInfo(Map<Long, String> nicknames, Map<Long, String> profileImages) {}
 
     private ParticipantInfo buildParticipantInfo(ChatRoom room) {
-        List<Member> members = room.getParticipants().stream()
-                .flatMap(pid -> loadMemberPort.findById(pid).stream())
-                .toList();
+        List<Member> members = loadMemberPort.findAllByIds(room.getParticipants());
         return toParticipantInfo(members);
     }
 

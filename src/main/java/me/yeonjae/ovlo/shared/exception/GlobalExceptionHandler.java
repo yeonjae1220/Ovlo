@@ -30,61 +30,57 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(MemberException.class)
     public ResponseEntity<Map<String, String>> handleMemberException(MemberException ex) {
-        HttpStatus status = switch (ex.getErrorType()) {
-            case CONFLICT -> HttpStatus.CONFLICT;
-            case NOT_FOUND -> HttpStatus.NOT_FOUND;
-        };
-        return ResponseEntity.status(status).body(error(ex.getMessage()));
+        return ResponseEntity.status(resolveStatus(ex.getErrorType())).body(error(ex.getMessage()));
     }
 
     @ExceptionHandler(AuthException.class)
     public ResponseEntity<Map<String, String>> handleAuthException(AuthException ex) {
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(error(ex.getMessage()));
+        return ResponseEntity.status(resolveStatus(ex.getErrorType())).body(error(ex.getMessage()));
     }
 
     @ExceptionHandler(UniversityException.class)
     public ResponseEntity<Map<String, String>> handleUniversityException(UniversityException ex) {
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(error(ex.getMessage()));
+        return ResponseEntity.status(resolveStatus(ex.getErrorType())).body(error(ex.getMessage()));
     }
 
     @ExceptionHandler(BoardException.class)
     public ResponseEntity<Map<String, String>> handleBoardException(BoardException ex) {
-        HttpStatus status = switch (ex.getErrorType()) {
-            case CONFLICT -> HttpStatus.CONFLICT;
-            case NOT_FOUND -> HttpStatus.NOT_FOUND;
-        };
-        return ResponseEntity.status(status).body(error(ex.getMessage()));
+        return ResponseEntity.status(resolveStatus(ex.getErrorType())).body(error(ex.getMessage()));
     }
 
     @ExceptionHandler(PostException.class)
     public ResponseEntity<Map<String, String>> handlePostException(PostException ex) {
-        HttpStatus status = switch (ex.getErrorType()) {
-            case CONFLICT -> HttpStatus.CONFLICT;
-            case NOT_FOUND -> HttpStatus.NOT_FOUND;
-            case FORBIDDEN -> HttpStatus.FORBIDDEN;
-            case BAD_REQUEST -> HttpStatus.BAD_REQUEST;
-        };
-        return ResponseEntity.status(status).body(error(ex.getMessage()));
+        return ResponseEntity.status(resolveStatus(ex.getErrorType())).body(error(ex.getMessage()));
     }
 
     @ExceptionHandler(FollowException.class)
     public ResponseEntity<Map<String, String>> handleFollowException(FollowException ex) {
-        return ResponseEntity.status(HttpStatus.CONFLICT).body(error(ex.getMessage()));
+        return ResponseEntity.status(resolveStatus(ex.getErrorType())).body(error(ex.getMessage()));
     }
 
     @ExceptionHandler(MediaException.class)
     public ResponseEntity<Map<String, String>> handleMediaException(MediaException ex) {
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(error(ex.getMessage()));
+        return ResponseEntity.status(resolveStatus(ex.getErrorType())).body(error(ex.getMessage()));
     }
 
     @ExceptionHandler(ChatException.class)
     public ResponseEntity<Map<String, String>> handleChatException(ChatException ex) {
-        HttpStatus status = switch (ex.getErrorType()) {
-            case CONFLICT -> HttpStatus.CONFLICT;
-            case NOT_FOUND -> HttpStatus.NOT_FOUND;
-            case BAD_REQUEST -> HttpStatus.BAD_REQUEST;
+        return ResponseEntity.status(resolveStatus(ex.getErrorType())).body(error(ex.getMessage()));
+    }
+
+    /**
+     * 도메인 예외의 ErrorType enum name을 HTTP 상태로 변환.
+     * 각 도메인이 독립 enum을 갖지만 이름이 HTTP 시맨틱을 따르므로 name() 기반 매핑 사용.
+     */
+    private static HttpStatus resolveStatus(Enum<?> errorType) {
+        return switch (errorType.name()) {
+            case "NOT_FOUND" -> HttpStatus.NOT_FOUND;
+            case "CONFLICT" -> HttpStatus.CONFLICT;
+            case "FORBIDDEN" -> HttpStatus.FORBIDDEN;
+            case "BAD_REQUEST" -> HttpStatus.BAD_REQUEST;
+            case "UNAUTHORIZED" -> HttpStatus.UNAUTHORIZED;
+            default -> HttpStatus.INTERNAL_SERVER_ERROR;
         };
-        return ResponseEntity.status(status).body(error(ex.getMessage()));
     }
 
     @ExceptionHandler(TooManyRequestsException.class)
@@ -104,7 +100,13 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(IllegalArgumentException.class)
     public ResponseEntity<Map<String, String>> handleIllegalArgument(IllegalArgumentException ex) {
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error(ex.getMessage()));
+        String message = ex.getMessage();
+        // JVM enum 오류 "No enum constant com.example.Foo.BAR" → 내부 클래스 경로 노출 방지
+        if (message != null && message.startsWith("No enum constant")) {
+            String value = message.substring(message.lastIndexOf('.') + 1);
+            message = "유효하지 않은 값입니다: " + value;
+        }
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error(message));
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)

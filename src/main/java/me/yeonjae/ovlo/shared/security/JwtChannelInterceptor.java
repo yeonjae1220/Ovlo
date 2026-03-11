@@ -6,6 +6,7 @@ import org.springframework.messaging.simp.stomp.StompCommand;
 import org.springframework.messaging.simp.stomp.StompHeaderAccessor;
 import org.springframework.messaging.support.ChannelInterceptor;
 import org.springframework.messaging.support.MessageHeaderAccessor;
+import me.yeonjae.ovlo.adapter.in.web.ws.WsSessionKeys;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -36,7 +37,7 @@ public class JwtChannelInterceptor implements ChannelInterceptor {
         }
 
         Long memberId = jwtTokenProvider.extractMemberId(token).value();
-        accessor.getSessionAttributes().put("memberId", memberId);
+        accessor.getSessionAttributes().put(WsSessionKeys.MEMBER_ID, memberId);
         return message;
     }
 }
