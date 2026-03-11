@@ -6,6 +6,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.env.Environment;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -26,12 +27,18 @@ import java.util.List;
 public class SecurityConfig {
 
     private final JwtTokenProvider jwtTokenProvider;
+    private final Environment environment;
 
     @Value("${cors.allowed-origins:http://localhost:3000}")
     private String corsAllowedOrigins;
 
-    public SecurityConfig(JwtTokenProvider jwtTokenProvider) {
+    public SecurityConfig(JwtTokenProvider jwtTokenProvider, Environment environment) {
         this.jwtTokenProvider = jwtTokenProvider;
+        this.environment = environment;
+    }
+
+    private boolean isProd() {
+        return Arrays.asList(environment.getActiveProfiles()).contains("prod");
     }
 
     @Bean
@@ -73,8 +80,9 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/api/v1/universities/**").permitAll()
                         // WebSocket
                         .requestMatchers("/ws/**").permitAll()
-                        // 문서 (개발 환경 전용 — 운영은 별도 프록시에서 차단 권장)
-                        .requestMatchers("/swagger-ui.html", "/swagger-ui/**", "/v3/api-docs/**").permitAll()
+                        // 문서: prod 프로파일에서는 완전 차단, 개발 환경에서만 공개
+                        .requestMatchers("/swagger-ui.html", "/swagger-ui/**", "/v3/api-docs/**")
+                            .access((a, ctx) -> new org.springframework.security.authorization.AuthorizationDecision(!isProd()))
                         .requestMatchers("/webjars/**").permitAll()
                         // Actuator: health만 공개, metrics/prometheus는 인증 필요
                         .requestMatchers("/actuator/health").permitAll()

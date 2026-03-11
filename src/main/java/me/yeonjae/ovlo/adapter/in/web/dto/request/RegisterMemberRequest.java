@@ -17,7 +17,13 @@ public record RegisterMemberRequest(
         @NotBlank String name,
         @NotBlank String hometown,
         @NotBlank @Email String email,
-        @NotBlank @Size(min = 8, max = 100, message = "비밀번호는 8자 이상 100자 이하여야 합니다") String password,
+        @NotBlank
+        @Size(min = 8, max = 100, message = "비밀번호는 8자 이상 100자 이하여야 합니다")
+        @Pattern(
+                regexp = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@$!%*?&_#^()\\-])[A-Za-z\\d@$!%*?&_#^()\\-]{8,100}$",
+                message = "비밀번호는 대문자, 소문자, 숫자, 특수문자(@$!%*?&_#^()-) 를 각각 1자 이상 포함해야 합니다"
+        )
+        String password,
         @NotNull Long homeUniversityId,
         @NotBlank String majorName,
         @NotBlank String degreeType,
