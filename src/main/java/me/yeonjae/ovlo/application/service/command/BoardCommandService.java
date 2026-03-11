@@ -54,17 +54,17 @@ public class BoardCommandService implements
         MemberId memberId = new MemberId(command.memberId());
 
         loadBoardPort.findById(boardId)
-                .orElseThrow(() -> new BoardException("게시판을 찾을 수 없습니다: " + command.boardId()));
+                .orElseThrow(() -> new BoardException("게시판을 찾을 수 없습니다: " + command.boardId(), BoardException.ErrorType.NOT_FOUND));
 
         if (loadBoardPort.existsSubscription(boardId, memberId)) {
-            throw new BoardException("이미 구독 중인 게시판입니다");
+            throw new BoardException("이미 구독 중인 게시판입니다", BoardException.ErrorType.CONFLICT);
         }
 
         BoardSubscription subscription = BoardSubscription.create(boardId, memberId);
         try {
             saveBoardPort.saveSubscription(subscription);
         } catch (DataIntegrityViolationException e) {
-            throw new BoardException("이미 구독 중인 게시판입니다");
+            throw new BoardException("이미 구독 중인 게시판입니다", BoardException.ErrorType.CONFLICT);
         }
     }
 
@@ -74,7 +74,7 @@ public class BoardCommandService implements
         MemberId memberId = new MemberId(command.memberId());
 
         BoardSubscription subscription = loadBoardPort.findSubscription(boardId, memberId)
-                .orElseThrow(() -> new BoardException("구독 정보를 찾을 수 없습니다"));
+                .orElseThrow(() -> new BoardException("구독 정보를 찾을 수 없습니다", BoardException.ErrorType.NOT_FOUND));
 
         saveBoardPort.deleteSubscription(subscription);
     }

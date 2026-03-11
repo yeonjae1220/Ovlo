@@ -49,6 +49,6 @@ public class BoardQueryService implements SearchBoardQuery, GetBoardQuery {
     public BoardResult getById(BoardId boardId) {
         return loadBoardPort.findById(boardId)
                 .map(BoardResult::from)
-                .orElseThrow(() -> new BoardException("게시판을 찾을 수 없습니다: " + boardId.value()));
+                .orElseThrow(() -> new BoardException("게시판을 찾을 수 없습니다: " + boardId.value(), BoardException.ErrorType.NOT_FOUND));
     }
 }

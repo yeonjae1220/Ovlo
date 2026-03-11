@@ -39,10 +39,10 @@ public class MemberCommandService implements
     @Override
     public MemberResult register(RegisterMemberCommand command) {
         if (loadMemberPort.existsByEmail(command.email())) {
-            throw new MemberException("이미 사용 중인 이메일입니다: " + command.email());
+            throw new MemberException("이미 사용 중인 이메일입니다: " + command.email(), MemberException.ErrorType.CONFLICT);
         }
         if (loadMemberPort.existsByNickname(command.nickname())) {
-            throw new MemberException("이미 사용 중인 닉네임입니다: " + command.nickname());
+            throw new MemberException("이미 사용 중인 닉네임입니다: " + command.nickname(), MemberException.ErrorType.CONFLICT);
         }
 
         String hashed = passwordHasherPort.encode(command.rawPassword());
@@ -64,18 +64,18 @@ public class MemberCommandService implements
             Member saved = saveMemberPort.save(member);
             return MemberResult.from(saved);
         } catch (DataIntegrityViolationException e) {
-            throw new MemberException("이미 사용 중인 이메일 또는 닉네임입니다.");
+            throw new MemberException("이미 사용 중인 이메일 또는 닉네임입니다.", MemberException.ErrorType.CONFLICT);
         }
     }
 
     @Override
     public MemberResult updateProfile(UpdateMemberProfileCommand command) {
         Member member = loadMemberPort.findById(new MemberId(command.memberId()))
-                .orElseThrow(() -> new MemberException("회원을 찾을 수 없습니다: " + command.memberId()));
+                .orElseThrow(() -> new MemberException("회원을 찾을 수 없습니다: " + command.memberId(), MemberException.ErrorType.NOT_FOUND));
 
         if (command.nickname() != null && !command.nickname().equals(member.getNickname())) {
             if (loadMemberPort.existsByNickname(command.nickname())) {
-                throw new MemberException("이미 사용 중인 닉네임입니다: " + command.nickname());
+                throw new MemberException("이미 사용 중인 닉네임입니다: " + command.nickname(), MemberException.ErrorType.CONFLICT);
             }
             member.updateNickname(command.nickname());
         }
@@ -87,14 +87,14 @@ public class MemberCommandService implements
             Member saved = saveMemberPort.save(member);
             return MemberResult.from(saved);
         } catch (DataIntegrityViolationException e) {
-            throw new MemberException("이미 사용 중인 닉네임입니다.");
+            throw new MemberException("이미 사용 중인 닉네임입니다.", MemberException.ErrorType.CONFLICT);
         }
     }
 
     @Override
     public MemberResult updateProfileImage(UpdateProfileImageCommand command) {
         Member member = loadMemberPort.findById(new MemberId(command.memberId()))
-                .orElseThrow(() -> new MemberException("회원을 찾을 수 없습니다: " + command.memberId()));
+                .orElseThrow(() -> new MemberException("회원을 찾을 수 없습니다: " + command.memberId(), MemberException.ErrorType.NOT_FOUND));
         member.updateProfileImage(command.mediaId());
         Member saved = saveMemberPort.save(member);
         return MemberResult.from(saved);
@@ -103,7 +103,7 @@ public class MemberCommandService implements
     @Override
     public void withdraw(WithdrawMemberCommand command) {
         Member member = loadMemberPort.findById(new MemberId(command.memberId()))
-                .orElseThrow(() -> new MemberException("회원을 찾을 수 없습니다: " + command.memberId()));
+                .orElseThrow(() -> new MemberException("회원을 찾을 수 없습니다: " + command.memberId(), MemberException.ErrorType.NOT_FOUND));
 
         member.withdraw();
         saveMemberPort.save(member);

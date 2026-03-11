@@ -24,7 +24,7 @@ public class MemberQueryService implements GetMemberQuery {
     @Override
     public MemberResult getById(MemberId memberId) {
         Member member = loadMemberPort.findById(memberId)
-                .orElseThrow(() -> new MemberException("회원을 찾을 수 없습니다: " + memberId.value()));
+                .orElseThrow(() -> new MemberException("회원을 찾을 수 없습니다: " + memberId.value(), MemberException.ErrorType.NOT_FOUND));
         return MemberResult.from(member);
     }
 

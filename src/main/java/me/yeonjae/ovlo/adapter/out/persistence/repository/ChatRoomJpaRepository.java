@@ -21,4 +21,8 @@ public interface ChatRoomJpaRepository extends JpaRepository<ChatRoomJpaEntity, 
 
     @Query("SELECT cr FROM ChatRoomJpaEntity cr WHERE :memberId MEMBER OF cr.participantIds ORDER BY cr.createdAt DESC")
     List<ChatRoomJpaEntity> findByMemberId(@Param("memberId") Long memberId);
+
+    @Query("SELECT CASE WHEN COUNT(cr) > 0 THEN true ELSE false END " +
+            "FROM ChatRoomJpaEntity cr WHERE cr.id = :roomId AND :memberId MEMBER OF cr.participantIds")
+    boolean existsMember(@Param("roomId") Long roomId, @Param("memberId") Long memberId);
 }

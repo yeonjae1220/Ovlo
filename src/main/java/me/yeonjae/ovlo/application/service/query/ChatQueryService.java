@@ -34,7 +34,7 @@ public class ChatQueryService implements GetChatRoomQuery {
     @Override
     public ChatRoomResult getChatRoom(Long chatRoomId) {
         ChatRoom room = loadChatPort.findById(new ChatRoomId(chatRoomId))
-                .orElseThrow(() -> new ChatException("채팅방을 찾을 수 없습니다"));
+                .orElseThrow(() -> new ChatException("채팅방을 찾을 수 없습니다", ChatException.ErrorType.NOT_FOUND));
         var info = buildParticipantInfo(room);
         var lastReadAt = loadChatPort.findAllLastReadAt(new ChatRoomId(chatRoomId));
         return ChatRoomResult.from(room, info.nicknames(), info.profileImages(), 0, lastReadAt);
@@ -58,14 +58,21 @@ public class ChatQueryService implements GetChatRoomQuery {
         Map<Long, Map<Long, LocalDateTime>> lastReadAtByRoom =
                 loadChatPort.findAllLastReadAtByRoomIds(roomIds);
 
+        // 배치 3: 전체 채팅방 읽음 기준 시각 수집 → 미읽음 수 일괄 조회 (N → 1 배치)
+        Map<Long, LocalDateTime> sinceByRoomId = rooms.stream()
+                .collect(Collectors.toMap(
+                        r -> r.getId().value(),
+                        r -> Optional.ofNullable(lastReadAtByRoom.getOrDefault(r.getId().value(), Map.of()).get(memberId))
+                                .orElse(LocalDateTime.of(1970, 1, 1, 0, 0, 0))
+                ));
+        Map<Long, Long> unreadByRoom = loadChatPort.countUnreadBatch(new MemberId(memberId), sinceByRoomId);
+
         return rooms.stream()
                 .map(room -> {
                     ParticipantInfo info = buildParticipantInfoFromCache(room, memberById);
                     Map<Long, LocalDateTime> roomReadAt =
                             lastReadAtByRoom.getOrDefault(room.getId().value(), Map.of());
-                    LocalDateTime myLastRead = Optional.ofNullable(roomReadAt.get(memberId))
-                            .orElse(LocalDateTime.of(1970, 1, 1, 0, 0, 0));
-                    int unread = (int) loadChatPort.countUnread(room.getId(), new MemberId(memberId), myLastRead);
+                    int unread = unreadByRoom.getOrDefault(room.getId().value(), 0L).intValue();
                     return ChatRoomResult.from(room, info.nicknames(), info.profileImages(), unread, roomReadAt);
                 })
                 .toList();
@@ -81,10 +88,7 @@ public class ChatQueryService implements GetChatRoomQuery {
 
     @Override
     public boolean isMemberOfRoom(Long chatRoomId, Long memberId) {
-        return loadChatPort.findById(new ChatRoomId(chatRoomId))
-                .map(room -> room.getParticipants().stream()
-                        .anyMatch(pid -> pid.value().equals(memberId)))
-                .orElse(false);
+        return loadChatPort.isMember(new ChatRoomId(chatRoomId), new MemberId(memberId));
     }
 
     private record ParticipantInfo(Map<Long, String> nicknames, Map<Long, String> profileImages) {}

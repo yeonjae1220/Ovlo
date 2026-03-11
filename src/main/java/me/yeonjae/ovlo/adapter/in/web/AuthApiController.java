@@ -72,8 +72,15 @@ public class AuthApiController {
         return ResponseEntity.noContent().build();
     }
 
+    /**
+     * nginx가 신뢰 프록시로서 X-Real-IP를 설정하므로 이 헤더를 우선 사용.
+     * X-Forwarded-For는 클라이언트가 임의 설정 가능해 Rate Limit 우회 수단이 됨.
+     */
     private String extractClientIp(HttpServletRequest request) {
-        String forwarded = request.getHeader("X-Forwarded-For");
-        return (forwarded != null) ? forwarded.split(",")[0].trim() : request.getRemoteAddr();
+        String realIp = request.getHeader("X-Real-IP");
+        if (realIp != null && !realIp.isBlank()) {
+            return realIp.trim();
+        }
+        return request.getRemoteAddr();
     }
 }

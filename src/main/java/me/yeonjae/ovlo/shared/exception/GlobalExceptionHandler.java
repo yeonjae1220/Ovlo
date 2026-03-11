@@ -1,7 +1,6 @@
 package me.yeonjae.ovlo.shared.exception;
 
 import me.yeonjae.ovlo.domain.auth.exception.AuthException;
-import me.yeonjae.ovlo.shared.exception.TooManyRequestsException;
 import me.yeonjae.ovlo.domain.board.exception.BoardException;
 import me.yeonjae.ovlo.domain.chat.exception.ChatException;
 import me.yeonjae.ovlo.domain.follow.exception.FollowException;
@@ -14,12 +13,12 @@ import org.slf4j.LoggerFactory;
 import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.server.ResponseStatusException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.HandlerMethodValidationException;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -31,7 +30,10 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(MemberException.class)
     public ResponseEntity<Map<String, String>> handleMemberException(MemberException ex) {
-        HttpStatus status = isConflictMessage(ex.getMessage()) ? HttpStatus.CONFLICT : HttpStatus.NOT_FOUND;
+        HttpStatus status = switch (ex.getErrorType()) {
+            case CONFLICT -> HttpStatus.CONFLICT;
+            case NOT_FOUND -> HttpStatus.NOT_FOUND;
+        };
         return ResponseEntity.status(status).body(error(ex.getMessage()));
     }
 
@@ -47,13 +49,21 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(BoardException.class)
     public ResponseEntity<Map<String, String>> handleBoardException(BoardException ex) {
-        HttpStatus status = isConflictMessage(ex.getMessage()) ? HttpStatus.CONFLICT : HttpStatus.NOT_FOUND;
+        HttpStatus status = switch (ex.getErrorType()) {
+            case CONFLICT -> HttpStatus.CONFLICT;
+            case NOT_FOUND -> HttpStatus.NOT_FOUND;
+        };
         return ResponseEntity.status(status).body(error(ex.getMessage()));
     }
 
     @ExceptionHandler(PostException.class)
     public ResponseEntity<Map<String, String>> handlePostException(PostException ex) {
-        HttpStatus status = isConflictMessage(ex.getMessage()) ? HttpStatus.CONFLICT : HttpStatus.NOT_FOUND;
+        HttpStatus status = switch (ex.getErrorType()) {
+            case CONFLICT -> HttpStatus.CONFLICT;
+            case NOT_FOUND -> HttpStatus.NOT_FOUND;
+            case FORBIDDEN -> HttpStatus.FORBIDDEN;
+            case BAD_REQUEST -> HttpStatus.BAD_REQUEST;
+        };
         return ResponseEntity.status(status).body(error(ex.getMessage()));
     }
 
@@ -69,9 +79,11 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(ChatException.class)
     public ResponseEntity<Map<String, String>> handleChatException(ChatException ex) {
-        HttpStatus status = isConflictMessage(ex.getMessage()) ? HttpStatus.CONFLICT
-                : isNotFoundMessage(ex.getMessage()) ? HttpStatus.NOT_FOUND
-                : HttpStatus.BAD_REQUEST;
+        HttpStatus status = switch (ex.getErrorType()) {
+            case CONFLICT -> HttpStatus.CONFLICT;
+            case NOT_FOUND -> HttpStatus.NOT_FOUND;
+            case BAD_REQUEST -> HttpStatus.BAD_REQUEST;
+        };
         return ResponseEntity.status(status).body(error(ex.getMessage()));
     }
 
@@ -121,17 +133,7 @@ public class GlobalExceptionHandler {
                 .body(error("Internal server error"));
     }
 
-    private boolean isConflictMessage(String message) {
-        return message != null && (message.contains("already") || message.contains("이미"));
-    }
-
-    private boolean isNotFoundMessage(String message) {
-        return message != null && (message.contains("찾을 수 없습니다") || message.contains("not found"));
-    }
-
     private Map<String, String> error(String message) {
-        Map<String, String> body = new HashMap<>();
-        body.put("error", message);
-        return body;
+        return Map.of("error", message != null ? message : "Unknown error");
     }
 }

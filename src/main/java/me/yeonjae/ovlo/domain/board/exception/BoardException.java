@@ -2,11 +2,14 @@ package me.yeonjae.ovlo.domain.board.exception;
 
 public class BoardException extends RuntimeException {
 
-    public BoardException(String message) {
+    public enum ErrorType { NOT_FOUND, CONFLICT }
+
+    private final ErrorType errorType;
+
+    public BoardException(String message, ErrorType errorType) {
         super(message);
+        this.errorType = errorType;
     }
 
-    public BoardException(String message, Throwable cause) {
-        super(message, cause);
-    }
+    public ErrorType getErrorType() { return errorType; }
 }

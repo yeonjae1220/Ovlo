@@ -31,4 +31,10 @@ public interface LoadChatPort {
 
     /** since 이후에 senderId가 아닌 사람이 보낸 메시지 수 */
     long countUnread(ChatRoomId chatRoomId, MemberId memberId, LocalDateTime since);
+
+    /** 여러 채팅방의 안 읽은 메시지 수 일괄 조회 (chatRoomId → unreadCount) */
+    Map<Long, Long> countUnreadBatch(MemberId memberId, Map<Long, LocalDateTime> sinceByRoomId);
+
+    /** 채팅방 참여자 여부 (단일 EXISTS 쿼리) */
+    boolean isMember(ChatRoomId chatRoomId, MemberId memberId);
 }

@@ -119,8 +119,23 @@ public class ChatPersistenceAdapter implements LoadChatPort, SaveChatPort, SaveR
     }
 
     @Override
+    public boolean isMember(ChatRoomId chatRoomId, MemberId memberId) {
+        return chatRoomJpaRepository.existsMember(chatRoomId.value(), memberId.value());
+    }
+
+    @Override
     public long countUnread(ChatRoomId chatRoomId, MemberId memberId, LocalDateTime since) {
         return messageJpaRepository.countUnread(chatRoomId.value(), memberId.value(), since);
+    }
+
+    @Override
+    public Map<Long, Long> countUnreadBatch(MemberId memberId, Map<Long, LocalDateTime> sinceByRoomId) {
+        if (sinceByRoomId.isEmpty()) return Map.of();
+        return sinceByRoomId.entrySet().stream()
+                .collect(Collectors.toMap(
+                        Map.Entry::getKey,
+                        e -> messageJpaRepository.countUnread(e.getKey(), memberId.value(), e.getValue())
+                ));
     }
 
     @Override

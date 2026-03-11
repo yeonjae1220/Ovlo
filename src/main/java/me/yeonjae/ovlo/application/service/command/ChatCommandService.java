@@ -46,14 +46,14 @@ public class ChatCommandService implements CreateChatRoomUseCase, SendMessageUse
 
         if (command.type() == ChatRoomType.DM) {
             if (participants.size() < 2) {
-                throw new ChatException("DM 채팅방은 참여자 2명이 필요합니다");
+                throw new ChatException("DM 채팅방은 참여자 2명이 필요합니다", ChatException.ErrorType.BAD_REQUEST);
             }
             MemberId m1 = participants.get(0);
             MemberId m2 = participants.get(1);
             Optional<ChatRoomId> existingRoomId = loadChatPort.findDmRoomId(m1, m2);
             if (existingRoomId.isPresent()) {
                 ChatRoom existingRoom = loadChatPort.findById(existingRoomId.get())
-                        .orElseThrow(() -> new ChatException("채팅방을 찾을 수 없습니다"));
+                        .orElseThrow(() -> new ChatException("채팅방을 찾을 수 없습니다", ChatException.ErrorType.NOT_FOUND));
                 return ChatRoomResult.from(existingRoom);
             }
         }
@@ -64,7 +64,7 @@ public class ChatCommandService implements CreateChatRoomUseCase, SendMessageUse
             return ChatRoomResult.from(saved);
         } catch (DataIntegrityViolationException e) {
             // TODO: V7 migration에 DM unique constraint 추가 시 이 catch가 TOCTOU race condition 최종 방어선 역할
-            throw new ChatException("이미 해당 두 회원 간의 DM 채팅방이 존재합니다");
+            throw new ChatException("이미 해당 두 회원 간의 DM 채팅방이 존재합니다", ChatException.ErrorType.CONFLICT);
         }
     }
 
@@ -76,14 +76,14 @@ public class ChatCommandService implements CreateChatRoomUseCase, SendMessageUse
     @Override
     public MessageResult sendMessage(SendMessageCommand command) {
         ChatRoom room = loadChatPort.findById(new ChatRoomId(command.chatRoomId()))
-                .orElseThrow(() -> new ChatException("채팅방을 찾을 수 없습니다"));
+                .orElseThrow(() -> new ChatException("채팅방을 찾을 수 없습니다", ChatException.ErrorType.NOT_FOUND));
 
         MemberId senderId = new MemberId(command.senderId());
         room.addMessage(senderId, command.content());
         ChatRoom saved = saveChatPort.save(room);
         List<Message> savedMessages = saved.getMessages();
         if (savedMessages.isEmpty()) {
-            throw new ChatException("메시지 저장에 실패했습니다");
+            throw new ChatException("메시지 저장에 실패했습니다", ChatException.ErrorType.BAD_REQUEST);
         }
         return MessageResult.from(savedMessages.get(savedMessages.size() - 1));
     }

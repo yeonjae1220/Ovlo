@@ -9,6 +9,9 @@ import org.springframework.messaging.support.ChannelInterceptor;
 import org.springframework.messaging.support.MessageHeaderAccessor;
 import org.springframework.stereotype.Component;
 
+import org.springframework.messaging.MessageDeliveryException;
+
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -41,14 +44,15 @@ public class ChatSubscriptionInterceptor implements ChannelInterceptor {
         Matcher matcher = CHAT_TOPIC.matcher(destination);
         if (!matcher.matches()) return message;
 
-        Long memberId = (Long) accessor.getSessionAttributes().get("memberId");
+        Map<String, Object> sessionAttrs = accessor.getSessionAttributes();
+        Long memberId = (sessionAttrs != null) ? (Long) sessionAttrs.get("memberId") : null;
         if (memberId == null) {
-            throw new IllegalArgumentException("인증이 필요합니다");
+            throw new MessageDeliveryException(message, "인증이 필요합니다");
         }
 
         Long roomId = Long.parseLong(matcher.group(1));
         if (!getChatRoomQuery.isMemberOfRoom(roomId, memberId)) {
-            throw new IllegalArgumentException("채팅방 접근 권한이 없습니다");
+            throw new MessageDeliveryException(message, "채팅방 접근 권한이 없습니다");
         }
 
         return message;

@@ -56,7 +56,7 @@ public class PostCommandService
     public PostResult update(UpdatePostCommand command) {
         Post post = loadPostOrThrow(command.postId());
         if (!post.getAuthorId().equals(new MemberId(command.requesterId()))) {
-            throw new PostException("게시글을 수정할 권한이 없습니다");
+            throw new PostException("게시글을 수정할 권한이 없습니다", PostException.ErrorType.FORBIDDEN);
         }
         post.update(command.title(), command.content());
         return PostResult.from(savePostPort.save(post));
@@ -96,7 +96,7 @@ public class PostCommandService
     public void delete(DeletePostCommand command) {
         Post post = loadPostOrThrow(command.postId());
         if (!post.getAuthorId().equals(new MemberId(command.requesterId()))) {
-            throw new PostException("게시글을 삭제할 권한이 없습니다");
+            throw new PostException("게시글을 삭제할 권한이 없습니다", PostException.ErrorType.FORBIDDEN);
         }
         post.delete();
         savePostPort.save(post);
@@ -104,6 +104,6 @@ public class PostCommandService
 
     private Post loadPostOrThrow(Long postId) {
         return loadPostPort.findById(new PostId(postId))
-                .orElseThrow(() -> new PostException("게시글을 찾을 수 없습니다: " + postId));
+                .orElseThrow(() -> new PostException("게시글을 찾을 수 없습니다: " + postId, PostException.ErrorType.NOT_FOUND));
     }
 }

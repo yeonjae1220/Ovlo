@@ -70,7 +70,7 @@ public class Post {
 
     public Comment addComment(MemberId authorId, String content) {
         if (deleted) {
-            throw new PostException("삭제된 게시글에는 댓글을 달 수 없습니다");
+            throw new PostException("삭제된 게시글에는 댓글을 달 수 없습니다", PostException.ErrorType.BAD_REQUEST);
         }
         Comment comment = Comment.create(authorId, content);
         comments.add(comment);
@@ -85,13 +85,13 @@ public class Post {
      */
     public void react(MemberId memberId, ReactionType type) {
         if (deleted) {
-            throw new PostException("삭제된 게시글에는 반응할 수 없습니다");
+            throw new PostException("삭제된 게시글에는 반응할 수 없습니다", PostException.ErrorType.BAD_REQUEST);
         }
 
         boolean alreadyReacted = reactions.stream()
                 .anyMatch(r -> r.memberId().equals(memberId) && r.type() == type);
         if (alreadyReacted) {
-            throw new PostException("이미 동일한 반응을 했습니다");
+            throw new PostException("이미 동일한 반응을 했습니다", PostException.ErrorType.CONFLICT);
         }
 
         // 반대 반응이 있으면 제거 후 새 반응 추가
@@ -103,10 +103,10 @@ public class Post {
         Comment comment = comments.stream()
                 .filter(c -> commentId.equals(c.getId()))
                 .findFirst()
-                .orElseThrow(() -> new PostException("댓글을 찾을 수 없습니다: " + commentId.value()));
+                .orElseThrow(() -> new PostException("댓글을 찾을 수 없습니다: " + commentId.value(), PostException.ErrorType.NOT_FOUND));
 
         if (!comment.getAuthorId().equals(requesterId)) {
-            throw new PostException("댓글을 삭제할 권한이 없습니다");
+            throw new PostException("댓글을 삭제할 권한이 없습니다", PostException.ErrorType.FORBIDDEN);
         }
         comment.delete();
     }
@@ -114,13 +114,13 @@ public class Post {
     public void unreact(MemberId memberId) {
         boolean removed = reactions.removeIf(r -> r.memberId().equals(memberId));
         if (!removed) {
-            throw new PostException("반응을 찾을 수 없습니다");
+            throw new PostException("반응을 찾을 수 없습니다", PostException.ErrorType.NOT_FOUND);
         }
     }
 
     public void update(String title, String content) {
         if (deleted) {
-            throw new PostException("삭제된 게시글은 수정할 수 없습니다");
+            throw new PostException("삭제된 게시글은 수정할 수 없습니다", PostException.ErrorType.BAD_REQUEST);
         }
         validateTitle(title);
         validateContent(content);
