@@ -16,6 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -41,17 +42,31 @@ public class ChatQueryService implements GetChatRoomQuery {
 
     @Override
     public List<ChatRoomResult> getChatRooms(Long memberId) {
-        return loadChatPort.findByMemberId(new MemberId(memberId))
-                .stream()
+        List<ChatRoom> rooms = loadChatPort.findByMemberId(new MemberId(memberId));
+        if (rooms.isEmpty()) return List.of();
+
+        // 배치 1: 전체 채팅방 참여자 ID 수집 → 회원 정보 한 번에 조회 (N×P → 1 쿼리)
+        List<MemberId> allParticipantIds = rooms.stream()
+                .flatMap(r -> r.getParticipants().stream())
+                .distinct()
+                .toList();
+        Map<Long, Member> memberById = loadMemberPort.findAllByIds(allParticipantIds).stream()
+                .collect(Collectors.toMap(m -> m.getId().value(), m -> m));
+
+        // 배치 2: 전체 채팅방 읽음 마커 한 번에 조회 (2N → 1 쿼리)
+        List<ChatRoomId> roomIds = rooms.stream().map(ChatRoom::getId).toList();
+        Map<Long, Map<Long, LocalDateTime>> lastReadAtByRoom =
+                loadChatPort.findAllLastReadAtByRoomIds(roomIds);
+
+        return rooms.stream()
                 .map(room -> {
-                    var info = buildParticipantInfo(room);
-                    ChatRoomId roomId = room.getId();
-                    var lastReadAt = loadChatPort.findAllLastReadAt(roomId);
-                    LocalDateTime myLastRead = loadChatPort
-                            .findLastReadAt(roomId, new MemberId(memberId))
+                    ParticipantInfo info = buildParticipantInfoFromCache(room, memberById);
+                    Map<Long, LocalDateTime> roomReadAt =
+                            lastReadAtByRoom.getOrDefault(room.getId().value(), Map.of());
+                    LocalDateTime myLastRead = Optional.ofNullable(roomReadAt.get(memberId))
                             .orElse(LocalDateTime.of(1970, 1, 1, 0, 0, 0));
-                    int unread = (int) loadChatPort.countUnread(roomId, new MemberId(memberId), myLastRead);
-                    return ChatRoomResult.from(room, info.nicknames(), info.profileImages(), unread, lastReadAt);
+                    int unread = (int) loadChatPort.countUnread(room.getId(), new MemberId(memberId), myLastRead);
+                    return ChatRoomResult.from(room, info.nicknames(), info.profileImages(), unread, roomReadAt);
                 })
                 .toList();
     }
@@ -78,6 +93,18 @@ public class ChatQueryService implements GetChatRoomQuery {
         List<Member> members = room.getParticipants().stream()
                 .flatMap(pid -> loadMemberPort.findById(pid).stream())
                 .toList();
+        return toParticipantInfo(members);
+    }
+
+    private ParticipantInfo buildParticipantInfoFromCache(ChatRoom room, Map<Long, Member> cache) {
+        List<Member> members = room.getParticipants().stream()
+                .map(pid -> cache.get(pid.value()))
+                .filter(m -> m != null)
+                .toList();
+        return toParticipantInfo(members);
+    }
+
+    private ParticipantInfo toParticipantInfo(List<Member> members) {
         Map<Long, String> nicknames = members.stream().collect(
                 Collectors.toMap(m -> m.getId().value(), Member::getNickname));
         Map<Long, String> profileImages = members.stream()

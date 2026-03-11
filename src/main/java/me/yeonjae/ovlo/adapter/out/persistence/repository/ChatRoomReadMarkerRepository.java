@@ -12,4 +12,7 @@ public interface ChatRoomReadMarkerRepository
 
     @Query("SELECT m FROM ChatRoomReadMarkerJpaEntity m WHERE m.id.chatRoomId = :chatRoomId")
     List<ChatRoomReadMarkerJpaEntity> findAllByChatRoomId(@Param("chatRoomId") Long chatRoomId);
+
+    @Query("SELECT m FROM ChatRoomReadMarkerJpaEntity m WHERE m.id.chatRoomId IN :roomIds")
+    List<ChatRoomReadMarkerJpaEntity> findAllByChatRoomIdIn(@Param("roomIds") List<Long> roomIds);
 }

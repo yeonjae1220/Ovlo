@@ -98,6 +98,20 @@ public class ChatPersistenceAdapter implements LoadChatPort, SaveChatPort, SaveR
     }
 
     @Override
+    public Map<Long, Map<Long, LocalDateTime>> findAllLastReadAtByRoomIds(List<ChatRoomId> roomIds) {
+        if (roomIds.isEmpty()) return Map.of();
+        List<Long> rawIds = roomIds.stream().map(ChatRoomId::value).toList();
+        return readMarkerRepository.findAllByChatRoomIdIn(rawIds).stream()
+                .collect(Collectors.groupingBy(
+                        m -> m.getId().getChatRoomId(),
+                        Collectors.toMap(
+                                m -> m.getId().getMemberId(),
+                                ChatRoomReadMarkerJpaEntity::getLastReadAt
+                        )
+                ));
+    }
+
+    @Override
     public Optional<LocalDateTime> findLastReadAt(ChatRoomId chatRoomId, MemberId memberId) {
         return readMarkerRepository.findById(
                 new ChatRoomReadMarkerJpaEntity.ReadMarkerId(chatRoomId.value(), memberId.value())

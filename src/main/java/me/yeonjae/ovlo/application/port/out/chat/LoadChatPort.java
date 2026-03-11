@@ -23,6 +23,9 @@ public interface LoadChatPort {
     /** 채팅방 전체 참여자의 마지막 읽음 시각 (memberId → lastReadAt) */
     Map<Long, LocalDateTime> findAllLastReadAt(ChatRoomId chatRoomId);
 
+    /** 여러 채팅방의 읽음 마커 일괄 조회 (chatRoomId → (memberId → lastReadAt)) */
+    Map<Long, Map<Long, LocalDateTime>> findAllLastReadAtByRoomIds(List<ChatRoomId> roomIds);
+
     /** 특정 회원의 마지막 읽음 시각 */
     Optional<LocalDateTime> findLastReadAt(ChatRoomId chatRoomId, MemberId memberId);
 

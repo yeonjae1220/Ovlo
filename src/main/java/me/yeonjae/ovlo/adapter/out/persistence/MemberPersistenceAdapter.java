@@ -30,6 +30,14 @@ public class MemberPersistenceAdapter implements LoadMemberPort, SaveMemberPort 
     }
 
     @Override
+    public List<Member> findAllByIds(List<MemberId> ids) {
+        List<Long> rawIds = ids.stream().map(MemberId::value).toList();
+        return memberJpaRepository.findAllById(rawIds).stream()
+                .map(memberMapper::toDomain)
+                .toList();
+    }
+
+    @Override
     public Optional<Member> findByEmail(String email) {
         return memberJpaRepository.findByEmail(email)
                 .map(memberMapper::toDomain);

@@ -35,14 +35,11 @@ public class RedisTokenAdapter implements TokenStorePort {
         Duration ttl = Duration.between(Instant.now(), session.getExpiresAt());
         if (ttl.isNegative() || ttl.isZero()) return;
 
-        // Rotation 시 구 토큰 역인덱스 삭제 — 구 토큰으로 재인증 방지
+        // Rotation 시 구 토큰 역인덱스 조회 — MULTI 블록 내 삭제를 위해 사전에 읽음
         Map<Object, Object> existing = redisTemplate.opsForHash().entries(memberKey);
-        if (!existing.isEmpty()) {
-            String oldToken = (String) existing.get("refreshToken");
-            if (oldToken != null && !oldToken.equals(session.getRefreshToken())) {
-                redisTemplate.delete(tokenIndexKey(oldToken));
-            }
-        }
+        String oldToken = existing.isEmpty() ? null : (String) existing.get("refreshToken");
+        final String oldTokenToDelete = (oldToken != null && !oldToken.equals(session.getRefreshToken()))
+                ? oldToken : null;
 
         Map<String, String> fields = new HashMap<>();
         fields.put("sessionId", session.getId().value());
@@ -51,13 +48,17 @@ public class RedisTokenAdapter implements TokenStorePort {
         fields.put("expiresAt", String.valueOf(session.getExpiresAt().toEpochMilli()));
         fields.put("revoked", String.valueOf(session.isRevoked()));
 
-        // MULTI/EXEC: putAll + expire를 원자적으로 실행 (expire 실패 시 TTL 누락 방지)
+        // MULTI/EXEC: 구 토큰 삭제 + putAll + expire 를 원자적으로 실행
+        // → 구 토큰 삭제와 신 세션 저장이 같은 트랜잭션 안에 있어 크래시 시 불일치 방지
         redisTemplate.execute(new SessionCallback<Void>() {
             @Override
             @SuppressWarnings("unchecked")
             public <K, V> Void execute(RedisOperations<K, V> ops) {
                 RedisOperations<String, String> operations = (RedisOperations<String, String>) ops;
                 operations.multi();
+                if (oldTokenToDelete != null) {
+                    operations.delete(tokenIndexKey(oldTokenToDelete));
+                }
                 operations.opsForHash().putAll(memberKey, fields);
                 operations.expire(memberKey, ttl);
                 operations.exec();

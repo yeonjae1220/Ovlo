@@ -11,6 +11,7 @@ import me.yeonjae.ovlo.domain.post.exception.PostException;
 import me.yeonjae.ovlo.domain.university.exception.UniversityException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.server.ResponseStatusException;
@@ -82,6 +83,11 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(ResponseStatusException.class)
     public ResponseEntity<Map<String, String>> handleResponseStatus(ResponseStatusException ex) {
         return ResponseEntity.status(ex.getStatusCode()).body(error(ex.getReason()));
+    }
+
+    @ExceptionHandler(OptimisticLockingFailureException.class)
+    public ResponseEntity<Map<String, String>> handleOptimisticLock(OptimisticLockingFailureException ex) {
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(error("동시 수정이 발생했습니다. 다시 시도해주세요"));
     }
 
     @ExceptionHandler(IllegalArgumentException.class)

@@ -82,6 +82,9 @@ public class ChatCommandService implements CreateChatRoomUseCase, SendMessageUse
         room.addMessage(senderId, command.content());
         ChatRoom saved = saveChatPort.save(room);
         List<Message> savedMessages = saved.getMessages();
+        if (savedMessages.isEmpty()) {
+            throw new ChatException("메시지 저장에 실패했습니다");
+        }
         return MessageResult.from(savedMessages.get(savedMessages.size() - 1));
     }
 }
