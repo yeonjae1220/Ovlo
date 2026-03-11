@@ -42,7 +42,7 @@ public class BoardQueryService implements SearchBoardQuery, GetBoardQuery {
                 .toList();
 
         long total = searchBoardPort.count(command.keyword(), category, scope);
-        return new BoardPageResult(content, total, command.page(), command.size());
+        return BoardPageResult.of(content, total, command.page(), command.size());
     }
 
     @Override

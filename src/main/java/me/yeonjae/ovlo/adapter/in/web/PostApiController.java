@@ -28,6 +28,8 @@ import me.yeonjae.ovlo.application.port.in.post.ReactToPostUseCase;
 import me.yeonjae.ovlo.application.port.in.post.UpdatePostUseCase;
 import me.yeonjae.ovlo.domain.post.model.PostId;
 import org.springframework.http.HttpStatus;
+
+import java.util.List;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -133,6 +135,12 @@ public class PostApiController {
         return ResponseEntity.noContent().build();
     }
 
+    @Operation(summary = "댓글 목록 조회")
+    @GetMapping("/{id}/comments")
+    public ResponseEntity<List<CommentResult>> getComments(@PathVariable Long id) {
+        return ResponseEntity.ok(getPostQuery.getComments(new PostId(id)));
+    }
+
     @Operation(summary = "댓글 작성")
     @PostMapping("/{id}/comments")
     public ResponseEntity<CommentResult> createComment(
@@ -167,7 +175,7 @@ public class PostApiController {
         reactToPostUseCase.react(
                 new ReactToPostCommand(id, memberId, request.reactionType())
         );
-        return ResponseEntity.noContent().build();
+        return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 
     @Operation(summary = "게시글 반응 취소")

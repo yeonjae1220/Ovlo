@@ -29,43 +29,43 @@ public class GlobalExceptionHandler {
     private static final Logger log = LoggerFactory.getLogger(GlobalExceptionHandler.class);
 
     @ExceptionHandler(MemberException.class)
-    public ResponseEntity<Map<String, String>> handleMemberException(MemberException ex) {
-        return ResponseEntity.status(resolveStatus(ex.getErrorType())).body(error(ex.getMessage()));
+    public ResponseEntity<ErrorResponse> handleMemberException(MemberException ex) {
+        return ResponseEntity.status(resolveStatus(ex.getErrorType())).body(ErrorResponse.of(ex.getMessage()));
     }
 
     @ExceptionHandler(AuthException.class)
-    public ResponseEntity<Map<String, String>> handleAuthException(AuthException ex) {
-        return ResponseEntity.status(resolveStatus(ex.getErrorType())).body(error(ex.getMessage()));
+    public ResponseEntity<ErrorResponse> handleAuthException(AuthException ex) {
+        return ResponseEntity.status(resolveStatus(ex.getErrorType())).body(ErrorResponse.of(ex.getMessage()));
     }
 
     @ExceptionHandler(UniversityException.class)
-    public ResponseEntity<Map<String, String>> handleUniversityException(UniversityException ex) {
-        return ResponseEntity.status(resolveStatus(ex.getErrorType())).body(error(ex.getMessage()));
+    public ResponseEntity<ErrorResponse> handleUniversityException(UniversityException ex) {
+        return ResponseEntity.status(resolveStatus(ex.getErrorType())).body(ErrorResponse.of(ex.getMessage()));
     }
 
     @ExceptionHandler(BoardException.class)
-    public ResponseEntity<Map<String, String>> handleBoardException(BoardException ex) {
-        return ResponseEntity.status(resolveStatus(ex.getErrorType())).body(error(ex.getMessage()));
+    public ResponseEntity<ErrorResponse> handleBoardException(BoardException ex) {
+        return ResponseEntity.status(resolveStatus(ex.getErrorType())).body(ErrorResponse.of(ex.getMessage()));
     }
 
     @ExceptionHandler(PostException.class)
-    public ResponseEntity<Map<String, String>> handlePostException(PostException ex) {
-        return ResponseEntity.status(resolveStatus(ex.getErrorType())).body(error(ex.getMessage()));
+    public ResponseEntity<ErrorResponse> handlePostException(PostException ex) {
+        return ResponseEntity.status(resolveStatus(ex.getErrorType())).body(ErrorResponse.of(ex.getMessage()));
     }
 
     @ExceptionHandler(FollowException.class)
-    public ResponseEntity<Map<String, String>> handleFollowException(FollowException ex) {
-        return ResponseEntity.status(resolveStatus(ex.getErrorType())).body(error(ex.getMessage()));
+    public ResponseEntity<ErrorResponse> handleFollowException(FollowException ex) {
+        return ResponseEntity.status(resolveStatus(ex.getErrorType())).body(ErrorResponse.of(ex.getMessage()));
     }
 
     @ExceptionHandler(MediaException.class)
-    public ResponseEntity<Map<String, String>> handleMediaException(MediaException ex) {
-        return ResponseEntity.status(resolveStatus(ex.getErrorType())).body(error(ex.getMessage()));
+    public ResponseEntity<ErrorResponse> handleMediaException(MediaException ex) {
+        return ResponseEntity.status(resolveStatus(ex.getErrorType())).body(ErrorResponse.of(ex.getMessage()));
     }
 
     @ExceptionHandler(ChatException.class)
-    public ResponseEntity<Map<String, String>> handleChatException(ChatException ex) {
-        return ResponseEntity.status(resolveStatus(ex.getErrorType())).body(error(ex.getMessage()));
+    public ResponseEntity<ErrorResponse> handleChatException(ChatException ex) {
+        return ResponseEntity.status(resolveStatus(ex.getErrorType())).body(ErrorResponse.of(ex.getMessage()));
     }
 
     /**
@@ -84,58 +84,54 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(TooManyRequestsException.class)
-    public ResponseEntity<Map<String, String>> handleTooManyRequests(TooManyRequestsException ex) {
-        return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS).body(error(ex.getMessage()));
+    public ResponseEntity<ErrorResponse> handleTooManyRequests(TooManyRequestsException ex) {
+        return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS).body(ErrorResponse.of(ex.getMessage()));
     }
 
     @ExceptionHandler(ResponseStatusException.class)
-    public ResponseEntity<Map<String, String>> handleResponseStatus(ResponseStatusException ex) {
-        return ResponseEntity.status(ex.getStatusCode()).body(error(ex.getReason()));
+    public ResponseEntity<ErrorResponse> handleResponseStatus(ResponseStatusException ex) {
+        return ResponseEntity.status(ex.getStatusCode()).body(ErrorResponse.of(ex.getReason()));
     }
 
     @ExceptionHandler(OptimisticLockingFailureException.class)
-    public ResponseEntity<Map<String, String>> handleOptimisticLock(OptimisticLockingFailureException ex) {
-        return ResponseEntity.status(HttpStatus.CONFLICT).body(error("동시 수정이 발생했습니다. 다시 시도해주세요"));
+    public ResponseEntity<ErrorResponse> handleOptimisticLock(OptimisticLockingFailureException ex) {
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(ErrorResponse.of("동시 수정이 발생했습니다. 다시 시도해주세요"));
     }
 
     @ExceptionHandler(IllegalArgumentException.class)
-    public ResponseEntity<Map<String, String>> handleIllegalArgument(IllegalArgumentException ex) {
+    public ResponseEntity<ErrorResponse> handleIllegalArgument(IllegalArgumentException ex) {
         String message = ex.getMessage();
         // JVM enum 오류 "No enum constant com.example.Foo.BAR" → 내부 클래스 경로 노출 방지
         if (message != null && message.startsWith("No enum constant")) {
             String value = message.substring(message.lastIndexOf('.') + 1);
             message = "유효하지 않은 값입니다: " + value;
         }
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error(message));
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ErrorResponse.of(message));
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<Map<String, String>> handleValidation(MethodArgumentNotValidException ex) {
+    public ResponseEntity<ErrorResponse> handleValidation(MethodArgumentNotValidException ex) {
         Map<String, String> errors = new HashMap<>();
         for (FieldError fieldError : ex.getBindingResult().getFieldErrors()) {
             errors.put(fieldError.getField(), fieldError.getDefaultMessage());
         }
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errors);
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ErrorResponse.ofFields(errors));
     }
 
     @ExceptionHandler(HandlerMethodValidationException.class)
-    public ResponseEntity<Map<String, String>> handleMethodValidation(HandlerMethodValidationException ex) {
+    public ResponseEntity<ErrorResponse> handleMethodValidation(HandlerMethodValidationException ex) {
         Map<String, String> errors = new HashMap<>();
         ex.getValueResults().forEach(result ->
                 result.getResolvableErrors().forEach(err ->
                         errors.put(result.getMethodParameter().getParameterName(),
                                 err.getDefaultMessage())));
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errors.isEmpty() ? error(ex.getMessage()) : errors);
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(errors.isEmpty() ? ErrorResponse.of(ex.getMessage()) : ErrorResponse.ofFields(errors));
     }
 
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<Map<String, String>> handleGeneral(Exception ex) {
+    public ResponseEntity<ErrorResponse> handleGeneral(Exception ex) {
         log.error("Unhandled exception [{}]: {}", ex.getClass().getName(), ex.getMessage(), ex);
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(error("Internal server error"));
-    }
-
-    private Map<String, String> error(String message) {
-        return Map.of("error", message != null ? message : "Unknown error");
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(ErrorResponse.of("Internal server error"));
     }
 }

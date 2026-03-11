@@ -16,10 +16,10 @@ import me.yeonjae.ovlo.application.port.in.member.RegisterMemberUseCase;
 import me.yeonjae.ovlo.application.port.in.member.UpdateMemberProfileUseCase;
 import me.yeonjae.ovlo.application.port.in.member.UpdateProfileImageUseCase;
 import me.yeonjae.ovlo.application.port.in.member.WithdrawMemberUseCase;
+import me.yeonjae.ovlo.domain.member.exception.MemberException;
 import me.yeonjae.ovlo.domain.member.model.MemberId;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.server.ResponseStatusException;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
@@ -97,7 +97,7 @@ public class MemberApiController {
             @Valid @RequestBody UpdateMemberProfileRequest request
     ) {
         if (!id.equals(memberId)) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "본인 프로필만 수정할 수 있습니다");
+            throw new MemberException("본인 프로필만 수정할 수 있습니다", MemberException.ErrorType.FORBIDDEN);
         }
         MemberResult result = updateMemberProfileUseCase.updateProfile(
                 new UpdateMemberProfileCommand(id, request.nickname(), request.bio())
@@ -113,7 +113,7 @@ public class MemberApiController {
             @Valid @RequestBody UpdateProfileImageRequest request
     ) {
         if (!id.equals(memberId)) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "본인 프로필만 수정할 수 있습니다");
+            throw new MemberException("본인 프로필만 수정할 수 있습니다", MemberException.ErrorType.FORBIDDEN);
         }
         MemberResult result = updateProfileImageUseCase.updateProfileImage(
                 new UpdateProfileImageCommand(id, request.mediaId())
@@ -128,7 +128,7 @@ public class MemberApiController {
             @AuthenticationPrincipal Long memberId
     ) {
         if (!id.equals(memberId)) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "본인 계정만 탈퇴할 수 있습니다");
+            throw new MemberException("본인 계정만 탈퇴할 수 있습니다", MemberException.ErrorType.FORBIDDEN);
         }
         withdrawMemberUseCase.withdraw(new WithdrawMemberCommand(id));
         return ResponseEntity.noContent().build();

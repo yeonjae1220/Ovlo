@@ -1,5 +1,6 @@
 package me.yeonjae.ovlo.application.service.query;
 
+import me.yeonjae.ovlo.application.dto.result.CommentResult;
 import me.yeonjae.ovlo.application.dto.result.PostPageResult;
 import me.yeonjae.ovlo.application.dto.result.PostResult;
 import me.yeonjae.ovlo.application.port.in.post.GetPostQuery;
@@ -40,9 +41,16 @@ public class PostQueryService implements GetPostQuery {
         int offset = page * size;
         List<PostResult> content = loadPostPort.findByBoardId(id, offset, size)
                 .stream()
-                .map(PostResult::from)
+                .map(PostResult::fromSummary)
                 .toList();
         long total = loadPostPort.countByBoardId(id);
-        return new PostPageResult(content, total, page, size);
+        return PostPageResult.of(content, total, page, size);
+    }
+
+    @Override
+    public List<CommentResult> getComments(PostId postId) {
+        return loadPostPort.findById(postId)
+                .map(post -> post.getComments().stream().map(CommentResult::from).toList())
+                .orElseThrow(() -> new PostException("게시글을 찾을 수 없습니다: " + postId.value(), PostException.ErrorType.NOT_FOUND));
     }
 }

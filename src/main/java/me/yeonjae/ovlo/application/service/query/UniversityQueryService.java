@@ -41,7 +41,7 @@ public class UniversityQueryService implements SearchUniversityQuery, GetUnivers
                 .map(UniversityResult::from)
                 .toList();
 
-        return new UniversityPageResult(content, total, command.page(), command.size());
+        return UniversityPageResult.of(content, total, command.page(), command.size());
     }
 
     @Override

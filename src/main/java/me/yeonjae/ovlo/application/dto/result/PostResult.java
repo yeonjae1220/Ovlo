@@ -42,4 +42,20 @@ public record PostResult(
     public static PostResult from(Post post) {
         return from(post, null);
     }
+
+    public static PostResult fromSummary(Post post) {
+        boolean likedByMe = false;
+        return new PostResult(
+                post.getId() != null ? post.getId().value() : null,
+                post.getBoardId().value(),
+                post.getAuthorId().value(),
+                post.getTitle(),
+                post.getContent(),
+                post.isDeleted(),
+                post.likeCount(),
+                post.dislikeCount(),
+                List.of(),
+                likedByMe
+        );
+    }
 }

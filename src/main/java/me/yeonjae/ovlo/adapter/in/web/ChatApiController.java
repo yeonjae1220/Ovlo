@@ -3,6 +3,8 @@ package me.yeonjae.ovlo.adapter.in.web;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 import me.yeonjae.ovlo.adapter.in.web.dto.request.CreateChatRoomRequest;
 import me.yeonjae.ovlo.adapter.in.web.dto.response.ReadMarkerEvent;
 import me.yeonjae.ovlo.application.dto.command.CreateChatRoomCommand;
@@ -22,6 +24,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.time.LocalDateTime;
@@ -29,6 +32,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Tag(name = "Chat", description = "채팅 API")
+@Validated
 @RestController
 @RequestMapping("/api/v1/chat/rooms")
 public class ChatApiController {
@@ -100,8 +104,8 @@ public class ChatApiController {
     @GetMapping("/{id}/messages")
     public ResponseEntity<List<MessageResult>> getMessages(
             @PathVariable Long id,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "50") int size
+            @RequestParam(defaultValue = "0") @Min(0) int page,
+            @RequestParam(defaultValue = "50") @Min(1) @Max(100) int size
     ) {
         return ResponseEntity.ok(getChatRoomQuery.getMessages(id, page, size));
     }

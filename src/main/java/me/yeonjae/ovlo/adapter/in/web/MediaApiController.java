@@ -24,6 +24,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Paths;
 
 @Tag(name = "Media", description = "미디어 파일 API")
 @RestController
@@ -78,17 +79,22 @@ public class MediaApiController {
     ) {
         MediaType type = MediaType.valueOf(mediaType);
 
+        String originalFilename = file.getOriginalFilename();
+        String safeFilename = (originalFilename != null)
+                ? Paths.get(originalFilename).getFileName().toString()
+                : "upload";
+
         byte[] data;
         try {
             data = file.getBytes();
         } catch (IOException e) {
-            throw new MediaException("파일을 읽는 중 오류가 발생했습니다: " + file.getOriginalFilename());
+            throw new MediaException("파일을 읽는 중 오류가 발생했습니다: " + safeFilename);
         }
 
         MediaResult result = uploadMediaUseCase.upload(
                 new UploadMediaCommand(
                         memberId,
-                        file.getOriginalFilename(),
+                        safeFilename,
                         type,
                         data
                 )

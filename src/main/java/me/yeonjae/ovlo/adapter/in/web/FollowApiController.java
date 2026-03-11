@@ -9,6 +9,7 @@ import me.yeonjae.ovlo.application.dto.result.MemberResult;
 import me.yeonjae.ovlo.application.port.in.follow.FollowMemberUseCase;
 import me.yeonjae.ovlo.application.port.in.follow.GetFollowQuery;
 import me.yeonjae.ovlo.application.port.in.follow.UnfollowMemberUseCase;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -47,7 +48,7 @@ public class FollowApiController {
             @AuthenticationPrincipal Long memberId
     ) {
         followMemberUseCase.follow(new FollowCommand(memberId, request.followeeId()));
-        return ResponseEntity.noContent().build();
+        return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 
     @Operation(summary = "언팔로우")
