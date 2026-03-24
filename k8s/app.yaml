@@ -29,8 +29,8 @@ spec:
         project: timemanager
       containers:
         - name: app
-          image: ovlo-app:latest
-          imagePullPolicy: Never
+          image: ghcr.io/yeonjae1220/ovlo:latest
+          imagePullPolicy: Always
           ports:
             - containerPort: 8080
           env:
@@ -74,11 +74,19 @@ spec:
             - name: media-data
               mountPath: /tmp/ovlo-media
           readinessProbe:
-            tcpSocket:
+            httpGet:
+              path: /actuator/health/readiness
               port: 8080
             initialDelaySeconds: 60
             periodSeconds: 10
             failureThreshold: 5
+          livenessProbe:
+            httpGet:
+              path: /actuator/health/liveness
+              port: 8080
+            initialDelaySeconds: 90
+            periodSeconds: 15
+            failureThreshold: 3
           resources:
             requests:
               memory: "512Mi"

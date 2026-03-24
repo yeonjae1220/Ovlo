@@ -42,6 +42,8 @@ jobs:
     permissions:
       contents: read
       packages: write
+    outputs:
+      image-tag: ${{ steps.sha.outputs.tag }}
 
     steps:
       - name: Checkout code
@@ -59,6 +61,10 @@ jobs:
 
       - name: Build JAR
         run: ./gradlew bootJar --no-daemon
+
+      - name: Get short SHA for image tag
+        id: sha
+        run: echo "tag=sha-$(echo ${{ github.sha }} | cut -c1-7)" >> $GITHUB_OUTPUT
 
       - name: Log in to GitHub Container Registry
         uses: docker/login-action@v3
@@ -90,32 +96,39 @@ jobs:
     runs-on: ubuntu-latest
     needs: build-and-push
     if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+    environment: production  # GitHub Environment 보호 규칙 적용 (Settings > Environments 에서 설정)
 
     steps:
       - name: Deploy via SSH
         uses: appleboy/ssh-action@v1.0.3
+        env:
+          IMAGE_TAG: ${{ needs.build-and-push.outputs.image-tag }}
         with:
           host: ${{ secrets.LENOVO_HOST }}
           port: ${{ secrets.LENOVO_PORT }}
           username: ${{ secrets.LENOVO_USER }}
           key: ${{ secrets.LENOVO_SSH_KEY }}
+          envs: IMAGE_TAG
           script: |
-            # Pull latest image using k3s containerd
+            # Pull specific SHA tag (롤백 가능하도록 latest 대신 SHA 태그 사용)
             echo "${{ secrets.GITHUB_TOKEN }}" | sudo k3s ctr images pull \
               --user yeonjae1220 \
-              ghcr.io/yeonjae1220/ovlo:latest
+              ghcr.io/yeonjae1220/ovlo:$IMAGE_TAG
 
-            # Ensure imagePullPolicy is Always
-            sudo kubectl patch deployment app \
-              -n ovlo \
-              -p '{"spec":{"template":{"spec":{"containers":[{"name":"app","imagePullPolicy":"Always"}]}}}}'
-
-            # Update image and restart deployment
+            # Deploy with SHA tag for rollback capability
             sudo kubectl set image deployment/app \
-              app=ghcr.io/yeonjae1220/ovlo:latest \
+              app=ghcr.io/yeonjae1220/ovlo:$IMAGE_TAG \
               -n ovlo
-
-            sudo kubectl rollout restart deployment/app -n ovlo
 
             sudo kubectl rollout status deployment/app \
               -n ovlo --timeout=300s
+
+      - name: Notify deploy result
+        if: always()
+        run: |
+          if [ "${{ job.status }}" = "success" ]; then
+            echo "✅ Deployed: ghcr.io/yeonjae1220/ovlo:${{ needs.build-and-push.outputs.image-tag }}"
+          else
+            echo "❌ Deploy failed. Rollback with:"
+            echo "kubectl set image deployment/app app=ghcr.io/yeonjae1220/ovlo:<PREV_SHA_TAG> -n ovlo"
+          fi
