@@ -18,7 +18,7 @@ spec:
       containers:
         - name: frontend
           image: ghcr.io/yeonjae1220/ovlo-frontend:latest
-          imagePullPolicy: Always
+          imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 80
           resources:

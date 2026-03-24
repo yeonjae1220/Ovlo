@@ -148,16 +148,18 @@ jobs:
         env:
           IMAGE_TAG: ${{ needs.build-and-push.outputs.image-tag }}
           FRONTEND_IMAGE_TAG: ${{ needs.build-and-push-frontend.outputs.image-tag }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           host: ${{ secrets.LENOVO_HOST }}
           port: ${{ secrets.LENOVO_PORT }}
           username: ${{ secrets.LENOVO_USER }}
           key: ${{ secrets.LENOVO_SSH_KEY }}
-          envs: IMAGE_TAG,FRONTEND_IMAGE_TAG
+          envs: IMAGE_TAG,FRONTEND_IMAGE_TAG,GH_TOKEN
           script: |
             # ── Backend ───────────────────────────────────────────────────────
-            echo "${{ secrets.GITHUB_TOKEN }}" | sudo k3s ctr images pull \
-              --user yeonjae1220 \
+            # --user user:token 인라인 형식으로 TTY 없이 인증
+            sudo k3s ctr images pull \
+              --user "yeonjae1220:${GH_TOKEN}" \
               ghcr.io/yeonjae1220/ovlo:$IMAGE_TAG
 
             sudo kubectl set image deployment/app \
@@ -168,8 +170,8 @@ jobs:
               -n ovlo --timeout=300s
 
             # ── Frontend ──────────────────────────────────────────────────────
-            echo "${{ secrets.GITHUB_TOKEN }}" | sudo k3s ctr images pull \
-              --user yeonjae1220 \
+            sudo k3s ctr images pull \
+              --user "yeonjae1220:${GH_TOKEN}" \
               ghcr.io/yeonjae1220/ovlo-frontend:$FRONTEND_IMAGE_TAG
 
             sudo kubectl set image deployment/frontend \
