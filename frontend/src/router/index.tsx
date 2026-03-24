@@ -5,6 +5,8 @@ import ProtectedRoute from '../components/layout/ProtectedRoute'
 import LoginPage from '../pages/auth/LoginPage'
 import RegisterPage from '../pages/auth/RegisterPage'
 import UniversitySearchPage from '../pages/university/UniversitySearchPage'
+import ExchangeUniversitySearchPage from '../pages/university/ExchangeUniversitySearchPage'
+import ExchangeUniversityDetailPage from '../pages/university/ExchangeUniversityDetailPage'
 import BoardListPage from '../pages/board/BoardListPage'
 import BoardDetailPage from '../pages/board/BoardDetailPage'
 import CreatePostPage from '../pages/post/CreatePostPage'
@@ -20,6 +22,8 @@ export const router = createBrowserRouter([
   { path: '/login', element: <LoginPage /> },
   { path: '/register', element: <RegisterPage /> },
   { path: '/universities', element: <UniversitySearchPage /> },
+  { path: '/exchange-universities', element: <ExchangeUniversitySearchPage /> },
+  { path: '/exchange-universities/:id', element: <ExchangeUniversityDetailPage /> },
 
   // Protected routes
   {

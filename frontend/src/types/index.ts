@@ -219,6 +219,55 @@ export interface CreateChatRoomRequest {
   participantIds: number[]
 }
 
+// ─── Exchange University ──────────────────────────────────────────────────────
+export interface ExchangeUniversity {
+  id: number
+  nameKo: string
+  nameEn: string
+  country: string
+  city: string
+  website?: string
+  globalUnivId?: number
+  reviewCount: number
+  avgRating?: number
+}
+
+export interface VideoReview {
+  id: number
+  youtubeUrl: string
+  title: string
+  channel: string
+  publishedAt: string
+  country: string
+  city: string
+  overallRating?: number
+  difficulty?: number
+  workload?: number
+  recommend?: boolean
+  overallTone?: string
+  excitementLevel?: number
+  costTotal?: string
+  costRent?: string
+  costFood?: string
+  costTransport?: string
+  costCurrency?: string
+  visaType?: string
+  visaCost?: string
+  visaDuration?: string
+  visaProcessingDays?: string
+  dormAvailable?: boolean
+  dormType?: string
+  dormPrice?: string
+  gpaRequirement?: string
+  languageReq?: string
+  deadlineInfo?: string
+  sourceLang?: string
+  qualityScore?: number
+  summary?: string
+  exchangeInfo?: string
+  tags?: string[]
+}
+
 // ─── Pagination ─────────────────────────────────────────────────────────────
 export interface PageResult<T> {
   content: T[]
