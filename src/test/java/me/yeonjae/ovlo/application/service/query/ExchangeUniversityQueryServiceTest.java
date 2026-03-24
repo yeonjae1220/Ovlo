@@ -145,7 +145,7 @@ class ExchangeUniversityQueryServiceTest {
         void shouldGetById_whenExists() {
             ExchangeUniversityId id = new ExchangeUniversityId(1L);
             given(loadExchangeUniversityPort.findById(id)).willReturn(Optional.of(tokyo));
-            given(loadExchangeUniversityPort.countReviewsByUniversityId(id)).willReturn(3L);
+            given(loadExchangeUniversityPort.countReviewsByUniversityId(id, null)).willReturn(3L);
             given(loadExchangeUniversityPort.avgRatingByUniversityId(id)).willReturn(4.2);
 
             ExchangeUniversityResult result = service.getById(id);
@@ -174,7 +174,7 @@ class ExchangeUniversityQueryServiceTest {
         void shouldReturnNullAvgRating_whenNoReviews() {
             ExchangeUniversityId id = new ExchangeUniversityId(1L);
             given(loadExchangeUniversityPort.findById(id)).willReturn(Optional.of(tokyo));
-            given(loadExchangeUniversityPort.countReviewsByUniversityId(id)).willReturn(0L);
+            given(loadExchangeUniversityPort.countReviewsByUniversityId(id, null)).willReturn(0L);
             given(loadExchangeUniversityPort.avgRatingByUniversityId(id)).willReturn(null);
 
             ExchangeUniversityResult result = service.getById(id);
@@ -201,11 +201,11 @@ class ExchangeUniversityQueryServiceTest {
                     .build();
 
             given(loadExchangeUniversityPort.findById(id)).willReturn(Optional.of(tokyo));
-            given(loadExchangeUniversityPort.findReviewsByUniversityId(id, 0, 10))
+            given(loadExchangeUniversityPort.findReviewsByUniversityId(id, null, 0, 10))
                     .willReturn(List.of(review));
-            given(loadExchangeUniversityPort.countReviewsByUniversityId(id)).willReturn(1L);
+            given(loadExchangeUniversityPort.countReviewsByUniversityId(id, null)).willReturn(1L);
 
-            PageResult<VideoReviewResult> result = service.getReviews(id, 0, 10);
+            PageResult<VideoReviewResult> result = service.getReviews(id, null, 0, 10);
 
             assertThat(result.content()).hasSize(1);
             assertThat(result.content().get(0).youtubeUrl()).isEqualTo("https://youtube.com/watch?v=abc");
@@ -219,7 +219,7 @@ class ExchangeUniversityQueryServiceTest {
             ExchangeUniversityId id = new ExchangeUniversityId(999L);
             given(loadExchangeUniversityPort.findById(id)).willReturn(Optional.empty());
 
-            assertThatThrownBy(() -> service.getReviews(id, 0, 10))
+            assertThatThrownBy(() -> service.getReviews(id, null, 0, 10))
                     .isInstanceOf(UniversityException.class)
                     .hasMessageContaining("대학을 찾을 수 없습니다");
         }
@@ -229,11 +229,11 @@ class ExchangeUniversityQueryServiceTest {
         void shouldReturnEmpty_whenNoReviews() {
             ExchangeUniversityId id = new ExchangeUniversityId(1L);
             given(loadExchangeUniversityPort.findById(id)).willReturn(Optional.of(tokyo));
-            given(loadExchangeUniversityPort.findReviewsByUniversityId(id, 0, 10))
+            given(loadExchangeUniversityPort.findReviewsByUniversityId(id, null, 0, 10))
                     .willReturn(List.of());
-            given(loadExchangeUniversityPort.countReviewsByUniversityId(id)).willReturn(0L);
+            given(loadExchangeUniversityPort.countReviewsByUniversityId(id, null)).willReturn(0L);
 
-            PageResult<VideoReviewResult> result = service.getReviews(id, 0, 10);
+            PageResult<VideoReviewResult> result = service.getReviews(id, null, 0, 10);
 
             assertThat(result.content()).isEmpty();
             assertThat(result.totalElements()).isZero();
