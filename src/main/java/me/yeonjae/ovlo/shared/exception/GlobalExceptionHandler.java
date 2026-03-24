@@ -30,42 +30,50 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(MemberException.class)
     public ResponseEntity<ErrorResponse> handleMemberException(MemberException ex) {
-        return ResponseEntity.status(resolveStatus(ex.getErrorType())).body(ErrorResponse.of(ex.getMessage()));
+        return ResponseEntity.status(resolveStatus(ex.getErrorType()))
+                .body(ErrorResponse.of(resolveCode(MemberException.class, ex.getErrorType()), ex.getMessage()));
     }
 
     @ExceptionHandler(AuthException.class)
     public ResponseEntity<ErrorResponse> handleAuthException(AuthException ex) {
-        return ResponseEntity.status(resolveStatus(ex.getErrorType())).body(ErrorResponse.of(ex.getMessage()));
+        return ResponseEntity.status(resolveStatus(ex.getErrorType()))
+                .body(ErrorResponse.of(resolveCode(AuthException.class, ex.getErrorType()), ex.getMessage()));
     }
 
     @ExceptionHandler(UniversityException.class)
     public ResponseEntity<ErrorResponse> handleUniversityException(UniversityException ex) {
-        return ResponseEntity.status(resolveStatus(ex.getErrorType())).body(ErrorResponse.of(ex.getMessage()));
+        return ResponseEntity.status(resolveStatus(ex.getErrorType()))
+                .body(ErrorResponse.of(resolveCode(UniversityException.class, ex.getErrorType()), ex.getMessage()));
     }
 
     @ExceptionHandler(BoardException.class)
     public ResponseEntity<ErrorResponse> handleBoardException(BoardException ex) {
-        return ResponseEntity.status(resolveStatus(ex.getErrorType())).body(ErrorResponse.of(ex.getMessage()));
+        return ResponseEntity.status(resolveStatus(ex.getErrorType()))
+                .body(ErrorResponse.of(resolveCode(BoardException.class, ex.getErrorType()), ex.getMessage()));
     }
 
     @ExceptionHandler(PostException.class)
     public ResponseEntity<ErrorResponse> handlePostException(PostException ex) {
-        return ResponseEntity.status(resolveStatus(ex.getErrorType())).body(ErrorResponse.of(ex.getMessage()));
+        return ResponseEntity.status(resolveStatus(ex.getErrorType()))
+                .body(ErrorResponse.of(resolveCode(PostException.class, ex.getErrorType()), ex.getMessage()));
     }
 
     @ExceptionHandler(FollowException.class)
     public ResponseEntity<ErrorResponse> handleFollowException(FollowException ex) {
-        return ResponseEntity.status(resolveStatus(ex.getErrorType())).body(ErrorResponse.of(ex.getMessage()));
+        return ResponseEntity.status(resolveStatus(ex.getErrorType()))
+                .body(ErrorResponse.of(resolveCode(FollowException.class, ex.getErrorType()), ex.getMessage()));
     }
 
     @ExceptionHandler(MediaException.class)
     public ResponseEntity<ErrorResponse> handleMediaException(MediaException ex) {
-        return ResponseEntity.status(resolveStatus(ex.getErrorType())).body(ErrorResponse.of(ex.getMessage()));
+        return ResponseEntity.status(resolveStatus(ex.getErrorType()))
+                .body(ErrorResponse.of(resolveCode(MediaException.class, ex.getErrorType()), ex.getMessage()));
     }
 
     @ExceptionHandler(ChatException.class)
     public ResponseEntity<ErrorResponse> handleChatException(ChatException ex) {
-        return ResponseEntity.status(resolveStatus(ex.getErrorType())).body(ErrorResponse.of(ex.getMessage()));
+        return ResponseEntity.status(resolveStatus(ex.getErrorType()))
+                .body(ErrorResponse.of(resolveCode(ChatException.class, ex.getErrorType()), ex.getMessage()));
     }
 
     /**
@@ -83,19 +91,31 @@ public class GlobalExceptionHandler {
         };
     }
 
+    /**
+     * 도메인 예외 클래스명 + ErrorType name 으로 machine-readable 코드 생성.
+     * 예: UniversityException + NOT_FOUND → "UNIVERSITY_NOT_FOUND"
+     */
+    private static String resolveCode(Class<?> exClass, Enum<?> errorType) {
+        String domain = exClass.getSimpleName().replace("Exception", "").toUpperCase();
+        return domain + "_" + errorType.name();
+    }
+
     @ExceptionHandler(TooManyRequestsException.class)
     public ResponseEntity<ErrorResponse> handleTooManyRequests(TooManyRequestsException ex) {
-        return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS).body(ErrorResponse.of(ex.getMessage()));
+        return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS)
+                .body(ErrorResponse.of("TOO_MANY_REQUESTS", ex.getMessage()));
     }
 
     @ExceptionHandler(ResponseStatusException.class)
     public ResponseEntity<ErrorResponse> handleResponseStatus(ResponseStatusException ex) {
-        return ResponseEntity.status(ex.getStatusCode()).body(ErrorResponse.of(ex.getReason()));
+        return ResponseEntity.status(ex.getStatusCode())
+                .body(ErrorResponse.of("REQUEST_ERROR", ex.getReason()));
     }
 
     @ExceptionHandler(OptimisticLockingFailureException.class)
     public ResponseEntity<ErrorResponse> handleOptimisticLock(OptimisticLockingFailureException ex) {
-        return ResponseEntity.status(HttpStatus.CONFLICT).body(ErrorResponse.of("동시 수정이 발생했습니다. 다시 시도해주세요"));
+        return ResponseEntity.status(HttpStatus.CONFLICT)
+                .body(ErrorResponse.of("OPTIMISTIC_LOCK_CONFLICT", "동시 수정이 발생했습니다. 다시 시도해주세요"));
     }
 
     @ExceptionHandler(IllegalArgumentException.class)
@@ -106,7 +126,8 @@ public class GlobalExceptionHandler {
             String value = message.substring(message.lastIndexOf('.') + 1);
             message = "유효하지 않은 값입니다: " + value;
         }
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ErrorResponse.of(message));
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(ErrorResponse.of("INVALID_ARGUMENT", message));
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
@@ -115,7 +136,7 @@ public class GlobalExceptionHandler {
         for (FieldError fieldError : ex.getBindingResult().getFieldErrors()) {
             errors.put(fieldError.getField(), fieldError.getDefaultMessage());
         }
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ErrorResponse.ofFields(errors));
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ErrorResponse.ofFields("VALIDATION_ERROR", errors));
     }
 
     @ExceptionHandler(HandlerMethodValidationException.class)
@@ -126,12 +147,15 @@ public class GlobalExceptionHandler {
                         errors.put(result.getMethodParameter().getParameterName(),
                                 err.getDefaultMessage())));
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                .body(errors.isEmpty() ? ErrorResponse.of(ex.getMessage()) : ErrorResponse.ofFields(errors));
+                .body(errors.isEmpty()
+                        ? ErrorResponse.of("VALIDATION_ERROR", ex.getMessage())
+                        : ErrorResponse.ofFields("VALIDATION_ERROR", errors));
     }
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponse> handleGeneral(Exception ex) {
         log.error("Unhandled exception [{}]: {}", ex.getClass().getName(), ex.getMessage(), ex);
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(ErrorResponse.of("Internal server error"));
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(ErrorResponse.of("INTERNAL_ERROR", "Internal server error"));
     }
 }

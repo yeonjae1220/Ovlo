@@ -42,8 +42,9 @@ public class RateLimiterService {
         this.windowSeconds = windowSeconds;
     }
 
-    public void checkLoginRate(String clientIp) {
-        check("rl:login:" + clientIp, loginLimit);
+    public void checkLoginRate(String clientIp, String email) {
+        check("rl:login:ip:" + clientIp, loginLimit);
+        check("rl:login:acc:" + email, loginLimit * 3);
     }
 
     public void checkRefreshRate(String clientIp) {

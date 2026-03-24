@@ -25,6 +25,15 @@ public class PostMapper {
         return entity;
     }
 
+    public Comment toCommentDomain(CommentJpaEntity entity) {
+        return Comment.restore(
+                new CommentId(entity.getId()),
+                new PostId(entity.getPostId()),
+                new MemberId(entity.getAuthorId()),
+                entity.getContent(),
+                entity.isDeleted());
+    }
+
     public CommentJpaEntity toCommentJpaEntity(Long postId, Comment comment) {
         CommentJpaEntity entity = new CommentJpaEntity();
         if (comment.getId() != null) {

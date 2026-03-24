@@ -9,5 +9,6 @@ public record UpdatePostRequest(
         String title,
 
         @NotBlank(message = "내용은 필수입니다")
+        @Size(max = 10000, message = "내용은 10000자를 초과할 수 없습니다")
         String content
 ) {}

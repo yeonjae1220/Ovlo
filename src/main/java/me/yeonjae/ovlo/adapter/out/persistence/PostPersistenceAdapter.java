@@ -81,6 +81,20 @@ public class PostPersistenceAdapter implements LoadPostPort, SavePostPort {
     }
 
     @Override
+    public List<Comment> findCommentsByPostId(PostId postId, int offset, int limit) {
+        PageRequest pageable = PageRequest.of(offset / limit, limit, Sort.by("id").ascending());
+        return commentJpaRepository.findByPostIdAndDeletedFalse(postId.value(), pageable)
+                .stream()
+                .map(postMapper::toCommentDomain)
+                .toList();
+    }
+
+    @Override
+    public long countCommentsByPostId(PostId postId) {
+        return commentJpaRepository.countByPostIdAndDeletedFalse(postId.value());
+    }
+
+    @Override
     @Transactional
     public Post save(Post post) {
         // For existing posts, load the entity first to preserve the @Version value.

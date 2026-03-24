@@ -17,7 +17,7 @@ import me.yeonjae.ovlo.application.dto.command.ReactToPostCommand;
 import me.yeonjae.ovlo.application.dto.command.UnreactToPostCommand;
 import me.yeonjae.ovlo.application.dto.command.UpdatePostCommand;
 import me.yeonjae.ovlo.application.dto.result.CommentResult;
-import me.yeonjae.ovlo.application.dto.result.PostPageResult;
+import me.yeonjae.ovlo.application.dto.result.PageResult;
 import me.yeonjae.ovlo.application.dto.result.PostResult;
 import me.yeonjae.ovlo.application.port.in.post.CreateCommentUseCase;
 import me.yeonjae.ovlo.application.port.in.post.CreatePostUseCase;
@@ -29,7 +29,6 @@ import me.yeonjae.ovlo.application.port.in.post.UpdatePostUseCase;
 import me.yeonjae.ovlo.domain.post.model.PostId;
 import org.springframework.http.HttpStatus;
 
-import java.util.List;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -92,16 +91,6 @@ public class PostApiController {
         return ResponseEntity.status(HttpStatus.CREATED).body(result);
     }
 
-    @Operation(summary = "게시판 게시글 목록 조회")
-    @GetMapping
-    public ResponseEntity<PostPageResult> listByBoard(
-            @RequestParam Long boardId,
-            @RequestParam(defaultValue = "0") @Min(0) int page,
-            @RequestParam(defaultValue = "20") @Min(1) @Max(100) int size
-    ) {
-        return ResponseEntity.ok(getPostQuery.listByBoard(boardId, page, size));
-    }
-
     @Operation(summary = "게시글 단건 조회")
     @GetMapping("/{id}")
     public ResponseEntity<PostResult> getById(
@@ -137,8 +126,12 @@ public class PostApiController {
 
     @Operation(summary = "댓글 목록 조회")
     @GetMapping("/{id}/comments")
-    public ResponseEntity<List<CommentResult>> getComments(@PathVariable Long id) {
-        return ResponseEntity.ok(getPostQuery.getComments(new PostId(id)));
+    public ResponseEntity<PageResult<CommentResult>> getComments(
+            @PathVariable Long id,
+            @RequestParam(defaultValue = "0") @Min(0) int page,
+            @RequestParam(defaultValue = "50") @Min(1) @Max(200) int size
+    ) {
+        return ResponseEntity.ok(getPostQuery.getComments(new PostId(id), page, size));
     }
 
     @Operation(summary = "댓글 작성")
@@ -175,7 +168,7 @@ public class PostApiController {
         reactToPostUseCase.react(
                 new ReactToPostCommand(id, memberId, request.reactionType())
         );
-        return ResponseEntity.status(HttpStatus.CREATED).build();
+        return ResponseEntity.noContent().build();
     }
 
     @Operation(summary = "게시글 반응 취소")

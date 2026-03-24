@@ -1,7 +1,7 @@
 package me.yeonjae.ovlo.application.service.query;
 
 import me.yeonjae.ovlo.application.dto.command.SearchUniversityCommand;
-import me.yeonjae.ovlo.application.dto.result.UniversityPageResult;
+import me.yeonjae.ovlo.application.dto.result.PageResult;
 import me.yeonjae.ovlo.application.dto.result.UniversityResult;
 import me.yeonjae.ovlo.application.port.in.university.GetUniversityQuery;
 import me.yeonjae.ovlo.application.port.in.university.SearchUniversityQuery;
@@ -29,7 +29,7 @@ public class UniversityQueryService implements SearchUniversityQuery, GetUnivers
     }
 
     @Override
-    public UniversityPageResult search(SearchUniversityCommand command) {
+    public PageResult<UniversityResult> search(SearchUniversityCommand command) {
         List<University> universities = searchUniversityPort.search(
                 command.keyword(),
                 command.countryCode(),
@@ -41,13 +41,13 @@ public class UniversityQueryService implements SearchUniversityQuery, GetUnivers
                 .map(UniversityResult::from)
                 .toList();
 
-        return UniversityPageResult.of(content, total, command.page(), command.size());
+        return PageResult.of(content, total, command.page(), command.size());
     }
 
     @Override
     public UniversityResult getById(UniversityId id) {
         University university = loadUniversityPort.findById(id)
-                .orElseThrow(() -> new UniversityException("대학을 찾을 수 없습니다: " + id.value()));
+                .orElseThrow(() -> new UniversityException.NotFound(id.value()));
         return UniversityResult.from(university);
     }
 }

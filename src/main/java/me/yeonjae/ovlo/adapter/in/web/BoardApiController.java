@@ -5,17 +5,20 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.Size;
 import me.yeonjae.ovlo.adapter.in.web.dto.request.CreateBoardRequest;
 import me.yeonjae.ovlo.application.dto.command.CreateBoardCommand;
 import me.yeonjae.ovlo.application.dto.command.SearchBoardCommand;
 import me.yeonjae.ovlo.application.dto.command.SubscribeBoardCommand;
-import me.yeonjae.ovlo.application.dto.result.BoardPageResult;
 import me.yeonjae.ovlo.application.dto.result.BoardResult;
+import me.yeonjae.ovlo.application.dto.result.PageResult;
+import me.yeonjae.ovlo.application.dto.result.PostResult;
 import me.yeonjae.ovlo.application.port.in.board.CreateBoardUseCase;
 import me.yeonjae.ovlo.application.port.in.board.GetBoardQuery;
 import me.yeonjae.ovlo.application.port.in.board.SearchBoardQuery;
 import me.yeonjae.ovlo.application.port.in.board.SubscribeBoardUseCase;
 import me.yeonjae.ovlo.application.port.in.board.UnsubscribeBoardUseCase;
+import me.yeonjae.ovlo.application.port.in.post.GetPostQuery;
 import me.yeonjae.ovlo.domain.board.model.BoardId;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -41,19 +44,22 @@ public class BoardApiController {
     private final SearchBoardQuery searchBoardQuery;
     private final SubscribeBoardUseCase subscribeBoardUseCase;
     private final UnsubscribeBoardUseCase unsubscribeBoardUseCase;
+    private final GetPostQuery getPostQuery;
 
     public BoardApiController(
             CreateBoardUseCase createBoardUseCase,
             GetBoardQuery getBoardQuery,
             SearchBoardQuery searchBoardQuery,
             SubscribeBoardUseCase subscribeBoardUseCase,
-            UnsubscribeBoardUseCase unsubscribeBoardUseCase
+            UnsubscribeBoardUseCase unsubscribeBoardUseCase,
+            GetPostQuery getPostQuery
     ) {
         this.createBoardUseCase = createBoardUseCase;
         this.getBoardQuery = getBoardQuery;
         this.searchBoardQuery = searchBoardQuery;
         this.subscribeBoardUseCase = subscribeBoardUseCase;
         this.unsubscribeBoardUseCase = unsubscribeBoardUseCase;
+        this.getPostQuery = getPostQuery;
     }
 
     @Operation(summary = "게시판 생성")
@@ -84,14 +90,14 @@ public class BoardApiController {
 
     @Operation(summary = "게시판 검색")
     @GetMapping
-    public ResponseEntity<BoardPageResult> search(
-            @RequestParam(required = false) String keyword,
+    public ResponseEntity<PageResult<BoardResult>> search(
+            @RequestParam(required = false) @Size(max = 100) String keyword,
             @RequestParam(required = false) String category,
             @RequestParam(required = false) String scope,
             @RequestParam(defaultValue = "0") @Min(0) int page,
             @RequestParam(defaultValue = "20") @Min(1) @Max(100) int size
     ) {
-        BoardPageResult result = searchBoardQuery.search(
+        PageResult<BoardResult> result = searchBoardQuery.search(
                 new SearchBoardCommand(keyword, category, scope, page, size)
         );
         return ResponseEntity.ok(result);
@@ -115,5 +121,15 @@ public class BoardApiController {
     ) {
         unsubscribeBoardUseCase.unsubscribe(new SubscribeBoardCommand(id, memberId));
         return ResponseEntity.noContent().build();
+    }
+
+    @Operation(summary = "게시판 게시글 목록 조회")
+    @GetMapping("/{id}/posts")
+    public ResponseEntity<PageResult<PostResult>> listPosts(
+            @PathVariable Long id,
+            @RequestParam(defaultValue = "0") @Min(0) int page,
+            @RequestParam(defaultValue = "20") @Min(1) @Max(100) int size
+    ) {
+        return ResponseEntity.ok(getPostQuery.listByBoard(id, page, size));
     }
 }

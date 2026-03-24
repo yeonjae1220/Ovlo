@@ -4,8 +4,9 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.Size;
 import me.yeonjae.ovlo.application.dto.command.SearchUniversityCommand;
-import me.yeonjae.ovlo.application.dto.result.UniversityPageResult;
+import me.yeonjae.ovlo.application.dto.result.PageResult;
 import me.yeonjae.ovlo.application.dto.result.UniversityResult;
 import me.yeonjae.ovlo.application.port.in.university.GetUniversityQuery;
 import me.yeonjae.ovlo.application.port.in.university.SearchUniversityQuery;
@@ -37,13 +38,13 @@ public class UniversityApiController {
 
     @Operation(summary = "대학 검색")
     @GetMapping
-    public ResponseEntity<UniversityPageResult> search(
-            @RequestParam(required = false) String keyword,
-            @RequestParam(required = false) String countryCode,
+    public ResponseEntity<PageResult<UniversityResult>> search(
+            @RequestParam(required = false) @Size(max = 100) String keyword,
+            @RequestParam(required = false) @Size(max = 10) String countryCode,
             @RequestParam(defaultValue = "0") @Min(0) int page,
             @RequestParam(defaultValue = "20") @Min(1) @Max(100) int size
     ) {
-        UniversityPageResult result = searchUniversityQuery.search(
+        PageResult<UniversityResult> result = searchUniversityQuery.search(
                 new SearchUniversityCommand(keyword, countryCode, page, size)
         );
         return ResponseEntity.ok(result);

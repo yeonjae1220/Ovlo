@@ -80,9 +80,9 @@ springdoc:
 
 logging:
   level:
-    me.yeonjae.ovlo: DEBUG
-    org.springframework.security: INFO
-    org.hibernate.SQL: DEBUG
+    me.yeonjae.ovlo: INFO
+    org.springframework.security: WARN
+    org.hibernate.SQL: WARN
 
 ---
 spring:

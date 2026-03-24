@@ -1,8 +1,8 @@
 package me.yeonjae.ovlo.application.service.query;
 
 import me.yeonjae.ovlo.application.dto.command.SearchBoardCommand;
-import me.yeonjae.ovlo.application.dto.result.BoardPageResult;
 import me.yeonjae.ovlo.application.dto.result.BoardResult;
+import me.yeonjae.ovlo.application.dto.result.PageResult;
 import me.yeonjae.ovlo.application.port.in.board.GetBoardQuery;
 import me.yeonjae.ovlo.application.port.in.board.SearchBoardQuery;
 import me.yeonjae.ovlo.application.port.out.board.LoadBoardPort;
@@ -29,7 +29,7 @@ public class BoardQueryService implements SearchBoardQuery, GetBoardQuery {
     }
 
     @Override
-    public BoardPageResult search(SearchBoardCommand command) {
+    public PageResult<BoardResult> search(SearchBoardCommand command) {
         BoardCategory category = command.category() != null
                 ? BoardCategory.valueOf(command.category()) : null;
         LocationScope scope = command.scope() != null
@@ -42,7 +42,7 @@ public class BoardQueryService implements SearchBoardQuery, GetBoardQuery {
                 .toList();
 
         long total = searchBoardPort.count(command.keyword(), category, scope);
-        return BoardPageResult.of(content, total, command.page(), command.size());
+        return PageResult.of(content, total, command.page(), command.size());
     }
 
     @Override

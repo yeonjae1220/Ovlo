@@ -56,7 +56,7 @@ public class AuthApiController {
     @PostMapping("/login")
     public ResponseEntity<TokenPairResult> login(@Valid @RequestBody LoginRequest request,
                                                  HttpServletRequest httpRequest) {
-        rateLimiterService.checkLoginRate(extractClientIp(httpRequest));
+        rateLimiterService.checkLoginRate(extractClientIp(httpRequest), request.email());
         TokenPairResult result = loginUseCase.login(
                 new LoginCommand(request.email(), request.password())
         );

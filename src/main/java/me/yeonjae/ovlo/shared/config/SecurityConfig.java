@@ -64,7 +64,10 @@ public class SecurityConfig {
                 .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .headers(headers -> headers
                         .contentTypeOptions(Customizer.withDefaults())
-                        .frameOptions(frame -> frame.sameOrigin())  // H2 console iframe 허용 (개발용)
+                        .frameOptions(frame -> {
+                            if (isProd()) frame.deny();
+                            else frame.sameOrigin();  // H2 console iframe 허용 (개발용)
+                        })
                         .httpStrictTransportSecurity(hsts -> hsts
                                 .maxAgeInSeconds(31536000)
                                 .includeSubDomains(true))
@@ -78,6 +81,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/api/v1/auth/refresh").permitAll()
                         // 대학 조회 (인증 없이 접근 가능)
                         .requestMatchers(HttpMethod.GET, "/api/v1/universities/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/v1/exchange-universities/**").permitAll()
                         // WebSocket
                         .requestMatchers("/ws/**").permitAll()
                         // 문서: prod 프로파일에서는 완전 차단, 개발 환경에서만 공개

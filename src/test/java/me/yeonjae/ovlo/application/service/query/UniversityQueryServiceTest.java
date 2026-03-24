@@ -1,7 +1,7 @@
 package me.yeonjae.ovlo.application.service.query;
 
 import me.yeonjae.ovlo.application.dto.command.SearchUniversityCommand;
-import me.yeonjae.ovlo.application.dto.result.UniversityPageResult;
+import me.yeonjae.ovlo.application.dto.result.PageResult;
 import me.yeonjae.ovlo.application.dto.result.UniversityResult;
 import me.yeonjae.ovlo.application.port.out.university.LoadUniversityPort;
 import me.yeonjae.ovlo.application.port.out.university.SearchUniversityPort;
@@ -74,7 +74,7 @@ class UniversityQueryServiceTest {
             given(searchUniversityPort.search("Seoul", "KR", 0, 10)).willReturn(List.of(snu));
             given(searchUniversityPort.count("Seoul", "KR")).willReturn(1L);
 
-            UniversityPageResult result = universityQueryService.search(
+            PageResult<UniversityResult> result = universityQueryService.search(
                     new SearchUniversityCommand("Seoul", "KR", 0, 10));
 
             assertThat(result.content()).hasSize(1);
@@ -88,7 +88,7 @@ class UniversityQueryServiceTest {
             given(searchUniversityPort.search(anyString(), isNull(), anyInt(), anyInt())).willReturn(List.of());
             given(searchUniversityPort.count(anyString(), isNull())).willReturn(0L);
 
-            UniversityPageResult result = universityQueryService.search(
+            PageResult<UniversityResult> result = universityQueryService.search(
                     new SearchUniversityCommand("nonexistent", null, 0, 10));
 
             assertThat(result.content()).isEmpty();
@@ -101,7 +101,7 @@ class UniversityQueryServiceTest {
             given(searchUniversityPort.search(isNull(), isNull(), eq(10), eq(10))).willReturn(List.of(yonsei));
             given(searchUniversityPort.count(isNull(), isNull())).willReturn(15L);
 
-            UniversityPageResult result = universityQueryService.search(
+            PageResult<UniversityResult> result = universityQueryService.search(
                     new SearchUniversityCommand(null, null, 1, 10));
 
             assertThat(result.content()).hasSize(1);

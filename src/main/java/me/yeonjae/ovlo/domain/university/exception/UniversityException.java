@@ -6,15 +6,21 @@ public class UniversityException extends RuntimeException {
 
     private final ErrorType errorType;
 
-    public UniversityException(String message) {
+    protected UniversityException(String message, ErrorType errorType) {
         super(message);
-        this.errorType = ErrorType.NOT_FOUND;
+        this.errorType = errorType;
     }
 
-    public UniversityException(String message, Throwable cause) {
+    protected UniversityException(String message, Throwable cause, ErrorType errorType) {
         super(message, cause);
-        this.errorType = ErrorType.NOT_FOUND;
+        this.errorType = errorType;
     }
 
     public ErrorType getErrorType() { return errorType; }
+
+    public static class NotFound extends UniversityException {
+        public NotFound(Long id) {
+            super("대학을 찾을 수 없습니다: " + id, ErrorType.NOT_FOUND);
+        }
+    }
 }

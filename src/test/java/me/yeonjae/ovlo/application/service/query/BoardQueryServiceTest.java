@@ -1,7 +1,7 @@
 package me.yeonjae.ovlo.application.service.query;
 
 import me.yeonjae.ovlo.application.dto.command.SearchBoardCommand;
-import me.yeonjae.ovlo.application.dto.result.BoardPageResult;
+import me.yeonjae.ovlo.application.dto.result.PageResult;
 import me.yeonjae.ovlo.application.dto.result.BoardResult;
 import me.yeonjae.ovlo.application.port.out.board.LoadBoardPort;
 import me.yeonjae.ovlo.application.port.out.board.SearchBoardPort;
@@ -42,7 +42,7 @@ class BoardQueryServiceTest {
                 .willReturn(List.of(board));
         given(searchBoardPort.count(eq("자유"), isNull(), isNull())).willReturn(1L);
 
-        BoardPageResult result = service.search(new SearchBoardCommand("자유", null, null, 0, 10));
+        PageResult<BoardResult> result = service.search(new SearchBoardCommand("자유", null, null, 0, 10));
 
         assertThat(result.content()).hasSize(1);
         assertThat(result.totalElements()).isEqualTo(1L);
@@ -56,7 +56,7 @@ class BoardQueryServiceTest {
                 .willReturn(List.of());
         given(searchBoardPort.count(isNull(), eq(BoardCategory.GENERAL), isNull())).willReturn(0L);
 
-        BoardPageResult result = service.search(new SearchBoardCommand(null, "GENERAL", null, 0, 10));
+        PageResult<BoardResult> result = service.search(new SearchBoardCommand(null, "GENERAL", null, 0, 10));
 
         assertThat(result.content()).isEmpty();
         assertThat(result.totalElements()).isEqualTo(0L);

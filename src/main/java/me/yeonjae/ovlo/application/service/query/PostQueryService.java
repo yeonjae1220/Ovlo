@@ -1,7 +1,7 @@
 package me.yeonjae.ovlo.application.service.query;
 
 import me.yeonjae.ovlo.application.dto.result.CommentResult;
-import me.yeonjae.ovlo.application.dto.result.PostPageResult;
+import me.yeonjae.ovlo.application.dto.result.PageResult;
 import me.yeonjae.ovlo.application.dto.result.PostResult;
 import me.yeonjae.ovlo.application.port.in.post.GetPostQuery;
 import me.yeonjae.ovlo.application.port.out.post.LoadPostPort;
@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @Transactional(readOnly = true)
@@ -36,7 +37,7 @@ public class PostQueryService implements GetPostQuery {
     }
 
     @Override
-    public PostPageResult listByBoard(Long boardId, int page, int size) {
+    public PageResult<PostResult> listByBoard(Long boardId, int page, int size) {
         BoardId id = new BoardId(boardId);
         int offset = page * size;
         List<PostResult> content = loadPostPort.findByBoardId(id, offset, size)
@@ -44,13 +45,20 @@ public class PostQueryService implements GetPostQuery {
                 .map(PostResult::fromSummary)
                 .toList();
         long total = loadPostPort.countByBoardId(id);
-        return PostPageResult.of(content, total, page, size);
+        return PageResult.of(content, total, page, size);
     }
 
     @Override
-    public List<CommentResult> getComments(PostId postId) {
-        return loadPostPort.findById(postId)
-                .map(post -> post.getComments().stream().map(CommentResult::from).toList())
-                .orElseThrow(() -> new PostException("게시글을 찾을 수 없습니다: " + postId.value(), PostException.ErrorType.NOT_FOUND));
+    public PageResult<CommentResult> getComments(PostId postId, int page, int size) {
+        if (!loadPostPort.findById(postId).map(p -> !p.isDeleted()).orElse(false)) {
+            throw new PostException("게시글을 찾을 수 없습니다: " + postId.value(), PostException.ErrorType.NOT_FOUND);
+        }
+        int offset = page * size;
+        List<CommentResult> content = loadPostPort.findCommentsByPostId(postId, offset, size)
+                .stream()
+                .map(CommentResult::from)
+                .collect(Collectors.toList());
+        long total = loadPostPort.countCommentsByPostId(postId);
+        return PageResult.of(content, total, page, size);
     }
 }

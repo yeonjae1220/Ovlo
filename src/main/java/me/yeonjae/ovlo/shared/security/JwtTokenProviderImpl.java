@@ -18,6 +18,8 @@ import java.util.UUID;
 public class JwtTokenProviderImpl implements JwtTokenProvider {
 
     private static final String MEMBER_ID_CLAIM = "memberId";
+    private static final String ISSUER = "ovlo";
+    private static final String AUDIENCE = "ovlo-api";
 
     private final SecretKey secretKey;
     private final long accessTokenTtlMinutes;
@@ -39,6 +41,8 @@ public class JwtTokenProviderImpl implements JwtTokenProvider {
         Date expiry = new Date(now.getTime() + accessTokenTtlMinutes * 60 * 1000L);
 
         return Jwts.builder()
+                .issuer(ISSUER)
+                .audience().add(AUDIENCE).and()
                 .claim(MEMBER_ID_CLAIM, memberId.value())
                 .issuedAt(now)
                 .expiration(expiry)
@@ -55,6 +59,8 @@ public class JwtTokenProviderImpl implements JwtTokenProvider {
     public MemberId extractMemberId(String accessToken) {
         Claims claims = Jwts.parser()
                 .verifyWith(secretKey)
+                .requireIssuer(ISSUER)
+                .requireAudience(AUDIENCE)
                 .build()
                 .parseSignedClaims(accessToken)
                 .getPayload();
@@ -71,6 +77,8 @@ public class JwtTokenProviderImpl implements JwtTokenProvider {
         try {
             Jwts.parser()
                     .verifyWith(secretKey)
+                    .requireIssuer(ISSUER)
+                    .requireAudience(AUDIENCE)
                     .build()
                     .parseSignedClaims(accessToken);
             return true;
