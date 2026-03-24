@@ -35,7 +35,7 @@ jobs:
         run: ./gradlew build --no-daemon
 
   build-and-push:
-    name: Build and Push Docker Image
+    name: Build and Push Backend Docker Image
     runs-on: ubuntu-latest
     needs: build-and-test
     if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
@@ -91,10 +91,54 @@ jobs:
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
 
+  build-and-push-frontend:
+    name: Build and Push Frontend Docker Image
+    runs-on: ubuntu-latest
+    needs: build-and-test
+    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+    permissions:
+      contents: read
+      packages: write
+    outputs:
+      image-tag: ${{ steps.sha.outputs.tag }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Get short SHA for image tag
+        id: sha
+        run: echo "tag=sha-$(echo ${{ github.sha }} | cut -c1-7)" >> $GITHUB_OUTPUT
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.IMAGE_NAME }}-frontend
+          tags: |
+            type=raw,value=latest
+            type=sha,format=short
+
+      - name: Build and push frontend Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./frontend
+          file: ./frontend/Dockerfile
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+
   deploy:
     name: Deploy to Lenovo Server
     runs-on: ubuntu-latest
-    needs: build-and-push
+    needs: [build-and-push, build-and-push-frontend]
     if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
     environment: production  # GitHub Environment 보호 규칙 적용 (Settings > Environments 에서 설정)
 
@@ -103,19 +147,19 @@ jobs:
         uses: appleboy/ssh-action@v1.0.3
         env:
           IMAGE_TAG: ${{ needs.build-and-push.outputs.image-tag }}
+          FRONTEND_IMAGE_TAG: ${{ needs.build-and-push-frontend.outputs.image-tag }}
         with:
           host: ${{ secrets.LENOVO_HOST }}
           port: ${{ secrets.LENOVO_PORT }}
           username: ${{ secrets.LENOVO_USER }}
           key: ${{ secrets.LENOVO_SSH_KEY }}
-          envs: IMAGE_TAG
+          envs: IMAGE_TAG,FRONTEND_IMAGE_TAG
           script: |
-            # Pull specific SHA tag (롤백 가능하도록 latest 대신 SHA 태그 사용)
+            # ── Backend ───────────────────────────────────────────────────────
             echo "${{ secrets.GITHUB_TOKEN }}" | sudo k3s ctr images pull \
               --user yeonjae1220 \
               ghcr.io/yeonjae1220/ovlo:$IMAGE_TAG
 
-            # Deploy with SHA tag for rollback capability
             sudo kubectl set image deployment/app \
               app=ghcr.io/yeonjae1220/ovlo:$IMAGE_TAG \
               -n ovlo
@@ -123,12 +167,26 @@ jobs:
             sudo kubectl rollout status deployment/app \
               -n ovlo --timeout=300s
 
+            # ── Frontend ──────────────────────────────────────────────────────
+            echo "${{ secrets.GITHUB_TOKEN }}" | sudo k3s ctr images pull \
+              --user yeonjae1220 \
+              ghcr.io/yeonjae1220/ovlo-frontend:$FRONTEND_IMAGE_TAG
+
+            sudo kubectl set image deployment/frontend \
+              frontend=ghcr.io/yeonjae1220/ovlo-frontend:$FRONTEND_IMAGE_TAG \
+              -n ovlo
+
+            sudo kubectl rollout status deployment/frontend \
+              -n ovlo --timeout=300s
+
       - name: Notify deploy result
         if: always()
         run: |
           if [ "${{ job.status }}" = "success" ]; then
-            echo "✅ Deployed: ghcr.io/yeonjae1220/ovlo:${{ needs.build-and-push.outputs.image-tag }}"
+            echo "✅ Backend:  ghcr.io/yeonjae1220/ovlo:${{ needs.build-and-push.outputs.image-tag }}"
+            echo "✅ Frontend: ghcr.io/yeonjae1220/ovlo-frontend:${{ needs.build-and-push-frontend.outputs.image-tag }}"
           else
             echo "❌ Deploy failed. Rollback with:"
-            echo "kubectl set image deployment/app app=ghcr.io/yeonjae1220/ovlo:<PREV_SHA_TAG> -n ovlo"
+            echo "kubectl set image deployment/app      app=ghcr.io/yeonjae1220/ovlo:<PREV_SHA_TAG> -n ovlo"
+            echo "kubectl set image deployment/frontend frontend=ghcr.io/yeonjae1220/ovlo-frontend:<PREV_SHA_TAG> -n ovlo"
           fi
