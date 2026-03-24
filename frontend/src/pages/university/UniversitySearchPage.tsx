@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { Link } from 'react-router-dom'
 import { useUniversitySearch } from '../../hooks/useUniversity'
 
 export default function UniversitySearchPage() {
@@ -9,6 +10,11 @@ export default function UniversitySearchPage() {
   return (
     <div style={{ maxWidth: 700, margin: '0 auto' }}>
       <h1>대학 검색</h1>
+      <p style={{ marginBottom: 12, fontSize: 13, color: '#6b7280' }}>
+        교환학생 파견 정보(리뷰·비용·비자 등)는{' '}
+        <Link to="/exchange-universities" style={{ color: '#2563eb', fontWeight: 600 }}>교환대학 탭</Link>
+        에서 확인하세요.
+      </p>
       <div style={{ display: 'flex', gap: 8, marginBottom: 16 }}>
         <input
           placeholder="대학 이름 검색..."

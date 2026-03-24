@@ -22,7 +22,7 @@ export default function AppLayout() {
       <nav style={{ borderTop: '1px solid #eee', padding: '12px', display: 'flex', justifyContent: 'space-around' }}>
         <Link to="/">홈</Link>
         <Link to="/search">검색</Link>
-        <Link to="/universities">대학</Link>
+        <Link to="/exchange-universities">교환대학</Link>
         <Link to="/chat">채팅</Link>
         {currentUser && <Link to={`/profile/${currentUser.id}`}>프로필</Link>}
       </nav>
