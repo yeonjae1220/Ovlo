@@ -13,8 +13,8 @@ public interface LoadExchangeUniversityPort {
     List<ExchangeUniversity> search(String keyword, String country, int offset, int limit);
     long count(String keyword, String country);
 
-    List<VideoReview> findReviewsByUniversityId(ExchangeUniversityId id, int offset, int limit);
-    long countReviewsByUniversityId(ExchangeUniversityId id);
+    List<VideoReview> findReviewsByUniversityId(ExchangeUniversityId id, String direction, int offset, int limit);
+    long countReviewsByUniversityId(ExchangeUniversityId id, String direction);
     Double avgRatingByUniversityId(ExchangeUniversityId id);
     Map<Long, Long> countReviewsByUniversityIds(List<Long> universityIds);
     Map<Long, Double> avgRatingsByUniversityIds(List<Long> universityIds);

@@ -49,13 +49,14 @@ public class ExchangeUniversityApiController {
         return ResponseEntity.ok(getQuery.getById(new ExchangeUniversityId(id)));
     }
 
-    @Operation(summary = "교환 대학 영상 리뷰 목록", description = "평점 높은 순 정렬")
+    @Operation(summary = "교환 대학 영상 리뷰 목록", description = "평점 높은 순 정렬. direction: OUTBOUND(이 대학에서 나가는) | INBOUND(이 대학으로 오는) | UNKNOWN | 생략(전체)")
     @GetMapping("/{id}/reviews")
     public ResponseEntity<PageResult<VideoReviewResult>> getReviews(
             @PathVariable Long id,
+            @RequestParam(required = false) @Size(max = 10) String direction,
             @RequestParam(defaultValue = "0") @Min(0) int page,
             @RequestParam(defaultValue = "20") @Min(1) @Max(100) int size
     ) {
-        return ResponseEntity.ok(getQuery.getReviews(new ExchangeUniversityId(id), page, size));
+        return ResponseEntity.ok(getQuery.getReviews(new ExchangeUniversityId(id), direction, page, size));
     }
 }

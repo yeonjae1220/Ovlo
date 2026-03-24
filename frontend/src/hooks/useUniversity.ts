@@ -33,10 +33,10 @@ export function useExchangeUniversity(id: number) {
   })
 }
 
-export function useExchangeUniversityReviews(id: number) {
+export function useExchangeUniversityReviews(id: number, direction?: string) {
   return useQuery({
-    queryKey: ['exchange-university-reviews', id],
-    queryFn: () => exchangeUniversityApi.getReviews(id),
+    queryKey: ['exchange-university-reviews', id, direction],
+    queryFn: () => exchangeUniversityApi.getReviews(id, direction),
     enabled: id > 0,
   })
 }

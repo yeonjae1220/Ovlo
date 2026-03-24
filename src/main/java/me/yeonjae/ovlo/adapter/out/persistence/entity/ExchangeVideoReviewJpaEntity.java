@@ -105,6 +105,9 @@ public class ExchangeVideoReviewJpaEntity {
     @Array(length = 100)
     private String[] tags;
 
+    @Column(name = "direction")
+    private String direction;
+
     public ExchangeVideoReviewJpaEntity() {}
 
     public Long getId()                  { return id; }
@@ -141,4 +144,5 @@ public class ExchangeVideoReviewJpaEntity {
     public String getSummary()           { return summary; }
     public String getExchangeInfo()      { return exchangeInfo; }
     public String[] getTags()            { return tags; }
+    public String getDirection()         { return direction; }
 }

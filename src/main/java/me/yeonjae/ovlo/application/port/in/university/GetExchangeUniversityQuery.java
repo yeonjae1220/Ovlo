@@ -7,5 +7,5 @@ import me.yeonjae.ovlo.domain.university.model.ExchangeUniversityId;
 
 public interface GetExchangeUniversityQuery {
     ExchangeUniversityResult getById(ExchangeUniversityId id);
-    PageResult<VideoReviewResult> getReviews(ExchangeUniversityId id, int page, int size);
+    PageResult<VideoReviewResult> getReviews(ExchangeUniversityId id, String direction, int page, int size);
 }

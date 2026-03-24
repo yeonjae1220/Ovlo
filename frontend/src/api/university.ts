@@ -33,10 +33,10 @@ export const exchangeUniversityApi = {
       .get<ExchangeUniversity>(`/exchange-universities/${id}`)
       .then((r) => r.data),
 
-  getReviews: (id: number, page = 0, size = 20) =>
+  getReviews: (id: number, direction?: string, page = 0, size = 20) =>
     apiClient
       .get<PageResult<VideoReview>>(`/exchange-universities/${id}/reviews`, {
-        params: { page, size },
+        params: { direction: direction || undefined, page, size },
       })
       .then((r) => r.data),
 }

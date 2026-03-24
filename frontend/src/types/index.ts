@@ -266,6 +266,7 @@ export interface VideoReview {
   summary?: string
   exchangeInfo?: string
   tags?: string[]
+  direction?: 'OUTBOUND' | 'INBOUND' | 'UNKNOWN'
 }
 
 // ─── Pagination ─────────────────────────────────────────────────────────────

@@ -21,7 +21,31 @@ public interface ExchangeVideoReviewJpaRepository extends JpaRepository<Exchange
             @Param("offset") int offset
     );
 
+    @Query(value = """
+            SELECT * FROM exchange_video_reviews
+            WHERE university_id = :universityId
+              AND (:direction IS NULL OR direction = :direction)
+            ORDER BY overall_rating DESC NULLS LAST, quality_score DESC
+            LIMIT :limit OFFSET :offset
+            """, nativeQuery = true)
+    List<ExchangeVideoReviewJpaEntity> findByUniversityIdAndDirection(
+            @Param("universityId") Long universityId,
+            @Param("direction") String direction,
+            @Param("limit") int limit,
+            @Param("offset") int offset
+    );
+
     long countByUniversityId(Long universityId);
+
+    @Query(value = """
+            SELECT COUNT(*) FROM exchange_video_reviews
+            WHERE university_id = :universityId
+              AND (:direction IS NULL OR direction = :direction)
+            """, nativeQuery = true)
+    long countByUniversityIdAndDirection(
+            @Param("universityId") Long universityId,
+            @Param("direction") String direction
+    );
 
     @Query(value = """
             SELECT AVG(overall_rating) FROM exchange_video_reviews

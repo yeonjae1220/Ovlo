@@ -37,7 +37,8 @@ public record VideoReviewResult(
         Double qualityScore,
         String summary,
         String exchangeInfo,
-        String[] tags
+        String[] tags,
+        String direction
 ) {
     public static VideoReviewResult from(VideoReview review) {
         return new VideoReviewResult(
@@ -73,7 +74,8 @@ public record VideoReviewResult(
                 review.getQualityScore(),
                 review.getSummary(),
                 review.getExchangeInfo(),
-                review.getTags()
+                review.getTags(),
+                review.getDirection()
         );
     }
 }

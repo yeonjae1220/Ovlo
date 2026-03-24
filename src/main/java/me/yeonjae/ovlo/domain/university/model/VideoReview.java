@@ -38,6 +38,7 @@ public class VideoReview {
     private final String summary;
     private final String exchangeInfo; // raw JSON
     private final String[] tags;
+    private final String direction; // OUTBOUND | INBOUND | UNKNOWN
 
     private VideoReview(Builder builder) {
         this.id = builder.id;
@@ -74,6 +75,7 @@ public class VideoReview {
         this.summary = builder.summary;
         this.exchangeInfo = builder.exchangeInfo;
         this.tags = builder.tags;
+        this.direction = builder.direction;
     }
 
     public static Builder builder() { return new Builder(); }
@@ -113,6 +115,7 @@ public class VideoReview {
         private String summary;
         private String exchangeInfo;
         private String[] tags;
+        private String direction;
 
         private Builder() {}
 
@@ -150,6 +153,7 @@ public class VideoReview {
         public Builder summary(String v)                             { this.summary = v; return this; }
         public Builder exchangeInfo(String v)                        { this.exchangeInfo = v; return this; }
         public Builder tags(String[] v)                              { this.tags = v; return this; }
+        public Builder direction(String v)                           { this.direction = v; return this; }
 
         public VideoReview build() { return new VideoReview(this); }
     }
@@ -188,4 +192,5 @@ public class VideoReview {
     public String getSummary()                            { return summary; }
     public String getExchangeInfo()                       { return exchangeInfo; }
     public String[] getTags()                             { return tags; }
+    public String getDirection()                          { return direction; }
 }

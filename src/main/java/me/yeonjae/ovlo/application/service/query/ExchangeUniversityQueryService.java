@@ -51,22 +51,22 @@ public class ExchangeUniversityQueryService implements SearchExchangeUniversityQ
     public ExchangeUniversityResult getById(ExchangeUniversityId id) {
         ExchangeUniversity university = loadExchangeUniversityPort.findById(id)
                 .orElseThrow(() -> new UniversityException.NotFound(id.value()));
-        long reviewCount = loadExchangeUniversityPort.countReviewsByUniversityId(id);
+        long reviewCount = loadExchangeUniversityPort.countReviewsByUniversityId(id, null);
         Double avgRating = loadExchangeUniversityPort.avgRatingByUniversityId(id);
         return ExchangeUniversityResult.of(university, reviewCount, avgRating);
     }
 
     @Override
-    public PageResult<VideoReviewResult> getReviews(ExchangeUniversityId id, int page, int size) {
+    public PageResult<VideoReviewResult> getReviews(ExchangeUniversityId id, String direction, int page, int size) {
         loadExchangeUniversityPort.findById(id)
                 .orElseThrow(() -> new UniversityException.NotFound(id.value()));
         int offset = page * size;
         List<VideoReviewResult> content = loadExchangeUniversityPort
-                .findReviewsByUniversityId(id, offset, size)
+                .findReviewsByUniversityId(id, direction, offset, size)
                 .stream()
                 .map(VideoReviewResult::from)
                 .toList();
-        long total = loadExchangeUniversityPort.countReviewsByUniversityId(id);
+        long total = loadExchangeUniversityPort.countReviewsByUniversityId(id, direction);
         return PageResult.of(content, total, page, size);
     }
 }

@@ -45,14 +45,14 @@ public class ExchangeUniversityPersistenceAdapter implements LoadExchangeUnivers
     }
 
     @Override
-    public List<VideoReview> findReviewsByUniversityId(ExchangeUniversityId id, int offset, int limit) {
-        return videoReviewRepo.findByUniversityId(id.value(), limit, offset)
+    public List<VideoReview> findReviewsByUniversityId(ExchangeUniversityId id, String direction, int offset, int limit) {
+        return videoReviewRepo.findByUniversityIdAndDirection(id.value(), blankToNull(direction), limit, offset)
                 .stream().map(this::toReviewDomain).toList();
     }
 
     @Override
-    public long countReviewsByUniversityId(ExchangeUniversityId id) {
-        return videoReviewRepo.countByUniversityId(id.value());
+    public long countReviewsByUniversityId(ExchangeUniversityId id, String direction) {
+        return videoReviewRepo.countByUniversityIdAndDirection(id.value(), blankToNull(direction));
     }
 
     @Override
@@ -125,6 +125,7 @@ public class ExchangeUniversityPersistenceAdapter implements LoadExchangeUnivers
                 .summary(e.getSummary())
                 .exchangeInfo(e.getExchangeInfo())
                 .tags(e.getTags())
+                .direction(e.getDirection())
                 .build();
     }
 }
