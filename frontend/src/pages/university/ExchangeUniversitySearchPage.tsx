@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useExchangeUniversitySearch } from '../../hooks/useUniversity'
 
-const STAR = (n: number, avg?: number) =>
+const STAR = (avg?: number) =>
   avg !== undefined && avg !== null
     ? '★'.repeat(Math.round(avg)) + '☆'.repeat(5 - Math.round(avg))
     : '—'
@@ -76,7 +76,7 @@ export default function ExchangeUniversitySearchPage() {
             </div>
             <div style={{ textAlign: 'right', flexShrink: 0, marginLeft: 16 }}>
               <div style={{ color: '#f59e0b', fontSize: 14, letterSpacing: 1 }}>
-                {STAR(5, u.avgRating)}
+                {STAR(u.avgRating)}
               </div>
               <div style={{ fontSize: 12, color: '#9ca3af', marginTop: 2 }}>
                 {u.avgRating !== undefined && u.avgRating !== null
