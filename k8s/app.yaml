@@ -1,0 +1,104 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: ovlo-media-pvc
+  namespace: ovlo
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 10Gi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: app
+  namespace: ovlo
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: app
+  template:
+    metadata:
+      labels:
+        app: app
+    spec:
+      nodeSelector:
+        project: timemanager
+      containers:
+        - name: app
+          image: ovlo-app:latest
+          imagePullPolicy: Never
+          ports:
+            - containerPort: 8080
+          env:
+            - name: SPRING_PROFILES_ACTIVE
+              value: "prod"
+            - name: SPRING_DATASOURCE_URL
+              value: "jdbc:postgresql://postgres:5432/ovlo"
+            - name: SPRING_DATASOURCE_USERNAME
+              value: "ovlo"
+            - name: SPRING_DATASOURCE_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: ovlo-secret
+                  key: POSTGRES_PASSWORD
+            - name: SPRING_DATASOURCE_DRIVER
+              value: "org.postgresql.Driver"
+            - name: JPA_DIALECT
+              value: "org.hibernate.dialect.PostgreSQLDialect"
+            - name: SPRING_DATA_REDIS_HOST
+              value: "redis"
+            - name: SPRING_DATA_REDIS_PORT
+              value: "6379"
+            - name: SPRING_DATA_REDIS_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: ovlo-secret
+                  key: REDIS_PASSWORD
+            - name: FLYWAY_ENABLED
+              value: "true"
+            - name: JWT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: ovlo-secret
+                  key: JWT_SECRET
+            - name: CORS_ALLOWED_ORIGINS
+              valueFrom:
+                secretKeyRef:
+                  name: ovlo-secret
+                  key: CORS_ALLOWED_ORIGINS
+          volumeMounts:
+            - name: media-data
+              mountPath: /tmp/ovlo-media
+          readinessProbe:
+            tcpSocket:
+              port: 8080
+            initialDelaySeconds: 60
+            periodSeconds: 10
+            failureThreshold: 5
+          resources:
+            requests:
+              memory: "512Mi"
+              cpu: "250m"
+            limits:
+              memory: "1Gi"
+              cpu: "1000m"
+      volumes:
+        - name: media-data
+          persistentVolumeClaim:
+            claimName: ovlo-media-pvc
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: app
+  namespace: ovlo
+spec:
+  selector:
+    app: app
+  ports:
+    - port: 8080
+      targetPort: 8080
