@@ -2,6 +2,7 @@ import { createBrowserRouter } from 'react-router-dom'
 import AppLayout from '../components/layout/AppLayout'
 import ProtectedRoute from '../components/layout/ProtectedRoute'
 
+import LandingPage from '../pages/LandingPage'
 import LoginPage from '../pages/auth/LoginPage'
 import RegisterPage from '../pages/auth/RegisterPage'
 import UniversitySearchPage from '../pages/university/UniversitySearchPage'
@@ -19,6 +20,7 @@ import ChatRoomPage from '../pages/chat/ChatRoomPage'
 
 export const router = createBrowserRouter([
   // Public routes
+  { path: '/', element: <LandingPage /> },
   { path: '/login', element: <LoginPage /> },
   { path: '/register', element: <RegisterPage /> },
   { path: '/universities', element: <UniversitySearchPage /> },
@@ -32,7 +34,7 @@ export const router = createBrowserRouter([
       {
         element: <AppLayout />,
         children: [
-          { path: '/', element: <BoardListPage /> },
+          { path: '/boards', element: <BoardListPage /> },
           { path: '/boards/:id', element: <BoardDetailPage /> },
           { path: '/posts/new', element: <CreatePostPage /> },
           { path: '/posts/:id', element: <PostDetailPage /> },

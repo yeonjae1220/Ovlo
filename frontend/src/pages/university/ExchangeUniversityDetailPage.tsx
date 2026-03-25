@@ -3,40 +3,61 @@ import { useParams, useNavigate } from 'react-router-dom'
 import { useExchangeUniversity, useExchangeUniversityReviews } from '../../hooks/useUniversity'
 import type { VideoReview, ExchangeUniversity } from '../../types'
 
-// ── 언어 국기 ────────────────────────────────────────────────────
+// ── 다크 테마 색상 상수 ──────────────────────────────────────
+const C = {
+  bg:          '#242424',
+  card:        '#1e2836',
+  cardHeader:  '#1a2332',
+  border:      '#2d3748',
+  borderLight: '#374151',
+  textPrimary: '#f1f5f9',
+  textSec:     '#cbd5e1',
+  textMuted:   '#94a3b8',
+  textDim:     '#64748b',
+  activeBg:    '#1e3a5f',
+  activeBorder:'#2563eb',
+  activeText:  '#60a5fa',
+  recommendBg: '#0d2a1a',
+  notRecBg:    '#2a0d0d',
+  recommendTx: '#4ade80',
+  notRecTx:    '#f87171',
+}
+
+// ── 언어 국기 ────────────────────────────────────────────────
 const LANG_FLAG: Record<string, string> = {
   ko: '🇰🇷', ja: '🇯🇵', en: '🇺🇸', zh: '🇨🇳', fr: '🇫🇷',
   de: '🇩🇪', es: '🇪🇸', pt: '🇧🇷', vi: '🇻🇳', th: '🇹🇭',
 }
 
-// ── 방향 필터 정의 ───────────────────────────────────────────────
+// ── 방향 필터 정의 ───────────────────────────────────────────
 const DIRECTION_FILTERS = [
-  { value: undefined,    label: '전체' },
-  { value: 'INBOUND',   label: '🎓 이 대학으로 오는 교환' },
-  { value: 'OUTBOUND',  label: '✈️ 이 대학에서 나가는 교환' },
-  { value: 'UNKNOWN',   label: '❓ 미분류' },
+  { value: undefined,   label: '전체' },
+  { value: 'INBOUND',  label: '🎓 이 대학으로 오는 교환' },
+  { value: 'OUTBOUND', label: '✈️ 이 대학에서 나가는 교환' },
+  { value: 'UNKNOWN',  label: '❓ 미분류' },
 ]
 
-// ── 소컴포넌트 ──────────────────────────────────────────────────
+// ── 뱃지 ─────────────────────────────────────────────────────
 const Badge = ({ text, color = '#2563eb' }: { text: string; color?: string }) => (
   <span style={{
     display: 'inline-block', padding: '2px 10px', borderRadius: 20,
-    background: color + '18', color, fontSize: 12, fontWeight: 600, marginRight: 4, marginBottom: 4,
+    background: color + '28', color, fontSize: 12, fontWeight: 600, marginRight: 4, marginBottom: 4,
   }}>{text}</span>
 )
 
+// ── 정보 행 ──────────────────────────────────────────────────
 const InfoRow = ({ label, value }: { label: string; value?: string | number | boolean | null }) => {
   if (value === undefined || value === null || value === '') return null
   const display = typeof value === 'boolean' ? (value ? '예' : '아니오') : String(value)
   return (
-    <div style={{ display: 'flex', gap: 12, padding: '7px 0', borderBottom: '1px solid #f3f4f6' }}>
-      <span style={{ minWidth: 110, color: '#9ca3af', fontSize: 13, flexShrink: 0 }}>{label}</span>
-      <span style={{ fontSize: 14, color: '#111827', wordBreak: 'break-word' }}>{display}</span>
+    <div style={{ display: 'flex', gap: 12, padding: '7px 0', borderBottom: `1px solid ${C.border}` }}>
+      <span style={{ minWidth: 110, color: C.textDim, fontSize: 13, flexShrink: 0 }}>{label}</span>
+      <span style={{ fontSize: 14, color: C.textSec, wordBreak: 'break-word' }}>{display}</span>
     </div>
   )
 }
 
-// ── 태그 불일치 감지 ─────────────────────────────────────────────
+// ── 태그 불일치 감지 ─────────────────────────────────────────
 function isTagMismatch(review: VideoReview, univ: ExchangeUniversity): boolean {
   const tags = review.tags ?? []
   if (tags.length === 0) return false
@@ -47,7 +68,57 @@ function isTagMismatch(review: VideoReview, univ: ExchangeUniversity): boolean {
   )
 }
 
-// ── 메인 컴포넌트 ────────────────────────────────────────────────
+// ── 확장 요약 생성 (3~6문장 줄글) ────────────────────────────
+function buildDetailedSummary(r: VideoReview): string {
+  const parts: string[] = []
+
+  if (r.summary) parts.push(r.summary)
+
+  // 만족도·분위기
+  const ratingParts: string[] = []
+  if (r.overallRating != null) ratingParts.push(`전반적인 만족도는 ${r.overallRating}/5점`)
+  if (r.overallTone) ratingParts.push(`${r.overallTone}한 분위기`)
+  if (r.recommend != null) ratingParts.push(r.recommend ? '교환학생으로 추천' : '교환학생으로 비추천')
+  if (ratingParts.length > 0) parts.push(ratingParts.join('이며 ') + '입니다.')
+
+  // 생활비
+  if (r.costTotal || r.costRent || r.costFood) {
+    const currency = r.costCurrency ? ` (${r.costCurrency})` : ''
+    const costParts: string[] = []
+    if (r.costTotal) costParts.push(`월 총 생활비 ${r.costTotal}`)
+    if (r.costRent) costParts.push(`월세 ${r.costRent}`)
+    if (r.costFood) costParts.push(`식비 ${r.costFood}`)
+    if (r.costTransport) costParts.push(`교통비 ${r.costTransport}`)
+    parts.push(`생활비는 ${costParts.join(', ')}${currency} 수준입니다.`)
+  }
+
+  // 학업
+  if (r.difficulty != null || r.workload != null) {
+    const acadParts: string[] = []
+    if (r.difficulty != null) acadParts.push(`수업 난이도 ${r.difficulty}/5`)
+    if (r.workload != null) acadParts.push(`학습량 ${r.workload}/5`)
+    parts.push(`학업 측면에서는 ${acadParts.join(', ')} 수준입니다.`)
+  }
+
+  // 기숙사
+  if (r.dormAvailable != null) {
+    let dormLine = r.dormAvailable ? '기숙사 이용이 가능하며' : '학교 기숙사는 제공되지 않으며'
+    if (r.dormType) dormLine += ` ${r.dormType} 형태`
+    if (r.dormPrice) dormLine += `, 비용은 ${r.dormPrice}`
+    parts.push(dormLine + '입니다.')
+  }
+
+  // 지원 요건·비자
+  const reqParts: string[] = []
+  if (r.visaType) reqParts.push(`${r.visaType} 비자`)
+  if (r.languageReq) reqParts.push(`어학 성적 ${r.languageReq}`)
+  if (r.gpaRequirement) reqParts.push(`GPA ${r.gpaRequirement}`)
+  if (reqParts.length > 0) parts.push(`지원 요건으로 ${reqParts.join(', ')}이 필요합니다.`)
+
+  return parts.join(' ')
+}
+
+// ── 메인 컴포넌트 ────────────────────────────────────────────
 export default function ExchangeUniversityDetailPage() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
@@ -58,8 +129,8 @@ export default function ExchangeUniversityDetailPage() {
   const { data: reviewPage, isLoading: reviewLoading } = useExchangeUniversityReviews(univId, direction)
   const reviews = reviewPage?.content ?? []
 
-  if (univLoading) return <div style={{ padding: 40, color: '#9ca3af' }}>불러오는 중...</div>
-  if (!univ) return <div style={{ padding: 40, color: '#dc2626' }}>대학 정보를 찾을 수 없습니다.</div>
+  if (univLoading) return <div style={{ padding: 40, color: C.textMuted }}>불러오는 중...</div>
+  if (!univ) return <div style={{ padding: 40, color: C.notRecTx }}>대학 정보를 찾을 수 없습니다.</div>
 
   const starCount = univ.avgRating ? Math.round(univ.avgRating) : 0
 
@@ -67,35 +138,35 @@ export default function ExchangeUniversityDetailPage() {
     <div style={{ maxWidth: 760, margin: '0 auto', padding: '32px 20px', fontFamily: 'system-ui, sans-serif' }}>
       {/* 뒤로가기 */}
       <button onClick={() => navigate(-1)}
-        style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#6b7280', fontSize: 14, marginBottom: 20, padding: 0 }}>
+        style={{ background: 'none', border: 'none', cursor: 'pointer', color: C.textMuted, fontSize: 14, marginBottom: 20, padding: 0 }}>
         ← 목록으로
       </button>
 
       {/* 대학 헤더 */}
-      <div style={{ padding: '24px', background: '#f8fafc', borderRadius: 12, marginBottom: 28 }}>
-        <h1 style={{ margin: '0 0 4px', fontSize: 26, fontWeight: 800, color: '#111827' }}>
+      <div style={{ padding: '24px', background: C.card, borderRadius: 12, marginBottom: 28, border: `1px solid ${C.border}` }}>
+        <h1 style={{ margin: '0 0 4px', fontSize: 26, fontWeight: 800, color: C.textPrimary }}>
           {univ.nameKo || univ.nameEn}
         </h1>
         {univ.nameKo && univ.nameEn && (
-          <p style={{ margin: '0 0 12px', color: '#6b7280', fontSize: 15 }}>{univ.nameEn}</p>
+          <p style={{ margin: '0 0 12px', color: C.textMuted, fontSize: 15 }}>{univ.nameEn}</p>
         )}
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, alignItems: 'center' }}>
-          <Badge text={`${univ.country} · ${univ.city}`} color="#374151" />
+          <Badge text={`${univ.country} · ${univ.city}`} color="#94a3b8" />
           {univ.avgRating != null && (
             <>
               <span style={{ color: '#f59e0b', fontSize: 18, letterSpacing: 1 }}>
                 {'★'.repeat(starCount)}{'☆'.repeat(5 - starCount)}
               </span>
-              <span style={{ fontSize: 14, fontWeight: 700, color: '#374151' }}>
+              <span style={{ fontSize: 14, fontWeight: 700, color: C.textSec }}>
                 {univ.avgRating.toFixed(1)}
               </span>
             </>
           )}
-          <Badge text={`리뷰 ${univ.reviewCount}개`} color="#2563eb" />
+          <Badge text={`리뷰 ${univ.reviewCount}개`} color="#60a5fa" />
         </div>
         {univ.website && (
           <a href={univ.website} target="_blank" rel="noopener noreferrer"
-            style={{ display: 'inline-block', marginTop: 14, color: '#2563eb', fontSize: 14, fontWeight: 500 }}>
+            style={{ display: 'inline-block', marginTop: 14, color: '#60a5fa', fontSize: 14, fontWeight: 500 }}>
             🔗 공식 홈페이지 →
           </a>
         )}
@@ -107,9 +178,9 @@ export default function ExchangeUniversityDetailPage() {
           <button key={String(f.value)} onClick={() => setDirection(f.value)}
             style={{
               padding: '7px 14px', borderRadius: 20, fontSize: 13, cursor: 'pointer',
-              border: direction === f.value ? '2px solid #2563eb' : '1px solid #e5e7eb',
-              background: direction === f.value ? '#eff6ff' : '#fff',
-              color: direction === f.value ? '#2563eb' : '#374151',
+              border: direction === f.value ? `2px solid ${C.activeBorder}` : `1px solid ${C.borderLight}`,
+              background: direction === f.value ? C.activeBg : C.card,
+              color: direction === f.value ? C.activeText : C.textMuted,
               fontWeight: direction === f.value ? 700 : 400,
             }}>
             {f.label}
@@ -118,18 +189,18 @@ export default function ExchangeUniversityDetailPage() {
       </div>
 
       {/* 리뷰 제목 */}
-      <h2 style={{ fontSize: 18, fontWeight: 700, color: '#111827', marginBottom: 16 }}>
+      <h2 style={{ fontSize: 18, fontWeight: 700, color: C.textPrimary, marginBottom: 16 }}>
         영상 리뷰{' '}
         {!reviewLoading && (
-          <span style={{ fontSize: 14, fontWeight: 400, color: '#9ca3af' }}>
+          <span style={{ fontSize: 14, fontWeight: 400, color: C.textDim }}>
             ({reviewPage?.totalElements ?? 0}개)
           </span>
         )}
       </h2>
 
-      {reviewLoading && <p style={{ color: '#9ca3af' }}>리뷰 불러오는 중...</p>}
+      {reviewLoading && <p style={{ color: C.textMuted }}>리뷰 불러오는 중...</p>}
       {!reviewLoading && reviews.length === 0 && (
-        <p style={{ color: '#9ca3af', padding: '20px 0' }}>해당하는 리뷰가 없습니다.</p>
+        <p style={{ color: C.textMuted, padding: '20px 0' }}>해당하는 리뷰가 없습니다.</p>
       )}
 
       {/* 리뷰 목록 */}
@@ -140,7 +211,7 @@ export default function ExchangeUniversityDetailPage() {
   )
 }
 
-// ── 리뷰 카드 ────────────────────────────────────────────────────
+// ── 리뷰 카드 ────────────────────────────────────────────────
 function ReviewCard({ review: r, univ }: { review: VideoReview; univ: ExchangeUniversity }) {
   const [expanded, setExpanded] = useState(false)
   const mismatch = isTagMismatch(r, univ)
@@ -151,26 +222,28 @@ function ReviewCard({ review: r, univ }: { review: VideoReview; univ: ExchangeUn
   const hasDorm = r.dormAvailable != null || r.dormType || r.dormPrice
   const hasAcademic = r.difficulty || r.workload || r.gpaRequirement || r.languageReq || r.deadlineInfo
 
+  const detailedSummary = buildDetailedSummary(r)
+
   return (
-    <div style={{ border: '1px solid #e5e7eb', borderRadius: 10, overflow: 'hidden' }}>
+    <div style={{ border: `1px solid ${C.border}`, borderRadius: 10, overflow: 'hidden', background: C.bg }}>
       {/* 카드 헤더 */}
-      <div style={{ padding: '16px 20px', background: '#fafafa', borderBottom: '1px solid #f3f4f6' }}>
+      <div style={{ padding: '16px 20px', background: C.cardHeader, borderBottom: `1px solid ${C.border}` }}>
         {/* 배지 행 */}
         <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 8, alignItems: 'center' }}>
-          {r.direction === 'INBOUND' && <Badge text="🎓 이 대학으로 오는 교환" color="#2563eb" />}
-          {r.direction === 'OUTBOUND' && <Badge text="✈️ 이 대학에서 나가는 교환" color="#16a34a" />}
-          {langFlag && <Badge text={langFlag} color="#6b7280" />}
-          {mismatch && <Badge text="⚠️ 다른 대학 관련 영상일 수 있음" color="#d97706" />}
+          {r.direction === 'INBOUND' && <Badge text="🎓 이 대학으로 오는 교환" color="#60a5fa" />}
+          {r.direction === 'OUTBOUND' && <Badge text="✈️ 이 대학에서 나가는 교환" color="#4ade80" />}
+          {langFlag && <Badge text={langFlag} color="#94a3b8" />}
+          {mismatch && <Badge text="⚠️ 다른 대학 관련 영상일 수 있음" color="#fbbf24" />}
         </div>
 
         {/* 제목 + 평점 */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 12 }}>
           <div style={{ flex: 1 }}>
             <a href={r.youtubeUrl} target="_blank" rel="noopener noreferrer"
-              style={{ fontSize: 15, fontWeight: 700, color: '#1d4ed8', textDecoration: 'none', lineHeight: 1.4 }}>
+              style={{ fontSize: 15, fontWeight: 700, color: '#93c5fd', textDecoration: 'none', lineHeight: 1.4 }}>
               ▶ {r.title}
             </a>
-            <div style={{ fontSize: 12, color: '#9ca3af', marginTop: 4 }}>
+            <div style={{ fontSize: 12, color: C.textDim, marginTop: 4 }}>
               {r.channel}
               {r.publishedAt && ` · ${new Date(r.publishedAt).toLocaleDateString('ko-KR')}`}
               {r.country && ` · ${r.country}`}
@@ -182,7 +255,7 @@ function ReviewCard({ review: r, univ }: { review: VideoReview; univ: ExchangeUn
               <span style={{ color: '#f59e0b', fontSize: 16 }}>
                 {'★'.repeat(r.overallRating)}{'☆'.repeat(5 - r.overallRating)}
               </span>
-              <div style={{ fontSize: 11, color: '#9ca3af' }}>종합 {r.overallRating}/5</div>
+              <div style={{ fontSize: 11, color: C.textDim }}>종합 {r.overallRating}/5</div>
             </div>
           )}
         </div>
@@ -190,17 +263,20 @@ function ReviewCard({ review: r, univ }: { review: VideoReview; univ: ExchangeUn
         {/* 태그 */}
         {r.tags && r.tags.length > 0 && (
           <div style={{ marginTop: 10 }}>
-            {r.tags.map(tag => <Badge key={tag} text={tag} color="#7c3aed" />)}
+            {r.tags.map(tag => <Badge key={tag} text={tag} color="#a78bfa" />)}
           </div>
         )}
       </div>
 
       {/* 카드 본문 */}
       <div style={{ padding: '14px 20px' }}>
-        {/* 요약 */}
-        {r.summary && (
-          <p style={{ margin: '0 0 12px', fontSize: 14, color: '#374151', lineHeight: 1.7, whiteSpace: 'pre-line' }}>
-            {r.summary}
+        {/* 확장 요약 (3~6문장) */}
+        {detailedSummary && (
+          <p style={{
+            margin: '0 0 12px', fontSize: 14, color: C.textSec,
+            lineHeight: 1.8, whiteSpace: 'pre-line',
+          }}>
+            {detailedSummary}
           </p>
         )}
 
@@ -208,13 +284,13 @@ function ReviewCard({ review: r, univ }: { review: VideoReview; univ: ExchangeUn
         {r.recommend != null && (
           <div style={{
             display: 'inline-block', marginBottom: 12, padding: '6px 14px', borderRadius: 8,
-            background: r.recommend ? '#f0fdf4' : '#fef2f2',
+            background: r.recommend ? C.recommendBg : C.notRecBg,
           }}>
-            <span style={{ fontSize: 13, fontWeight: 600, color: r.recommend ? '#16a34a' : '#dc2626' }}>
+            <span style={{ fontSize: 13, fontWeight: 600, color: r.recommend ? C.recommendTx : C.notRecTx }}>
               {r.recommend ? '✓ 추천' : '✗ 비추천'}
             </span>
             {r.overallTone && (
-              <span style={{ fontSize: 12, color: '#6b7280', marginLeft: 8 }}>{r.overallTone}</span>
+              <span style={{ fontSize: 12, color: C.textMuted, marginLeft: 8 }}>{r.overallTone}</span>
             )}
           </div>
         )}
@@ -225,8 +301,8 @@ function ReviewCard({ review: r, univ }: { review: VideoReview; univ: ExchangeUn
             <button onClick={() => setExpanded(v => !v)}
               style={{
                 display: 'block', width: '100%', textAlign: 'center', padding: '8px',
-                background: '#f9fafb', border: '1px solid #e5e7eb', borderRadius: 6,
-                cursor: 'pointer', fontSize: 13, color: '#6b7280', marginBottom: expanded ? 12 : 0,
+                background: C.card, border: `1px solid ${C.border}`, borderRadius: 6,
+                cursor: 'pointer', fontSize: 13, color: C.textMuted, marginBottom: expanded ? 12 : 0,
               }}>
               {expanded ? '▲ 상세 정보 접기' : '▼ 비용·비자·기숙사·학업 상세 보기'}
             </button>
@@ -235,7 +311,7 @@ function ReviewCard({ review: r, univ }: { review: VideoReview; univ: ExchangeUn
               <div style={{ display: 'flex', gap: 20, flexWrap: 'wrap', marginTop: 4 }}>
                 {hasAcademic && (
                   <div style={{ flex: 1, minWidth: 200 }}>
-                    <p style={{ margin: '0 0 6px', fontSize: 11, fontWeight: 700, color: '#6b7280', textTransform: 'uppercase', letterSpacing: 0.5 }}>학업</p>
+                    <p style={{ margin: '0 0 6px', fontSize: 11, fontWeight: 700, color: C.textDim, textTransform: 'uppercase', letterSpacing: 0.5 }}>학업</p>
                     <InfoRow label="난이도" value={r.difficulty ? `${r.difficulty}/5` : null} />
                     <InfoRow label="학습량" value={r.workload ? `${r.workload}/5` : null} />
                     <InfoRow label="GPA 요건" value={r.gpaRequirement} />
@@ -245,7 +321,7 @@ function ReviewCard({ review: r, univ }: { review: VideoReview; univ: ExchangeUn
                 )}
                 {hasCost && (
                   <div style={{ flex: 1, minWidth: 200 }}>
-                    <p style={{ margin: '0 0 6px', fontSize: 11, fontWeight: 700, color: '#6b7280', textTransform: 'uppercase', letterSpacing: 0.5 }}>
+                    <p style={{ margin: '0 0 6px', fontSize: 11, fontWeight: 700, color: C.textDim, textTransform: 'uppercase', letterSpacing: 0.5 }}>
                       생활비{r.costCurrency ? ` (${r.costCurrency})` : ''}
                     </p>
                     <InfoRow label="총 생활비" value={r.costTotal} />
@@ -258,7 +334,7 @@ function ReviewCard({ review: r, univ }: { review: VideoReview; univ: ExchangeUn
                   <div style={{ flex: 1, minWidth: 200 }}>
                     {hasVisa && (
                       <>
-                        <p style={{ margin: '0 0 6px', fontSize: 11, fontWeight: 700, color: '#6b7280', textTransform: 'uppercase', letterSpacing: 0.5 }}>비자</p>
+                        <p style={{ margin: '0 0 6px', fontSize: 11, fontWeight: 700, color: C.textDim, textTransform: 'uppercase', letterSpacing: 0.5 }}>비자</p>
                         <InfoRow label="종류" value={r.visaType} />
                         <InfoRow label="비용" value={r.visaCost} />
                         <InfoRow label="기간" value={r.visaDuration} />
@@ -267,7 +343,7 @@ function ReviewCard({ review: r, univ }: { review: VideoReview; univ: ExchangeUn
                     )}
                     {hasDorm && (
                       <>
-                        <p style={{ margin: `${hasVisa ? '12px' : '0'} 0 6px`, fontSize: 11, fontWeight: 700, color: '#6b7280', textTransform: 'uppercase', letterSpacing: 0.5 }}>기숙사</p>
+                        <p style={{ margin: `${hasVisa ? '12px' : '0'} 0 6px`, fontSize: 11, fontWeight: 700, color: C.textDim, textTransform: 'uppercase', letterSpacing: 0.5 }}>기숙사</p>
                         <InfoRow label="가능 여부" value={r.dormAvailable} />
                         <InfoRow label="유형" value={r.dormType} />
                         <InfoRow label="비용" value={r.dormPrice} />
