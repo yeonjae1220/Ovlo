@@ -18,7 +18,7 @@ export function useLogin() {
       setAccessToken(token.accessToken)
       const user = await memberApi.getById(String(token.memberId))
       setAuth(token.accessToken, token.refreshToken, user)
-      navigate('/')
+      navigate('/boards')
     },
   })
 }
