@@ -1,5 +1,5 @@
 import apiClient from '../utils/axios'
-import type { Member, RegisterMemberRequest, UpdateMemberProfileRequest } from '../types'
+import type { Member, RegisterMemberRequest, UpdateMemberProfileRequest, CompleteOnboardingRequest } from '../types'
 
 export const memberApi = {
   register: (req: RegisterMemberRequest) =>
@@ -18,4 +18,7 @@ export const memberApi = {
     apiClient.patch<Member>(`/members/${id}/profile-image`, { mediaId }).then((r) => r.data),
 
   withdraw: (id: string) => apiClient.delete(`/members/${id}`),
+
+  completeOnboarding: (req: CompleteOnboardingRequest) =>
+    apiClient.patch<Member>('/members/me/onboarding', req).then((r) => r.data),
 }

@@ -5,6 +5,8 @@ import ProtectedRoute from '../components/layout/ProtectedRoute'
 import LandingPage from '../pages/LandingPage'
 import LoginPage from '../pages/auth/LoginPage'
 import RegisterPage from '../pages/auth/RegisterPage'
+import OAuthCallbackPage from '../pages/auth/OAuthCallbackPage'
+import OnboardingPage from '../pages/auth/OnboardingPage'
 import UniversitySearchPage from '../pages/university/UniversitySearchPage'
 import ExchangeUniversitySearchPage from '../pages/university/ExchangeUniversitySearchPage'
 import ExchangeUniversityDetailPage from '../pages/university/ExchangeUniversityDetailPage'
@@ -26,6 +28,7 @@ export const router = createBrowserRouter([
   { path: '/universities', element: <UniversitySearchPage /> },
   { path: '/exchange-universities', element: <ExchangeUniversitySearchPage /> },
   { path: '/exchange-universities/:id', element: <ExchangeUniversityDetailPage /> },
+  { path: '/oauth/callback', element: <OAuthCallbackPage /> },
 
   // Protected routes
   {
@@ -34,6 +37,7 @@ export const router = createBrowserRouter([
       {
         element: <AppLayout />,
         children: [
+          { path: '/onboarding', element: <OnboardingPage /> },
           { path: '/boards', element: <BoardListPage /> },
           { path: '/boards/:id', element: <BoardDetailPage /> },
           { path: '/posts/new', element: <CreatePostPage /> },

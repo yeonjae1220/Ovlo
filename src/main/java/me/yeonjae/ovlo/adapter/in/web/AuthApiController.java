@@ -3,12 +3,16 @@ package me.yeonjae.ovlo.adapter.in.web;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import me.yeonjae.ovlo.adapter.in.web.dto.request.GoogleLoginRequest;
 import me.yeonjae.ovlo.adapter.in.web.dto.request.LoginRequest;
 import me.yeonjae.ovlo.adapter.in.web.dto.request.RefreshTokenRequest;
+import me.yeonjae.ovlo.application.dto.command.GoogleLoginCommand;
 import me.yeonjae.ovlo.application.dto.command.LoginCommand;
 import me.yeonjae.ovlo.application.dto.command.LogoutCommand;
 import me.yeonjae.ovlo.application.dto.command.RefreshTokenCommand;
+import me.yeonjae.ovlo.application.dto.result.GoogleLoginResult;
 import me.yeonjae.ovlo.application.dto.result.TokenPairResult;
+import me.yeonjae.ovlo.application.port.in.auth.GoogleLoginUseCase;
 import me.yeonjae.ovlo.application.port.in.auth.LoginUseCase;
 import me.yeonjae.ovlo.application.port.in.auth.LogoutUseCase;
 import me.yeonjae.ovlo.application.port.in.auth.RefreshTokenUseCase;
@@ -33,6 +37,7 @@ public class AuthApiController {
     private final LoginUseCase loginUseCase;
     private final RefreshTokenUseCase refreshTokenUseCase;
     private final LogoutUseCase logoutUseCase;
+    private final GoogleLoginUseCase googleLoginUseCase;
     private final RateLimiterService rateLimiterService;
     private final Set<String> trustedProxyIps;
 
@@ -40,12 +45,14 @@ public class AuthApiController {
             LoginUseCase loginUseCase,
             RefreshTokenUseCase refreshTokenUseCase,
             LogoutUseCase logoutUseCase,
+            GoogleLoginUseCase googleLoginUseCase,
             RateLimiterService rateLimiterService,
             @Value("${ovlo.trusted-proxy-ips:127.0.0.1,::1}") String trustedProxyIpsConfig
     ) {
         this.loginUseCase = loginUseCase;
         this.refreshTokenUseCase = refreshTokenUseCase;
         this.logoutUseCase = logoutUseCase;
+        this.googleLoginUseCase = googleLoginUseCase;
         this.rateLimiterService = rateLimiterService;
         this.trustedProxyIps = Arrays.stream(trustedProxyIpsConfig.split(","))
                 .map(String::trim)
@@ -79,6 +86,17 @@ public class AuthApiController {
     public ResponseEntity<Void> logout(@Valid @RequestBody RefreshTokenRequest request) {
         logoutUseCase.logout(new LogoutCommand(request.refreshToken()));
         return ResponseEntity.noContent().build();
+    }
+
+    @Operation(summary = "Google 소셜 로그인")
+    @PostMapping("/google")
+    public ResponseEntity<GoogleLoginResult> googleLogin(@Valid @RequestBody GoogleLoginRequest request,
+                                                         HttpServletRequest httpRequest) {
+        rateLimiterService.checkLoginRate(extractClientIp(httpRequest), "google");
+        GoogleLoginResult result = googleLoginUseCase.loginWithGoogle(
+                new GoogleLoginCommand(request.code(), request.redirectUri())
+        );
+        return ResponseEntity.ok(result);
     }
 
     /**

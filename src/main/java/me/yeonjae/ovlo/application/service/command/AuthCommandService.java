@@ -46,6 +46,10 @@ public class AuthCommandService implements LoginUseCase, LogoutUseCase, RefreshT
         MemberCredentials credentials = loadMemberCredentialsPort.findByEmail(command.email())
                 .orElseThrow(() -> new AuthException("이메일 또는 비밀번호가 올바르지 않습니다"));
 
+        if (credentials.hashedPassword() == null) {
+            throw new AuthException("소셜 로그인 계정입니다. Google 로그인을 사용해 주세요");
+        }
+
         if (!passwordHasherPort.matches(command.rawPassword(), credentials.hashedPassword())) {
             throw new AuthException("이메일 또는 비밀번호가 올바르지 않습니다");
         }

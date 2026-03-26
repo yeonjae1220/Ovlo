@@ -16,6 +16,8 @@ public class Member {
     private String hometown;
     private Email email;
     private Password password;
+    private OAuthProvider provider;
+    private String providerId;
     private UniversityId homeUniversityId;
     private List<UniversityExperience> universityExperiences;
     private List<LanguageSkill> languageSkills;
@@ -46,6 +48,9 @@ public class Member {
         }
         Objects.requireNonNull(email, "이메일은 null일 수 없습니다");
         Objects.requireNonNull(password, "비밀번호는 null일 수 없습니다");
+        if (password.hashedValue() == null || password.hashedValue().isBlank()) {
+            throw new IllegalArgumentException("비밀번호는 빈 값일 수 없습니다");
+        }
         Objects.requireNonNull(homeUniversityId, "홈 대학은 null일 수 없습니다");
         Objects.requireNonNull(major, "전공 정보는 null일 수 없습니다");
 
@@ -55,6 +60,8 @@ public class Member {
         member.hometown = hometown;
         member.email = email;
         member.password = password;
+        member.provider = OAuthProvider.LOCAL;
+        member.providerId = null;
         member.homeUniversityId = homeUniversityId;
         member.major = major;
         member.universityExperiences = new ArrayList<>();
@@ -64,8 +71,40 @@ public class Member {
         return member;
     }
 
+    public static Member createWithOAuth(String nickname, String name,
+                                         Email email, OAuthProvider provider, String providerId) {
+        Objects.requireNonNull(nickname, "닉네임은 null일 수 없습니다");
+        if (nickname.isBlank()) throw new IllegalArgumentException("닉네임은 빈 값일 수 없습니다");
+        Objects.requireNonNull(name, "이름은 null일 수 없습니다");
+        if (name.isBlank()) throw new IllegalArgumentException("이름은 빈 값일 수 없습니다");
+        Objects.requireNonNull(email, "이메일은 null일 수 없습니다");
+        Objects.requireNonNull(provider, "provider는 null일 수 없습니다");
+        if (provider == OAuthProvider.LOCAL) {
+            throw new IllegalArgumentException("createWithOAuth는 소셜 로그인 전용입니다");
+        }
+        Objects.requireNonNull(providerId, "providerId는 null일 수 없습니다");
+        if (providerId.isBlank()) throw new IllegalArgumentException("providerId는 빈 값일 수 없습니다");
+
+        Member member = new Member();
+        member.nickname = nickname;
+        member.name = name;
+        member.hometown = null;
+        member.email = email;
+        member.password = null;
+        member.provider = provider;
+        member.providerId = providerId;
+        member.homeUniversityId = null;
+        member.major = null;
+        member.universityExperiences = new ArrayList<>();
+        member.languageSkills = new ArrayList<>();
+        member.contactInfos = new ArrayList<>();
+        member.status = MemberStatus.PENDING_ONBOARDING;
+        return member;
+    }
+
     /** persistence 계층 전용: DB에서 모든 필드를 복원할 때 사용 */
     public static Member restore(MemberId id, String nickname, String name, String hometown, Email email, Password password,
+                                 OAuthProvider provider, String providerId,
                                  UniversityId homeUniversityId, Major major, MemberStatus status,
                                  String profileImageMediaId, String bio, LocalDate birthDate,
                                  List<LanguageSkill> languageSkills,
@@ -78,6 +117,8 @@ public class Member {
         member.hometown = hometown;
         member.email = email;
         member.password = password;
+        member.provider = provider != null ? provider : OAuthProvider.LOCAL;
+        member.providerId = providerId;
         member.homeUniversityId = homeUniversityId;
         member.major = major;
         member.status = status;
@@ -148,6 +189,21 @@ public class Member {
         this.profileImageMediaId = profileImageMediaId;
     }
 
+    public void completeOnboarding(String hometown, UniversityId homeUniversityId, Major major) {
+        if (status != MemberStatus.PENDING_ONBOARDING) {
+            throw new IllegalStateException("온보딩이 필요한 상태가 아닙니다. 현재 상태: " + status);
+        }
+        Objects.requireNonNull(hometown, "출신지는 null일 수 없습니다");
+        if (hometown.isBlank()) throw new IllegalArgumentException("출신지는 빈 값일 수 없습니다");
+        Objects.requireNonNull(homeUniversityId, "홈 대학은 null일 수 없습니다");
+        Objects.requireNonNull(major, "전공 정보는 null일 수 없습니다");
+
+        this.hometown = hometown;
+        this.homeUniversityId = homeUniversityId;
+        this.major = major;
+        this.status = MemberStatus.ACTIVE;
+    }
+
     public void withdraw() {
         if (status == MemberStatus.WITHDRAWN) {
             throw new IllegalStateException("이미 탈퇴한 회원입니다");
@@ -173,6 +229,8 @@ public class Member {
     public String getHometown() { return hometown; }
     public Email getEmail() { return email; }
     public Password getPassword() { return password; }
+    public OAuthProvider getProvider() { return provider; }
+    public String getProviderId() { return providerId; }
     public UniversityId getHomeUniversityId() { return homeUniversityId; }
     public Major getMajor() { return major; }
     public MemberStatus getStatus() { return status; }

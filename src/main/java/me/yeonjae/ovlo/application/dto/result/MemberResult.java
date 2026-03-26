@@ -31,11 +31,12 @@ public record MemberResult(
     public record ContactInfoData(String type, String value) {}
 
     public static MemberResult from(Member member) {
-        MajorInfo majorInfo = new MajorInfo(
-                member.getMajor().majorName(),
-                member.getMajor().degreeType().name(),
-                member.getMajor().gradeLevel()
-        );
+        MajorInfo majorInfo = member.getMajor() != null
+                ? new MajorInfo(
+                        member.getMajor().majorName(),
+                        member.getMajor().degreeType().name(),
+                        member.getMajor().gradeLevel())
+                : null;
 
         List<LanguageSkillInfo> skills = member.getLanguageSkills().stream()
                 .map(s -> new LanguageSkillInfo(s.languageCode(), s.level().name()))
@@ -56,7 +57,7 @@ public record MemberResult(
                 member.getName(),
                 member.getHometown(),
                 member.getEmail().value(),
-                member.getHomeUniversityId().value(),
+                member.getHomeUniversityId() != null ? member.getHomeUniversityId().value() : null,
                 majorInfo,
                 member.getStatus().name(),
                 member.getBio(),

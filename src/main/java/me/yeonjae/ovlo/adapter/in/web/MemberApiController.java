@@ -3,14 +3,17 @@ package me.yeonjae.ovlo.adapter.in.web;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import me.yeonjae.ovlo.adapter.in.web.dto.request.CompleteOnboardingRequest;
 import me.yeonjae.ovlo.adapter.in.web.dto.request.RegisterMemberRequest;
 import me.yeonjae.ovlo.adapter.in.web.dto.request.UpdateMemberProfileRequest;
 import me.yeonjae.ovlo.adapter.in.web.dto.request.UpdateProfileImageRequest;
+import me.yeonjae.ovlo.application.dto.command.CompleteOnboardingCommand;
 import me.yeonjae.ovlo.application.dto.command.RegisterMemberCommand;
 import me.yeonjae.ovlo.application.dto.command.UpdateMemberProfileCommand;
 import me.yeonjae.ovlo.application.dto.command.UpdateProfileImageCommand;
 import me.yeonjae.ovlo.application.dto.command.WithdrawMemberCommand;
 import me.yeonjae.ovlo.application.dto.result.MemberResult;
+import me.yeonjae.ovlo.application.port.in.member.CompleteOnboardingUseCase;
 import me.yeonjae.ovlo.application.port.in.member.GetMemberQuery;
 import me.yeonjae.ovlo.application.port.in.member.RegisterMemberUseCase;
 import me.yeonjae.ovlo.application.port.in.member.UpdateMemberProfileUseCase;
@@ -34,6 +37,7 @@ public class MemberApiController {
     private final UpdateMemberProfileUseCase updateMemberProfileUseCase;
     private final UpdateProfileImageUseCase updateProfileImageUseCase;
     private final WithdrawMemberUseCase withdrawMemberUseCase;
+    private final CompleteOnboardingUseCase completeOnboardingUseCase;
     private final GetMemberQuery getMemberQuery;
 
     public MemberApiController(
@@ -41,12 +45,14 @@ public class MemberApiController {
             UpdateMemberProfileUseCase updateMemberProfileUseCase,
             UpdateProfileImageUseCase updateProfileImageUseCase,
             WithdrawMemberUseCase withdrawMemberUseCase,
+            CompleteOnboardingUseCase completeOnboardingUseCase,
             GetMemberQuery getMemberQuery
     ) {
         this.registerMemberUseCase = registerMemberUseCase;
         this.updateMemberProfileUseCase = updateMemberProfileUseCase;
         this.updateProfileImageUseCase = updateProfileImageUseCase;
         this.withdrawMemberUseCase = withdrawMemberUseCase;
+        this.completeOnboardingUseCase = completeOnboardingUseCase;
         this.getMemberQuery = getMemberQuery;
     }
 
@@ -119,6 +125,23 @@ public class MemberApiController {
                 new UpdateProfileImageCommand(id, request.mediaId())
         );
         return ResponseEntity.ok(result);
+    }
+
+    @Operation(summary = "Google 로그인 온보딩 완성 (신규 소셜 회원)")
+    @PatchMapping("/me/onboarding")
+    public ResponseEntity<Void> completeOnboarding(
+            @AuthenticationPrincipal Long memberId,
+            @Valid @RequestBody CompleteOnboardingRequest request
+    ) {
+        completeOnboardingUseCase.completeOnboarding(new CompleteOnboardingCommand(
+                memberId,
+                request.hometown(),
+                request.homeUniversityId(),
+                request.majorName(),
+                request.degreeType(),
+                request.gradeLevel()
+        ));
+        return ResponseEntity.noContent().build();
     }
 
     @Operation(summary = "회원 탈퇴")

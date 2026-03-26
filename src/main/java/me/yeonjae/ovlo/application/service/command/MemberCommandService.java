@@ -1,10 +1,12 @@
 package me.yeonjae.ovlo.application.service.command;
 
+import me.yeonjae.ovlo.application.dto.command.CompleteOnboardingCommand;
 import me.yeonjae.ovlo.application.dto.command.RegisterMemberCommand;
 import me.yeonjae.ovlo.application.dto.command.UpdateMemberProfileCommand;
 import me.yeonjae.ovlo.application.dto.command.UpdateProfileImageCommand;
 import me.yeonjae.ovlo.application.dto.command.WithdrawMemberCommand;
 import me.yeonjae.ovlo.application.dto.result.MemberResult;
+import me.yeonjae.ovlo.application.port.in.member.CompleteOnboardingUseCase;
 import me.yeonjae.ovlo.application.port.in.member.RegisterMemberUseCase;
 import me.yeonjae.ovlo.application.port.in.member.UpdateMemberProfileUseCase;
 import me.yeonjae.ovlo.application.port.in.member.UpdateProfileImageUseCase;
@@ -22,7 +24,8 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 @Transactional
 public class MemberCommandService implements
-        RegisterMemberUseCase, UpdateMemberProfileUseCase, UpdateProfileImageUseCase, WithdrawMemberUseCase {
+        RegisterMemberUseCase, UpdateMemberProfileUseCase, UpdateProfileImageUseCase,
+        WithdrawMemberUseCase, CompleteOnboardingUseCase {
 
     private final LoadMemberPort loadMemberPort;
     private final SaveMemberPort saveMemberPort;
@@ -106,6 +109,20 @@ public class MemberCommandService implements
                 .orElseThrow(() -> new MemberException("회원을 찾을 수 없습니다: " + command.memberId(), MemberException.ErrorType.NOT_FOUND));
 
         member.withdraw();
+        saveMemberPort.save(member);
+    }
+
+    @Override
+    public void completeOnboarding(CompleteOnboardingCommand command) {
+        Member member = loadMemberPort.findById(new MemberId(command.memberId()))
+                .orElseThrow(() -> new MemberException("회원을 찾을 수 없습니다: " + command.memberId(), MemberException.ErrorType.NOT_FOUND));
+
+        Major major = new Major(
+                command.majorName(),
+                DegreeType.valueOf(command.degreeType()),
+                command.gradeLevel());
+
+        member.completeOnboarding(command.hometown(), new UniversityId(command.homeUniversityId()), major);
         saveMemberPort.save(member);
     }
 }

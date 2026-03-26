@@ -5,8 +5,23 @@ export interface AuthToken {
   memberId: number
 }
 
+export interface GoogleLoginResult {
+  accessToken: string
+  refreshToken: string
+  memberId: number
+  newMember: boolean
+}
+
+export interface CompleteOnboardingRequest {
+  hometown: string
+  homeUniversityId: number
+  majorName: string
+  degreeType: string
+  gradeLevel: number
+}
+
 // ─── Member ─────────────────────────────────────────────────────────────────
-export type MemberStatus = 'ACTIVE' | 'WITHDRAWN'
+export type MemberStatus = 'ACTIVE' | 'WITHDRAWN' | 'PENDING_ONBOARDING'
 export type DegreeType = 'BACHELOR' | 'MASTER' | 'DOCTOR'
 export type GradeLevel = 'FRESHMAN' | 'SOPHOMORE' | 'JUNIOR' | 'SENIOR' | 'GRADUATE'
 

@@ -5,6 +5,7 @@ import axios from 'axios'
 import { authApi } from '../api/auth'
 import { memberApi } from '../api/member'
 import { useAuthStore } from '../store/authStore'
+import type { CompleteOnboardingRequest } from '../types'
 
 export function useLogin() {
   const { setAuth, setAccessToken } = useAuthStore()
@@ -88,5 +89,38 @@ export function useRegister() {
   return useMutation({
     mutationFn: memberApi.register,
     onSuccess: () => navigate('/login'),
+  })
+}
+
+export function useGoogleLogin() {
+  const { setAuth, setAccessToken } = useAuthStore()
+  const navigate = useNavigate()
+
+  return useMutation({
+    mutationFn: ({ code, redirectUri }: { code: string; redirectUri: string }) =>
+      authApi.googleLogin(code, redirectUri),
+    onSuccess: async (result) => {
+      setAccessToken(result.accessToken)
+      const user = await memberApi.getById(String(result.memberId))
+      setAuth(result.accessToken, result.refreshToken, user)
+      if (result.newMember) {
+        navigate('/onboarding')
+      } else {
+        navigate('/boards')
+      }
+    },
+  })
+}
+
+export function useCompleteOnboarding() {
+  const { setCurrentUser } = useAuthStore()
+  const navigate = useNavigate()
+
+  return useMutation({
+    mutationFn: (req: CompleteOnboardingRequest) => memberApi.completeOnboarding(req),
+    onSuccess: (updatedUser) => {
+      setCurrentUser(updatedUser)
+      navigate('/boards')
+    },
   })
 }

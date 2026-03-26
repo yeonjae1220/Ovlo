@@ -1,5 +1,5 @@
 import apiClient from '../utils/axios'
-import type { AuthToken } from '../types'
+import type { AuthToken, GoogleLoginResult } from '../types'
 
 export const authApi = {
   login: (email: string, password: string) =>
@@ -10,4 +10,7 @@ export const authApi = {
 
   refresh: (refreshToken: string) =>
     apiClient.post<{ accessToken: string }>('/auth/refresh', { refreshToken }).then((r) => r.data),
+
+  googleLogin: (code: string, redirectUri: string) =>
+    apiClient.post<GoogleLoginResult>('/auth/google', { code, redirectUri }).then((r) => r.data),
 }

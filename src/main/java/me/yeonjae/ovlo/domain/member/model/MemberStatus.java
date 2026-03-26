@@ -3,7 +3,8 @@ package me.yeonjae.ovlo.domain.member.model;
 public enum MemberStatus {
     ACTIVE("활성"),
     SUSPENDED("정지"),
-    WITHDRAWN("탈퇴");
+    WITHDRAWN("탈퇴"),
+    PENDING_ONBOARDING("온보딩 대기");
 
     private final String displayName;
 

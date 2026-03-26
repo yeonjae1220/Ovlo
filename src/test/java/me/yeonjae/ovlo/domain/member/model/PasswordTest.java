@@ -22,17 +22,16 @@ class PasswordTest {
     }
 
     @Test
-    @DisplayName("null로 Password 생성 시 예외가 발생한다")
-    void shouldThrow_whenNull() {
-        assertThatThrownBy(() -> new Password(null))
-                .isInstanceOf(NullPointerException.class);
+    @DisplayName("null로 Password 생성 시 허용된다 (소셜 로그인 회원은 비밀번호 없음)")
+    void shouldAllow_whenNull() {
+        Password password = new Password(null);
+        assertThat(password.hashedValue()).isNull();
     }
 
     @Test
-    @DisplayName("빈 값으로 Password 생성 시 예외가 발생한다")
-    void shouldThrow_whenBlank() {
-        assertThatThrownBy(() -> new Password("   "))
-                .isInstanceOf(IllegalArgumentException.class)
-                .hasMessageContaining("비밀번호는 빈 값일 수 없습니다");
+    @DisplayName("빈 값으로 Password 생성 시 허용된다 (검증은 Member.create()에서 수행)")
+    void shouldAllow_whenBlank() {
+        Password password = new Password("   ");
+        assertThat(password.hashedValue()).isEqualTo("   ");
     }
 }

@@ -19,15 +19,17 @@ public class MemberMapper {
         entity.setName(member.getName());
         entity.setHometown(member.getHometown());
         entity.setEmail(member.getEmail().value());
-        entity.setPassword(member.getPassword().hashedValue());
-        entity.setHomeUniversityId(member.getHomeUniversityId().value());
+        entity.setPassword(member.getPassword() != null ? member.getPassword().hashedValue() : null);
+        entity.setProvider(member.getProvider() != null ? member.getProvider() : me.yeonjae.ovlo.domain.member.model.OAuthProvider.LOCAL);
+        entity.setProviderId(member.getProviderId());
+        entity.setHomeUniversityId(member.getHomeUniversityId() != null ? member.getHomeUniversityId().value() : null);
         entity.setProfileImageMediaId(member.getProfileImageMediaId());
         entity.setBio(member.getBio());
         entity.setBirthDate(member.getBirthDate());
         entity.setStatus(member.getStatus());
-        entity.setMajorName(member.getMajor().majorName());
-        entity.setDegreeType(member.getMajor().degreeType());
-        entity.setGradeLevel(member.getMajor().gradeLevel());
+        entity.setMajorName(member.getMajor() != null ? member.getMajor().majorName() : null);
+        entity.setDegreeType(member.getMajor() != null ? member.getMajor().degreeType() : null);
+        entity.setGradeLevel(member.getMajor() != null ? member.getMajor().gradeLevel() : null);
 
         entity.setLanguageSkills(member.getLanguageSkills().stream()
                 .map(s -> new LanguageSkillEmbeddable(s.languageCode(), s.level()))
@@ -57,15 +59,22 @@ public class MemberMapper {
                 .map(c -> new ContactInfo(c.getContactType(), c.getValue()))
                 .toList();
 
+        UniversityId homeUniversityId = entity.getHomeUniversityId() != null
+                ? new UniversityId(entity.getHomeUniversityId()) : null;
+        Major major = (entity.getMajorName() != null && entity.getDegreeType() != null && entity.getGradeLevel() != null)
+                ? new Major(entity.getMajorName(), entity.getDegreeType(), entity.getGradeLevel()) : null;
+
         return Member.restore(
                 new MemberId(entity.getId()),
                 entity.getNickname(),
                 entity.getName(),
                 entity.getHometown(),
                 new Email(entity.getEmail()),
-                new Password(entity.getPassword()),
-                new UniversityId(entity.getHomeUniversityId()),
-                new Major(entity.getMajorName(), entity.getDegreeType(), entity.getGradeLevel()),
+                entity.getPassword() != null ? new Password(entity.getPassword()) : null,
+                entity.getProvider(),
+                entity.getProviderId(),
+                homeUniversityId,
+                major,
                 entity.getStatus(),
                 entity.getProfileImageMediaId(),
                 entity.getBio(),

@@ -3,6 +3,7 @@ package me.yeonjae.ovlo.adapter.out.persistence.entity;
 import jakarta.persistence.*;
 import me.yeonjae.ovlo.domain.member.model.DegreeType;
 import me.yeonjae.ovlo.domain.member.model.MemberStatus;
+import me.yeonjae.ovlo.domain.member.model.OAuthProvider;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
@@ -25,16 +26,23 @@ public class MemberJpaEntity {
     @Column(nullable = false)
     private String name;
 
-    @Column(nullable = false)
+    @Column
     private String hometown;
 
     @Column(nullable = false, unique = true)
     private String email;
 
-    @Column(nullable = false)
+    @Column
     private String password;
 
-    @Column(name = "home_university_id", nullable = false)
+    @Column(nullable = false, length = 30)
+    @Enumerated(EnumType.STRING)
+    private OAuthProvider provider = OAuthProvider.LOCAL;
+
+    @Column(name = "provider_id")
+    private String providerId;
+
+    @Column(name = "home_university_id")
     private Long homeUniversityId;
 
     @Column(name = "profile_image_media_id")
@@ -50,15 +58,15 @@ public class MemberJpaEntity {
     @Enumerated(EnumType.STRING)
     private MemberStatus status;
 
-    @Column(name = "major_name", nullable = false)
+    @Column(name = "major_name")
     private String majorName;
 
-    @Column(name = "degree_type", nullable = false)
+    @Column(name = "degree_type")
     @Enumerated(EnumType.STRING)
     private DegreeType degreeType;
 
-    @Column(name = "grade_level", nullable = false)
-    private int gradeLevel;
+    @Column(name = "grade_level")
+    private Integer gradeLevel;
 
     @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "member_language_skill",
@@ -99,6 +107,10 @@ public class MemberJpaEntity {
     public void setEmail(String email) { this.email = email; }
     public String getPassword() { return password; }
     public void setPassword(String password) { this.password = password; }
+    public OAuthProvider getProvider() { return provider; }
+    public void setProvider(OAuthProvider provider) { this.provider = provider; }
+    public String getProviderId() { return providerId; }
+    public void setProviderId(String providerId) { this.providerId = providerId; }
     public Long getHomeUniversityId() { return homeUniversityId; }
     public void setHomeUniversityId(Long homeUniversityId) { this.homeUniversityId = homeUniversityId; }
     public String getProfileImageMediaId() { return profileImageMediaId; }
@@ -113,8 +125,8 @@ public class MemberJpaEntity {
     public void setMajorName(String majorName) { this.majorName = majorName; }
     public DegreeType getDegreeType() { return degreeType; }
     public void setDegreeType(DegreeType degreeType) { this.degreeType = degreeType; }
-    public int getGradeLevel() { return gradeLevel; }
-    public void setGradeLevel(int gradeLevel) { this.gradeLevel = gradeLevel; }
+    public Integer getGradeLevel() { return gradeLevel; }
+    public void setGradeLevel(Integer gradeLevel) { this.gradeLevel = gradeLevel; }
     public List<LanguageSkillEmbeddable> getLanguageSkills() { return languageSkills; }
     public void setLanguageSkills(List<LanguageSkillEmbeddable> languageSkills) { this.languageSkills = languageSkills; }
     public List<UniversityExperienceEmbeddable> getUniversityExperiences() { return universityExperiences; }
