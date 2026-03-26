@@ -70,6 +70,16 @@ spec:
                 secretKeyRef:
                   name: ovlo-secret
                   key: CORS_ALLOWED_ORIGINS
+            - name: GOOGLE_CLIENT_ID
+              valueFrom:
+                secretKeyRef:
+                  name: ovlo-secret
+                  key: GOOGLE_CLIENT_ID
+            - name: GOOGLE_CLIENT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: ovlo-secret
+                  key: GOOGLE_CLIENT_SECRET
           volumeMounts:
             - name: media-data
               mountPath: /tmp/ovlo-media

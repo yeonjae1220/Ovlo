@@ -42,7 +42,7 @@ logs/
 application-local.yml
 application-secret.yml
 
-### Kubernetes Secrets ###
+### k8s ###
 k8s/secret.yaml
 
 ### Claude Code ###
