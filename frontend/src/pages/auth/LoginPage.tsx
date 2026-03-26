@@ -2,12 +2,16 @@ import { useState, type FormEvent } from 'react'
 import { Link } from 'react-router-dom'
 import { useLogin } from '../../hooks/useAuth'
 
-const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID as string | undefined
+const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID || null
 
 function redirectToGoogle() {
+  if (!GOOGLE_CLIENT_ID) {
+    alert('Google 로그인이 현재 설정되지 않았습니다. 관리자에게 문의해주세요.')
+    return
+  }
   const redirectUri = `${window.location.origin}/oauth/callback`
   const params = new URLSearchParams({
-    client_id: GOOGLE_CLIENT_ID ?? '',
+    client_id: GOOGLE_CLIENT_ID,
     redirect_uri: redirectUri,
     response_type: 'code',
     scope: 'openid email profile',
