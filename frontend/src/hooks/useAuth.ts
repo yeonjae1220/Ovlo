@@ -93,21 +93,18 @@ export function useRegister() {
 }
 
 export function useGoogleLogin() {
-  const { setAuth, setAccessToken } = useAuthStore()
+  const { setAuth, setTokens } = useAuthStore()
   const navigate = useNavigate()
 
   return useMutation({
     mutationFn: ({ code, redirectUri }: { code: string; redirectUri: string }) =>
       authApi.googleLogin(code, redirectUri),
     onSuccess: async (result) => {
-      setAccessToken(result.accessToken)
+      // refreshToken까지 먼저 저장 → getById가 401을 받더라도 인터셉터가 재시도 가능
+      setTokens(result.accessToken, result.refreshToken)
       const user = await memberApi.getById(String(result.memberId))
       setAuth(result.accessToken, result.refreshToken, user)
-      if (result.newMember) {
-        navigate('/onboarding')
-      } else {
-        navigate('/boards')
-      }
+      navigate(result.newMember ? '/onboarding' : '/boards')
     },
   })
 }

@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react'
+import { useEffect } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { useGoogleLogin } from '../../hooks/useAuth'
 
@@ -6,12 +6,8 @@ export default function OAuthCallbackPage() {
   const [searchParams] = useSearchParams()
   const navigate = useNavigate()
   const googleLogin = useGoogleLogin()
-  const called = useRef(false)
 
   useEffect(() => {
-    if (called.current) return
-    called.current = true
-
     const code = searchParams.get('code')
     const error = searchParams.get('error')
 
@@ -20,8 +16,16 @@ export default function OAuthCallbackPage() {
       return
     }
 
+    // React StrictMode는 개발 환경에서 컴포넌트를 두 번 마운트한다.
+    // useRef는 재마운트 시 초기화되므로 sessionStorage로 동일 code 중복 처리를 방지한다.
+    const sessionKey = `oauth:${code}`
+    if (sessionStorage.getItem(sessionKey)) return
+    sessionStorage.setItem(sessionKey, '1')
+
     const redirectUri = `${window.location.origin}/oauth/callback`
-    googleLogin.mutate({ code, redirectUri })
+    googleLogin.mutate({ code, redirectUri }, {
+      onError: () => sessionStorage.removeItem(sessionKey),
+    })
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
