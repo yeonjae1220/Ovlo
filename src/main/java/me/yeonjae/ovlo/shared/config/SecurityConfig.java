@@ -82,6 +82,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/api/v1/auth/google").permitAll()
                         // 대학 조회 (인증 없이 접근 가능)
                         .requestMatchers(HttpMethod.GET, "/api/v1/universities/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/v1/global-universities/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/v1/exchange-universities/**").permitAll()
                         // WebSocket
                         .requestMatchers("/ws/**").permitAll()

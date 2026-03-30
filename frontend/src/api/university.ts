@@ -20,6 +20,30 @@ export const universityApi = {
     apiClient.get<University>(`/universities/${id}`).then((r) => r.data),
 }
 
+interface GlobalUniversityItem {
+  id: number
+  nameEn: string
+  countryCode?: string
+  city?: string
+}
+
+/** global_universities 테이블 (10,150개) — 회원가입/온보딩 대학 선택용 */
+export const globalUniversityApi = {
+  search: (keyword: string, countryCode?: string, page = 0, size = 20) =>
+    apiClient
+      .get<PageResult<GlobalUniversityItem>>('/global-universities', {
+        params: { keyword, countryCode, page, size },
+      })
+      .then((r) =>
+        r.data.content.map((u) => ({
+          id: u.id,
+          name: u.nameEn,
+          countryCode: u.countryCode ?? '',
+          city: u.city ?? '',
+        }))
+      ),
+}
+
 export const exchangeUniversityApi = {
   search: (keyword?: string, country?: string, page = 0, size = 20) =>
     apiClient

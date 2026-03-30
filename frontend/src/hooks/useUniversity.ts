@@ -1,10 +1,18 @@
 import { useQuery } from '@tanstack/react-query'
-import { universityApi, exchangeUniversityApi } from '../api/university'
+import { universityApi, globalUniversityApi, exchangeUniversityApi } from '../api/university'
 
 export function useUniversitySearch(keyword: string, countryCode?: string) {
   return useQuery({
-    queryKey: ['universities', 'search', keyword, countryCode],
-    queryFn: () => universityApi.search(keyword, countryCode),
+    queryKey: ['global-universities', 'search', keyword, countryCode],
+    queryFn: () => globalUniversityApi.search(keyword, countryCode),
+    enabled: keyword.length >= 1,
+  })
+}
+
+export function useGlobalUniversitySearch(keyword: string, countryCode?: string) {
+  return useQuery({
+    queryKey: ['global-universities', 'search', keyword, countryCode],
+    queryFn: () => globalUniversityApi.search(keyword, countryCode),
     enabled: keyword.length >= 1,
   })
 }

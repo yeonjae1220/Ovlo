@@ -32,6 +32,45 @@ const DEGREE_TYPES = [
 const TOTAL_STEPS = 3
 const stepTitles = ['계정 정보', '개인 정보', '학업 정보']
 
+// ── Step indicator (외부 정의: 내부 정의 시 매 렌더마다 unmount/remount 발생) ──
+function StepIndicator({ step }: { step: number }) {
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', marginBottom: 28, gap: 0 }}>
+      {stepTitles.map((title, idx) => {
+        const num = idx + 1
+        const active = num === step
+        const done = num < step
+        return (
+          <div key={num} style={{ display: 'flex', alignItems: 'center', flex: num < TOTAL_STEPS ? 1 : 'none' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}>
+              <div style={{
+                width: 28, height: 28, borderRadius: '50%',
+                background: done ? '#2563eb' : active ? '#2563eb' : '#e5e7eb',
+                color: done || active ? '#fff' : '#9ca3af',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                fontSize: 13, fontWeight: 700,
+                transition: 'background 0.2s',
+              }}>
+                {done ? '✓' : num}
+              </div>
+              <span style={{ fontSize: 11, color: active ? '#2563eb' : '#9ca3af', fontWeight: active ? 600 : 400, whiteSpace: 'nowrap' }}>
+                {title}
+              </span>
+            </div>
+            {num < TOTAL_STEPS && (
+              <div style={{
+                flex: 1, height: 2, background: done ? '#2563eb' : '#e5e7eb',
+                margin: '0 6px', marginBottom: 18,
+                transition: 'background 0.2s',
+              }} />
+            )}
+          </div>
+        )
+      })}
+    </div>
+  )
+}
+
 // ── Styles (outside component to avoid recreation on every render) ─────────
 const containerStyle: React.CSSProperties = {
   maxWidth: 460,
@@ -173,48 +212,11 @@ export default function RegisterPage() {
     })
   }
 
-  // ── Step indicator ────────────────────────────────────────────────────────
-  const StepIndicator = () => (
-    <div style={{ display: 'flex', alignItems: 'center', marginBottom: 28, gap: 0 }}>
-      {stepTitles.map((title, idx) => {
-        const num = idx + 1
-        const active = num === step
-        const done = num < step
-        return (
-          <div key={num} style={{ display: 'flex', alignItems: 'center', flex: num < TOTAL_STEPS ? 1 : 'none' }}>
-            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}>
-              <div style={{
-                width: 28, height: 28, borderRadius: '50%',
-                background: done ? '#2563eb' : active ? '#2563eb' : '#e5e7eb',
-                color: done || active ? '#fff' : '#9ca3af',
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                fontSize: 13, fontWeight: 700,
-                transition: 'background 0.2s',
-              }}>
-                {done ? '✓' : num}
-              </div>
-              <span style={{ fontSize: 11, color: active ? '#2563eb' : '#9ca3af', fontWeight: active ? 600 : 400, whiteSpace: 'nowrap' }}>
-                {title}
-              </span>
-            </div>
-            {num < TOTAL_STEPS && (
-              <div style={{
-                flex: 1, height: 2, background: done ? '#2563eb' : '#e5e7eb',
-                margin: '0 6px', marginBottom: 18,
-                transition: 'background 0.2s',
-              }} />
-            )}
-          </div>
-        )
-      })}
-    </div>
-  )
-
   return (
     <div style={containerStyle}>
       <h2 style={{ margin: '0 0 24px', fontSize: 22, fontWeight: 700, color: '#111827' }}>회원가입</h2>
 
-      <StepIndicator />
+      <StepIndicator step={step} />
 
       {/* ── Step 1: 계정 정보 ─────────────────────────────────────────── */}
       {step === 1 && (

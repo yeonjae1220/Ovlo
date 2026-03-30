@@ -1,5 +1,5 @@
 import { useState, type FormEvent } from 'react'
-import { useUniversitySearch } from '../../hooks/useUniversity'
+import { useGlobalUniversitySearch } from '../../hooks/useUniversity'
 import { useCompleteOnboarding } from '../../hooks/useAuth'
 
 const DEGREE_TYPES = [
@@ -28,7 +28,7 @@ export default function OnboardingPage() {
   const [formError, setFormError] = useState('')
 
   const completeOnboarding = useCompleteOnboarding()
-  const { data: universities } = useUniversitySearch(uniQuery)
+  const { data: universities } = useGlobalUniversitySearch(uniQuery)
 
   const set = (key: keyof FormData) =>
     (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
