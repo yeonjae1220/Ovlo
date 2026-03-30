@@ -38,11 +38,6 @@ export default function UniversitySearchPage() {
           <li key={u.id} style={{ padding: 12, borderBottom: '1px solid #eee' }}>
             <strong>{u.name}</strong>
             <span style={{ marginLeft: 8, color: '#888' }}>{u.countryCode} · {u.city}</span>
-            {u.websiteUrl && (
-              <a href={u.websiteUrl} target="_blank" rel="noopener noreferrer" style={{ marginLeft: 8 }}>
-                웹사이트
-              </a>
-            )}
           </li>
         ))}
       </ul>
