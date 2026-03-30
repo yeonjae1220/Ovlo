@@ -2,10 +2,10 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useExchangeUniversitySearch, useGlobalUniversitySearch } from '../../hooks/useUniversity'
 
-const STAR = (avg?: number) =>
+const STAR = (avg?: number | null) =>
   avg !== undefined && avg !== null
     ? '★'.repeat(Math.round(avg)) + '☆'.repeat(5 - Math.round(avg))
-    : '—'
+    : '☆☆☆☆☆'
 
 export default function ExchangeUniversitySearchPage() {
   const [uniQuery, setUniQuery] = useState('')
@@ -164,10 +164,7 @@ export default function ExchangeUniversitySearchPage() {
                 {STAR(u.avgRating)}
               </div>
               <div style={{ fontSize: 12, color: '#64748b', marginTop: 2 }}>
-                {u.avgRating !== undefined && u.avgRating !== null
-                  ? `${u.avgRating.toFixed(1)} · `
-                  : ''}
-                리뷰 {u.reviewCount}개
+                {(u.avgRating ?? 0).toFixed(1)} · 리뷰 {u.reviewCount}개
               </div>
             </div>
           </li>

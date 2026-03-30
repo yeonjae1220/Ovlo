@@ -172,6 +172,10 @@ export default function RegisterPage() {
       if (nicknameTaken) { setStepError('이미 사용 중인 닉네임입니다.'); return false }
       if (!form.email) { setStepError('이메일을 입력해주세요.'); return false }
       if (form.password.length < 8) { setStepError('비밀번호는 8자 이상이어야 합니다.'); return false }
+      if (!/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&_#^()\-])[A-Za-z\d@$!%*?&_#^()\-]{8,100}$/.test(form.password)) {
+        setStepError('비밀번호는 대문자, 소문자, 숫자, 특수문자(@$!%*?&_#^()-) 를 각각 1자 이상 포함해야 합니다.')
+        return false
+      }
     }
     if (step === 2) {
       if (!form.name.trim()) { setStepError('이름을 입력해주세요.'); return false }
@@ -350,7 +354,12 @@ export default function RegisterPage() {
           </div>
 
           {stepError && <p style={{ color: '#dc2626', margin: 0, fontSize: 13 }}>{stepError}</p>}
-          {register.isError && <p style={{ color: '#dc2626', margin: 0, fontSize: 13 }}>회원가입 실패. 입력값을 다시 확인해주세요.</p>}
+          {register.isError && (
+            <p style={{ color: '#dc2626', margin: 0, fontSize: 13 }}>
+              {(register.error as { response?: { data?: { message?: string } } })?.response?.data?.message
+                || '회원가입 실패. 입력값을 다시 확인해주세요.'}
+            </p>
+          )}
 
           <div style={{ display: 'flex', gap: 10 }}>
             <button type="button" onClick={handleBack} style={{ ...secondaryBtn, flex: 1 }}>← 이전</button>

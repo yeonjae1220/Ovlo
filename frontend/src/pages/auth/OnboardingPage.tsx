@@ -59,6 +59,8 @@ export default function OnboardingPage() {
     borderRadius: 12,
     boxShadow: '0 4px 24px rgba(0,0,0,0.06)',
     fontFamily: 'system-ui, sans-serif',
+    background: '#ffffff',
+    colorScheme: 'light',
   }
 
   const fieldStyle: React.CSSProperties = { display: 'flex', flexDirection: 'column', gap: 6 }
