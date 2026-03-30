@@ -80,6 +80,8 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/api/v1/auth/login").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/v1/auth/refresh").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/v1/auth/google").permitAll()
+                        // 닉네임 중복 체크 (회원가입 중 미인증 상태에서 호출)
+                        .requestMatchers(HttpMethod.GET, "/api/v1/members/search").permitAll()
                         // 대학 조회 (인증 없이 접근 가능)
                         .requestMatchers(HttpMethod.GET, "/api/v1/universities/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/v1/global-universities/**").permitAll()

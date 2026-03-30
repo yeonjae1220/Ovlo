@@ -155,7 +155,7 @@ export default function RegisterPage() {
 
   const register = useRegister()
   const { data: universities } = useUniversitySearch(uniQuery)
-  const { data: nicknameResults } = useMemberSearch(form.nickname)
+  const { data: nicknameResults } = useMemberSearch(step === 1 ? form.nickname : '')
   const nicknameAvailable = form.nickname.length >= 2 && nicknameResults?.length === 0
   const nicknameTaken = form.nickname.length >= 2 && (nicknameResults?.length ?? 0) > 0
 
@@ -337,13 +337,13 @@ export default function RegisterPage() {
           <div style={{ display: 'flex', gap: 12 }}>
             <div style={{ ...fieldStyle, flex: 1 }}>
               <label style={labelStyle}>학위</label>
-              <select style={{ ...inputStyle, background: '#fff' }} value={form.degreeType} onChange={set('degreeType')}>
+              <select style={{ ...inputStyle, background: '#f9fafb', color: '#374151' }} value={form.degreeType} onChange={set('degreeType')}>
                 {DEGREE_TYPES.map((d) => <option key={d.value} value={d.value}>{d.label}</option>)}
               </select>
             </div>
             <div style={{ ...fieldStyle, flex: 1 }}>
               <label style={labelStyle}>학년</label>
-              <select style={{ ...inputStyle, background: '#fff' }} value={form.gradeLevel} onChange={set('gradeLevel')}>
+              <select style={{ ...inputStyle, background: '#f9fafb', color: '#374151' }} value={form.gradeLevel} onChange={set('gradeLevel')}>
                 {[1, 2, 3, 4, 5, 6].map((n) => <option key={n} value={String(n)}>{n}학년</option>)}
               </select>
             </div>

@@ -26,9 +26,16 @@ export const router = createBrowserRouter([
   { path: '/login', element: <LoginPage /> },
   { path: '/register', element: <RegisterPage /> },
   { path: '/universities', element: <UniversitySearchPage /> },
-  { path: '/exchange-universities', element: <ExchangeUniversitySearchPage /> },
-  { path: '/exchange-universities/:id', element: <ExchangeUniversityDetailPage /> },
   { path: '/oauth/callback', element: <OAuthCallbackPage /> },
+
+  // Public routes with AppLayout (하단바 포함, 인증 불필요)
+  {
+    element: <AppLayout />,
+    children: [
+      { path: '/exchange-universities', element: <ExchangeUniversitySearchPage /> },
+      { path: '/exchange-universities/:id', element: <ExchangeUniversityDetailPage /> },
+    ],
+  },
 
   // Protected routes
   {
