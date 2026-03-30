@@ -59,7 +59,13 @@ public class GoogleAuthCommandService implements GoogleLoginUseCase {
                         "이미 이메일/비밀번호로 가입된 계정입니다. 일반 로그인을 사용해 주세요",
                         MemberException.ErrorType.CONFLICT);
             }
-            isNewMember = false;
+            if (member.getStatus() == MemberStatus.WITHDRAWN) {
+                member.reactivateForOnboarding();
+                member = saveMemberPort.save(member);
+                isNewMember = true;
+            } else {
+                isNewMember = false;
+            }
         } else {
             member = Member.createWithOAuth(
                     profile.name(),

@@ -211,6 +211,16 @@ public class Member {
         this.status = MemberStatus.WITHDRAWN;
     }
 
+    public void reactivateForOnboarding() {
+        if (status != MemberStatus.WITHDRAWN) {
+            throw new IllegalStateException("탈퇴한 회원만 재활성화할 수 있습니다. 현재 상태: " + status);
+        }
+        this.hometown = null;
+        this.homeUniversityId = null;
+        this.major = null;
+        this.status = MemberStatus.PENDING_ONBOARDING;
+    }
+
     // ── private ──────────────────────────────────────────────────────────────
 
     private void validateActive() {

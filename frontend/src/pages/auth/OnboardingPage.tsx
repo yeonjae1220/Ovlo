@@ -109,16 +109,25 @@ export default function OnboardingPage() {
         <div style={fieldStyle}>
           <label style={labelStyle}>소속 대학</label>
           {selectedUniId ? (
-            <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-              <span style={{ flex: 1, padding: '10px 12px', border: '1px solid #d1d5db', borderRadius: 8, fontSize: 14, color: '#16a34a', fontWeight: 500 }}>
-                ✓ {selectedUniName}
-              </span>
-              <button type="button"
-                style={{ padding: '10px 14px', border: '1px solid #d1d5db', borderRadius: 8, background: '#f9fafb', cursor: 'pointer', fontSize: 13 }}
-                onClick={() => { setSelectedUniId(null); setSelectedUniName(''); setUniQuery('') }}>
-                변경
-              </button>
-            </div>
+            <button
+              type="button"
+              onClick={() => { setSelectedUniId(null); setSelectedUniName(''); setUniQuery('') }}
+              style={{
+                padding: '10px 12px',
+                border: '1px solid #86efac',
+                borderRadius: 8,
+                background: '#f0fdf4',
+                color: '#16a34a',
+                fontWeight: 500,
+                fontSize: 14,
+                cursor: 'pointer',
+                textAlign: 'left',
+                width: '100%',
+              }}
+              title="클릭하여 대학 변경"
+            >
+              ✓ {selectedUniName} <span style={{ color: '#9ca3af', fontSize: 12, fontWeight: 400 }}>(클릭하여 변경)</span>
+            </button>
           ) : (
             <>
               <input
