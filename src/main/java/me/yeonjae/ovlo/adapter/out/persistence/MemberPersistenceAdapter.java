@@ -7,6 +7,8 @@ import me.yeonjae.ovlo.application.port.out.member.LoadMemberPort;
 import me.yeonjae.ovlo.application.port.out.member.SaveMemberPort;
 import me.yeonjae.ovlo.domain.member.model.Member;
 import me.yeonjae.ovlo.domain.member.model.MemberId;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -65,5 +67,16 @@ public class MemberPersistenceAdapter implements LoadMemberPort, SaveMemberPort 
         MemberJpaEntity entity = memberMapper.toJpaEntity(member);
         MemberJpaEntity saved = memberJpaRepository.save(entity);
         return memberMapper.toDomain(saved);
+    }
+
+    @Override
+    public Page<Member> findAll(Pageable pageable) {
+        return memberJpaRepository.findAll(pageable)
+                .map(memberMapper::toDomain);
+    }
+
+    @Override
+    public long count() {
+        return memberJpaRepository.count();
     }
 }

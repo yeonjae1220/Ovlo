@@ -11,8 +11,10 @@ import me.yeonjae.ovlo.application.port.in.auth.RefreshTokenUseCase;
 import me.yeonjae.ovlo.application.port.out.auth.LoadMemberCredentialsPort;
 import me.yeonjae.ovlo.application.port.out.auth.PasswordHasherPort;
 import me.yeonjae.ovlo.application.port.out.auth.TokenStorePort;
+import me.yeonjae.ovlo.application.port.out.member.LoadMemberPort;
 import me.yeonjae.ovlo.domain.auth.exception.AuthException;
 import me.yeonjae.ovlo.domain.auth.model.AuthSession;
+import me.yeonjae.ovlo.domain.member.model.MemberRole;
 import me.yeonjae.ovlo.shared.security.JwtTokenProvider;
 import org.springframework.stereotype.Service;
 
@@ -30,15 +32,18 @@ public class AuthCommandService implements LoginUseCase, LogoutUseCase, RefreshT
     private final PasswordHasherPort passwordHasherPort;
     private final TokenStorePort tokenStorePort;
     private final JwtTokenProvider jwtTokenProvider;
+    private final LoadMemberPort loadMemberPort;
 
     public AuthCommandService(LoadMemberCredentialsPort loadMemberCredentialsPort,
                                PasswordHasherPort passwordHasherPort,
                                TokenStorePort tokenStorePort,
-                               JwtTokenProvider jwtTokenProvider) {
+                               JwtTokenProvider jwtTokenProvider,
+                               LoadMemberPort loadMemberPort) {
         this.loadMemberCredentialsPort = loadMemberCredentialsPort;
         this.passwordHasherPort = passwordHasherPort;
         this.tokenStorePort = tokenStorePort;
         this.jwtTokenProvider = jwtTokenProvider;
+        this.loadMemberPort = loadMemberPort;
     }
 
     @Override
@@ -54,7 +59,7 @@ public class AuthCommandService implements LoginUseCase, LogoutUseCase, RefreshT
             throw new AuthException("이메일 또는 비밀번호가 올바르지 않습니다");
         }
 
-        String accessToken = jwtTokenProvider.generateAccessToken(credentials.memberId());
+        String accessToken = jwtTokenProvider.generateAccessToken(credentials.memberId(), credentials.role());
         String refreshToken = jwtTokenProvider.generateRefreshToken();
         Instant expiresAt = Instant.now().plus(REFRESH_TOKEN_TTL_DAYS, ChronoUnit.DAYS);
 
@@ -81,7 +86,10 @@ public class AuthCommandService implements LoginUseCase, LogoutUseCase, RefreshT
             throw new AuthException("만료되었거나 유효하지 않은 세션입니다. 다시 로그인해 주세요");
         }
 
-        String newAccessToken = jwtTokenProvider.generateAccessToken(session.getMemberId());
+        MemberRole role = loadMemberPort.findById(session.getMemberId())
+                .map(m -> m.getRole())
+                .orElse(MemberRole.MEMBER);
+        String newAccessToken = jwtTokenProvider.generateAccessToken(session.getMemberId(), role);
         String newRefreshToken = jwtTokenProvider.generateRefreshToken();
         Instant newExpiry = Instant.now().plus(REFRESH_TOKEN_TTL_DAYS, ChronoUnit.DAYS);
 

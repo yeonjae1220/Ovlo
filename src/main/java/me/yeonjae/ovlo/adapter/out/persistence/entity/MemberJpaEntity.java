@@ -2,6 +2,7 @@ package me.yeonjae.ovlo.adapter.out.persistence.entity;
 
 import jakarta.persistence.*;
 import me.yeonjae.ovlo.domain.member.model.DegreeType;
+import me.yeonjae.ovlo.domain.member.model.MemberRole;
 import me.yeonjae.ovlo.domain.member.model.MemberStatus;
 import me.yeonjae.ovlo.domain.member.model.OAuthProvider;
 import org.hibernate.annotations.CreationTimestamp;
@@ -57,6 +58,10 @@ public class MemberJpaEntity {
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)
     private MemberStatus status;
+
+    @Column(nullable = false, length = 20)
+    @Enumerated(EnumType.STRING)
+    private MemberRole role = MemberRole.MEMBER;
 
     @Column(name = "major_name")
     private String majorName;
@@ -121,6 +126,8 @@ public class MemberJpaEntity {
     public void setBirthDate(LocalDate birthDate) { this.birthDate = birthDate; }
     public MemberStatus getStatus() { return status; }
     public void setStatus(MemberStatus status) { this.status = status; }
+    public MemberRole getRole() { return role; }
+    public void setRole(MemberRole role) { this.role = role; }
     public String getMajorName() { return majorName; }
     public void setMajorName(String majorName) { this.majorName = majorName; }
     public DegreeType getDegreeType() { return degreeType; }

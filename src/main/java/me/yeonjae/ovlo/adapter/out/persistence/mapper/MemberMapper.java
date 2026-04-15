@@ -27,6 +27,7 @@ public class MemberMapper {
         entity.setBio(member.getBio());
         entity.setBirthDate(member.getBirthDate());
         entity.setStatus(member.getStatus());
+        entity.setRole(member.getRole());
         entity.setMajorName(member.getMajor() != null ? member.getMajor().majorName() : null);
         entity.setDegreeType(member.getMajor() != null ? member.getMajor().degreeType() : null);
         entity.setGradeLevel(member.getMajor() != null ? member.getMajor().gradeLevel() : null);
@@ -81,6 +82,7 @@ public class MemberMapper {
                 entity.getBirthDate(),
                 skills,
                 experiences,
-                contacts);
+                contacts,
+                entity.getRole());
     }
 }

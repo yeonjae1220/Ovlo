@@ -20,6 +20,6 @@ public class MemberCredentialsPersistenceAdapter implements LoadMemberCredential
     @Override
     public Optional<MemberCredentials> findByEmail(String email) {
         return memberJpaRepository.findByEmail(email)
-                .map(e -> new MemberCredentials(new MemberId(e.getId()), e.getPassword()));
+                .map(e -> new MemberCredentials(new MemberId(e.getId()), e.getPassword(), e.getRole()));
     }
 }

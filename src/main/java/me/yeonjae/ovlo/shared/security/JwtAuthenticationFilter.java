@@ -33,10 +33,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         if (StringUtils.hasText(token) && jwtTokenProvider.validateAccessToken(token)) {
             MemberId memberId = jwtTokenProvider.extractMemberId(token);
+            me.yeonjae.ovlo.domain.member.model.MemberRole role = jwtTokenProvider.extractRole(token);
+            String authority = role == me.yeonjae.ovlo.domain.member.model.MemberRole.ADMIN ? "ADMIN" : "ROLE_USER";
             UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
                     memberId.value(),
                     null,
-                    List.of(new SimpleGrantedAuthority("ROLE_USER"))
+                    List.of(new SimpleGrantedAuthority(authority))
             );
             SecurityContextHolder.getContext().setAuthentication(authentication);
         }

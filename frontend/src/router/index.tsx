@@ -1,6 +1,7 @@
 import { createBrowserRouter } from 'react-router-dom'
 import AppLayout from '../components/layout/AppLayout'
 import ProtectedRoute from '../components/layout/ProtectedRoute'
+import AdminRoute from '../components/layout/AdminRoute'
 
 import LandingPage from '../pages/LandingPage'
 import LoginPage from '../pages/auth/LoginPage'
@@ -19,6 +20,8 @@ import SearchPage from '../pages/member/SearchPage'
 import FollowPage from '../pages/follow/FollowPage'
 import ChatListPage from '../pages/chat/ChatListPage'
 import ChatRoomPage from '../pages/chat/ChatRoomPage'
+import AdminDashboardPage from '../pages/admin/AdminDashboardPage'
+import AdminMembersPage from '../pages/admin/AdminMembersPage'
 
 export const router = createBrowserRouter([
   // Public routes
@@ -34,6 +37,15 @@ export const router = createBrowserRouter([
     children: [
       { path: '/exchange-universities', element: <ExchangeUniversitySearchPage /> },
       { path: '/exchange-universities/:id', element: <ExchangeUniversityDetailPage /> },
+    ],
+  },
+
+  // Admin routes (ADMIN role 전용)
+  {
+    element: <AdminRoute />,
+    children: [
+      { path: '/admin', element: <AdminDashboardPage /> },
+      { path: '/admin/members', element: <AdminMembersPage /> },
     ],
   },
 

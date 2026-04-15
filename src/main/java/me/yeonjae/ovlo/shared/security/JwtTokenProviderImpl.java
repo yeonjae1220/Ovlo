@@ -5,6 +5,7 @@ import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 import me.yeonjae.ovlo.domain.member.model.MemberId;
+import me.yeonjae.ovlo.domain.member.model.MemberRole;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -18,6 +19,7 @@ import java.util.UUID;
 public class JwtTokenProviderImpl implements JwtTokenProvider {
 
     private static final String MEMBER_ID_CLAIM = "memberId";
+    private static final String ROLE_CLAIM = "role";
     private static final String ISSUER = "ovlo";
     private static final String AUDIENCE = "ovlo-api";
 
@@ -36,7 +38,7 @@ public class JwtTokenProviderImpl implements JwtTokenProvider {
     }
 
     @Override
-    public String generateAccessToken(MemberId memberId) {
+    public String generateAccessToken(MemberId memberId, MemberRole role) {
         Date now = new Date();
         Date expiry = new Date(now.getTime() + accessTokenTtlMinutes * 60 * 1000L);
 
@@ -44,6 +46,7 @@ public class JwtTokenProviderImpl implements JwtTokenProvider {
                 .issuer(ISSUER)
                 .audience().add(AUDIENCE).and()
                 .claim(MEMBER_ID_CLAIM, memberId.value())
+                .claim(ROLE_CLAIM, role != null ? role.name() : MemberRole.MEMBER.name())
                 .issuedAt(now)
                 .expiration(expiry)
                 .signWith(secretKey)
@@ -70,6 +73,27 @@ public class JwtTokenProviderImpl implements JwtTokenProvider {
             throw new IllegalArgumentException("JWT 토큰에 memberId 클레임이 없습니다");
         }
         return new MemberId(memberId);
+    }
+
+    @Override
+    public MemberRole extractRole(String accessToken) {
+        Claims claims = Jwts.parser()
+                .verifyWith(secretKey)
+                .requireIssuer(ISSUER)
+                .requireAudience(AUDIENCE)
+                .build()
+                .parseSignedClaims(accessToken)
+                .getPayload();
+
+        String role = claims.get(ROLE_CLAIM, String.class);
+        if (role == null) {
+            return MemberRole.MEMBER;
+        }
+        try {
+            return MemberRole.valueOf(role);
+        } catch (IllegalArgumentException e) {
+            return MemberRole.MEMBER;
+        }
     }
 
     @Override

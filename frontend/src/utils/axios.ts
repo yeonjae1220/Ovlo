@@ -36,13 +36,8 @@ apiClient.interceptors.response.use(
     const original = error.config
 
     const status = error.response?.status
-    // 403 with no authentication entry point configured returns 403 instead of 401;
-    // treat it as an auth failure and clear state immediately.
-    if (status === 403) {
-      useAuthStore.getState().clearAuth()
-      window.location.href = '/login'
-      return Promise.reject(error)
-    }
+    // 403 = 인가 실패(권한 없음) — 세션은 유효하므로 auth를 클리어하지 않음.
+    // AdminRoute가 이미 role 체크 후 /boards로 리다이렉트 처리함.
     if (status !== 401 || original._retry) {
       return Promise.reject(error)
     }

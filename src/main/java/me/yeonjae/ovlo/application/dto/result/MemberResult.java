@@ -1,6 +1,7 @@
 package me.yeonjae.ovlo.application.dto.result;
 
 import me.yeonjae.ovlo.domain.member.model.Member;
+import me.yeonjae.ovlo.domain.member.model.MemberRole;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -14,6 +15,7 @@ public record MemberResult(
         Long homeUniversityId,
         MajorInfo major,
         String status,
+        MemberRole role,
         String bio,
         LocalDate birthDate,
         String profileImageMediaId,
@@ -60,6 +62,7 @@ public record MemberResult(
                 member.getHomeUniversityId() != null ? member.getHomeUniversityId().value() : null,
                 majorInfo,
                 member.getStatus().name(),
+                member.getRole(),
                 member.getBio(),
                 member.getBirthDate(),
                 member.getProfileImageMediaId(),

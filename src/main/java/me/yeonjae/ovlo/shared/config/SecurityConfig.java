@@ -47,7 +47,7 @@ public class SecurityConfig {
         List<String> origins = Arrays.asList(corsAllowedOrigins.split(","));
         config.setAllowedOriginPatterns(origins);
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
-        config.setAllowedHeaders(List.of("*"));
+        config.setAllowedHeaders(List.of("Authorization", "Content-Type", "Accept"));
         config.setAllowCredentials(true);
         config.setMaxAge(3600L);
 
@@ -97,6 +97,8 @@ public class SecurityConfig {
                         .requestMatchers("/actuator/**").authenticated()
                         // H2 Console: 인증 필요 (개발 프로파일에서만 활성화)
                         .requestMatchers("/h2-console/**").authenticated()
+                        // 어드민 전용 엔드포인트
+                        .requestMatchers("/api/v1/admin/**").hasAuthority("ADMIN")
                         // 나머지는 인증 필요
                         .anyRequest().authenticated()
                 )

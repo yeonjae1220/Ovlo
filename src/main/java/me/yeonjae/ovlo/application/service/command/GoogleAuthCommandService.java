@@ -77,7 +77,7 @@ public class GoogleAuthCommandService implements GoogleLoginUseCase {
             isNewMember = true;
         }
 
-        String accessToken = jwtTokenProvider.generateAccessToken(member.getId());
+        String accessToken = jwtTokenProvider.generateAccessToken(member.getId(), member.getRole());
         String refreshToken = jwtTokenProvider.generateRefreshToken();
         Instant expiresAt = Instant.now().plus(REFRESH_TOKEN_TTL_DAYS, ChronoUnit.DAYS);
 

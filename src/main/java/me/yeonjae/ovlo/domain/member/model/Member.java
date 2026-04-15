@@ -24,6 +24,7 @@ public class Member {
     private Major major;
     private List<ContactInfo> contactInfos;
     private MemberStatus status;
+    private MemberRole role;
 
     // 선택 정보 (추후 수정 가능)
     private String profileImageMediaId;
@@ -68,6 +69,7 @@ public class Member {
         member.languageSkills = new ArrayList<>();
         member.contactInfos = new ArrayList<>();
         member.status = MemberStatus.ACTIVE;
+        member.role = MemberRole.MEMBER;
         return member;
     }
 
@@ -99,6 +101,7 @@ public class Member {
         member.languageSkills = new ArrayList<>();
         member.contactInfos = new ArrayList<>();
         member.status = MemberStatus.PENDING_ONBOARDING;
+        member.role = MemberRole.MEMBER;
         return member;
     }
 
@@ -109,7 +112,8 @@ public class Member {
                                  String profileImageMediaId, String bio, LocalDate birthDate,
                                  List<LanguageSkill> languageSkills,
                                  List<UniversityExperience> universityExperiences,
-                                 List<ContactInfo> contactInfos) {
+                                 List<ContactInfo> contactInfos,
+                                 MemberRole role) {
         Member member = new Member();
         member.id = id;
         member.nickname = nickname;
@@ -128,6 +132,7 @@ public class Member {
         member.languageSkills = new ArrayList<>(languageSkills);
         member.universityExperiences = new ArrayList<>(universityExperiences);
         member.contactInfos = new ArrayList<>(contactInfos);
+        member.role = role != null ? role : MemberRole.MEMBER;
         return member;
     }
 
@@ -204,6 +209,11 @@ public class Member {
         this.status = MemberStatus.ACTIVE;
     }
 
+    public void updateRole(MemberRole role) {
+        Objects.requireNonNull(role, "역할은 null일 수 없습니다");
+        this.role = role;
+    }
+
     public void withdraw() {
         if (status == MemberStatus.WITHDRAWN) {
             throw new IllegalStateException("이미 탈퇴한 회원입니다");
@@ -259,4 +269,6 @@ public class Member {
     public List<ContactInfo> getContactInfos() {
         return Collections.unmodifiableList(contactInfos);
     }
+
+    public MemberRole getRole() { return role != null ? role : MemberRole.MEMBER; }
 }
