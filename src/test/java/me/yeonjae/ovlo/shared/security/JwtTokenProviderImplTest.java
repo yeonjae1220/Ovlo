@@ -3,6 +3,7 @@ package me.yeonjae.ovlo.shared.security;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 import me.yeonjae.ovlo.domain.member.model.MemberId;
+import me.yeonjae.ovlo.domain.member.model.MemberRole;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -40,7 +41,7 @@ class JwtTokenProviderImplTest {
         void shouldGenerateAndParseAccessToken() {
             MemberId memberId = new MemberId(42L);
 
-            String token = provider.generateAccessToken(memberId);
+            String token = provider.generateAccessToken(memberId, MemberRole.MEMBER);
             MemberId extracted = provider.extractMemberId(token);
 
             assertThat(extracted).isEqualTo(memberId);
@@ -49,7 +50,7 @@ class JwtTokenProviderImplTest {
         @Test
         @DisplayName("생성된 액세스 토큰은 유효하다")
         void shouldValidateAccessToken() {
-            String token = provider.generateAccessToken(new MemberId(1L));
+            String token = provider.generateAccessToken(new MemberId(1L), MemberRole.MEMBER);
 
             assertThat(provider.validateAccessToken(token)).isTrue();
         }
@@ -57,7 +58,7 @@ class JwtTokenProviderImplTest {
         @Test
         @DisplayName("변조된 토큰은 유효하지 않다")
         void shouldInvalidate_tamperedToken() {
-            String token = provider.generateAccessToken(new MemberId(1L));
+            String token = provider.generateAccessToken(new MemberId(1L), MemberRole.MEMBER);
             String tampered = token + "tampered";
 
             assertThat(provider.validateAccessToken(tampered)).isFalse();

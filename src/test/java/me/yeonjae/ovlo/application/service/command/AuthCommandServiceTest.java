@@ -8,6 +8,7 @@ import me.yeonjae.ovlo.application.dto.result.TokenPairResult;
 import me.yeonjae.ovlo.application.port.out.auth.LoadMemberCredentialsPort;
 import me.yeonjae.ovlo.application.port.out.auth.PasswordHasherPort;
 import me.yeonjae.ovlo.application.port.out.auth.TokenStorePort;
+import me.yeonjae.ovlo.application.port.out.member.LoadMemberPort;
 import me.yeonjae.ovlo.domain.auth.exception.AuthException;
 import me.yeonjae.ovlo.domain.auth.model.AuthSession;
 import me.yeonjae.ovlo.domain.member.model.MemberId;
@@ -26,6 +27,8 @@ import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import me.yeonjae.ovlo.domain.member.model.MemberRole;
+
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.then;
@@ -41,6 +44,8 @@ class AuthCommandServiceTest {
     private TokenStorePort tokenStorePort;
     @Mock
     private JwtTokenProvider jwtTokenProvider;
+    @Mock
+    private LoadMemberPort loadMemberPort;
 
     private AuthCommandService sut;
 
@@ -50,7 +55,8 @@ class AuthCommandServiceTest {
                 loadMemberCredentialsPort,
                 passwordHasherPort,
                 tokenStorePort,
-                jwtTokenProvider
+                jwtTokenProvider,
+                loadMemberPort
         );
     }
 
@@ -67,9 +73,9 @@ class AuthCommandServiceTest {
             String hashedPassword = "$2a$10$hashed";
 
             given(loadMemberCredentialsPort.findByEmail(email))
-                    .willReturn(Optional.of(new MemberCredentials(memberId, hashedPassword)));
+                    .willReturn(Optional.of(new MemberCredentials(memberId, hashedPassword, MemberRole.MEMBER)));
             given(passwordHasherPort.matches(rawPassword, hashedPassword)).willReturn(true);
-            given(jwtTokenProvider.generateAccessToken(memberId)).willReturn("access-token");
+            given(jwtTokenProvider.generateAccessToken(eq(memberId), any(MemberRole.class))).willReturn("access-token");
             given(jwtTokenProvider.generateRefreshToken()).willReturn("refresh-token");
 
             TokenPairResult result = sut.login(new LoginCommand(email, rawPassword));
@@ -94,7 +100,7 @@ class AuthCommandServiceTest {
         void shouldThrow_whenWrongPassword() {
             MemberId memberId = new MemberId(1L);
             given(loadMemberCredentialsPort.findByEmail(anyString()))
-                    .willReturn(Optional.of(new MemberCredentials(memberId, "$2a$10$hashed")));
+                    .willReturn(Optional.of(new MemberCredentials(memberId, "$2a$10$hashed", MemberRole.MEMBER)));
             given(passwordHasherPort.matches(anyString(), anyString())).willReturn(false);
 
             assertThatThrownBy(() -> sut.login(new LoginCommand("test@example.com", "wrongpw")))
@@ -145,7 +151,7 @@ class AuthCommandServiceTest {
                     Instant.now().plus(7, ChronoUnit.DAYS));
 
             given(tokenStorePort.findByRefreshToken(oldRefreshToken)).willReturn(Optional.of(session));
-            given(jwtTokenProvider.generateAccessToken(memberId)).willReturn("new-access-token");
+            given(jwtTokenProvider.generateAccessToken(eq(memberId), any(MemberRole.class))).willReturn("new-access-token");
             given(jwtTokenProvider.generateRefreshToken()).willReturn("new-refresh-token");
 
             TokenPairResult result = sut.refresh(new RefreshTokenCommand(oldRefreshToken));
