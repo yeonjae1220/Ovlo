@@ -26,7 +26,7 @@ spec:
         app: app
     spec:
       nodeSelector:
-        project: timemanager
+        project2: ovlo
       containers:
         - name: app
           image: ghcr.io/yeonjae1220/ovlo:latest

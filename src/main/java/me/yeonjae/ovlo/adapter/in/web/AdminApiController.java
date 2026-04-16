@@ -4,8 +4,11 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import me.yeonjae.ovlo.adapter.in.web.dto.request.UpdateMemberRoleRequest;
+import me.yeonjae.ovlo.adapter.in.web.dto.response.AdminBoardResponse;
 import me.yeonjae.ovlo.adapter.in.web.dto.response.AdminMemberResponse;
+import me.yeonjae.ovlo.adapter.in.web.dto.response.AdminPostResponse;
 import me.yeonjae.ovlo.adapter.in.web.dto.response.AdminStatsResponse;
+import me.yeonjae.ovlo.adapter.in.web.dto.response.AdminUniversityResponse;
 import me.yeonjae.ovlo.application.service.admin.AdminService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -38,6 +41,27 @@ public class AdminApiController {
             @PathVariable Long id,
             @Valid @RequestBody UpdateMemberRoleRequest request) {
         return ResponseEntity.ok(adminService.updateMemberRole(id, request.role()));
+    }
+
+    @Operation(summary = "전체 게시판 목록 조회")
+    @GetMapping("/boards")
+    public ResponseEntity<Page<AdminBoardResponse>> getBoards(
+            @PageableDefault(size = 20, sort = "id", direction = Sort.Direction.DESC) Pageable pageable) {
+        return ResponseEntity.ok(adminService.getBoards(pageable));
+    }
+
+    @Operation(summary = "전체 게시글 목록 조회")
+    @GetMapping("/posts")
+    public ResponseEntity<Page<AdminPostResponse>> getPosts(
+            @PageableDefault(size = 20, sort = "id", direction = Sort.Direction.DESC) Pageable pageable) {
+        return ResponseEntity.ok(adminService.getPosts(pageable));
+    }
+
+    @Operation(summary = "전체 대학교 목록 조회")
+    @GetMapping("/universities")
+    public ResponseEntity<Page<AdminUniversityResponse>> getUniversities(
+            @PageableDefault(size = 20, sort = "id", direction = Sort.Direction.DESC) Pageable pageable) {
+        return ResponseEntity.ok(adminService.getUniversities(pageable));
     }
 
     @Operation(summary = "전체 통계 조회")

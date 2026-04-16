@@ -95,6 +95,19 @@ public class PostPersistenceAdapter implements LoadPostPort, SavePostPort {
     }
 
     @Override
+    public List<Post> findAll(int offset, int limit) {
+        PageRequest pageable = PageRequest.of(offset / limit, limit, Sort.by("id").descending());
+        return postJpaRepository.findAll(pageable).getContent().stream()
+                .map(e -> postMapper.toDomain(e, List.of(), List.of()))
+                .toList();
+    }
+
+    @Override
+    public long count() {
+        return postJpaRepository.count();
+    }
+
+    @Override
     @Transactional
     public Post save(Post post) {
         // For existing posts, load the entity first to preserve the @Version value.

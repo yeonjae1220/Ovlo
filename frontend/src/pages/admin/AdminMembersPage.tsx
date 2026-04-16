@@ -40,12 +40,12 @@ export default function AdminMembersPage() {
   const totalPages = Math.ceil(totalElements / PAGE_SIZE)
 
   return (
-    <div style={{ padding: '2rem', maxWidth: 1000, margin: '0 auto' }}>
-      <h1 style={{ fontSize: '1.5rem', fontWeight: 700, marginBottom: '0.5rem' }}>회원 관리</h1>
-      <p style={{ color: '#64748b', marginBottom: '1.5rem' }}>전체 {totalElements}명</p>
+    <div style={{ padding: '2rem', maxWidth: 1000, margin: '0 auto', background: '#fff', minHeight: '100vh', color: '#1e293b' }}>
+      <h1 style={{ fontSize: '1.5rem', fontWeight: 700, marginBottom: '0.5rem', color: '#0f172a' }}>회원 관리</h1>
+      <p style={{ color: '#475569', marginBottom: '1.5rem' }}>전체 {totalElements}명</p>
 
       {loading ? (
-        <p>로딩 중...</p>
+        <p style={{ color: '#475569' }}>로딩 중...</p>
       ) : (
         <>
           <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.9rem' }}>
@@ -62,7 +62,7 @@ export default function AdminMembersPage() {
             </thead>
             <tbody>
               {members.map((member) => (
-                <tr key={member.id} style={{ borderBottom: '1px solid #e2e8f0' }}>
+                <tr key={member.id} style={{ borderBottom: '1px solid #e2e8f0', background: '#fff' }}>
                   <td style={tdStyle}>{member.id}</td>
                   <td style={tdStyle}>{member.nickname}</td>
                   <td style={tdStyle}>{member.email}</td>
@@ -74,8 +74,8 @@ export default function AdminMembersPage() {
                       style={{
                         padding: '0.2rem 0.5rem',
                         borderRadius: '0.375rem',
-                        background: member.role === 'ADMIN' ? '#dbeafe' : '#f1f5f9',
-                        color: member.role === 'ADMIN' ? '#1d4ed8' : '#475569',
+                        background: member.role === 'ADMIN' ? '#dbeafe' : '#e2e8f0',
+                        color: member.role === 'ADMIN' ? '#1d4ed8' : '#334155',
                         fontWeight: 600,
                         fontSize: '0.8rem',
                       }}
@@ -92,7 +92,8 @@ export default function AdminMembersPage() {
                         padding: '0.25rem 0.75rem',
                         borderRadius: '0.375rem',
                         border: '1px solid #cbd5e1',
-                        background: '#fff',
+                        background: '#f8fafc',
+                        color: '#374151',
                         cursor: 'pointer',
                         fontSize: '0.8rem',
                       }}
@@ -114,7 +115,7 @@ export default function AdminMembersPage() {
               <button onClick={() => setPage((p) => Math.max(0, p - 1))} disabled={page === 0} style={btnStyle}>
                 이전
               </button>
-              <span style={{ lineHeight: '2rem', color: '#64748b' }}>
+              <span style={{ lineHeight: '2rem', color: '#475569' }}>
                 {page + 1} / {totalPages}
               </span>
               <button
@@ -148,8 +149,8 @@ function StatusBadge({ status }: { status: string }) {
       style={{
         padding: '0.2rem 0.5rem',
         borderRadius: '0.375rem',
-        background: colorMap[status] ?? '#f1f5f9',
-        color: textMap[status] ?? '#475569',
+        background: colorMap[status] ?? '#e2e8f0',
+        color: textMap[status] ?? '#334155',
         fontSize: '0.8rem',
         fontWeight: 600,
       }}
@@ -162,7 +163,7 @@ function StatusBadge({ status }: { status: string }) {
 const thStyle: React.CSSProperties = {
   padding: '0.75rem 1rem',
   fontWeight: 600,
-  color: '#475569',
+  color: '#374151',
 }
 
 const tdStyle: React.CSSProperties = {
@@ -174,6 +175,7 @@ const btnStyle: React.CSSProperties = {
   padding: '0.25rem 0.75rem',
   border: '1px solid #cbd5e1',
   borderRadius: '0.375rem',
-  background: '#fff',
+  background: '#f8fafc',
+  color: '#374151',
   cursor: 'pointer',
 }

@@ -2,6 +2,7 @@ import { createBrowserRouter } from 'react-router-dom'
 import AppLayout from '../components/layout/AppLayout'
 import ProtectedRoute from '../components/layout/ProtectedRoute'
 import AdminRoute from '../components/layout/AdminRoute'
+import AdminLayout from '../components/layout/AdminLayout'
 
 import LandingPage from '../pages/LandingPage'
 import LoginPage from '../pages/auth/LoginPage'
@@ -22,6 +23,9 @@ import ChatListPage from '../pages/chat/ChatListPage'
 import ChatRoomPage from '../pages/chat/ChatRoomPage'
 import AdminDashboardPage from '../pages/admin/AdminDashboardPage'
 import AdminMembersPage from '../pages/admin/AdminMembersPage'
+import AdminBoardsPage from '../pages/admin/AdminBoardsPage'
+import AdminPostsPage from '../pages/admin/AdminPostsPage'
+import AdminUniversitiesPage from '../pages/admin/AdminUniversitiesPage'
 
 export const router = createBrowserRouter([
   // Public routes
@@ -44,8 +48,16 @@ export const router = createBrowserRouter([
   {
     element: <AdminRoute />,
     children: [
-      { path: '/admin', element: <AdminDashboardPage /> },
-      { path: '/admin/members', element: <AdminMembersPage /> },
+      {
+        element: <AdminLayout />,
+        children: [
+          { path: '/admin', element: <AdminDashboardPage /> },
+          { path: '/admin/members', element: <AdminMembersPage /> },
+          { path: '/admin/boards', element: <AdminBoardsPage /> },
+          { path: '/admin/posts', element: <AdminPostsPage /> },
+          { path: '/admin/universities', element: <AdminUniversitiesPage /> },
+        ],
+      },
     ],
   },
 
