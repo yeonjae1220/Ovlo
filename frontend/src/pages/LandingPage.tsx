@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom'
+import { useAuthStore } from '../store/authStore'
 
 const FEATURES = [
   {
@@ -24,6 +25,9 @@ const FEATURES = [
 ]
 
 export default function LandingPage() {
+  const { currentUser, accessToken } = useAuthStore()
+  const isLoggedIn = !!accessToken && !!currentUser
+
   return (
     <div
       style={{
@@ -64,32 +68,69 @@ export default function LandingPage() {
           >
             교환대학 검색
           </Link>
-          <Link
-            to="/login"
-            style={{
-              padding: '8px 16px',
-              borderRadius: 8,
-              color: '#94a3b8',
-              fontSize: 14,
-              textDecoration: 'none',
-            }}
-          >
-            로그인
-          </Link>
-          <Link
-            to="/register"
-            style={{
-              padding: '8px 20px',
-              borderRadius: 8,
-              background: '#7c3aed',
-              color: '#fff',
-              fontSize: 14,
-              fontWeight: 600,
-              textDecoration: 'none',
-            }}
-          >
-            회원가입
-          </Link>
+          {isLoggedIn ? (
+            <Link
+              to="/boards"
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 8,
+                padding: '7px 16px',
+                borderRadius: 8,
+                background: '#7c3aed22',
+                border: '1px solid #7c3aed44',
+                color: '#a78bfa',
+                fontSize: 14,
+                fontWeight: 600,
+                textDecoration: 'none',
+              }}
+            >
+              <span style={{
+                width: 26,
+                height: 26,
+                borderRadius: '50%',
+                background: '#7c3aed',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontSize: 12,
+                color: '#fff',
+                fontWeight: 700,
+              }}>
+                {(currentUser.nickname ?? currentUser.name ?? '?')[0].toUpperCase()}
+              </span>
+              {currentUser.nickname ?? currentUser.name}
+            </Link>
+          ) : (
+            <>
+              <Link
+                to="/login"
+                style={{
+                  padding: '8px 16px',
+                  borderRadius: 8,
+                  color: '#94a3b8',
+                  fontSize: 14,
+                  textDecoration: 'none',
+                }}
+              >
+                로그인
+              </Link>
+              <Link
+                to="/register"
+                style={{
+                  padding: '8px 20px',
+                  borderRadius: 8,
+                  background: '#7c3aed',
+                  color: '#fff',
+                  fontSize: 14,
+                  fontWeight: 600,
+                  textDecoration: 'none',
+                }}
+              >
+                회원가입
+              </Link>
+            </>
+          )}
         </nav>
       </header>
 
@@ -166,20 +207,37 @@ export default function LandingPage() {
           >
             교환 대학 검색 →
           </Link>
-          <Link
-            to="/register"
-            style={{
-              padding: '14px 30px',
-              borderRadius: 10,
-              border: '1.5px solid #374151',
-              color: '#e2e8f0',
-              fontSize: 15,
-              fontWeight: 500,
-              textDecoration: 'none',
-            }}
-          >
-            지금 시작하기
-          </Link>
+          {isLoggedIn ? (
+            <Link
+              to="/boards"
+              style={{
+                padding: '14px 30px',
+                borderRadius: 10,
+                border: '1.5px solid #7c3aed44',
+                color: '#a78bfa',
+                fontSize: 15,
+                fontWeight: 500,
+                textDecoration: 'none',
+              }}
+            >
+              커뮤니티 보기
+            </Link>
+          ) : (
+            <Link
+              to="/register"
+              style={{
+                padding: '14px 30px',
+                borderRadius: 10,
+                border: '1.5px solid #374151',
+                color: '#e2e8f0',
+                fontSize: 15,
+                fontWeight: 500,
+                textDecoration: 'none',
+              }}
+            >
+              지금 시작하기
+            </Link>
+          )}
         </div>
 
         {/* 스탯 */}
@@ -256,52 +314,54 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* ── CTA 배너 ──────────────────────────────────────── */}
-      <section
-        style={{
-          background: '#1e1433',
-          borderTop: '1px solid #2d3748',
-          borderBottom: '1px solid #2d3748',
-          padding: '48px 32px',
-          textAlign: 'center',
-        }}
-      >
-        <h2 style={{ fontSize: 24, fontWeight: 800, color: '#f1f5f9', margin: '0 0 12px' }}>
-          지금 바로 시작하세요
-        </h2>
-        <p style={{ fontSize: 15, color: '#94a3b8', margin: '0 0 28px' }}>
-          무료로 가입하고 교환학생 정보를 한눈에 확인하세요.
-        </p>
-        <div style={{ display: 'flex', gap: 12, justifyContent: 'center', flexWrap: 'wrap' }}>
-          <Link
-            to="/register"
-            style={{
-              padding: '12px 28px',
-              borderRadius: 9,
-              background: '#7c3aed',
-              color: '#fff',
-              fontSize: 14,
-              fontWeight: 700,
-              textDecoration: 'none',
-            }}
-          >
-            무료 회원가입
-          </Link>
-          <Link
-            to="/login"
-            style={{
-              padding: '12px 28px',
-              borderRadius: 9,
-              border: '1.5px solid #374151',
-              color: '#cbd5e1',
-              fontSize: 14,
-              textDecoration: 'none',
-            }}
-          >
-            이미 계정이 있어요
-          </Link>
-        </div>
-      </section>
+      {/* ── CTA 배너 (비로그인 시만 표시) ────────────────── */}
+      {!isLoggedIn && (
+        <section
+          style={{
+            background: '#1e1433',
+            borderTop: '1px solid #2d3748',
+            borderBottom: '1px solid #2d3748',
+            padding: '48px 32px',
+            textAlign: 'center',
+          }}
+        >
+          <h2 style={{ fontSize: 24, fontWeight: 800, color: '#f1f5f9', margin: '0 0 12px' }}>
+            지금 바로 시작하세요
+          </h2>
+          <p style={{ fontSize: 15, color: '#94a3b8', margin: '0 0 28px' }}>
+            무료로 가입하고 교환학생 정보를 한눈에 확인하세요.
+          </p>
+          <div style={{ display: 'flex', gap: 12, justifyContent: 'center', flexWrap: 'wrap' }}>
+            <Link
+              to="/register"
+              style={{
+                padding: '12px 28px',
+                borderRadius: 9,
+                background: '#7c3aed',
+                color: '#fff',
+                fontSize: 14,
+                fontWeight: 700,
+                textDecoration: 'none',
+              }}
+            >
+              무료 회원가입
+            </Link>
+            <Link
+              to="/login"
+              style={{
+                padding: '12px 28px',
+                borderRadius: 9,
+                border: '1.5px solid #374151',
+                color: '#cbd5e1',
+                fontSize: 14,
+                textDecoration: 'none',
+              }}
+            >
+              이미 계정이 있어요
+            </Link>
+          </div>
+        </section>
+      )}
 
       {/* ── 푸터 ─────────────────────────────────────────── */}
       <footer
