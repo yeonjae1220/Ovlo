@@ -16,7 +16,7 @@ export default function SearchPage() {
     followings?.some((f) => String(f.id) === memberId) ?? false
 
   return (
-    <div style={{ maxWidth: 600, margin: '0 auto' }}>
+    <div style={{ maxWidth: 800, margin: '0 auto' }}>
       <h2>사용자 검색</h2>
       <input
         placeholder="닉네임으로 검색..."

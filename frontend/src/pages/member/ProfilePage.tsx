@@ -74,7 +74,7 @@ export default function ProfilePage() {
   if (!member) return <p>회원을 찾을 수 없습니다.</p>
 
   return (
-    <div style={{ maxWidth: 600, margin: '0 auto' }}>
+    <div style={{ maxWidth: 800, margin: '0 auto' }}>
       <div style={{ display: 'flex', gap: 24, alignItems: 'flex-start' }}>
         {isOwner ? (
           <div {...getRootProps()} style={{ cursor: 'pointer', width: 80, height: 80, borderRadius: '50%', background: '#eee', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>

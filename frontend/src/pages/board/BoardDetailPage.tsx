@@ -15,7 +15,7 @@ export default function BoardDetailPage() {
   if (!board) return <p>게시판을 찾을 수 없습니다.</p>
 
   return (
-    <div style={{ maxWidth: 800, margin: '0 auto' }}>
+    <div>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
         <div>
           <h1>{board.name}</h1>

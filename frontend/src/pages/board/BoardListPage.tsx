@@ -20,7 +20,7 @@ export default function BoardListPage() {
   if (isLoading) return <p>로딩 중...</p>
 
   return (
-    <div style={{ maxWidth: 800, margin: '0 auto' }}>
+    <div>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <h1>게시판</h1>
         <button onClick={() => setShowForm(!showForm)}>+ 게시판 만들기</button>

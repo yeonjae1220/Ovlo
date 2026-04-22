@@ -8,7 +8,7 @@ export default function UniversitySearchPage() {
   const { data: universities, isLoading } = useUniversitySearch(keyword, countryCode || undefined)
 
   return (
-    <div style={{ maxWidth: 700, margin: '0 auto' }}>
+    <div>
       <h1>대학 검색</h1>
       <p style={{ marginBottom: 12, fontSize: 13, color: '#6b7280' }}>
         교환학생 파견 정보(리뷰·비용·비자 등)는{' '}

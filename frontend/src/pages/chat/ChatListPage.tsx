@@ -54,7 +54,7 @@ export default function ChatListPage() {
   const currentUserId = currentUser?.id ? Number(currentUser.id) : null
 
   return (
-    <div style={{ maxWidth: 600, margin: '0 auto' }}>
+    <div style={{ maxWidth: 760, margin: '0 auto' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <h1>채팅</h1>
         <button onClick={() => setShowForm(!showForm)}>+ 채팅방 만들기</button>

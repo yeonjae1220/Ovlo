@@ -19,6 +19,9 @@ export default defineConfig({
       },
     }),
   ],
+  define: {
+    global: 'globalThis',
+  },
   server: {
     port: 3000,
     proxy: {

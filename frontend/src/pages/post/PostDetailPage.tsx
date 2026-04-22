@@ -49,7 +49,7 @@ export default function PostDetailPage() {
   }
 
   return (
-    <div style={{ maxWidth: 700, margin: '0 auto' }}>
+    <div>
       <h1>{post.deleted ? '[삭제된 게시글]' : post.title}</h1>
       <p style={{ color: '#888', fontSize: 13 }}>작성자 #{post.authorId}</p>
 

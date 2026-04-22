@@ -34,7 +34,7 @@ export default function CreatePostPage() {
   }
 
   return (
-    <div style={{ maxWidth: 700, margin: '0 auto' }}>
+    <div>
       <h1>글쓰기</h1>
       <input
         placeholder="제목"

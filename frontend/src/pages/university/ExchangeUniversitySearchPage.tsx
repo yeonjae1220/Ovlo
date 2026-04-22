@@ -32,7 +32,7 @@ export default function ExchangeUniversitySearchPage() {
   }
 
   return (
-    <div style={{ maxWidth: 760, margin: '0 auto', padding: '32px 20px', fontFamily: 'system-ui, sans-serif' }}>
+    <div style={{ padding: '32px 20px', fontFamily: 'system-ui, sans-serif' }}>
       {/* 뒤로가기 */}
       <button
         onClick={() => navigate(-1)}

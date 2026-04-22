@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom'
 import { useQueryClient } from '@tanstack/react-query'
 import { useChatRoom, useChatMessages, useMarkRead } from '../../hooks/useChat'
 import { useAuthStore } from '../../store/authStore'
+import { useBreakpoint } from '../../hooks/useBreakpoint'
 import { stompClient } from '../../utils/stomp'
 import type { HistoryMessage, Message } from '../../types'
 
@@ -24,6 +25,7 @@ export default function ChatRoomPage() {
   const queryClient = useQueryClient()
   const { data: room, isLoading } = useChatRoom(id!)
   const { currentUser, accessToken } = useAuthStore()
+  const { isMobile } = useBreakpoint()
   const markRead = useMarkRead()
 
   const [messages, setMessages] = useState<Message[]>([])
@@ -187,7 +189,7 @@ export default function ChatRoomPage() {
     '채팅방')
 
   return (
-    <div style={{ maxWidth: 700, margin: '0 auto', display: 'flex', flexDirection: 'column', height: '80vh' }}>
+    <div style={{ maxWidth: 900, margin: '0 auto', display: 'flex', flexDirection: 'column', height: isMobile ? 'calc(80vh - 60px)' : '80vh' }}>
       <h2 style={{ borderBottom: '1px solid #eee', paddingBottom: 12 }}>
         {roomTitle}
         {!connected && <span style={{ color: 'red', fontSize: 13, marginLeft: 8 }}>(연결 중...)</span>}

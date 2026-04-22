@@ -9,7 +9,7 @@ export default function FollowPage() {
   const unfollow = useUnfollow()
 
   return (
-    <div style={{ maxWidth: 700, margin: '0 auto', display: 'flex', gap: 32 }}>
+    <div style={{ display: 'flex', gap: 32 }}>
       <div style={{ flex: 1 }}>
         <h2>팔로워 ({followers?.length ?? 0})</h2>
         {fl && <p>로딩 중...</p>}

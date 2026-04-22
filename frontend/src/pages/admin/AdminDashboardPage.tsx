@@ -13,7 +13,7 @@ export default function AdminDashboardPage() {
   }, [])
 
   return (
-    <div style={{ padding: '2rem', maxWidth: 900, margin: '0 auto', background: '#fff', minHeight: '100vh', color: '#1e293b' }}>
+    <div style={{ padding: '2rem', maxWidth: 900, margin: '0 auto', background: '#fff', color: '#1e293b' }}>
       <h1 style={{ fontSize: '1.5rem', fontWeight: 700, marginBottom: '1.5rem', color: '#0f172a' }}>
         어드민 대시보드
       </h1>

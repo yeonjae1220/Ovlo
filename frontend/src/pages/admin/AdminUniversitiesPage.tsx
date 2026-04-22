@@ -23,7 +23,7 @@ export default function AdminUniversitiesPage() {
   const totalPages = Math.ceil(totalElements / PAGE_SIZE)
 
   return (
-    <div style={{ padding: '2rem', maxWidth: 1000, margin: '0 auto', background: '#fff', minHeight: '100vh', color: '#1e293b' }}>
+    <div style={{ padding: '2rem', maxWidth: 1000, margin: '0 auto', background: '#fff', color: '#1e293b' }}>
       <h1 style={{ fontSize: '1.5rem', fontWeight: 700, marginBottom: '0.5rem', color: '#0f172a' }}>대학교 관리</h1>
       <p style={{ color: '#475569', marginBottom: '1.5rem' }}>전체 {totalElements}개</p>
 
