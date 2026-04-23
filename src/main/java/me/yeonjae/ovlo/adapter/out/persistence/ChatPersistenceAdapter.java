@@ -47,7 +47,7 @@ public class ChatPersistenceAdapter implements LoadChatPort, SaveChatPort, SaveR
     public Optional<ChatRoom> findById(ChatRoomId chatRoomId) {
         // 단건 조회: 메시지 전체 로딩 (채팅방 상세 화면용, 페이지네이션은 findMessages() 사용)
         return chatRoomJpaRepository.findById(chatRoomId.value()).map(entity -> {
-            var messages = messageJpaRepository.findByChatRoomIdOrderBySentAtAsc(entity.getId());
+            var messages = messageJpaRepository.findByChatRoomIdAndHiddenByWithdrawalFalseOrderBySentAtAsc(entity.getId());
             return chatMapper.toDomain(entity, messages);
         });
     }
@@ -73,13 +73,13 @@ public class ChatPersistenceAdapter implements LoadChatPort, SaveChatPort, SaveR
         var entity = chatMapper.toJpaEntity(chatRoom);
         var saved = chatRoomJpaRepository.save(entity);
         saveNewMessages(saved.getId(), chatRoom.getMessages());
-        var messages = messageJpaRepository.findByChatRoomIdOrderBySentAtAsc(saved.getId());
+        var messages = messageJpaRepository.findByChatRoomIdAndHiddenByWithdrawalFalseOrderBySentAtAsc(saved.getId());
         return chatMapper.toDomain(saved, messages);
     }
 
     @Override
     public List<Message> findMessages(ChatRoomId chatRoomId, int page, int size) {
-        var entities = messageJpaRepository.findByChatRoomIdOrderBySentAtDesc(
+        var entities = messageJpaRepository.findByChatRoomIdAndHiddenByWithdrawalFalseOrderBySentAtDesc(
                 chatRoomId.value(), PageRequest.of(page, size));
         return entities.reversed().stream()
                 .map(m -> Message.restore(

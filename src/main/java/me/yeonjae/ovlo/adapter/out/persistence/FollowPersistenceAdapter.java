@@ -23,24 +23,24 @@ public class FollowPersistenceAdapter implements LoadFollowPort, SaveFollowPort 
 
     @Override
     public Optional<Follow> findByFollowerAndFollowee(MemberId followerId, MemberId followeeId) {
-        return followJpaRepository.findByFollowerIdAndFolloweeId(followerId.value(), followeeId.value())
+        return followJpaRepository.findByFollowerIdAndFolloweeIdAndHiddenByWithdrawalFalse(followerId.value(), followeeId.value())
                 .map(followMapper::toDomain);
     }
 
     @Override
     public boolean existsByFollowerAndFollowee(MemberId followerId, MemberId followeeId) {
-        return followJpaRepository.existsByFollowerIdAndFolloweeId(followerId.value(), followeeId.value());
+        return followJpaRepository.existsByFollowerIdAndFolloweeIdAndHiddenByWithdrawalFalse(followerId.value(), followeeId.value());
     }
 
     @Override
     public List<Follow> findFollowersByFolloweeId(MemberId followeeId) {
-        return followJpaRepository.findByFolloweeId(followeeId.value()).stream()
+        return followJpaRepository.findByFolloweeIdAndHiddenByWithdrawalFalse(followeeId.value()).stream()
                 .map(followMapper::toDomain).toList();
     }
 
     @Override
     public List<Follow> findFollowingsByFollowerId(MemberId followerId) {
-        return followJpaRepository.findByFollowerId(followerId.value()).stream()
+        return followJpaRepository.findByFollowerIdAndHiddenByWithdrawalFalse(followerId.value()).stream()
                 .map(followMapper::toDomain).toList();
     }
 

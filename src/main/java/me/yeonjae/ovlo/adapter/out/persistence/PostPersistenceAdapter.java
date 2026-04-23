@@ -44,18 +44,20 @@ public class PostPersistenceAdapter implements LoadPostPort, SavePostPort {
 
     @Override
     public Optional<Post> findById(PostId postId) {
-        return postJpaRepository.findById(postId.value()).map(entity -> {
-            var comments = commentJpaRepository.findByPostId(entity.getId());
-            var reactions = postReactionJpaRepository.findByIdPostId(entity.getId());
-            return postMapper.toDomain(entity, comments, reactions);
-        });
+        return postJpaRepository.findById(postId.value())
+                .filter(entity -> !entity.isHiddenByWithdrawal())
+                .map(entity -> {
+                    var comments = commentJpaRepository.findByPostIdAndHiddenByWithdrawalFalse(entity.getId());
+                    var reactions = postReactionJpaRepository.findByIdPostId(entity.getId());
+                    return postMapper.toDomain(entity, comments, reactions);
+                });
     }
 
     @Override
     public List<Post> findByBoardId(BoardId boardId, int offset, int limit) {
         // 쿼리 1: 게시글 페이지 로드 (최신순)
         PageRequest pageable = PageRequest.of(offset / limit, limit, Sort.by("id").descending());
-        List<PostJpaEntity> entities = postJpaRepository.findByBoardIdAndDeletedFalse(boardId.value(), pageable);
+        List<PostJpaEntity> entities = postJpaRepository.findByBoardIdAndDeletedFalseAndHiddenByWithdrawalFalse(boardId.value(), pageable);
 
         if (entities.isEmpty()) {
             return Collections.emptyList();
@@ -77,13 +79,13 @@ public class PostPersistenceAdapter implements LoadPostPort, SavePostPort {
 
     @Override
     public long countByBoardId(BoardId boardId) {
-        return postJpaRepository.countByBoardIdAndDeletedFalse(boardId.value());
+        return postJpaRepository.countByBoardIdAndDeletedFalseAndHiddenByWithdrawalFalse(boardId.value());
     }
 
     @Override
     public List<Comment> findCommentsByPostId(PostId postId, int offset, int limit) {
         PageRequest pageable = PageRequest.of(offset / limit, limit, Sort.by("id").ascending());
-        return commentJpaRepository.findByPostIdAndDeletedFalse(postId.value(), pageable)
+        return commentJpaRepository.findByPostIdAndDeletedFalseAndHiddenByWithdrawalFalse(postId.value(), pageable)
                 .stream()
                 .map(postMapper::toCommentDomain)
                 .toList();
@@ -91,20 +93,20 @@ public class PostPersistenceAdapter implements LoadPostPort, SavePostPort {
 
     @Override
     public long countCommentsByPostId(PostId postId) {
-        return commentJpaRepository.countByPostIdAndDeletedFalse(postId.value());
+        return commentJpaRepository.countByPostIdAndDeletedFalseAndHiddenByWithdrawalFalse(postId.value());
     }
 
     @Override
     public List<Post> findAll(int offset, int limit) {
         PageRequest pageable = PageRequest.of(offset / limit, limit, Sort.by("id").descending());
-        return postJpaRepository.findAll(pageable).getContent().stream()
+        return postJpaRepository.findAllByDeletedFalseAndHiddenByWithdrawalFalse(pageable).stream()
                 .map(e -> postMapper.toDomain(e, List.of(), List.of()))
                 .toList();
     }
 
     @Override
     public long count() {
-        return postJpaRepository.count();
+        return postJpaRepository.countByDeletedFalseAndHiddenByWithdrawalFalse();
     }
 
     @Override
@@ -129,7 +131,7 @@ public class PostPersistenceAdapter implements LoadPostPort, SavePostPort {
         saveAllComments(postId, post.getComments());
         syncReactions(postId, post.getReactions());
 
-        var comments = commentJpaRepository.findByPostId(postId);
+        var comments = commentJpaRepository.findByPostIdAndHiddenByWithdrawalFalse(postId);
         var reactions = postReactionJpaRepository.findByIdPostId(postId);
         return postMapper.toDomain(saved, comments, reactions);
     }

@@ -14,6 +14,7 @@ public class PostJpaEntity {
     @Column(nullable = false) private String title;
     @Column(nullable = false, columnDefinition = "TEXT") private String content;
     @Column(nullable = false) private boolean deleted;
+    @Column(name = "hidden_by_withdrawal", nullable = false) private boolean hiddenByWithdrawal;
     @Version private Long version;
     @CreationTimestamp @Column(name = "created_at", nullable = false, updatable = false) private Instant createdAt;
     @UpdateTimestamp @Column(name = "updated_at", nullable = false) private Instant updatedAt;
@@ -24,5 +25,6 @@ public class PostJpaEntity {
     public String getTitle() { return title; } public void setTitle(String title) { this.title = title; }
     public String getContent() { return content; } public void setContent(String content) { this.content = content; }
     public boolean isDeleted() { return deleted; } public void setDeleted(boolean deleted) { this.deleted = deleted; }
+    public boolean isHiddenByWithdrawal() { return hiddenByWithdrawal; } public void setHiddenByWithdrawal(boolean hiddenByWithdrawal) { this.hiddenByWithdrawal = hiddenByWithdrawal; }
     public Long getVersion() { return version; } public void setVersion(Long version) { this.version = version; }
 }

@@ -12,6 +12,7 @@ import me.yeonjae.ovlo.application.port.in.member.UpdateMemberProfileUseCase;
 import me.yeonjae.ovlo.application.port.in.member.UpdateProfileImageUseCase;
 import me.yeonjae.ovlo.application.port.in.member.WithdrawMemberUseCase;
 import me.yeonjae.ovlo.application.port.out.auth.PasswordHasherPort;
+import me.yeonjae.ovlo.application.port.out.member.HideContentByWithdrawnMemberPort;
 import me.yeonjae.ovlo.application.port.out.member.LoadMemberPort;
 import me.yeonjae.ovlo.application.port.out.member.SaveMemberPort;
 import me.yeonjae.ovlo.domain.member.exception.MemberException;
@@ -30,13 +31,16 @@ public class MemberCommandService implements
     private final LoadMemberPort loadMemberPort;
     private final SaveMemberPort saveMemberPort;
     private final PasswordHasherPort passwordHasherPort;
+    private final HideContentByWithdrawnMemberPort hideContentByWithdrawnMemberPort;
 
     public MemberCommandService(LoadMemberPort loadMemberPort,
                                 SaveMemberPort saveMemberPort,
-                                PasswordHasherPort passwordHasherPort) {
+                                PasswordHasherPort passwordHasherPort,
+                                HideContentByWithdrawnMemberPort hideContentByWithdrawnMemberPort) {
         this.loadMemberPort = loadMemberPort;
         this.saveMemberPort = saveMemberPort;
         this.passwordHasherPort = passwordHasherPort;
+        this.hideContentByWithdrawnMemberPort = hideContentByWithdrawnMemberPort;
     }
 
     @Override
@@ -110,6 +114,7 @@ public class MemberCommandService implements
 
         member.withdraw();
         saveMemberPort.save(member);
+        hideContentByWithdrawnMemberPort.hideAllContentByMember(command.memberId());
     }
 
     @Override

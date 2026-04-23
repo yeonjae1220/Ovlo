@@ -13,6 +13,7 @@ public class CommentJpaEntity {
     @Column(name = "author_id", nullable = false) private Long authorId;
     @Column(nullable = false, columnDefinition = "TEXT") private String content;
     @Column(nullable = false) private boolean deleted;
+    @Column(name = "hidden_by_withdrawal", nullable = false) private boolean hiddenByWithdrawal;
     @CreationTimestamp @Column(name = "created_at", nullable = false, updatable = false) private Instant createdAt;
     @UpdateTimestamp @Column(name = "updated_at", nullable = false) private Instant updatedAt;
     public CommentJpaEntity() {}
@@ -21,4 +22,5 @@ public class CommentJpaEntity {
     public Long getAuthorId() { return authorId; } public void setAuthorId(Long authorId) { this.authorId = authorId; }
     public String getContent() { return content; } public void setContent(String content) { this.content = content; }
     public boolean isDeleted() { return deleted; } public void setDeleted(boolean deleted) { this.deleted = deleted; }
+    public boolean isHiddenByWithdrawal() { return hiddenByWithdrawal; } public void setHiddenByWithdrawal(boolean hiddenByWithdrawal) { this.hiddenByWithdrawal = hiddenByWithdrawal; }
 }
