@@ -12,6 +12,7 @@ const NAV_ITEMS = [
 export default function AppLayout() {
   const { currentUser } = useAuthStore()
   const { isMobile } = useBreakpoint()
+  const userLabel = currentUser?.nickname ?? currentUser?.name ?? '프로필'
 
   const desktopLinkStyle = (isActive: boolean): React.CSSProperties => ({
     padding: '6px 12px',
@@ -60,8 +61,20 @@ export default function AppLayout() {
 
         <div style={{ marginLeft: 'auto', display: 'flex', gap: 12, alignItems: 'center' }}>
           {currentUser && (
-            <Link to={`/profile/${currentUser.id}`} style={{ color: '#94a3b8', fontSize: 14, textDecoration: 'none' }}>
-              {currentUser.nickname}
+            <Link
+              to={`/profile/${currentUser.id}`}
+              style={{
+                color: '#94a3b8',
+                fontSize: 14,
+                textDecoration: 'none',
+                maxWidth: isMobile ? 120 : 220,
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                whiteSpace: 'nowrap',
+              }}
+              title={userLabel}
+            >
+              {userLabel}
             </Link>
           )}
         </div>
@@ -106,6 +119,8 @@ export default function AppLayout() {
                 fontSize: 12,
                 color: isActive ? '#a78bfa' : '#94a3b8',
                 padding: '4px 8px',
+                minWidth: 0,
+                flex: 1,
               })}
             >
               {label}
@@ -122,6 +137,8 @@ export default function AppLayout() {
                 fontSize: 12,
                 color: isActive ? '#a78bfa' : '#94a3b8',
                 padding: '4px 8px',
+                minWidth: 0,
+                flex: 1,
               })}
             >
               프로필

@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom'
 import { useAuthStore } from '../store/authStore'
+import { useBreakpoint } from '../hooks/useBreakpoint'
 
 const FEATURES = [
   {
@@ -26,7 +27,10 @@ const FEATURES = [
 
 export default function LandingPage() {
   const { currentUser, accessToken } = useAuthStore()
+  const { isMobile, isTablet } = useBreakpoint()
   const isLoggedIn = !!accessToken && !!currentUser
+  const compactHeader = isMobile || isTablet
+  const userLabel = currentUser?.nickname ?? currentUser?.name ?? '?'
 
   return (
     <div
@@ -41,10 +45,12 @@ export default function LandingPage() {
       {/* ── 헤더 ─────────────────────────────────────────── */}
       <header
         style={{
-          padding: '18px 32px',
+          padding: compactHeader ? '16px 16px' : '18px 32px',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
+          gap: 12,
+          flexWrap: 'wrap',
           borderBottom: '1px solid #2d3748',
           position: 'sticky',
           top: 0,
@@ -55,7 +61,16 @@ export default function LandingPage() {
         <span style={{ fontSize: 22, fontWeight: 800, color: '#a78bfa', letterSpacing: '-0.5px' }}>
           Ovlo
         </span>
-        <nav style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+        <nav
+          style={{
+            display: 'flex',
+            gap: 8,
+            alignItems: 'center',
+            flexWrap: 'wrap',
+            width: compactHeader ? '100%' : 'auto',
+            justifyContent: compactHeader ? 'flex-end' : 'flex-start',
+          }}
+        >
           <Link
             to="/exchange-universities"
             style={{
@@ -64,6 +79,8 @@ export default function LandingPage() {
               color: '#94a3b8',
               fontSize: 14,
               textDecoration: 'none',
+              flex: compactHeader ? '1 1 100%' : undefined,
+              textAlign: 'center',
             }}
           >
             교환대학 검색
@@ -83,7 +100,9 @@ export default function LandingPage() {
                 fontSize: 14,
                 fontWeight: 600,
                 textDecoration: 'none',
+                maxWidth: compactHeader ? '100%' : 260,
               }}
+              title={userLabel}
             >
               <span style={{
                 width: 26,
@@ -97,9 +116,9 @@ export default function LandingPage() {
                 color: '#fff',
                 fontWeight: 700,
               }}>
-                {(currentUser.nickname ?? currentUser.name ?? '?')[0].toUpperCase()}
+                {userLabel[0].toUpperCase()}
               </span>
-              {currentUser.nickname ?? currentUser.name}
+              <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{userLabel}</span>
             </Link>
           ) : (
             <>
@@ -111,6 +130,8 @@ export default function LandingPage() {
                   color: '#94a3b8',
                   fontSize: 14,
                   textDecoration: 'none',
+                  flex: compactHeader ? '1 1 calc(50% - 4px)' : undefined,
+                  textAlign: 'center',
                 }}
               >
                 로그인
@@ -125,6 +146,8 @@ export default function LandingPage() {
                   fontSize: 14,
                   fontWeight: 600,
                   textDecoration: 'none',
+                  flex: compactHeader ? '1 1 calc(50% - 4px)' : undefined,
+                  textAlign: 'center',
                 }}
               >
                 회원가입
@@ -140,7 +163,7 @@ export default function LandingPage() {
           flex: 1,
           maxWidth: 820,
           margin: '0 auto',
-          padding: '80px 32px 64px',
+          padding: compactHeader ? '56px 16px 48px' : '80px 32px 64px',
           textAlign: 'center',
         }}
       >
@@ -187,7 +210,7 @@ export default function LandingPage() {
           }}
         >
           전 세계 교환 대학 정보와 실제 학생들의 생생한 후기를 확인하고,
-          <br />
+          {!isMobile && <br />}
           같은 경험을 공유하는 커뮤니티에서 함께 소통하세요.
         </p>
 
@@ -268,14 +291,14 @@ export default function LandingPage() {
         style={{
           maxWidth: 960,
           margin: '0 auto',
-          padding: '0 32px 80px',
+          padding: compactHeader ? '0 16px 56px' : '0 32px 80px',
           width: '100%',
           boxSizing: 'border-box',
         }}
       >
         <h2
           style={{
-            fontSize: 22,
+            fontSize: compactHeader ? 20 : 22,
             fontWeight: 700,
             color: '#f1f5f9',
             textAlign: 'center',
@@ -288,7 +311,7 @@ export default function LandingPage() {
         <div
           style={{
             display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(210px, 1fr))',
+            gridTemplateColumns: `repeat(auto-fit, minmax(${isMobile ? 180 : 210}px, 1fr))`,
             gap: 16,
           }}
         >
@@ -296,7 +319,7 @@ export default function LandingPage() {
             <div
               key={f.title}
               style={{
-                padding: '28px 22px',
+                padding: compactHeader ? '24px 18px' : '28px 22px',
                 borderRadius: 12,
                 border: '1px solid #2d3748',
                 background: '#1e2836',
@@ -321,7 +344,7 @@ export default function LandingPage() {
             background: '#1e1433',
             borderTop: '1px solid #2d3748',
             borderBottom: '1px solid #2d3748',
-            padding: '48px 32px',
+            padding: compactHeader ? '40px 16px' : '48px 32px',
             textAlign: 'center',
           }}
         >
@@ -367,7 +390,7 @@ export default function LandingPage() {
       <footer
         style={{
           borderTop: '1px solid #1e293b',
-          padding: '22px 32px',
+          padding: compactHeader ? '18px 16px' : '22px 32px',
           textAlign: 'center',
           color: '#475569',
           fontSize: 13,

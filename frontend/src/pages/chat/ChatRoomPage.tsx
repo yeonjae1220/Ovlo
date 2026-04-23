@@ -187,10 +187,11 @@ export default function ChatRoomPage() {
       .map((pid) => `${room.participantNicknames?.[pid] ?? `#${pid}`}`)
       .join(', ') ||
     '채팅방')
+  const containerHeight = isMobile ? 'calc(100dvh - 150px)' : '80vh'
 
   return (
-    <div style={{ maxWidth: 900, margin: '0 auto', display: 'flex', flexDirection: 'column', height: isMobile ? 'calc(80vh - 60px)' : '80vh' }}>
-      <h2 style={{ borderBottom: '1px solid #eee', paddingBottom: 12 }}>
+    <div style={{ maxWidth: 900, margin: '0 auto', display: 'flex', flexDirection: 'column', height: containerHeight, minHeight: isMobile ? 420 : 520 }}>
+      <h2 style={{ borderBottom: '1px solid #eee', paddingBottom: 12, marginBottom: 12, fontSize: isMobile ? 20 : 24, lineHeight: 1.3, overflowWrap: 'anywhere' }}>
         {roomTitle}
         {!connected && <span style={{ color: 'red', fontSize: 13, marginLeft: 8 }}>(연결 중...)</span>}
       </h2>
@@ -243,11 +244,13 @@ export default function ChatRoomPage() {
               )}
               <div
                 style={{
-                  maxWidth: '70%',
-                  padding: '8px 12px',
+                  maxWidth: isMobile ? '82%' : '70%',
+                  padding: isMobile ? '10px 12px' : '8px 12px',
                   borderRadius: 12,
                   background: isMine ? '#007bff' : '#f0f0f0',
                   color: isMine ? '#fff' : '#000',
+                  overflowWrap: 'anywhere',
+                  wordBreak: 'break-word',
                 }}
               >
                 {!isMine && (
@@ -267,16 +270,22 @@ export default function ChatRoomPage() {
         <div ref={bottomRef} />
       </div>
 
-      <div style={{ display: 'flex', gap: 8, paddingTop: 12, borderTop: '1px solid #eee' }}>
+      <div style={{ display: 'flex', gap: 8, paddingTop: 12, borderTop: '1px solid #eee', alignItems: isMobile ? 'stretch' : 'center', flexDirection: isMobile ? 'column' : 'row' }}>
         <input
           placeholder="메시지를 입력하세요..."
           value={input}
           onChange={(e) => setInput(e.target.value)}
           onKeyDown={(e) => e.key === 'Enter' && sendMessage()}
-          style={{ flex: 1, padding: 8 }}
+          style={{ flex: 1, padding: isMobile ? 12 : 8, fontSize: 16, borderRadius: 10, border: '1px solid #d1d5db' }}
           disabled={!connected}
         />
-        <button onClick={sendMessage} disabled={!connected || !input.trim()}>전송</button>
+        <button
+          onClick={sendMessage}
+          disabled={!connected || !input.trim()}
+          style={{ width: isMobile ? '100%' : 'auto', minHeight: isMobile ? 44 : undefined }}
+        >
+          전송
+        </button>
       </div>
     </div>
   )
