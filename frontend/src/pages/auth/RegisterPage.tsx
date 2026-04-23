@@ -32,6 +32,32 @@ const DEGREE_TYPES = [
 const TOTAL_STEPS = 3
 const stepTitles = ['계정 정보', '개인 정보', '학업 정보']
 
+const PASSWORD_CONDITIONS = [
+  { label: '8자 이상',      test: (p: string) => p.length >= 8 },
+  { label: '대문자 포함',   test: (p: string) => /[A-Z]/.test(p) },
+  { label: '소문자 포함',   test: (p: string) => /[a-z]/.test(p) },
+  { label: '숫자 포함',     test: (p: string) => /\d/.test(p) },
+  { label: '특수문자 포함', test: (p: string) => /[@$!%*?&_#^()\-]/.test(p) },
+]
+
+function PasswordConditions({ password }: { password: string }) {
+  return (
+    <ul style={{ listStyle: 'none', padding: '6px 0 0', margin: 0, display: 'flex', flexDirection: 'column', gap: 4 }}>
+      {PASSWORD_CONDITIONS.map(({ label, test }) => {
+        const met = test(password)
+        return (
+          <li key={label} style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12 }}>
+            <span style={{ color: met ? '#16a34a' : '#9ca3af', fontSize: 13, lineHeight: 1 }}>
+              {met ? '✓' : '○'}
+            </span>
+            <span style={{ color: met ? '#16a34a' : '#6b7280' }}>{label}</span>
+          </li>
+        )
+      })}
+    </ul>
+  )
+}
+
 // ── Step indicator (외부 정의: 내부 정의 시 매 렌더마다 unmount/remount 발생) ──
 function StepIndicator({ step }: { step: number }) {
   return (
@@ -152,6 +178,7 @@ export default function RegisterPage() {
   const [selectedUniId, setSelectedUniId] = useState<number | null>(null)
   const [selectedUniName, setSelectedUniName] = useState('')
   const [stepError, setStepError] = useState('')
+  const [passwordFocused, setPasswordFocused] = useState(false)
 
   const register = useRegister()
   const { data: universities } = useUniversitySearch(uniQuery)
@@ -171,9 +198,9 @@ export default function RegisterPage() {
       if (!/^[a-zA-Z0-9._]+$/.test(form.nickname)) { setStepError('닉네임은 영문, 숫자, ., _ 만 사용 가능합니다.'); return false }
       if (nicknameTaken) { setStepError('이미 사용 중인 닉네임입니다.'); return false }
       if (!form.email) { setStepError('이메일을 입력해주세요.'); return false }
-      if (form.password.length < 8) { setStepError('비밀번호는 8자 이상이어야 합니다.'); return false }
-      if (!/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&_#^()\-])[A-Za-z\d@$!%*?&_#^()\-]{8,100}$/.test(form.password)) {
-        setStepError('비밀번호는 대문자, 소문자, 숫자, 특수문자(@$!%*?&_#^()-) 를 각각 1자 이상 포함해야 합니다.')
+      const unmet = PASSWORD_CONDITIONS.filter(c => !c.test(form.password))
+      if (unmet.length > 0) {
+        setStepError(`비밀번호 조건 미충족: ${unmet.map(c => c.label).join(', ')}`)
         return false
       }
     }
@@ -252,8 +279,20 @@ export default function RegisterPage() {
           </div>
 
           <div style={fieldStyle}>
-            <label style={labelStyle}>비밀번호 <span style={{ color: '#9ca3af', fontWeight: 400 }}>(8자 이상, 대·소문자·숫자·특수문자 포함)</span></label>
-            <input style={inputStyle} type="password" value={form.password} onChange={set('password')} placeholder="••••••••" minLength={8} required />
+            <label style={labelStyle}>비밀번호</label>
+            <input
+              style={inputStyle}
+              type="password"
+              value={form.password}
+              onChange={set('password')}
+              onFocus={() => setPasswordFocused(true)}
+              placeholder="••••••••"
+              minLength={8}
+              required
+            />
+            {(passwordFocused || form.password.length > 0) && (
+              <PasswordConditions password={form.password} />
+            )}
           </div>
 
           {stepError && <p style={{ color: '#dc2626', margin: 0, fontSize: 13 }}>{stepError}</p>}
