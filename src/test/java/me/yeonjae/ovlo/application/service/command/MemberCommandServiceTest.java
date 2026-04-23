@@ -5,6 +5,7 @@ import me.yeonjae.ovlo.application.dto.command.UpdateMemberProfileCommand;
 import me.yeonjae.ovlo.application.dto.command.WithdrawMemberCommand;
 import me.yeonjae.ovlo.application.dto.result.MemberResult;
 import me.yeonjae.ovlo.application.port.out.auth.PasswordHasherPort;
+import me.yeonjae.ovlo.application.port.out.member.HideContentByWithdrawnMemberPort;
 import me.yeonjae.ovlo.application.port.out.member.LoadMemberPort;
 import me.yeonjae.ovlo.application.port.out.member.SaveMemberPort;
 import me.yeonjae.ovlo.domain.member.exception.MemberException;
@@ -34,6 +35,7 @@ class MemberCommandServiceTest {
     @Mock private LoadMemberPort loadMemberPort;
     @Mock private SaveMemberPort saveMemberPort;
     @Mock private PasswordHasherPort passwordHasherPort;
+    @Mock private HideContentByWithdrawnMemberPort hideContentByWithdrawnMemberPort;
 
     @InjectMocks
     private MemberCommandService memberCommandService;
