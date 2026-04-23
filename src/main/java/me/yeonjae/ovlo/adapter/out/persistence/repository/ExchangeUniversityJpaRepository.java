@@ -12,13 +12,13 @@ public interface ExchangeUniversityJpaRepository extends JpaRepository<ExchangeU
     @Query(value = """
             SELECT * FROM exchange_universities
             WHERE (:keyword IS NULL OR name_ko ILIKE '%' || :keyword || '%' OR name_en ILIKE '%' || :keyword || '%')
-              AND (:country IS NULL OR country = :country)
+              AND (:countryCode IS NULL OR country_code = :countryCode)
             ORDER BY name_en
             LIMIT :limit OFFSET :offset
             """, nativeQuery = true)
     List<ExchangeUniversityJpaEntity> search(
             @Param("keyword") String keyword,
-            @Param("country") String country,
+            @Param("countryCode") String countryCode,
             @Param("limit") int limit,
             @Param("offset") int offset
     );
@@ -26,7 +26,7 @@ public interface ExchangeUniversityJpaRepository extends JpaRepository<ExchangeU
     @Query(value = """
             SELECT COUNT(*) FROM exchange_universities
             WHERE (:keyword IS NULL OR name_ko ILIKE '%' || :keyword || '%' OR name_en ILIKE '%' || :keyword || '%')
-              AND (:country IS NULL OR country = :country)
+              AND (:countryCode IS NULL OR country_code = :countryCode)
             """, nativeQuery = true)
-    long countSearch(@Param("keyword") String keyword, @Param("country") String country);
+    long countSearch(@Param("keyword") String keyword, @Param("countryCode") String countryCode);
 }

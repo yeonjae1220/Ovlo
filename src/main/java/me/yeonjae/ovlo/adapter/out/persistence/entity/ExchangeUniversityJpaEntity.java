@@ -16,6 +16,10 @@ public class ExchangeUniversityJpaEntity {
     private String nameEn;
 
     private String country;
+
+    @Column(name = "country_code", length = 2)
+    private String countryCode;
+
     private String city;
     private String website;
 
@@ -24,11 +28,12 @@ public class ExchangeUniversityJpaEntity {
 
     public ExchangeUniversityJpaEntity() {}
 
-    public Long getId()           { return id; }
-    public String getNameKo()     { return nameKo; }
-    public String getNameEn()     { return nameEn; }
-    public String getCountry()    { return country; }
-    public String getCity()       { return city; }
-    public String getWebsite()    { return website; }
-    public Long getGlobalUnivId() { return globalUnivId; }
+    public Long getId()             { return id; }
+    public String getNameKo()       { return nameKo; }
+    public String getNameEn()       { return nameEn; }
+    public String getCountry()      { return country; }
+    public String getCountryCode()  { return countryCode; }
+    public String getCity()         { return city; }
+    public String getWebsite()      { return website; }
+    public Long getGlobalUnivId()   { return globalUnivId; }
 }

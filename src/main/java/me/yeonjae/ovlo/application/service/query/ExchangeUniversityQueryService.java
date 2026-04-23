@@ -30,7 +30,7 @@ public class ExchangeUniversityQueryService implements SearchExchangeUniversityQ
     public PageResult<ExchangeUniversityResult> search(SearchExchangeUniversityCommand command) {
         int offset = command.page() * command.size();
         List<ExchangeUniversity> universities = loadExchangeUniversityPort
-                .search(command.keyword(), command.country(), offset, command.size());
+                .search(command.keyword(), command.countryCode(), offset, command.size());
 
         List<Long> ids = universities.stream().map(university -> university.getId().value()).toList();
         Map<Long, Long> counts = loadExchangeUniversityPort.countReviewsByUniversityIds(ids);
@@ -43,7 +43,7 @@ public class ExchangeUniversityQueryService implements SearchExchangeUniversityQ
                         avgRatings.get(university.getId().value())
                 ))
                 .toList();
-        long total = loadExchangeUniversityPort.count(command.keyword(), command.country());
+        long total = loadExchangeUniversityPort.count(command.keyword(), command.countryCode());
         return PageResult.of(content, total, command.page(), command.size());
     }
 

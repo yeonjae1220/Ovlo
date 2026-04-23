@@ -31,16 +31,16 @@ public class ExchangeUniversityApiController {
         this.getQuery = getQuery;
     }
 
-    @Operation(summary = "교환 대학 검색", description = "이름(한/영) 또는 국가로 검색")
+    @Operation(summary = "교환 대학 검색", description = "이름(한/영) 또는 국가코드(ISO 3166-1 alpha-2, 예: JP, US)로 검색")
     @GetMapping
     public ResponseEntity<PageResult<ExchangeUniversityResult>> search(
             @RequestParam(required = false) @Size(max = 100) String keyword,
-            @RequestParam(required = false) @Size(max = 100) String country,
+            @RequestParam(required = false) @Size(max = 2)   String countryCode,
             @RequestParam(defaultValue = "0") @Min(0) int page,
             @RequestParam(defaultValue = "20") @Min(1) @Max(100) int size
     ) {
         return ResponseEntity.ok(searchQuery.search(
-                new SearchExchangeUniversityCommand(keyword, country, page, size)));
+                new SearchExchangeUniversityCommand(keyword, countryCode, page, size)));
     }
 
     @Operation(summary = "교환 대학 단건 조회", description = "리뷰 수, 평균 평점 포함")

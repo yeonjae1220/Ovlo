@@ -10,8 +10,8 @@ import java.util.Optional;
 
 public interface LoadExchangeUniversityPort {
     Optional<ExchangeUniversity> findById(ExchangeUniversityId id);
-    List<ExchangeUniversity> search(String keyword, String country, int offset, int limit);
-    long count(String keyword, String country);
+    List<ExchangeUniversity> search(String keyword, String countryCode, int offset, int limit);
+    long count(String keyword, String countryCode);
 
     List<VideoReview> findReviewsByUniversityId(ExchangeUniversityId id, String direction, int offset, int limit);
     long countReviewsByUniversityId(ExchangeUniversityId id, String direction);

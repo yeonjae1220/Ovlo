@@ -34,14 +34,14 @@ public class ExchangeUniversityPersistenceAdapter implements LoadExchangeUnivers
     }
 
     @Override
-    public List<ExchangeUniversity> search(String keyword, String country, int offset, int limit) {
-        return exchangeUniversityRepo.search(blankToNull(keyword), blankToNull(country), limit, offset)
+    public List<ExchangeUniversity> search(String keyword, String countryCode, int offset, int limit) {
+        return exchangeUniversityRepo.search(blankToNull(keyword), blankToNull(countryCode), limit, offset)
                 .stream().map(this::toDomain).toList();
     }
 
     @Override
-    public long count(String keyword, String country) {
-        return exchangeUniversityRepo.countSearch(blankToNull(keyword), blankToNull(country));
+    public long count(String keyword, String countryCode) {
+        return exchangeUniversityRepo.countSearch(blankToNull(keyword), blankToNull(countryCode));
     }
 
     @Override
@@ -86,7 +86,7 @@ public class ExchangeUniversityPersistenceAdapter implements LoadExchangeUnivers
 
     private ExchangeUniversity toDomain(ExchangeUniversityJpaEntity e) {
         return ExchangeUniversity.restore(e.getId(), e.getNameKo(), e.getNameEn(),
-                e.getCountry(), e.getCity(), e.getWebsite(), e.getGlobalUnivId());
+                e.getCountry(), e.getCountryCode(), e.getCity(), e.getWebsite(), e.getGlobalUnivId());
     }
 
     private VideoReview toReviewDomain(ExchangeVideoReviewJpaEntity e) {

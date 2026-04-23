@@ -44,9 +44,9 @@ class ExchangeUniversityQueryServiceTest {
     @BeforeEach
     void setUp() {
         tokyo = ExchangeUniversity.restore(1L, "도쿄대학교", "University of Tokyo",
-                "JP", "Tokyo", "https://www.u-tokyo.ac.jp", null);
+                "일본", "JP", "Tokyo", "https://www.u-tokyo.ac.jp", null);
         paris = ExchangeUniversity.restore(2L, "파리대학교", "Université de Paris",
-                "FR", "Paris", "https://u-paris.fr", null);
+                "프랑스", "FR", "Paris", "https://u-paris.fr", null);
     }
 
     @Nested
@@ -89,7 +89,7 @@ class ExchangeUniversityQueryServiceTest {
                     new SearchExchangeUniversityCommand(null, "FR", 0, 10));
 
             assertThat(result.content()).hasSize(1);
-            assertThat(result.content().get(0).country()).isEqualTo("FR");
+            assertThat(result.content().get(0).countryCode()).isEqualTo("FR");
         }
 
         @Test
@@ -153,7 +153,7 @@ class ExchangeUniversityQueryServiceTest {
             assertThat(result.id()).isEqualTo(1L);
             assertThat(result.nameEn()).isEqualTo("University of Tokyo");
             assertThat(result.nameKo()).isEqualTo("도쿄대학교");
-            assertThat(result.country()).isEqualTo("JP");
+            assertThat(result.countryCode()).isEqualTo("JP");
             assertThat(result.reviewCount()).isEqualTo(3L);
             assertThat(result.avgRating()).isEqualTo(4.2);
         }

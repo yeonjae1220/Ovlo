@@ -2,7 +2,7 @@ package me.yeonjae.ovlo.application.dto.command;
 
 public record SearchExchangeUniversityCommand(
         String keyword,
-        String country,
+        String countryCode,
         int page,
         int size
 ) {}
