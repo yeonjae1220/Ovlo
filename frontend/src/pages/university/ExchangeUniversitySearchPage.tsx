@@ -10,16 +10,16 @@ const STAR = (avg?: number | null) =>
 export default function ExchangeUniversitySearchPage() {
   const [uniQuery, setUniQuery] = useState('')
   const [selectedUniName, setSelectedUniName] = useState('')
-  const [country, setCountry] = useState('')
+  const [countryCode, setCountryCode] = useState('')
   const navigate = useNavigate()
 
   // global_universities 기반 autocomplete (회원가입과 동일한 패턴)
   const { data: globalResults } = useGlobalUniversitySearch(uniQuery)
 
-  // exchange_universities 결과 조회 (선택된 대학명 또는 국가로 검색)
-  const { data, isLoading } = useExchangeUniversitySearch(selectedUniName, country)
+  // exchange_universities 결과 조회 (선택된 대학명 또는 국가코드로 검색)
+  const { data, isLoading } = useExchangeUniversitySearch(selectedUniName, countryCode)
   const universities = data?.content ?? []
-  const hasSearched = !!(selectedUniName || country)
+  const hasSearched = !!(selectedUniName || countryCode)
 
   const inputStyle: React.CSSProperties = {
     padding: '10px 14px',
@@ -104,9 +104,9 @@ export default function ExchangeUniversitySearchPage() {
       <div style={{ marginBottom: 24 }}>
         <input
           style={{ ...inputStyle, width: '100%', boxSizing: 'border-box' }}
-          placeholder="국가 (예: 일본, 미국, 영국)"
-          value={country}
-          onChange={(e) => setCountry(e.target.value)}
+          placeholder="국가 코드 (예: JP, US, GB, FR, DE)"
+          value={countryCode}
+          onChange={(e) => setCountryCode(e.target.value.toUpperCase().slice(0, 2))}
         />
       </div>
 

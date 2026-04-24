@@ -45,10 +45,10 @@ export const globalUniversityApi = {
 }
 
 export const exchangeUniversityApi = {
-  search: (keyword?: string, country?: string, page = 0, size = 20) =>
+  search: (keyword?: string, countryCode?: string, page = 0, size = 20) =>
     apiClient
       .get<PageResult<ExchangeUniversity>>('/exchange-universities', {
-        params: { keyword, country, page, size },
+        params: { keyword, countryCode, page, size },
       })
       .then((r) => r.data),
 
