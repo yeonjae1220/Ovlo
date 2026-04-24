@@ -1,6 +1,7 @@
 package me.yeonjae.ovlo.application.service.query;
 
 import me.yeonjae.ovlo.application.dto.command.SearchExchangeUniversityCommand;
+import me.yeonjae.ovlo.application.dto.result.ExchangeUniversityCountryResult;
 import me.yeonjae.ovlo.application.dto.result.ExchangeUniversityResult;
 import me.yeonjae.ovlo.application.dto.result.PageResult;
 import me.yeonjae.ovlo.application.dto.result.VideoReviewResult;
@@ -15,6 +16,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Map;
+
+
 
 @Service
 @Transactional(readOnly = true)
@@ -54,6 +57,11 @@ public class ExchangeUniversityQueryService implements SearchExchangeUniversityQ
         long reviewCount = loadExchangeUniversityPort.countReviewsByUniversityId(id, null);
         Double avgRating = loadExchangeUniversityPort.avgRatingByUniversityId(id);
         return ExchangeUniversityResult.of(university, reviewCount, avgRating);
+    }
+
+    @Override
+    public List<ExchangeUniversityCountryResult> getCountries() {
+        return loadExchangeUniversityPort.findCountries();
     }
 
     @Override

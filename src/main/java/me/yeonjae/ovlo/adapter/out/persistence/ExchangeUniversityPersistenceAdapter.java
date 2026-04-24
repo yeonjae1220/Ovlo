@@ -4,6 +4,7 @@ import me.yeonjae.ovlo.adapter.out.persistence.entity.ExchangeUniversityJpaEntit
 import me.yeonjae.ovlo.adapter.out.persistence.entity.ExchangeVideoReviewJpaEntity;
 import me.yeonjae.ovlo.adapter.out.persistence.repository.ExchangeUniversityJpaRepository;
 import me.yeonjae.ovlo.adapter.out.persistence.repository.ExchangeVideoReviewJpaRepository;
+import me.yeonjae.ovlo.application.dto.result.ExchangeUniversityCountryResult;
 import me.yeonjae.ovlo.application.port.out.university.LoadExchangeUniversityPort;
 import me.yeonjae.ovlo.domain.university.model.ExchangeUniversity;
 import me.yeonjae.ovlo.domain.university.model.ExchangeUniversityId;
@@ -78,6 +79,11 @@ public class ExchangeUniversityPersistenceAdapter implements LoadExchangeUnivers
                         p -> p.getUniversityId(),
                         p -> p.getAvgRating()
                 ));
+    }
+
+    @Override
+    public List<ExchangeUniversityCountryResult> findCountries() {
+        return exchangeUniversityRepo.findCountries();
     }
 
     private static String blankToNull(String value) {

@@ -1,6 +1,14 @@
 import { useQuery } from '@tanstack/react-query'
 import { universityApi, globalUniversityApi, exchangeUniversityApi } from '../api/university'
 
+export function useExchangeUniversityCountries() {
+  return useQuery({
+    queryKey: ['exchange-university-countries'],
+    queryFn: () => exchangeUniversityApi.countries(),
+    staleTime: 1000 * 60 * 10,
+  })
+}
+
 export function useUniversitySearch(keyword: string, countryCode?: string) {
   return useQuery({
     queryKey: ['global-universities', 'search', keyword, countryCode],

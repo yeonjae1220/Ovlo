@@ -44,7 +44,18 @@ export const globalUniversityApi = {
       ),
 }
 
+export interface ExchangeUniversityCountry {
+  country: string
+  countryCode: string
+  universityCount: number
+}
+
 export const exchangeUniversityApi = {
+  countries: () =>
+    apiClient
+      .get<ExchangeUniversityCountry[]>('/exchange-universities/countries')
+      .then((r) => r.data),
+
   search: (keyword?: string, countryCode?: string, page = 0, size = 20) =>
     apiClient
       .get<PageResult<ExchangeUniversity>>('/exchange-universities', {

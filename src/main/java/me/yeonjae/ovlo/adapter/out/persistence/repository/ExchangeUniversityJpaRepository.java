@@ -1,6 +1,7 @@
 package me.yeonjae.ovlo.adapter.out.persistence.repository;
 
 import me.yeonjae.ovlo.adapter.out.persistence.entity.ExchangeUniversityJpaEntity;
+import me.yeonjae.ovlo.application.dto.result.ExchangeUniversityCountryResult;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -29,4 +30,14 @@ public interface ExchangeUniversityJpaRepository extends JpaRepository<ExchangeU
               AND (:countryCode IS NULL OR country_code = :countryCode)
             """, nativeQuery = true)
     long countSearch(@Param("keyword") String keyword, @Param("countryCode") String countryCode);
+
+    @Query(value = """
+            SELECT new me.yeonjae.ovlo.application.dto.result.ExchangeUniversityCountryResult(
+                e.country, e.countryCode, COUNT(e))
+            FROM ExchangeUniversityJpaEntity e
+            WHERE e.country IS NOT NULL AND e.countryCode IS NOT NULL
+            GROUP BY e.country, e.countryCode
+            ORDER BY e.country
+            """)
+    List<ExchangeUniversityCountryResult> findCountries();
 }

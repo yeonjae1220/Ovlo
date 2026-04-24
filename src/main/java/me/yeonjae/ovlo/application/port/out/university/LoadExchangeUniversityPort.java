@@ -1,5 +1,6 @@
 package me.yeonjae.ovlo.application.port.out.university;
 
+import me.yeonjae.ovlo.application.dto.result.ExchangeUniversityCountryResult;
 import me.yeonjae.ovlo.domain.university.model.ExchangeUniversity;
 import me.yeonjae.ovlo.domain.university.model.ExchangeUniversityId;
 import me.yeonjae.ovlo.domain.university.model.VideoReview;
@@ -18,4 +19,5 @@ public interface LoadExchangeUniversityPort {
     Double avgRatingByUniversityId(ExchangeUniversityId id);
     Map<Long, Long> countReviewsByUniversityIds(List<Long> universityIds);
     Map<Long, Double> avgRatingsByUniversityIds(List<Long> universityIds);
+    List<ExchangeUniversityCountryResult> findCountries();
 }

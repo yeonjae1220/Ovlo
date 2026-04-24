@@ -6,6 +6,7 @@ import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.Size;
 import me.yeonjae.ovlo.application.dto.command.SearchExchangeUniversityCommand;
+import me.yeonjae.ovlo.application.dto.result.ExchangeUniversityCountryResult;
 import me.yeonjae.ovlo.application.dto.result.ExchangeUniversityResult;
 import me.yeonjae.ovlo.application.dto.result.PageResult;
 import me.yeonjae.ovlo.application.dto.result.VideoReviewResult;
@@ -15,6 +16,8 @@ import me.yeonjae.ovlo.domain.university.model.ExchangeUniversityId;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @Tag(name = "Exchange University", description = "교환 대학 API")
 @Validated
@@ -41,6 +44,12 @@ public class ExchangeUniversityApiController {
     ) {
         return ResponseEntity.ok(searchQuery.search(
                 new SearchExchangeUniversityCommand(keyword, countryCode, page, size)));
+    }
+
+    @Operation(summary = "교환 대학 국가 목록", description = "데이터가 있는 국가 목록 (한국어명, ISO 코드, 대학 수)")
+    @GetMapping("/countries")
+    public ResponseEntity<List<ExchangeUniversityCountryResult>> getCountries() {
+        return ResponseEntity.ok(getQuery.getCountries());
     }
 
     @Operation(summary = "교환 대학 단건 조회", description = "리뷰 수, 평균 평점 포함")

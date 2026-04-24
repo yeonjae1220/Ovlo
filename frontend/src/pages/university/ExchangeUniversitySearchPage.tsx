@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { useExchangeUniversitySearch, useGlobalUniversitySearch } from '../../hooks/useUniversity'
+import { useExchangeUniversitySearch, useExchangeUniversityCountries, useGlobalUniversitySearch } from '../../hooks/useUniversity'
 
 const STAR = (avg?: number | null) =>
   avg !== undefined && avg !== null
@@ -13,6 +13,7 @@ export default function ExchangeUniversitySearchPage() {
   const [countryCode, setCountryCode] = useState('')
   const navigate = useNavigate()
 
+  const { data: countries = [] } = useExchangeUniversityCountries()
   // global_universities 기반 autocomplete (회원가입과 동일한 패턴)
   const { data: globalResults } = useGlobalUniversitySearch(uniQuery)
 
@@ -100,14 +101,30 @@ export default function ExchangeUniversitySearchPage() {
         )}
       </div>
 
-      {/* 국가 검색 (한국어 텍스트, 기존 유지) */}
+      {/* 국가 드롭다운 */}
       <div style={{ marginBottom: 24 }}>
-        <input
-          style={{ ...inputStyle, width: '100%', boxSizing: 'border-box' }}
-          placeholder="국가 코드 (예: JP, US, GB, FR, DE)"
+        <select
+          style={{
+            ...inputStyle,
+            width: '100%',
+            boxSizing: 'border-box',
+            cursor: 'pointer',
+            appearance: 'none',
+            backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%2394a3b8' d='M6 8L1 3h10z'/%3E%3C/svg%3E")`,
+            backgroundRepeat: 'no-repeat',
+            backgroundPosition: 'right 14px center',
+            paddingRight: 36,
+          }}
           value={countryCode}
-          onChange={(e) => setCountryCode(e.target.value.toUpperCase().slice(0, 2))}
-        />
+          onChange={(e) => setCountryCode(e.target.value)}
+        >
+          <option value="">전체 국가</option>
+          {countries.map((c) => (
+            <option key={c.countryCode} value={c.countryCode}>
+              {c.country} ({c.universityCount}개)
+            </option>
+          ))}
+        </select>
       </div>
 
       {/* 결과 */}
