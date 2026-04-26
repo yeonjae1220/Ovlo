@@ -293,6 +293,7 @@ export interface PageResult<T> {
   totalPages: number
   page: number
   size: number
+  hasNext: boolean
 }
 
 // ─── API Error ───────────────────────────────────────────────────────────────

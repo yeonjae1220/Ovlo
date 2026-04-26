@@ -33,10 +33,10 @@ export function useUniversity(id: string) {
   })
 }
 
-export function useExchangeUniversitySearch(keyword: string, countryCode?: string) {
+export function useExchangeUniversitySearch(keyword: string, countryCode?: string, page = 0, size = 20) {
   return useQuery({
-    queryKey: ['exchange-universities', 'search', keyword, countryCode],
-    queryFn: () => exchangeUniversityApi.search(keyword || undefined, countryCode || undefined),
+    queryKey: ['exchange-universities', 'search', keyword, countryCode, page, size],
+    queryFn: () => exchangeUniversityApi.search(keyword || undefined, countryCode || undefined, page, size),
     enabled: keyword.length >= 1 || (!!countryCode && countryCode.length >= 1),
   })
 }

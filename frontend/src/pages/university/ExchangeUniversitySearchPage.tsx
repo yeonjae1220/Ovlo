@@ -7,10 +7,13 @@ const STAR = (avg?: number | null) =>
     ? '★'.repeat(Math.round(avg)) + '☆'.repeat(5 - Math.round(avg))
     : '☆☆☆☆☆'
 
+const PAGE_SIZE = 20
+
 export default function ExchangeUniversitySearchPage() {
   const [uniQuery, setUniQuery] = useState('')
   const [selectedUniName, setSelectedUniName] = useState('')
   const [countryCode, setCountryCode] = useState('')
+  const [page, setPage] = useState(0)
   const navigate = useNavigate()
 
   const { data: countries = [] } = useExchangeUniversityCountries()
@@ -18,9 +21,26 @@ export default function ExchangeUniversitySearchPage() {
   const { data: globalResults } = useGlobalUniversitySearch(uniQuery)
 
   // exchange_universities 결과 조회 (선택된 대학명 또는 국가코드로 검색)
-  const { data, isLoading } = useExchangeUniversitySearch(selectedUniName, countryCode)
+  const { data, isLoading } = useExchangeUniversitySearch(selectedUniName, countryCode, page, PAGE_SIZE)
   const universities = data?.content ?? []
   const hasSearched = !!(selectedUniName || countryCode)
+
+  const handleCountryChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    setCountryCode(e.target.value)
+    setPage(0)
+  }
+
+  const handleUniSelect = (name: string) => {
+    setSelectedUniName(name)
+    setUniQuery('')
+    setPage(0)
+  }
+
+  const handleUniClear = () => {
+    setSelectedUniName('')
+    setUniQuery('')
+    setPage(0)
+  }
 
   const inputStyle: React.CSSProperties = {
     padding: '10px 14px',
@@ -52,7 +72,7 @@ export default function ExchangeUniversitySearchPage() {
         {selectedUniName ? (
           <button
             type="button"
-            onClick={() => { setSelectedUniName(''); setUniQuery('') }}
+            onClick={handleUniClear}
             style={{
               width: '100%', padding: '10px 14px', textAlign: 'left',
               border: '1px solid #4ade80', borderRadius: 8, background: '#0d2a1a',
@@ -79,7 +99,7 @@ export default function ExchangeUniversitySearchPage() {
                 {globalResults.slice(0, 8).map((u) => (
                   <li
                     key={u.id}
-                    onClick={() => { setSelectedUniName(u.name); setUniQuery('') }}
+                    onClick={() => handleUniSelect(u.name)}
                     style={{
                       padding: '9px 14px', cursor: 'pointer', fontSize: 14,
                       display: 'flex', justifyContent: 'space-between', alignItems: 'center',
@@ -116,7 +136,7 @@ export default function ExchangeUniversitySearchPage() {
             paddingRight: 36,
           }}
           value={countryCode}
-          onChange={(e) => setCountryCode(e.target.value)}
+          onChange={handleCountryChange}
         >
           <option value="">전체 국가</option>
           {countries.map((c) => (
@@ -188,10 +208,34 @@ export default function ExchangeUniversitySearchPage() {
         ))}
       </ul>
 
-      {data && data.totalElements > universities.length && (
-        <p style={{ textAlign: 'center', marginTop: 20, color: '#64748b', fontSize: 13 }}>
-          {data.totalElements}개 중 {universities.length}개 표시 중
-        </p>
+      {data && data.totalElements > 0 && (
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 16, marginTop: 24 }}>
+          <button
+            onClick={() => setPage((p) => p - 1)}
+            disabled={page === 0}
+            style={{
+              padding: '8px 18px', borderRadius: 8, border: '1px solid #374151',
+              background: page === 0 ? '#1a2234' : '#1e2836', color: page === 0 ? '#475569' : '#e2e8f0',
+              cursor: page === 0 ? 'default' : 'pointer', fontSize: 14,
+            }}
+          >
+            ← 이전
+          </button>
+          <span style={{ color: '#94a3b8', fontSize: 13 }}>
+            {page + 1} / {data.totalPages}페이지 ({data.totalElements}개)
+          </span>
+          <button
+            onClick={() => setPage((p) => p + 1)}
+            disabled={!data.hasNext}
+            style={{
+              padding: '8px 18px', borderRadius: 8, border: '1px solid #374151',
+              background: !data.hasNext ? '#1a2234' : '#1e2836', color: !data.hasNext ? '#475569' : '#e2e8f0',
+              cursor: !data.hasNext ? 'default' : 'pointer', fontSize: 14,
+            }}
+          >
+            다음 →
+          </button>
+        </div>
       )}
     </div>
   )

@@ -11,10 +11,15 @@ import java.util.List;
 public interface ExchangeUniversityJpaRepository extends JpaRepository<ExchangeUniversityJpaEntity, Long> {
 
     @Query(value = """
-            SELECT * FROM exchange_universities
-            WHERE (:keyword IS NULL OR name_ko ILIKE '%' || :keyword || '%' OR name_en ILIKE '%' || :keyword || '%')
-              AND (:countryCode IS NULL OR country_code = :countryCode)
-            ORDER BY name_en
+            SELECT eu.* FROM exchange_universities eu
+            LEFT JOIN (
+                SELECT university_id, COUNT(*) AS review_count
+                FROM exchange_video_reviews
+                GROUP BY university_id
+            ) rc ON rc.university_id = eu.id
+            WHERE (:keyword IS NULL OR eu.name_ko ILIKE '%' || :keyword || '%' OR eu.name_en ILIKE '%' || :keyword || '%')
+              AND (:countryCode IS NULL OR eu.country_code = :countryCode)
+            ORDER BY COALESCE(rc.review_count, 0) DESC, eu.name_en
             LIMIT :limit OFFSET :offset
             """, nativeQuery = true)
     List<ExchangeUniversityJpaEntity> search(
