@@ -1,6 +1,8 @@
 import { useState } from 'react'
+import React from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useExchangeUniversity, useExchangeUniversityReviews } from '../../hooks/useUniversity'
+import { useUniversityReportByUniv } from '../../hooks/useUniversityReport'
 import type { VideoReview, ExchangeUniversity } from '../../types'
 
 // ── 다크 테마 색상 상수 ──────────────────────────────────────
@@ -125,8 +127,11 @@ export default function ExchangeUniversityDetailPage() {
   const univId = Number(id)
   const [direction, setDirection] = useState<string | undefined>(undefined)
 
+  const [reportLang, setReportLang] = useState('ko')
+
   const { data: univ, isLoading: univLoading } = useExchangeUniversity(univId)
   const { data: reviewPage, isLoading: reviewLoading } = useExchangeUniversityReviews(univId, direction)
+  const { data: report } = useUniversityReportByUniv(univ?.globalUnivId ?? null, reportLang)
   const reviews = reviewPage?.content ?? []
 
   if (univLoading) return <div style={{ padding: 40, color: C.textMuted }}>불러오는 중...</div>
@@ -171,6 +176,102 @@ export default function ExchangeUniversityDetailPage() {
           </a>
         )}
       </div>
+
+      {/* AI 종합 보고서 */}
+      {univ?.globalUnivId && (
+        <div style={{ background: C.card, borderRadius: 12, border: `1px solid ${C.border}`, marginBottom: 28, overflow: 'hidden' }}>
+          {/* 보고서 헤더 */}
+          <div style={{ padding: '16px 20px', borderBottom: `1px solid ${C.border}`, display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 8 }}>
+            <div>
+              <span style={{ fontSize: 11, fontWeight: 700, color: '#60a5fa', textTransform: 'uppercase', letterSpacing: 1 }}>✦ AI 종합 보고서</span>
+              {report && <div style={{ fontSize: 15, fontWeight: 700, color: C.textPrimary, marginTop: 2 }}>{report.title}</div>}
+            </div>
+            <div style={{ display: 'flex', gap: 6 }}>
+              {['ko', 'en'].map(l => (
+                <button key={l} onClick={() => setReportLang(l)}
+                  style={{
+                    padding: '4px 12px', borderRadius: 16, fontSize: 12, cursor: 'pointer',
+                    border: reportLang === l ? `2px solid ${C.activeBorder}` : `1px solid ${C.borderLight}`,
+                    background: reportLang === l ? C.activeBg : 'transparent',
+                    color: reportLang === l ? C.activeText : C.textMuted,
+                    fontWeight: reportLang === l ? 700 : 400,
+                  }}>{l.toUpperCase()}</button>
+              ))}
+            </div>
+          </div>
+
+          {!report ? (
+            <div style={{ padding: '20px', color: C.textMuted, fontSize: 14 }}>보고서를 불러오는 중...</div>
+          ) : (
+            <div style={{ padding: '16px 20px' }}>
+              {/* 요약 */}
+              {report.summary && (
+                <p style={{ margin: '0 0 16px', fontSize: 14, color: C.textSec, lineHeight: 1.8 }}>
+                  {report.summary}
+                </p>
+              )}
+
+              {/* 핵심 정보 카드 */}
+              {report.content && (() => {
+                try {
+                  const c = typeof report.content === 'string' ? JSON.parse(report.content) : report.content
+                  return (
+                    <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
+                      {c.costs && (
+                        <div style={{ flex: 1, minWidth: 160, background: C.bg, borderRadius: 8, padding: '12px 14px', border: `1px solid ${C.border}` }}>
+                          <div style={{ fontSize: 11, fontWeight: 700, color: C.textDim, textTransform: 'uppercase', marginBottom: 6 }}>💰 생활비</div>
+                          <div style={{ fontSize: 13, color: C.textSec, fontWeight: 600 }}>{c.costs.monthly_total ?? '-'}</div>
+                          {c.costs.currency && <div style={{ fontSize: 11, color: C.textMuted, marginTop: 2 }}>{c.costs.currency}</div>}
+                        </div>
+                      )}
+                      {c.housing && (
+                        <div style={{ flex: 1, minWidth: 160, background: C.bg, borderRadius: 8, padding: '12px 14px', border: `1px solid ${C.border}` }}>
+                          <div style={{ fontSize: 11, fontWeight: 700, color: C.textDim, textTransform: 'uppercase', marginBottom: 6 }}>🏠 기숙사</div>
+                          <div style={{ fontSize: 13, color: c.housing.dorm_available ? '#4ade80' : '#f87171', fontWeight: 600 }}>
+                            {c.housing.dorm_available ? '입사 가능' : '입사 불가'}
+                          </div>
+                          {c.housing.dorm_price && <div style={{ fontSize: 11, color: C.textMuted, marginTop: 2 }}>{c.housing.dorm_price}</div>}
+                        </div>
+                      )}
+                      {c.visa && (
+                        <div style={{ flex: 1, minWidth: 160, background: C.bg, borderRadius: 8, padding: '12px 14px', border: `1px solid ${C.border}` }}>
+                          <div style={{ fontSize: 11, fontWeight: 700, color: C.textDim, textTransform: 'uppercase', marginBottom: 6 }}>🛂 비자</div>
+                          <div style={{ fontSize: 13, color: C.textSec, fontWeight: 600 }}>{c.visa.type ?? '-'}</div>
+                          {c.visa.cost && <div style={{ fontSize: 11, color: C.textMuted, marginTop: 2 }}>비용 {c.visa.cost}</div>}
+                        </div>
+                      )}
+                      {c.academics && (
+                        <div style={{ flex: 1, minWidth: 160, background: C.bg, borderRadius: 8, padding: '12px 14px', border: `1px solid ${C.border}` }}>
+                          <div style={{ fontSize: 11, fontWeight: 700, color: C.textDim, textTransform: 'uppercase', marginBottom: 6 }}>📚 학업</div>
+                          <div style={{ fontSize: 13, color: C.textSec, lineHeight: 1.5, overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical' } as React.CSSProperties}>
+                            {c.academics.overview ?? '-'}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  )
+                } catch { return null }
+              })()}
+
+              {/* 전체 보고서 펼치기 */}
+              {report.body && (
+                <details style={{ marginTop: 16 }}>
+                  <summary style={{ cursor: 'pointer', fontSize: 13, color: C.textMuted, padding: '8px 0', userSelect: 'none' }}>
+                    ▼ 전체 보고서 보기
+                  </summary>
+                  <div style={{ marginTop: 12, fontSize: 13, color: C.textSec, lineHeight: 1.9, whiteSpace: 'pre-wrap', borderTop: `1px solid ${C.border}`, paddingTop: 12 }}>
+                    {report.body}
+                  </div>
+                </details>
+              )}
+
+              <div style={{ marginTop: 12, fontSize: 11, color: C.textDim }}>
+                영상 {report.sourceVideoCount}개 분석 · AI 생성 보고서
+              </div>
+            </div>
+          )}
+        </div>
+      )}
 
       {/* 방향 필터 */}
       <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 20 }}>
