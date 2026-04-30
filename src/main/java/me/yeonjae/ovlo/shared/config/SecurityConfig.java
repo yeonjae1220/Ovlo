@@ -86,6 +86,8 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/api/v1/universities/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/v1/global-universities/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/v1/exchange-universities/**").permitAll()
+                        // 대학 보고서 조회 (인증 없이 접근 가능)
+                        .requestMatchers(HttpMethod.GET, "/api/v1/university-reports/**").permitAll()
                         // WebSocket
                         .requestMatchers("/ws/**").permitAll()
                         // 문서: prod 프로파일에서는 완전 차단, 개발 환경에서만 공개
