@@ -12,6 +12,8 @@ import OnboardingPage from '../pages/auth/OnboardingPage'
 import UniversitySearchPage from '../pages/university/UniversitySearchPage'
 import ExchangeUniversitySearchPage from '../pages/university/ExchangeUniversitySearchPage'
 import ExchangeUniversityDetailPage from '../pages/university/ExchangeUniversityDetailPage'
+import UniversityReportListPage from '../pages/university/UniversityReportListPage'
+import UniversityReportPage from '../pages/university/UniversityReportPage'
 import BoardListPage from '../pages/board/BoardListPage'
 import BoardDetailPage from '../pages/board/BoardDetailPage'
 import CreatePostPage from '../pages/post/CreatePostPage'
@@ -34,6 +36,8 @@ export const router = createBrowserRouter([
   { path: '/register', element: <RegisterPage /> },
   { path: '/universities', element: <UniversitySearchPage /> },
   { path: '/oauth/callback', element: <OAuthCallbackPage /> },
+  { path: '/university-reports', element: <UniversityReportListPage /> },
+  { path: '/university-reports/:id', element: <UniversityReportPage /> },
 
   // Public routes with AppLayout (하단바 포함, 인증 불필요)
   {
