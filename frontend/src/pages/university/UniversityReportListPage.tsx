@@ -38,8 +38,6 @@ export default function UniversityReportListPage() {
               <div style={{ color: '#4b5563', fontSize: 14, marginBottom: 8 }}>{r.summary}</div>
             )}
             <div style={{ display: 'flex', gap: 16, fontSize: 13, color: '#6b7280' }}>
-              {r.avgRating != null && <span>★ {r.avgRating.toFixed(1)}</span>}
-              {r.recommendRatio != null && <span>추천 {Math.round(r.recommendRatio * 100)}%</span>}
               <span>영상 {r.sourceVideoCount}개</span>
               {r.sourceWebCount > 0 && <span>웹 {r.sourceWebCount}개</span>}
               <span style={{ marginLeft: 'auto' }}>
