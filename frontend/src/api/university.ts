@@ -1,6 +1,27 @@
 import apiClient from '../utils/axios'
 import type { University, ExchangeUniversity, VideoReview, PageResult } from '../types'
 
+export interface UniversityReportSummary {
+  id: number
+  title: string
+  summary?: string
+  sourceVideoCount: number
+  sourceWebCount: number
+  supportedLangs: string[]
+}
+
+export interface UniversityReportDetail {
+  id: number
+  globalUnivId?: number
+  lang: string
+  title: string
+  summary?: string
+  body: string
+  content?: string   // raw JSON string
+  sourceVideoCount: number
+  sourceWebCount: number
+}
+
 interface UniversityPageResult {
   content: University[]
   totalElements: number
@@ -48,6 +69,30 @@ export interface ExchangeUniversityCountry {
   country: string
   countryCode: string
   universityCount: number
+}
+
+export const universityReportApi = {
+  list: (lang = 'ko', keyword = '', page = 0, size = 20) =>
+    apiClient
+      .get<PageResult<UniversityReportSummary>>('/university-reports', {
+        params: { lang, keyword: keyword || undefined, page, size },
+      })
+      .then((r) => r.data),
+
+  getById: (id: number, lang = 'ko') =>
+    apiClient
+      .get<UniversityReportDetail>(`/university-reports/${id}`, { params: { lang } })
+      .then((r) => r.data),
+
+  getByUniversity: (globalUnivId: number, lang = 'ko') =>
+    apiClient
+      .get<UniversityReportDetail>(`/university-reports/by-university/${globalUnivId}`, { params: { lang } })
+      .then((r) => r.data),
+
+  getLanguages: (id: number) =>
+    apiClient
+      .get<string[]>(`/university-reports/${id}/languages`)
+      .then((r) => r.data),
 }
 
 export const exchangeUniversityApi = {

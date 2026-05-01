@@ -62,7 +62,19 @@ export default function ExchangeUniversitySearchPage() {
         ← 뒤로
       </button>
 
-      <h1 style={{ fontSize: 24, fontWeight: 700, color: '#f1f5f9', marginBottom: 6 }}>교환 대학 검색</h1>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: 10, marginBottom: 6 }}>
+        <h1 style={{ fontSize: 24, fontWeight: 700, color: '#f1f5f9', margin: 0 }}>교환 대학 검색</h1>
+        <button
+          onClick={() => navigate('/university-reports')}
+          style={{
+            padding: '7px 14px', borderRadius: 20, fontSize: 13, cursor: 'pointer',
+            border: '1px solid #374151', background: '#1e2836', color: '#60a5fa',
+            fontWeight: 600, whiteSpace: 'nowrap',
+          }}
+        >
+          ✦ AI 보고서 →
+        </button>
+      </div>
       <p style={{ color: '#94a3b8', fontSize: 14, marginBottom: 24 }}>
         파견 가능한 교환 대학을 검색하고 상세 정보·영상 리뷰를 확인하세요.
       </p>
