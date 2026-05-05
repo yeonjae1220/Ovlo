@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useParams, useNavigate } from 'react-router-dom'
+import { useParams, useNavigate, Link } from 'react-router-dom'
 import { useMember, useUpdateProfile } from '../../hooks/useMember'
 import { useFollowers, useFollowings, useFollow, useUnfollow } from '../../hooks/useFollow'
 import { useAuthStore } from '../../store/authStore'
@@ -8,6 +8,19 @@ import { useUploadMedia } from '../../hooks/useMedia'
 import { memberApi } from '../../api/member'
 import { authApi } from '../../api/auth'
 import { useQueryClient } from '@tanstack/react-query'
+import { usePostsByAuthor } from '../../hooks/usePost'
+
+const C = {
+  card:        '#1e2836',
+  border:      '#2d3748',
+  borderLight: '#374151',
+  textPrimary: '#f1f5f9',
+  textSec:     '#cbd5e1',
+  textMuted:   '#94a3b8',
+  textDim:     '#64748b',
+  activeText:  '#60a5fa',
+  purple:      '#a78bfa',
+}
 
 export default function ProfilePage() {
   const { id } = useParams<{ id: string }>()
@@ -24,6 +37,9 @@ export default function ProfilePage() {
   const [editing, setEditing] = useState(false)
   const [nickname, setNickname] = useState('')
   const [bio, setBio] = useState('')
+  const [myPostsPage, setMyPostsPage] = useState(0)
+
+  const { data: myPostsData, isLoading: myPostsLoading } = usePostsByAuthor(id, myPostsPage, 10)
 
   const queryClient = useQueryClient()
   const isOwner = String(currentUser?.id) === id
@@ -113,8 +129,53 @@ export default function ProfilePage() {
         </div>
       </div>
 
+      {/* 내가 쓴 글 */}
+      <div style={{ marginTop: 32, paddingTop: 24, borderTop: `1px solid ${C.border}` }}>
+        <h3 style={{ margin: '0 0 12px', fontSize: 16, fontWeight: 700, color: C.textPrimary }}>
+          {isOwner ? '내가 쓴 글' : '작성한 글'}
+        </h3>
+        {myPostsLoading && <p style={{ color: C.textMuted, fontSize: 14 }}>불러오는 중...</p>}
+        {!myPostsLoading && (myPostsData?.content ?? []).length === 0 && (
+          <p style={{ color: C.textDim, fontSize: 14 }}>아직 작성한 게시글이 없습니다.</p>
+        )}
+        <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
+          {(myPostsData?.content ?? []).map((post) => (
+            <li key={post.id} style={{ borderBottom: `1px solid ${C.border}` }}>
+              <Link
+                to={`/posts/${post.id}`}
+                style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 4px', textDecoration: 'none', color: 'inherit' }}
+              >
+                <span style={{ fontSize: 14, color: C.textPrimary, fontWeight: 500 }}>
+                  {post.deleted ? <span style={{ color: C.textDim }}>[삭제된 게시글]</span> : post.title}
+                </span>
+                {post.boardName && (
+                  <span style={{ fontSize: 11, color: C.activeText, background: '#1e3a5f', padding: '2px 6px', borderRadius: 4, flexShrink: 0, marginLeft: 8 }}>
+                    {post.boardName}
+                  </span>
+                )}
+              </Link>
+            </li>
+          ))}
+        </ul>
+        {(myPostsData?.totalElements ?? 0) > 10 && (
+          <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 16, marginTop: 16 }}>
+            <button
+              onClick={() => setMyPostsPage((p) => p - 1)}
+              disabled={myPostsPage === 0}
+              style={{ padding: '6px 16px', borderRadius: 8, border: `1px solid ${C.borderLight}`, background: myPostsPage === 0 ? '#1a2234' : C.card, color: myPostsPage === 0 ? '#475569' : C.textSec, cursor: myPostsPage === 0 ? 'default' : 'pointer', fontSize: 13 }}
+            >← 이전</button>
+            <span style={{ color: C.textMuted, fontSize: 13 }}>{myPostsPage + 1}페이지</span>
+            <button
+              onClick={() => setMyPostsPage((p) => p + 1)}
+              disabled={!(myPostsData?.hasNext)}
+              style={{ padding: '6px 16px', borderRadius: 8, border: `1px solid ${C.borderLight}`, background: !(myPostsData?.hasNext) ? '#1a2234' : C.card, color: !(myPostsData?.hasNext) ? '#475569' : C.textSec, cursor: !(myPostsData?.hasNext) ? 'default' : 'pointer', fontSize: 13 }}
+            >다음 →</button>
+          </div>
+        )}
+      </div>
+
       {isOwner && (
-        <div style={{ marginTop: 32, paddingTop: 24, borderTop: '1px solid #eee', display: 'flex', gap: 12 }}>
+        <div style={{ marginTop: 32, paddingTop: 24, borderTop: `1px solid ${C.border}`, display: 'flex', gap: 12 }}>
           <button onClick={handleLogout}>로그아웃</button>
           <button
             onClick={handleWithdraw}

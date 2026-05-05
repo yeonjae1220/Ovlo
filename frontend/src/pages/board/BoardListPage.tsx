@@ -26,7 +26,7 @@ type TabId = 'all' | 'free' | 'reports'
 const TABS: { id: TabId; label: string }[] = [
   { id: 'all',     label: '전체' },
   { id: 'free',    label: '자유' },
-  { id: 'reports', label: 'AI 보고서' },
+  { id: 'reports', label: '팁' },
 ]
 
 export default function BoardListPage() {
@@ -43,9 +43,27 @@ export default function BoardListPage() {
   // 자유게시판: GENERAL+GLOBAL 첫 번째 보드 자동 선택
   const freeBoard = boards?.find((b) => b.category === 'GENERAL' && b.scope === 'GLOBAL') ?? null
 
-  const { data: allPostsPage, isLoading: allLoading } = useAllPosts(allPage, 20)
+  const { data: allPostsPage, isLoading: allPostsLoading } = useAllPosts(allPage, 20)
+  const { data: tipsPage, isLoading: tipsLoading } = useUniversityReports('ko', '', 0, 20)
   const { data: freePosts, isLoading: freeLoading } = usePosts(freeBoard?.id ? String(freeBoard.id) : '')
   const { data: reportsPage, isLoading: reportsLoading } = useUniversityReports('ko', '', 0, 20)
+
+  // 전체 탭: 게시글 + 팁을 createdAt 기준 최신순 병합
+  type FeedItem =
+    | { type: 'post'; data: import('../../types').Post }
+    | { type: 'tip'; data: import('../../api/university').UniversityReportSummary }
+
+  const allLoading = allPostsLoading || tipsLoading
+  const allFeedItems: FeedItem[] = (() => {
+    const posts = (allPostsPage?.content ?? []).map((p): FeedItem => ({ type: 'post', data: p }))
+    const tips = (tipsPage?.content ?? []).map((r): FeedItem => ({ type: 'tip', data: r }))
+    return [...posts, ...tips].sort((a, b) => {
+      const dateA = a.type === 'post' ? a.data.createdAt : a.data.createdAt
+      const dateB = b.type === 'post' ? b.data.createdAt : b.data.createdAt
+      if (!dateA || !dateB) return 0
+      return dateB.localeCompare(dateA)
+    })
+  })()
 
   const handleCreate = () => {
     createBoard.mutate(form, { onSuccess: () => { setShowCreateForm(false); setForm({ name: '', category: 'GENERAL', scope: 'GLOBAL' }) } })
@@ -153,17 +171,103 @@ export default function BoardListPage() {
 
       {/* 전체 탭 */}
       {activeTab === 'all' && (
-        <PostTable
-          posts={allPostsPage?.content ?? []}
-          isLoading={allLoading}
-          showBoardName
-          emptyText="아직 게시글이 없습니다."
-          page={allPage}
-          hasNext={allPostsPage?.hasNext ?? false}
-          totalElements={allPostsPage?.totalElements ?? 0}
-          onPrev={() => setAllPage((p) => p - 1)}
-          onNext={() => setAllPage((p) => p + 1)}
-        />
+        <div>
+          {allLoading && <p style={{ color: C.textMuted, padding: '24px 0' }}>불러오는 중...</p>}
+          {!allLoading && allFeedItems.length === 0 && (
+            <p style={{ color: C.textDim, padding: '40px 0', textAlign: 'center' }}>아직 게시글이 없습니다.</p>
+          )}
+          {/* 테이블 헤더 */}
+          {allFeedItems.length > 0 && (
+            <div style={{
+              display: 'grid', gridTemplateColumns: '60px 1fr 56px',
+              gap: 4, padding: '8px 4px', borderBottom: `1px solid ${C.border}`,
+              fontSize: 12, color: C.textDim, fontWeight: 600,
+            }}>
+              <span>번호</span>
+              <span>제목</span>
+              <span style={{ textAlign: 'center' }}>👍</span>
+            </div>
+          )}
+          {allFeedItems.map((item, idx) => {
+            const total = allFeedItems.length
+            const num = total - idx
+            if (item.type === 'post') {
+              const post = item.data
+              return (
+                <Link key={`post-${post.id}`} to={`/posts/${post.id}`} style={{ textDecoration: 'none', color: 'inherit' }}>
+                  <div
+                    style={{
+                      display: 'grid', gridTemplateColumns: '60px 1fr 56px',
+                      gap: 4, padding: '10px 4px', borderBottom: `1px solid ${C.border}`,
+                      alignItems: 'center', cursor: 'pointer', transition: 'background 0.12s',
+                    }}
+                    onMouseEnter={(e) => { (e.currentTarget as HTMLDivElement).style.background = C.card }}
+                    onMouseLeave={(e) => { (e.currentTarget as HTMLDivElement).style.background = 'transparent' }}
+                  >
+                    <span style={{ fontSize: 12, color: C.textDim }}>{num}</span>
+                    <span>
+                      {post.deleted ? (
+                        <span style={{ fontSize: 14, color: C.textDim }}>[삭제된 게시글]</span>
+                      ) : (
+                        <>
+                          <span style={{ fontSize: 14, color: C.textPrimary, fontWeight: 500 }}>{post.title}</span>
+                          {post.boardName && (
+                            <span style={{ marginLeft: 8, fontSize: 11, color: C.activeText, background: '#1e3a5f', padding: '2px 6px', borderRadius: 4 }}>
+                              {post.boardName}
+                            </span>
+                          )}
+                        </>
+                      )}
+                    </span>
+                    <span style={{ fontSize: 12, color: post.likeCount > 0 ? '#f59e0b' : C.textDim, textAlign: 'center' }}>
+                      {post.likeCount > 0 ? post.likeCount : ''}
+                    </span>
+                  </div>
+                </Link>
+              )
+            } else {
+              const tip = item.data
+              return (
+                <div
+                  key={`tip-${tip.id}`}
+                  onClick={() => navigate(`/university-reports/${tip.id}?lang=ko`)}
+                  style={{
+                    display: 'grid', gridTemplateColumns: '60px 1fr 56px',
+                    gap: 4, padding: '10px 4px', borderBottom: `1px solid ${C.border}`,
+                    alignItems: 'center', cursor: 'pointer', transition: 'background 0.12s',
+                  }}
+                  onMouseEnter={(e) => { (e.currentTarget as HTMLDivElement).style.background = C.card }}
+                  onMouseLeave={(e) => { (e.currentTarget as HTMLDivElement).style.background = 'transparent' }}
+                >
+                  <span style={{ fontSize: 12, color: C.textDim }}>{num}</span>
+                  <span>
+                    <span style={{ fontSize: 14, color: C.textPrimary, fontWeight: 500 }}>{tip.title}</span>
+                    <span style={{ marginLeft: 8, fontSize: 11, color: C.purple, background: '#2e1a5f', padding: '2px 6px', borderRadius: 4 }}>
+                      팁
+                    </span>
+                  </span>
+                  <span style={{ fontSize: 12, color: C.textDim, textAlign: 'center' }}></span>
+                </div>
+              )
+            }
+          })}
+          {/* 페이지네이션 (post 기준) */}
+          {(allPostsPage?.totalElements ?? 0) > 20 && (
+            <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 16, marginTop: 20 }}>
+              <button
+                onClick={() => setAllPage((p) => p - 1)}
+                disabled={allPage === 0}
+                style={{ padding: '7px 18px', borderRadius: 8, border: `1px solid ${C.border}`, background: allPage === 0 ? '#1a2234' : C.card, color: allPage === 0 ? '#475569' : C.textSec, cursor: allPage === 0 ? 'default' : 'pointer', fontSize: 13 }}
+              >← 이전</button>
+              <span style={{ color: C.textMuted, fontSize: 13 }}>{allPage + 1}페이지</span>
+              <button
+                onClick={() => setAllPage((p) => p + 1)}
+                disabled={!(allPostsPage?.hasNext ?? false)}
+                style={{ padding: '7px 18px', borderRadius: 8, border: `1px solid ${C.border}`, background: !(allPostsPage?.hasNext) ? '#1a2234' : C.card, color: !(allPostsPage?.hasNext) ? '#475569' : C.textSec, cursor: !(allPostsPage?.hasNext) ? 'default' : 'pointer', fontSize: 13 }}
+              >다음 →</button>
+            </div>
+          )}
+        </div>
       )}
 
       {/* 자유 탭 */}
@@ -201,7 +305,7 @@ export default function BoardListPage() {
         <div>
           {reportsLoading && <p style={{ color: C.textMuted, padding: '24px 0' }}>불러오는 중...</p>}
           {!reportsLoading && (reportsPage?.content ?? []).length === 0 && (
-            <p style={{ color: C.textDim, padding: '40px 0', textAlign: 'center' }}>아직 생성된 보고서가 없습니다.</p>
+            <p style={{ color: C.textDim, padding: '40px 0', textAlign: 'center' }}>아직 팁이 없습니다.</p>
           )}
           <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
             {(reportsPage?.content ?? []).map((r) => (

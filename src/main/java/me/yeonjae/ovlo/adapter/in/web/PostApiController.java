@@ -74,13 +74,17 @@ public class PostApiController {
         this.reactToPostUseCase = reactToPostUseCase;
     }
 
-    @Operation(summary = "전체 게시글 목록 조회 (홈 피드)")
+    @Operation(summary = "게시글 목록 조회 (전체 피드 또는 작성자별)")
     @GetMapping
-    public ResponseEntity<PageResult<PostResult>> listAll(
+    public ResponseEntity<PageResult<PostResult>> list(
+            @RequestParam(required = false) Long authorId,
             @RequestParam(defaultValue = "0") @Min(0) int page,
             @RequestParam(defaultValue = "20") @Min(1) @Max(100) int size,
             @AuthenticationPrincipal Long memberId
     ) {
+        if (authorId != null) {
+            return ResponseEntity.ok(getPostQuery.listByAuthor(authorId, page, size));
+        }
         return ResponseEntity.ok(getPostQuery.listAll(page, size));
     }
 

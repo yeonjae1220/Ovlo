@@ -4,6 +4,7 @@ import me.yeonjae.ovlo.domain.board.model.BoardId;
 import me.yeonjae.ovlo.domain.member.model.MemberId;
 import me.yeonjae.ovlo.domain.post.exception.PostException;
 
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -17,6 +18,7 @@ public class Post {
     private String title;
     private String content;
     private boolean deleted;
+    private Instant createdAt;
     private final List<Comment> comments;
     private final List<Reaction> reactions;
 
@@ -54,7 +56,8 @@ public class Post {
             String content,
             boolean deleted,
             List<Comment> comments,
-            List<Reaction> reactions) {
+            List<Reaction> reactions,
+            Instant createdAt) {
 
         Post post = new Post();
         post.id = id;
@@ -63,6 +66,7 @@ public class Post {
         post.title = title;
         post.content = content;
         post.deleted = deleted;
+        post.createdAt = createdAt;
         post.comments.addAll(comments);
         post.reactions.addAll(reactions);
         return post;
@@ -159,6 +163,7 @@ public class Post {
     public String getTitle() { return title; }
     public String getContent() { return content; }
     public boolean isDeleted() { return deleted; }
+    public Instant getCreatedAt() { return createdAt; }
     public List<Comment> getComments() { return Collections.unmodifiableList(comments); }
     public List<Reaction> getReactions() { return Collections.unmodifiableList(reactions); }
 }

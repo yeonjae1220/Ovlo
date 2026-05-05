@@ -18,6 +18,14 @@ export function useAllPosts(page = 0, size = 20) {
   })
 }
 
+export function usePostsByAuthor(authorId: string | undefined, page = 0, size = 10) {
+  return useQuery({
+    queryKey: ['posts', 'author', authorId, page, size],
+    queryFn: () => postApi.listByAuthor(Number(authorId), page, size),
+    enabled: !!authorId,
+  })
+}
+
 export function usePost(id: string) {
   return useQuery({
     queryKey: ['post', id],

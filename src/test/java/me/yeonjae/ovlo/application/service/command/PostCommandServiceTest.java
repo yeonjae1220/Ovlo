@@ -21,6 +21,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -50,7 +51,7 @@ class PostCommandServiceTest {
             CreatePostCommand command = new CreatePostCommand(1L, 1L, "제목", "내용");
 
             Post saved = Post.restore(new PostId(10L), new BoardId(1L), new MemberId(1L),
-                    "제목", "내용", false, List.of(), List.of());
+                    "제목", "내용", false, List.of(), List.of(), Instant.now());
             given(savePostPort.save(any())).willReturn(saved);
 
             PostResult result = service.create(command);
@@ -71,7 +72,7 @@ class PostCommandServiceTest {
             PostId postId = new PostId(1L);
             MemberId memberId = new MemberId(2L);
             Post post = Post.restore(postId, new BoardId(1L), memberId, "제목", "내용",
-                    false, new ArrayList<>(), new ArrayList<>());
+                    false, new ArrayList<>(), new ArrayList<>(), Instant.now());
 
             given(loadPostPort.findById(postId)).willReturn(Optional.of(post));
             given(savePostPort.save(any())).willReturn(post);
@@ -103,7 +104,7 @@ class PostCommandServiceTest {
             PostId postId = new PostId(1L);
             MemberId memberId = new MemberId(1L);
             Post post = Post.restore(postId, new BoardId(1L), memberId, "제목", "내용",
-                    false, new ArrayList<>(), new ArrayList<>());
+                    false, new ArrayList<>(), new ArrayList<>(), Instant.now());
 
             given(loadPostPort.findById(postId)).willReturn(Optional.of(post));
             given(savePostPort.save(any())).willReturn(post);
@@ -137,7 +138,7 @@ class PostCommandServiceTest {
             List<Reaction> reactions = new ArrayList<>();
             reactions.add(new Reaction(memberId, ReactionType.LIKE));
             Post post = Post.restore(postId, new BoardId(1L), memberId, "제목", "내용",
-                    false, new ArrayList<>(), reactions);
+                    false, new ArrayList<>(), reactions, Instant.now());
 
             given(loadPostPort.findById(postId)).willReturn(Optional.of(post));
             given(savePostPort.save(any())).willReturn(post);
@@ -159,7 +160,7 @@ class PostCommandServiceTest {
             PostId postId = new PostId(1L);
             MemberId authorId = new MemberId(1L);
             Post post = Post.restore(postId, new BoardId(1L), authorId, "제목", "내용",
-                    false, new ArrayList<>(), new ArrayList<>());
+                    false, new ArrayList<>(), new ArrayList<>(), Instant.now());
 
             given(loadPostPort.findById(postId)).willReturn(Optional.of(post));
             given(savePostPort.save(any())).willReturn(post);
@@ -176,7 +177,7 @@ class PostCommandServiceTest {
             PostId postId = new PostId(1L);
             MemberId authorId = new MemberId(1L);
             Post post = Post.restore(postId, new BoardId(1L), authorId, "제목", "내용",
-                    false, new ArrayList<>(), new ArrayList<>());
+                    false, new ArrayList<>(), new ArrayList<>(), Instant.now());
 
             given(loadPostPort.findById(postId)).willReturn(Optional.of(post));
 

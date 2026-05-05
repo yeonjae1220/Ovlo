@@ -8,6 +8,7 @@ export interface UniversityReportSummary {
   sourceVideoCount: number
   sourceWebCount: number
   supportedLangs: string[]
+  createdAt?: string
 }
 
 export interface UniversityReportDetail {

@@ -8,6 +8,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
+import java.time.Instant;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -241,7 +242,7 @@ class PostTest {
             List<Reaction> reactions = List.of(new Reaction(member2, ReactionType.LIKE));
 
             Post post = Post.restore(
-                    new PostId(10L), boardId, authorId, "제목", "내용", false, comments, reactions);
+                    new PostId(10L), boardId, authorId, "제목", "내용", false, comments, reactions, Instant.now());
 
             assertThat(post.getId()).isEqualTo(new PostId(10L));
             assertThat(post.getComments()).hasSize(1);

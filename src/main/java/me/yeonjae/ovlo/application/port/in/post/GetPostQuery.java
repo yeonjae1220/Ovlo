@@ -10,5 +10,6 @@ public interface GetPostQuery {
     PostResult getById(PostId postId, Long requesterId);
     PageResult<PostResult> listByBoard(Long boardId, int page, int size);
     PageResult<PostResult> listAll(int page, int size);
+    PageResult<PostResult> listByAuthor(Long authorId, int page, int size);
     PageResult<CommentResult> getComments(PostId postId, int page, int size);
 }

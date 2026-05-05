@@ -1,5 +1,6 @@
 package me.yeonjae.ovlo.application.dto.result;
 
+import java.time.OffsetDateTime;
 import java.util.List;
 
 public record UniversityReportSummaryResult(
@@ -8,5 +9,6 @@ public record UniversityReportSummaryResult(
         String summary,
         int sourceVideoCount,
         int sourceWebCount,
-        List<String> supportedLangs
+        List<String> supportedLangs,
+        OffsetDateTime createdAt
 ) {}

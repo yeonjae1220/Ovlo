@@ -71,4 +71,5 @@ public class UniversityReportJpaEntity {
     public BigDecimal getAvgRating()  { return avgRating; }
     public String getAvgCostMonthly() { return avgCostMonthly; }
     public String getCostCurrency()   { return costCurrency; }
+    public OffsetDateTime getCreatedAt() { return createdAt; }
 }

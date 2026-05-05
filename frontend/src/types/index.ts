@@ -151,6 +151,7 @@ export interface Post {
   likeCount: number
   dislikeCount: number
   deleted: boolean
+  createdAt?: string
   likedByMe?: boolean
 }
 

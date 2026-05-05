@@ -21,6 +21,11 @@ export const postApi = {
       .get<PostPageResult>('/posts', { params: { page, size } })
       .then((r) => r.data),
 
+  listByAuthor: (authorId: number, page = 0, size = 20) =>
+    apiClient
+      .get<PostPageResult>('/posts', { params: { authorId, page, size } })
+      .then((r) => r.data),
+
   getById: (id: string) =>
     apiClient.get<Post>(`/posts/${id}`).then((r) => r.data),
 

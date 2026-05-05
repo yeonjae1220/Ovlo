@@ -3,6 +3,7 @@ package me.yeonjae.ovlo.application.dto.result;
 import me.yeonjae.ovlo.domain.post.model.Post;
 import me.yeonjae.ovlo.domain.post.model.ReactionType;
 
+import java.time.Instant;
 import java.util.List;
 
 public record PostResult(
@@ -16,6 +17,7 @@ public record PostResult(
         long likeCount,
         long dislikeCount,
         List<CommentResult> comments,
+        Instant createdAt,
         boolean likedByMe
 ) {
     public static PostResult from(Post post, Long requesterId) {
@@ -37,6 +39,7 @@ public record PostResult(
                 post.likeCount(),
                 post.dislikeCount(),
                 commentResults,
+                post.getCreatedAt(),
                 likedByMe
         );
     }
@@ -57,6 +60,7 @@ public record PostResult(
                 post.likeCount(),
                 post.dislikeCount(),
                 List.of(),
+                post.getCreatedAt(),
                 false
         );
     }
@@ -73,6 +77,7 @@ public record PostResult(
                 post.likeCount(),
                 post.dislikeCount(),
                 List.of(),
+                post.getCreatedAt(),
                 false
         );
     }

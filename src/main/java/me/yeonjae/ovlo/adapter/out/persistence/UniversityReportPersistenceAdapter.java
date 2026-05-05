@@ -63,7 +63,8 @@ public class UniversityReportPersistenceAdapter implements LoadUniversityReportP
                     List<String> langs = supported != null ? Arrays.asList(supported) : Collections.emptyList();
                     return new UniversityReportSummaryResult(
                             r.getId(), title, summary,
-                            r.getSourceVideoCount(), r.getSourceWebCount(), langs);
+                            r.getSourceVideoCount(), r.getSourceWebCount(), langs,
+                            r.getCreatedAt());
                 })
                 .toList();
 

@@ -74,6 +74,25 @@ public class PostQueryService implements GetPostQuery {
     }
 
     @Override
+    public PageResult<PostResult> listByAuthor(Long authorId, int page, int size) {
+        int offset = page * size;
+        List<Post> posts = loadPostPort.findByAuthorId(authorId, offset, size);
+        long total = loadPostPort.countByAuthorId(authorId);
+
+        Map<Long, String> boardNames = posts.stream()
+                .map(p -> p.getBoardId().value())
+                .distinct()
+                .flatMap(boardId -> loadBoardPort.findById(new BoardId(boardId)).stream()
+                        .map(b -> Map.entry(boardId, b.getName())))
+                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+
+        List<PostResult> content = posts.stream()
+                .map(p -> PostResult.fromSummary(p, boardNames.getOrDefault(p.getBoardId().value(), "")))
+                .toList();
+        return PageResult.of(content, total, page, size);
+    }
+
+    @Override
     public PageResult<CommentResult> getComments(PostId postId, int page, int size) {
         if (!loadPostPort.findById(postId).map(p -> !p.isDeleted()).orElse(false)) {
             throw new PostException("게시글을 찾을 수 없습니다: " + postId.value(), PostException.ErrorType.NOT_FOUND);
