@@ -74,6 +74,16 @@ public class PostApiController {
         this.reactToPostUseCase = reactToPostUseCase;
     }
 
+    @Operation(summary = "전체 게시글 목록 조회 (홈 피드)")
+    @GetMapping
+    public ResponseEntity<PageResult<PostResult>> listAll(
+            @RequestParam(defaultValue = "0") @Min(0) int page,
+            @RequestParam(defaultValue = "20") @Min(1) @Max(100) int size,
+            @AuthenticationPrincipal Long memberId
+    ) {
+        return ResponseEntity.ok(getPostQuery.listAll(page, size));
+    }
+
     @Operation(summary = "게시글 작성")
     @PostMapping
     public ResponseEntity<PostResult> create(

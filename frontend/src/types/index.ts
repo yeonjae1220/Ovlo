@@ -143,6 +143,7 @@ export interface Comment {
 export interface Post {
   id: number
   boardId: number
+  boardName?: string
   authorId: number
   title: string
   content: string

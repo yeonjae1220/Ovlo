@@ -99,8 +99,19 @@ public class PostPersistenceAdapter implements LoadPostPort, SavePostPort {
     @Override
     public List<Post> findAll(int offset, int limit) {
         PageRequest pageable = PageRequest.of(offset / limit, limit, Sort.by("id").descending());
-        return postJpaRepository.findAllByDeletedFalseAndHiddenByWithdrawalFalse(pageable).stream()
-                .map(e -> postMapper.toDomain(e, List.of(), List.of()))
+        List<PostJpaEntity> entities = postJpaRepository.findAllByDeletedFalseAndHiddenByWithdrawalFalse(pageable);
+
+        if (entities.isEmpty()) return Collections.emptyList();
+
+        List<Long> postIds = entities.stream().map(PostJpaEntity::getId).toList();
+        Map<Long, List<PostReactionJpaEntity>> reactionsByPostId = postReactionJpaRepository
+                .findByIdPostIdIn(postIds)
+                .stream()
+                .collect(Collectors.groupingBy(PostReactionJpaEntity::getPostId));
+
+        return entities.stream()
+                .map(e -> postMapper.toDomain(e, Collections.emptyList(),
+                        reactionsByPostId.getOrDefault(e.getId(), Collections.emptyList())))
                 .toList();
     }
 

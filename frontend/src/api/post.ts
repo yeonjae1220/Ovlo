@@ -1,18 +1,25 @@
 import apiClient from '../utils/axios'
 import type { Post, Comment, UpdatePostRequest, CreateCommentRequest } from '../types'
 
-interface PostPageResult {
+export interface PostPageResult {
   content: Post[]
   totalElements: number
+  totalPages: number
   page: number
   size: number
+  hasNext: boolean
 }
 
 export const postApi = {
   listByBoard: (boardId: string, page = 0, size = 20) =>
     apiClient
-      .get<PostPageResult>('/posts', { params: { boardId, page, size } })
+      .get<PostPageResult>(`/boards/${boardId}/posts`, { params: { page, size } })
       .then((r) => r.data.content),
+
+  listAll: (page = 0, size = 20) =>
+    apiClient
+      .get<PostPageResult>('/posts', { params: { page, size } })
+      .then((r) => r.data),
 
   getById: (id: string) =>
     apiClient.get<Post>(`/posts/${id}`).then((r) => r.data),

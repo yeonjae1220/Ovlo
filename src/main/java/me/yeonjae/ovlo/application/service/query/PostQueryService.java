@@ -4,14 +4,17 @@ import me.yeonjae.ovlo.application.dto.result.CommentResult;
 import me.yeonjae.ovlo.application.dto.result.PageResult;
 import me.yeonjae.ovlo.application.dto.result.PostResult;
 import me.yeonjae.ovlo.application.port.in.post.GetPostQuery;
+import me.yeonjae.ovlo.application.port.out.board.LoadBoardPort;
 import me.yeonjae.ovlo.application.port.out.post.LoadPostPort;
 import me.yeonjae.ovlo.domain.board.model.BoardId;
 import me.yeonjae.ovlo.domain.post.exception.PostException;
+import me.yeonjae.ovlo.domain.post.model.Post;
 import me.yeonjae.ovlo.domain.post.model.PostId;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
@@ -19,9 +22,11 @@ import java.util.stream.Collectors;
 public class PostQueryService implements GetPostQuery {
 
     private final LoadPostPort loadPostPort;
+    private final LoadBoardPort loadBoardPort;
 
-    public PostQueryService(LoadPostPort loadPostPort) {
+    public PostQueryService(LoadPostPort loadPostPort, LoadBoardPort loadBoardPort) {
         this.loadPostPort = loadPostPort;
+        this.loadBoardPort = loadBoardPort;
     }
 
     @Override
@@ -45,6 +50,26 @@ public class PostQueryService implements GetPostQuery {
                 .map(PostResult::fromSummary)
                 .toList();
         long total = loadPostPort.countByBoardId(id);
+        return PageResult.of(content, total, page, size);
+    }
+
+    @Override
+    public PageResult<PostResult> listAll(int page, int size) {
+        int offset = page * size;
+        List<Post> posts = loadPostPort.findAll(offset, size);
+        long total = loadPostPort.count();
+
+        // 페이지 내 distinct boardIds를 배치 조회하여 N+1 방지
+        Map<Long, String> boardNames = posts.stream()
+                .map(p -> p.getBoardId().value())
+                .distinct()
+                .flatMap(boardId -> loadBoardPort.findById(new BoardId(boardId)).stream()
+                        .map(b -> Map.entry(boardId, b.getName())))
+                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+
+        List<PostResult> content = posts.stream()
+                .map(p -> PostResult.fromSummary(p, boardNames.getOrDefault(p.getBoardId().value(), "")))
+                .toList();
         return PageResult.of(content, total, page, size);
     }
 
