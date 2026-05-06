@@ -12,6 +12,8 @@ public interface UniversityReportJpaRepository extends JpaRepository<UniversityR
 
     Optional<UniversityReportJpaEntity> findByGlobalUnivId(Long globalUnivId);
 
+    Optional<UniversityReportJpaEntity> findByExchangeUnivId(Long exchangeUnivId);
+
     @Query(value = """
             SELECT r.* FROM university_report r
             WHERE r.status = 'PUBLISHED'

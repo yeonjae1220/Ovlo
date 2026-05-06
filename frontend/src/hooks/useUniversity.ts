@@ -81,6 +81,14 @@ export function useUniversityReportByUniv(globalUnivId: number | null | undefine
   })
 }
 
+export function useUniversityReportByExchangeUniv(exchangeUnivId: number | null | undefined, lang: string) {
+  return useQuery({
+    queryKey: ['university-report-by-exchange-univ', exchangeUnivId, lang],
+    queryFn: () => universityReportApi.getByExchangeUniversity(exchangeUnivId!, lang),
+    enabled: !!exchangeUnivId,
+  })
+}
+
 export function useUniversityReportLanguages(id: number) {
   return useQuery({
     queryKey: ['university-report-langs', id],

@@ -90,6 +90,11 @@ export const universityReportApi = {
       .get<UniversityReportDetail>(`/university-reports/by-university/${globalUnivId}`, { params: { lang } })
       .then((r) => r.data),
 
+  getByExchangeUniversity: (exchangeUnivId: number, lang = 'ko') =>
+    apiClient
+      .get<UniversityReportDetail>(`/university-reports/by-exchange-university/${exchangeUnivId}`, { params: { lang } })
+      .then((r) => r.data),
+
   getLanguages: (id: number) =>
     apiClient
       .get<string[]>(`/university-reports/${id}/languages`)

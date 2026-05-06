@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { useExchangeUniversity, useExchangeUniversityReviews, useUniversityReportByUniv } from '../../hooks/useUniversity'
+import { useExchangeUniversity, useExchangeUniversityReviews, useUniversityReportByExchangeUniv } from '../../hooks/useUniversity'
 import type { VideoReview, ExchangeUniversity } from '../../types'
 
 // ── 다크 테마 색상 상수 ──────────────────────────────────────
@@ -128,7 +128,7 @@ export default function ExchangeUniversityDetailPage() {
 
   const { data: univ, isLoading: univLoading } = useExchangeUniversity(univId)
   const { data: reviewPage, isLoading: reviewLoading } = useExchangeUniversityReviews(univId, direction)
-  const { data: aiReport } = useUniversityReportByUniv(univ?.globalUnivId, reportLang)
+  const { data: aiReport } = useUniversityReportByExchangeUniv(univId || null, reportLang)
   const reviews = reviewPage?.content ?? []
 
   if (univLoading) return <div style={{ padding: 40, color: C.textMuted }}>불러오는 중...</div>

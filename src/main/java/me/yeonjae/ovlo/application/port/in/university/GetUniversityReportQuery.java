@@ -11,5 +11,6 @@ public interface GetUniversityReportQuery {
     PageResult<UniversityReportSummaryResult> getReports(String lang, String keyword, int page, int size);
     Optional<UniversityReportResult> getById(Long id, String lang);
     Optional<UniversityReportResult> getByGlobalUnivId(Long globalUnivId, String lang);
+    Optional<UniversityReportResult> getByExchangeUnivId(Long exchangeUnivId, String lang);
     List<String> getAvailableLangs(Long reportId);
 }

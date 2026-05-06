@@ -59,6 +59,17 @@ public class UniversityReportApiController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
+    @Operation(summary = "교환대학(exchangeUnivId)으로 보고서 조회")
+    @GetMapping("/by-exchange-university/{exchangeUnivId}")
+    public ResponseEntity<UniversityReportResult> getByExchangeUniversity(
+            @PathVariable Long exchangeUnivId,
+            @RequestParam(defaultValue = "ko") String lang
+    ) {
+        return query.getByExchangeUnivId(exchangeUnivId, lang)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
+    }
+
     @Operation(summary = "보고서 지원 언어 목록")
     @GetMapping("/{id}/languages")
     public ResponseEntity<List<String>> getLanguages(@PathVariable Long id) {

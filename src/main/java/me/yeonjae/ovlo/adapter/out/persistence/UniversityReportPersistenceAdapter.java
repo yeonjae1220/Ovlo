@@ -84,6 +84,12 @@ public class UniversityReportPersistenceAdapter implements LoadUniversityReportP
     }
 
     @Override
+    public Optional<UniversityReportResult> findByExchangeUnivIdAndLang(Long exchangeUnivId, String lang) {
+        return reportRepo.findByExchangeUnivId(exchangeUnivId)
+                .flatMap(r -> resolveTranslation(r, lang));
+    }
+
+    @Override
     public List<String> findLangsByReportId(Long reportId) {
         return translationRepo.findLangsByReportId(reportId);
     }

@@ -37,6 +37,11 @@ public class UniversityReportQueryService implements GetUniversityReportQuery {
     }
 
     @Override
+    public Optional<UniversityReportResult> getByExchangeUnivId(Long exchangeUnivId, String lang) {
+        return loadUniversityReportPort.findByExchangeUnivIdAndLang(exchangeUnivId, lang);
+    }
+
+    @Override
     public List<String> getAvailableLangs(Long reportId) {
         return loadUniversityReportPort.findLangsByReportId(reportId);
     }
