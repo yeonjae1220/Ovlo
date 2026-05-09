@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import ReactMarkdown from 'react-markdown'
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom'
 import { useUniversityReport, useUniversityReportLanguages } from '../../hooks/useUniversity'
 
@@ -17,13 +18,23 @@ const C = {
   activeText:  '#60a5fa',
 }
 
-const LANG_LABEL: Record<string, string> = { ko: '한국어', en: 'English' }
+const LANG_LABEL: Record<string, string> = {
+  ko: '한국어', en: 'English', ja: '日本語', zh: '中文', de: 'Deutsch', fr: 'Français', vi: 'Tiếng Việt',
+}
 
 interface ReportContent {
   costs?: { monthly_total?: string; currency?: string; rent?: string; food?: string; transport?: string }
   housing?: { dorm_available?: boolean; dorm_price?: string; dorm_type?: string }
   visa?: { type?: string; cost?: string; duration?: string; processing_days?: string }
   academics?: { difficulty?: string; workload?: string; gpa_req?: string; language_req?: string; deadline?: string }
+}
+
+/** "스트라스클라이드 대학교 교환학생 가이드" → "스트라스클라이드 대학교" */
+function stripReportSuffix(title: string) {
+  return title
+    .replace(/\s*(교환학생\s*가이드|Exchange\s*(Student\s*)?Guide|Austauschführer|Guide d'échange|Guía de intercambio|Trao đổi sinh viên|交换生指南|交換学生ガイド)\s*$/i, '')
+    .replace(/:\s*$/, '')
+    .trim()
 }
 
 function InfoCard({ icon, title, children }: { icon: string; title: string; children: React.ReactNode }) {
@@ -78,7 +89,7 @@ export default function UniversityReportDetailPage() {
       {/* 헤더 */}
       <div style={{ background: C.card, borderRadius: 12, padding: '20px 24px', marginBottom: 24, border: `1px solid ${C.border}` }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: 12 }}>
-          <h1 style={{ margin: 0, fontSize: 22, fontWeight: 800, color: C.textPrimary }}>{report.title}</h1>
+          <h1 style={{ margin: 0, fontSize: 22, fontWeight: 800, color: C.textPrimary }}>{stripReportSuffix(report.title)}</h1>
           {availableLangs.length > 1 && (
             <div style={{ display: 'flex', gap: 6 }}>
               {availableLangs.map((l) => (
@@ -184,14 +195,57 @@ export default function UniversityReportDetailPage() {
       {report.body && (
         <div style={{
           background: C.card, borderRadius: 10, padding: '20px 24px',
-          border: `1px solid ${C.border}`,
+          border: `1px solid ${C.border}`, fontSize: 14, lineHeight: 1.9,
         }}>
-          <p style={{
-            margin: 0, fontSize: 14, color: C.textSec,
-            lineHeight: 1.9, whiteSpace: 'pre-wrap', wordBreak: 'break-word',
-          }}>
+          <ReactMarkdown
+            components={{
+              h2: ({ children }) => (
+                <h2 style={{ fontSize: 16, fontWeight: 700, marginTop: 24, marginBottom: 8, color: C.textPrimary, borderBottom: `1px solid ${C.border}`, paddingBottom: 4 }}>
+                  {children}
+                </h2>
+              ),
+              h3: ({ children }) => (
+                <h3 style={{ fontSize: 15, fontWeight: 600, marginTop: 18, marginBottom: 6, color: C.textPrimary }}>
+                  {children}
+                </h3>
+              ),
+              p: ({ children }) => (
+                <p style={{ margin: '8px 0', color: C.textSec, lineHeight: 1.9 }}>
+                  {children}
+                </p>
+              ),
+              strong: ({ children }) => (
+                <strong style={{ fontWeight: 700, color: C.textPrimary }}>
+                  {children}
+                </strong>
+              ),
+              em: ({ children }) => (
+                <em style={{ fontStyle: 'italic', color: C.textSec }}>
+                  {children}
+                </em>
+              ),
+              ul: ({ children }) => (
+                <ul style={{ paddingLeft: 22, margin: '8px 0' }}>
+                  {children}
+                </ul>
+              ),
+              ol: ({ children }) => (
+                <ol style={{ paddingLeft: 22, margin: '8px 0' }}>
+                  {children}
+                </ol>
+              ),
+              li: ({ children }) => (
+                <li style={{ margin: '4px 0', color: C.textSec }}>
+                  {children}
+                </li>
+              ),
+              hr: () => (
+                <hr style={{ border: 'none', borderTop: `1px solid ${C.border}`, margin: '18px 0' }} />
+              ),
+            }}
+          >
             {report.body}
-          </p>
+          </ReactMarkdown>
         </div>
       )}
     </div>

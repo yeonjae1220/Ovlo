@@ -2,6 +2,13 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useUniversityReports } from '../../hooks/useUniversity'
 
+function stripReportSuffix(title: string) {
+  return title
+    .replace(/\s*(교환학생\s*가이드|Exchange\s*(Student\s*)?Guide|Austauschführer|Guide d'échange|Guía de intercambio|Trao đổi sinh viên|交换生指南|交換学生ガイド)\s*$/i, '')
+    .replace(/:\s*$/, '')
+    .trim()
+}
+
 const C = {
   bg:          '#242424',
   card:        '#1e2836',
@@ -16,7 +23,9 @@ const C = {
   activeText:  '#60a5fa',
 }
 
-const LANG_LABEL: Record<string, string> = { ko: '한국어', en: 'English' }
+const LANG_LABEL: Record<string, string> = {
+  ko: '한국어', en: 'English', ja: '日本語', zh: '中文', de: 'DE', fr: 'FR', vi: 'VI',
+}
 const PAGE_SIZE = 20
 
 export default function UniversityReportsPage() {
@@ -59,8 +68,8 @@ export default function UniversityReportsPage() {
           value={keyword}
           onChange={handleKeyword}
         />
-        <div style={{ display: 'flex', gap: 6 }}>
-          {['ko', 'en'].map((l) => (
+        <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+          {['ko', 'en', 'ja', 'zh', 'de', 'fr', 'vi'].map((l) => (
             <button
               key={l}
               onClick={() => handleLang(l)}
@@ -99,7 +108,7 @@ export default function UniversityReportsPage() {
             onMouseLeave={(e) => { (e.currentTarget as HTMLLIElement).style.background = 'transparent' }}
           >
             <div style={{ fontWeight: 600, fontSize: 16, color: C.textPrimary, marginBottom: 4 }}>
-              {r.title}
+              {stripReportSuffix(r.title)}
             </div>
             {r.summary && (
               <div style={{ fontSize: 14, color: C.textSec, marginBottom: 8, lineHeight: 1.6 }}>
