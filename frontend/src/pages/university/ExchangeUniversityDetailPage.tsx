@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import ReactMarkdown from 'react-markdown'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useExchangeUniversity, useExchangeUniversityReviews, useUniversityReportByExchangeUniv } from '../../hooks/useUniversity'
 import type { VideoReview, ExchangeUniversity } from '../../types'
@@ -180,7 +181,7 @@ export default function ExchangeUniversityDetailPage() {
           <div style={{ padding: '14px 20px', background: C.cardHeader, borderBottom: `1px solid ${C.border}`, display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 8 }}>
             <span style={{ fontSize: 14, fontWeight: 700, color: C.textPrimary }}>✦ AI 종합 보고서</span>
             <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
-              {['ko', 'en'].map(l => (
+              {['ko', 'en', 'ja', 'zh', 'de', 'fr', 'vi'].map(l => (
                 <button key={l} onClick={() => setReportLang(l)} style={{
                   padding: '3px 10px', borderRadius: 12, fontSize: 12, cursor: 'pointer',
                   border: reportLang === l ? `2px solid ${C.activeBorder}` : `1px solid ${C.borderLight}`,
@@ -188,7 +189,7 @@ export default function ExchangeUniversityDetailPage() {
                   color: reportLang === l ? C.activeText : C.textMuted,
                   fontWeight: reportLang === l ? 700 : 400,
                 }}>
-                  {l === 'ko' ? '한국어' : 'English'}
+                  {l.toUpperCase()}
                 </button>
               ))}
               <button onClick={() => navigate(`/university-reports/${aiReport.id}?lang=${reportLang}`)} style={{
@@ -247,7 +248,66 @@ export default function ExchangeUniversityDetailPage() {
                 </div>
               )
             })()}
-            <div style={{ fontSize: 11, color: C.textDim }}>* AI가 영상 후기를 요약한 가이드입니다. 정확하지 않을 수 있습니다.</div>
+            {/* 전체 보고서 본문 (마크다운 렌더링) */}
+            {aiReport.body && (
+              <details style={{ marginTop: 12 }}>
+                <summary style={{ cursor: 'pointer', fontSize: 13, color: C.textMuted, padding: '6px 0', userSelect: 'none' }}>
+                  ▼ 전체 보고서 보기
+                </summary>
+                <div style={{ marginTop: 10, fontSize: 13, color: C.textSec, lineHeight: 1.9, borderTop: `1px solid ${C.border}`, paddingTop: 10 }}>
+                  <ReactMarkdown
+                    components={{
+                      h2: ({ children }) => (
+                        <h2 style={{ fontSize: 15, fontWeight: 700, marginTop: 20, marginBottom: 6, color: C.textPrimary, borderBottom: `1px solid ${C.border}`, paddingBottom: 4 }}>
+                          {children}
+                        </h2>
+                      ),
+                      h3: ({ children }) => (
+                        <h3 style={{ fontSize: 14, fontWeight: 600, marginTop: 14, marginBottom: 4, color: C.textPrimary }}>
+                          {children}
+                        </h3>
+                      ),
+                      p: ({ children }) => (
+                        <p style={{ margin: '6px 0', color: C.textSec, lineHeight: 1.9 }}>
+                          {children}
+                        </p>
+                      ),
+                      strong: ({ children }) => (
+                        <strong style={{ fontWeight: 700, color: C.textPrimary }}>
+                          {children}
+                        </strong>
+                      ),
+                      em: ({ children }) => (
+                        <em style={{ fontStyle: 'italic', color: C.textSec }}>
+                          {children}
+                        </em>
+                      ),
+                      ul: ({ children }) => (
+                        <ul style={{ paddingLeft: 20, margin: '6px 0' }}>
+                          {children}
+                        </ul>
+                      ),
+                      ol: ({ children }) => (
+                        <ol style={{ paddingLeft: 20, margin: '6px 0' }}>
+                          {children}
+                        </ol>
+                      ),
+                      li: ({ children }) => (
+                        <li style={{ margin: '3px 0', color: C.textSec }}>
+                          {children}
+                        </li>
+                      ),
+                      hr: () => (
+                        <hr style={{ border: 'none', borderTop: `1px solid ${C.border}`, margin: '14px 0' }} />
+                      ),
+                    }}
+                  >
+                    {aiReport.body}
+                  </ReactMarkdown>
+                </div>
+              </details>
+            )}
+            <div style={{ fontSize: 11, color: C.textDim, marginTop: 10 }}>* AI가 영상 후기를 요약한 가이드입니다. 정확하지 않을 수 있습니다.</div>
           </div>
         </div>
       )}
