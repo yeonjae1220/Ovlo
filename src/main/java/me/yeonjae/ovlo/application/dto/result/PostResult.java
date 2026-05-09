@@ -3,11 +3,13 @@ package me.yeonjae.ovlo.application.dto.result;
 import me.yeonjae.ovlo.domain.post.model.Post;
 import me.yeonjae.ovlo.domain.post.model.ReactionType;
 
+import java.time.Instant;
 import java.util.List;
 
 public record PostResult(
         Long id,
         Long boardId,
+        String boardName,
         Long authorId,
         String title,
         String content,
@@ -15,6 +17,7 @@ public record PostResult(
         long likeCount,
         long dislikeCount,
         List<CommentResult> comments,
+        Instant createdAt,
         boolean likedByMe
 ) {
     public static PostResult from(Post post, Long requesterId) {
@@ -28,6 +31,7 @@ public record PostResult(
         return new PostResult(
                 post.getId() != null ? post.getId().value() : null,
                 post.getBoardId().value(),
+                null,
                 post.getAuthorId().value(),
                 post.getTitle(),
                 post.getContent(),
@@ -35,6 +39,7 @@ public record PostResult(
                 post.likeCount(),
                 post.dislikeCount(),
                 commentResults,
+                post.getCreatedAt(),
                 likedByMe
         );
     }
@@ -44,10 +49,10 @@ public record PostResult(
     }
 
     public static PostResult fromSummary(Post post) {
-        boolean likedByMe = false;
         return new PostResult(
                 post.getId() != null ? post.getId().value() : null,
                 post.getBoardId().value(),
+                null,
                 post.getAuthorId().value(),
                 post.getTitle(),
                 post.getContent(),
@@ -55,7 +60,25 @@ public record PostResult(
                 post.likeCount(),
                 post.dislikeCount(),
                 List.of(),
-                likedByMe
+                post.getCreatedAt(),
+                false
+        );
+    }
+
+    public static PostResult fromSummary(Post post, String boardName) {
+        return new PostResult(
+                post.getId() != null ? post.getId().value() : null,
+                post.getBoardId().value(),
+                boardName,
+                post.getAuthorId().value(),
+                post.getTitle(),
+                post.getContent(),
+                post.isDeleted(),
+                post.likeCount(),
+                post.dislikeCount(),
+                List.of(),
+                post.getCreatedAt(),
+                false
         );
     }
 }

@@ -72,7 +72,8 @@ public class PostMapper {
                 entity.getContent(),
                 entity.isDeleted(),
                 domainComments,
-                domainReactions
+                domainReactions,
+                entity.getCreatedAt()
         );
     }
 }

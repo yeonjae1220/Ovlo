@@ -14,6 +14,8 @@ public interface PostJpaRepository extends JpaRepository<PostJpaEntity, Long> {
     long countByBoardIdAndDeletedFalseAndHiddenByWithdrawalFalse(Long boardId);
     List<PostJpaEntity> findAllByDeletedFalseAndHiddenByWithdrawalFalse(Pageable pageable);
     long countByDeletedFalseAndHiddenByWithdrawalFalse();
+    List<PostJpaEntity> findByAuthorIdAndDeletedFalseAndHiddenByWithdrawalFalse(Long authorId, Pageable pageable);
+    long countByAuthorIdAndDeletedFalseAndHiddenByWithdrawalFalse(Long authorId);
 
     @Modifying
     @Query("UPDATE PostJpaEntity p SET p.hiddenByWithdrawal = true WHERE p.authorId = :authorId")

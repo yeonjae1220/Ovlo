@@ -1,13 +1,12 @@
 package me.yeonjae.ovlo.adapter.out.persistence.entity;
 
 import jakarta.persistence.*;
-import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.UpdateTimestamp;
+import org.hibernate.annotations.Array;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 
 import java.math.BigDecimal;
-import java.time.Instant;
+import java.time.OffsetDateTime;
 
 @Entity
 @Table(name = "university_report")
@@ -22,7 +21,7 @@ public class UniversityReportJpaEntity {
     @Column(name = "exchange_univ_id")
     private Long exchangeUnivId;
 
-    @Column(nullable = false, length = 20)
+    @Column(name = "status", nullable = false)
     private String status;
 
     @Column(name = "source_video_count", nullable = false)
@@ -31,60 +30,46 @@ public class UniversityReportJpaEntity {
     @Column(name = "source_web_count", nullable = false)
     private int sourceWebCount;
 
+    @Column(name = "source_video_ids", columnDefinition = "bigint[]")
+    @JdbcTypeCode(SqlTypes.ARRAY)
+    @Array(length = 500)
+    private Long[] sourceVideoIds;
+
     @Column(name = "avg_rating", precision = 3, scale = 2)
     private BigDecimal avgRating;
 
-    @Column(name = "recommend_ratio", precision = 3, scale = 2)
-    private BigDecimal recommendRatio;
+    @Column(name = "avg_cost_monthly")
+    private String avgCostMonthly;
 
-    @Column(name = "avg_difficulty", precision = 3, scale = 2)
-    private BigDecimal avgDifficulty;
-
-    @Column(name = "cost_currency", length = 20)
+    @Column(name = "cost_currency")
     private String costCurrency;
 
-    @JdbcTypeCode(SqlTypes.JSON)
     @Column(name = "aggregate_stats", columnDefinition = "jsonb")
+    @JdbcTypeCode(SqlTypes.JSON)
     private String aggregateStats;
 
-    @JdbcTypeCode(SqlTypes.ARRAY)
     @Column(name = "supported_langs", columnDefinition = "text[]")
+    @JdbcTypeCode(SqlTypes.ARRAY)
+    @Array(length = 20)
     private String[] supportedLangs;
 
-    @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)
-    private Instant createdAt;
+    private OffsetDateTime createdAt;
 
-    @UpdateTimestamp
     @Column(name = "updated_at", nullable = false)
-    private Instant updatedAt;
+    private OffsetDateTime updatedAt;
 
     public UniversityReportJpaEntity() {}
 
-    public Long getId() { return id; }
-    public void setId(Long id) { this.id = id; }
-    public Long getGlobalUnivId() { return globalUnivId; }
-    public void setGlobalUnivId(Long globalUnivId) { this.globalUnivId = globalUnivId; }
-    public Long getExchangeUnivId() { return exchangeUnivId; }
-    public void setExchangeUnivId(Long exchangeUnivId) { this.exchangeUnivId = exchangeUnivId; }
-    public String getStatus() { return status; }
-    public void setStatus(String status) { this.status = status; }
-    public int getSourceVideoCount() { return sourceVideoCount; }
-    public void setSourceVideoCount(int sourceVideoCount) { this.sourceVideoCount = sourceVideoCount; }
-    public int getSourceWebCount() { return sourceWebCount; }
-    public void setSourceWebCount(int sourceWebCount) { this.sourceWebCount = sourceWebCount; }
-    public BigDecimal getAvgRating() { return avgRating; }
-    public void setAvgRating(BigDecimal avgRating) { this.avgRating = avgRating; }
-    public BigDecimal getRecommendRatio() { return recommendRatio; }
-    public void setRecommendRatio(BigDecimal recommendRatio) { this.recommendRatio = recommendRatio; }
-    public BigDecimal getAvgDifficulty() { return avgDifficulty; }
-    public void setAvgDifficulty(BigDecimal avgDifficulty) { this.avgDifficulty = avgDifficulty; }
-    public String getCostCurrency() { return costCurrency; }
-    public void setCostCurrency(String costCurrency) { this.costCurrency = costCurrency; }
-    public String getAggregateStats() { return aggregateStats; }
-    public void setAggregateStats(String aggregateStats) { this.aggregateStats = aggregateStats; }
-    public String[] getSupportedLangs() { return supportedLangs; }
-    public void setSupportedLangs(String[] supportedLangs) { this.supportedLangs = supportedLangs; }
-    public Instant getCreatedAt() { return createdAt; }
-    public Instant getUpdatedAt() { return updatedAt; }
+    public Long getId()               { return id; }
+    public Long getGlobalUnivId()     { return globalUnivId; }
+    public Long getExchangeUnivId()   { return exchangeUnivId; }
+    public String getStatus()         { return status; }
+    public int getSourceVideoCount()  { return sourceVideoCount; }
+    public int getSourceWebCount()    { return sourceWebCount; }
+    public String[] getSupportedLangs(){ return supportedLangs; }
+    public BigDecimal getAvgRating()  { return avgRating; }
+    public String getAvgCostMonthly() { return avgCostMonthly; }
+    public String getCostCurrency()   { return costCurrency; }
+    public OffsetDateTime getCreatedAt() { return createdAt; }
 }

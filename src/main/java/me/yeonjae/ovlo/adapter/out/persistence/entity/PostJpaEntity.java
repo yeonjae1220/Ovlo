@@ -27,4 +27,5 @@ public class PostJpaEntity {
     public boolean isDeleted() { return deleted; } public void setDeleted(boolean deleted) { this.deleted = deleted; }
     public boolean isHiddenByWithdrawal() { return hiddenByWithdrawal; } public void setHiddenByWithdrawal(boolean hiddenByWithdrawal) { this.hiddenByWithdrawal = hiddenByWithdrawal; }
     public Long getVersion() { return version; } public void setVersion(Long version) { this.version = version; }
+    public Instant getCreatedAt() { return createdAt; }
 }

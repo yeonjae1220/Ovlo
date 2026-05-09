@@ -16,4 +16,6 @@ public interface LoadPostPort {
     long countCommentsByPostId(PostId postId);
     List<Post> findAll(int offset, int limit);
     long count();
+    List<Post> findByAuthorId(Long authorId, int offset, int limit);
+    long countByAuthorId(Long authorId);
 }

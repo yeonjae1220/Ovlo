@@ -20,6 +20,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 
@@ -43,7 +44,7 @@ class PostQueryServiceTest {
     @BeforeEach
     void setUp() {
         activePost = Post.restore(new PostId(1L), new BoardId(1L), new MemberId(1L),
-                "제목", "내용", false, List.of(), List.of());
+                "제목", "내용", false, List.of(), List.of(), Instant.now());
     }
 
     @Nested
@@ -157,7 +158,7 @@ class PostQueryServiceTest {
         void shouldThrow_whenPostDeleted() {
             PostId postId = new PostId(1L);
             Post deletedPost = Post.restore(postId, new BoardId(1L), new MemberId(1L),
-                    "제목", "내용", true, List.of(), List.of());
+                    "제목", "내용", true, List.of(), List.of(), Instant.now());
             given(loadPostPort.findById(postId)).willReturn(Optional.of(deletedPost));
 
             assertThatThrownBy(() -> service.getComments(postId, 0, 10))

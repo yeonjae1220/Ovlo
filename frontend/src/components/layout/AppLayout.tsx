@@ -4,7 +4,6 @@ import { useBreakpoint } from '../../hooks/useBreakpoint'
 
 const NAV_ITEMS = [
   { to: '/boards', label: '홈' },
-  { to: '/search', label: '검색' },
   { to: '/exchange-universities', label: '교환대학' },
   { to: '/chat', label: '채팅' },
 ]

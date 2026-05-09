@@ -1,9 +1,6 @@
 import { useState } from 'react'
-import React from 'react'
-import ReactMarkdown from 'react-markdown'
 import { useParams, useNavigate } from 'react-router-dom'
-import { useExchangeUniversity, useExchangeUniversityReviews } from '../../hooks/useUniversity'
-import { useUniversityReportByUniv } from '../../hooks/useUniversityReport'
+import { useExchangeUniversity, useExchangeUniversityReviews, useUniversityReportByExchangeUniv } from '../../hooks/useUniversity'
 import type { VideoReview, ExchangeUniversity } from '../../types'
 
 // ── 다크 테마 색상 상수 ──────────────────────────────────────
@@ -127,12 +124,11 @@ export default function ExchangeUniversityDetailPage() {
   const navigate = useNavigate()
   const univId = Number(id)
   const [direction, setDirection] = useState<string | undefined>(undefined)
-
   const [reportLang, setReportLang] = useState('ko')
 
   const { data: univ, isLoading: univLoading } = useExchangeUniversity(univId)
   const { data: reviewPage, isLoading: reviewLoading } = useExchangeUniversityReviews(univId, direction)
-  const { data: report } = useUniversityReportByUniv(univ?.globalUnivId ?? null, reportLang)
+  const { data: aiReport } = useUniversityReportByExchangeUniv(univId || null, reportLang)
   const reviews = reviewPage?.content ?? []
 
   if (univLoading) return <div style={{ padding: 40, color: C.textMuted }}>불러오는 중...</div>
@@ -179,146 +175,80 @@ export default function ExchangeUniversityDetailPage() {
       </div>
 
       {/* AI 종합 보고서 */}
-      {univ?.globalUnivId && (
-        <div style={{ background: C.card, borderRadius: 12, border: `1px solid ${C.border}`, marginBottom: 28, overflow: 'hidden' }}>
-          {/* 보고서 헤더 */}
-          <div style={{ padding: '16px 20px', borderBottom: `1px solid ${C.border}`, display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 8 }}>
-            <div>
-              <span style={{ fontSize: 11, fontWeight: 700, color: '#60a5fa', textTransform: 'uppercase', letterSpacing: 1 }}>✦ AI 종합 보고서</span>
-              {report && <div style={{ fontSize: 15, fontWeight: 700, color: C.textPrimary, marginTop: 2 }}>{report.title}</div>}
-            </div>
-            <div style={{ display: 'flex', gap: 6 }}>
-              {['ko', 'en', 'ja', 'zh', 'de', 'fr', 'vi'].map(l => (
-                <button key={l} onClick={() => setReportLang(l)}
-                  style={{
-                    padding: '4px 12px', borderRadius: 16, fontSize: 12, cursor: 'pointer',
-                    border: reportLang === l ? `2px solid ${C.activeBorder}` : `1px solid ${C.borderLight}`,
-                    background: reportLang === l ? C.activeBg : 'transparent',
-                    color: reportLang === l ? C.activeText : C.textMuted,
-                    fontWeight: reportLang === l ? 700 : 400,
-                  }}>{l.toUpperCase()}</button>
+      {aiReport && (
+        <div style={{ background: C.card, borderRadius: 12, marginBottom: 24, border: `1px solid ${C.border}`, overflow: 'hidden' }}>
+          <div style={{ padding: '14px 20px', background: C.cardHeader, borderBottom: `1px solid ${C.border}`, display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 8 }}>
+            <span style={{ fontSize: 14, fontWeight: 700, color: C.textPrimary }}>✦ AI 종합 보고서</span>
+            <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
+              {['ko', 'en'].map(l => (
+                <button key={l} onClick={() => setReportLang(l)} style={{
+                  padding: '3px 10px', borderRadius: 12, fontSize: 12, cursor: 'pointer',
+                  border: reportLang === l ? `2px solid ${C.activeBorder}` : `1px solid ${C.borderLight}`,
+                  background: reportLang === l ? C.activeBg : 'transparent',
+                  color: reportLang === l ? C.activeText : C.textMuted,
+                  fontWeight: reportLang === l ? 700 : 400,
+                }}>
+                  {l === 'ko' ? '한국어' : 'English'}
+                </button>
               ))}
+              <button onClick={() => navigate(`/university-reports/${aiReport.id}?lang=${reportLang}`)} style={{
+                padding: '3px 10px', borderRadius: 12, fontSize: 12, cursor: 'pointer',
+                border: `1px solid ${C.borderLight}`, background: 'transparent', color: C.activeText,
+              }}>
+                전체 보기 →
+              </button>
             </div>
           </div>
-
-          {!report ? (
-            <div style={{ padding: '20px', color: C.textMuted, fontSize: 14 }}>보고서를 불러오는 중...</div>
-          ) : (
-            <div style={{ padding: '16px 20px' }}>
-              {/* 요약 */}
-              {report.summary && (
-                <p style={{ margin: '0 0 16px', fontSize: 14, color: C.textSec, lineHeight: 1.8 }}>
-                  {report.summary}
-                </p>
-              )}
-
-              {/* 핵심 정보 카드 */}
-              {report.content && (() => {
-                try {
-                  const c = typeof report.content === 'string' ? JSON.parse(report.content) : report.content
-                  return (
-                    <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
-                      {c.costs && (
-                        <div style={{ flex: 1, minWidth: 160, background: C.bg, borderRadius: 8, padding: '12px 14px', border: `1px solid ${C.border}` }}>
-                          <div style={{ fontSize: 11, fontWeight: 700, color: C.textDim, textTransform: 'uppercase', marginBottom: 6 }}>💰 생활비</div>
-                          <div style={{ fontSize: 13, color: C.textSec, fontWeight: 600 }}>{c.costs.monthly_total ?? '-'}</div>
-                          {c.costs.currency && <div style={{ fontSize: 11, color: C.textMuted, marginTop: 2 }}>{c.costs.currency}</div>}
-                        </div>
-                      )}
-                      {c.housing && (
-                        <div style={{ flex: 1, minWidth: 160, background: C.bg, borderRadius: 8, padding: '12px 14px', border: `1px solid ${C.border}` }}>
-                          <div style={{ fontSize: 11, fontWeight: 700, color: C.textDim, textTransform: 'uppercase', marginBottom: 6 }}>🏠 기숙사</div>
-                          <div style={{ fontSize: 13, color: c.housing.dorm_available ? '#4ade80' : '#f87171', fontWeight: 600 }}>
-                            {c.housing.dorm_available ? '입사 가능' : '입사 불가'}
-                          </div>
-                          {c.housing.dorm_price && <div style={{ fontSize: 11, color: C.textMuted, marginTop: 2 }}>{c.housing.dorm_price}</div>}
-                        </div>
-                      )}
-                      {c.visa && (
-                        <div style={{ flex: 1, minWidth: 160, background: C.bg, borderRadius: 8, padding: '12px 14px', border: `1px solid ${C.border}` }}>
-                          <div style={{ fontSize: 11, fontWeight: 700, color: C.textDim, textTransform: 'uppercase', marginBottom: 6 }}>🛂 비자</div>
-                          <div style={{ fontSize: 13, color: C.textSec, fontWeight: 600 }}>{c.visa.type ?? '-'}</div>
-                          {c.visa.cost && <div style={{ fontSize: 11, color: C.textMuted, marginTop: 2 }}>비용 {c.visa.cost}</div>}
-                        </div>
-                      )}
-                      {c.academics && (
-                        <div style={{ flex: 1, minWidth: 160, background: C.bg, borderRadius: 8, padding: '12px 14px', border: `1px solid ${C.border}` }}>
-                          <div style={{ fontSize: 11, fontWeight: 700, color: C.textDim, textTransform: 'uppercase', marginBottom: 6 }}>📚 학업</div>
-                          <div style={{ fontSize: 13, color: C.textSec, lineHeight: 1.5, overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical' } as React.CSSProperties}>
-                            {c.academics.overview ?? '-'}
-                          </div>
-                        </div>
-                      )}
+          <div style={{ padding: '16px 20px' }}>
+            {aiReport.summary && (
+              <p style={{ margin: '0 0 14px', fontSize: 14, color: C.textSec, lineHeight: 1.8 }}>{aiReport.summary}</p>
+            )}
+            {(() => {
+              let parsed: { costs?: { monthly_total?: string; currency?: string; rent?: string }; housing?: { dorm_available?: boolean; dorm_price?: string; dorm_type?: string }; visa?: { type?: string; cost?: string; processing_days?: string }; academics?: { difficulty?: string; gpa_req?: string; language_req?: string } } | null = null
+              if (aiReport.content) {
+                try { parsed = typeof aiReport.content === 'string' ? JSON.parse(aiReport.content) : aiReport.content } catch { /* ignore */ }
+              }
+              if (!parsed) return null
+              return (
+                <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', marginBottom: 10 }}>
+                  {parsed.costs && (
+                    <div style={{ flex: 1, minWidth: 130, background: C.bg, borderRadius: 8, padding: '10px 12px', border: `1px solid ${C.border}` }}>
+                      <div style={{ fontSize: 10, fontWeight: 700, color: C.textDim, textTransform: 'uppercase', marginBottom: 4 }}>💰 생활비</div>
+                      <div style={{ fontSize: 13, color: C.textSec, fontWeight: 600 }}>{parsed.costs.monthly_total ?? '-'}</div>
+                      {parsed.costs.currency && <div style={{ fontSize: 11, color: C.textMuted }}>{parsed.costs.currency}</div>}
+                      {parsed.costs.rent && <div style={{ fontSize: 11, color: C.textMuted }}>월세 {parsed.costs.rent}</div>}
                     </div>
-                  )
-                } catch { return null }
-              })()}
-
-              {/* 전체 보고서 펼치기 */}
-              {report.body && (
-                <details style={{ marginTop: 16 }}>
-                  <summary style={{ cursor: 'pointer', fontSize: 13, color: C.textMuted, padding: '8px 0', userSelect: 'none' }}>
-                    ▼ 전체 보고서 보기
-                  </summary>
-                  <div style={{ marginTop: 12, fontSize: 13, color: C.textSec, lineHeight: 1.9, borderTop: `1px solid ${C.border}`, paddingTop: 12 }}>
-                    <ReactMarkdown
-                      components={{
-                        h2: ({ children }) => (
-                          <h2 style={{ fontSize: 15, fontWeight: 700, marginTop: 20, marginBottom: 6, color: C.textPrimary, borderBottom: `1px solid ${C.border}`, paddingBottom: 4 }}>
-                            {children}
-                          </h2>
-                        ),
-                        h3: ({ children }) => (
-                          <h3 style={{ fontSize: 14, fontWeight: 600, marginTop: 14, marginBottom: 4, color: C.textPrimary }}>
-                            {children}
-                          </h3>
-                        ),
-                        p: ({ children }) => (
-                          <p style={{ margin: '6px 0', color: C.textSec, lineHeight: 1.9 }}>
-                            {children}
-                          </p>
-                        ),
-                        strong: ({ children }) => (
-                          <strong style={{ fontWeight: 700, color: C.textPrimary }}>
-                            {children}
-                          </strong>
-                        ),
-                        em: ({ children }) => (
-                          <em style={{ fontStyle: 'italic', color: C.textSec }}>
-                            {children}
-                          </em>
-                        ),
-                        ul: ({ children }) => (
-                          <ul style={{ paddingLeft: 20, margin: '6px 0' }}>
-                            {children}
-                          </ul>
-                        ),
-                        ol: ({ children }) => (
-                          <ol style={{ paddingLeft: 20, margin: '6px 0' }}>
-                            {children}
-                          </ol>
-                        ),
-                        li: ({ children }) => (
-                          <li style={{ margin: '3px 0', color: C.textSec }}>
-                            {children}
-                          </li>
-                        ),
-                        hr: () => (
-                          <hr style={{ border: 'none', borderTop: `1px solid ${C.border}`, margin: '16px 0' }} />
-                        ),
-                      }}
-                    >
-                      {report.body}
-                    </ReactMarkdown>
-                  </div>
-                </details>
-              )}
-
-              <div style={{ marginTop: 12, fontSize: 11, color: C.textDim }}>
-                영상 {report.sourceVideoCount}개 분석 · AI 생성 보고서
-              </div>
-            </div>
-          )}
+                  )}
+                  {parsed.housing && (
+                    <div style={{ flex: 1, minWidth: 130, background: C.bg, borderRadius: 8, padding: '10px 12px', border: `1px solid ${C.border}` }}>
+                      <div style={{ fontSize: 10, fontWeight: 700, color: C.textDim, textTransform: 'uppercase', marginBottom: 4 }}>🏠 기숙사</div>
+                      <div style={{ fontSize: 13, fontWeight: 600, color: parsed.housing.dorm_available ? '#4ade80' : '#f87171' }}>
+                        {parsed.housing.dorm_available ? '입사 가능' : '입사 불가'}
+                      </div>
+                      {parsed.housing.dorm_price && <div style={{ fontSize: 11, color: C.textMuted }}>{parsed.housing.dorm_price}</div>}
+                    </div>
+                  )}
+                  {parsed.visa && (
+                    <div style={{ flex: 1, minWidth: 130, background: C.bg, borderRadius: 8, padding: '10px 12px', border: `1px solid ${C.border}` }}>
+                      <div style={{ fontSize: 10, fontWeight: 700, color: C.textDim, textTransform: 'uppercase', marginBottom: 4 }}>🛂 비자</div>
+                      <div style={{ fontSize: 13, color: C.textSec, fontWeight: 600 }}>{parsed.visa.type ?? '-'}</div>
+                      {parsed.visa.cost && <div style={{ fontSize: 11, color: C.textMuted }}>비용 {parsed.visa.cost}</div>}
+                      {parsed.visa.processing_days && <div style={{ fontSize: 11, color: C.textMuted }}>처리 {parsed.visa.processing_days}</div>}
+                    </div>
+                  )}
+                  {parsed.academics && (
+                    <div style={{ flex: 1, minWidth: 130, background: C.bg, borderRadius: 8, padding: '10px 12px', border: `1px solid ${C.border}` }}>
+                      <div style={{ fontSize: 10, fontWeight: 700, color: C.textDim, textTransform: 'uppercase', marginBottom: 4 }}>📚 학업</div>
+                      {parsed.academics.difficulty && <div style={{ fontSize: 12, color: C.textSec }}>난이도 {parsed.academics.difficulty}</div>}
+                      {parsed.academics.gpa_req && <div style={{ fontSize: 12, color: C.textSec }}>GPA {parsed.academics.gpa_req}</div>}
+                      {parsed.academics.language_req && <div style={{ fontSize: 12, color: C.textSec }}>어학 {parsed.academics.language_req}</div>}
+                    </div>
+                  )}
+                </div>
+              )
+            })()}
+            <div style={{ fontSize: 11, color: C.textDim }}>* AI가 영상 후기를 요약한 가이드입니다. 정확하지 않을 수 있습니다.</div>
+          </div>
         </div>
       )}
 

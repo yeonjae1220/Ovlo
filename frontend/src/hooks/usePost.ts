@@ -2,11 +2,27 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { postApi } from '../api/post'
 import type { CreatePostRequest, UpdatePostRequest, CreateCommentRequest, ReactionType } from '../types'
 
+
 export function usePosts(boardId: string) {
   return useQuery({
     queryKey: ['posts', boardId],
     queryFn: () => postApi.listByBoard(boardId),
     enabled: !!boardId,
+  })
+}
+
+export function useAllPosts(page = 0, size = 20) {
+  return useQuery({
+    queryKey: ['posts', 'all', page, size],
+    queryFn: () => postApi.listAll(page, size),
+  })
+}
+
+export function usePostsByAuthor(authorId: string | undefined, page = 0, size = 10) {
+  return useQuery({
+    queryKey: ['posts', 'author', authorId, page, size],
+    queryFn: () => postApi.listByAuthor(Number(authorId), page, size),
+    enabled: !!authorId,
   })
 }
 
@@ -22,8 +38,10 @@ export function useCreatePost() {
   const queryClient = useQueryClient()
   return useMutation({
     mutationFn: (req: CreatePostRequest) => postApi.create(req),
-    onSuccess: (post) =>
-      queryClient.invalidateQueries({ queryKey: ['posts', String(post.boardId)] }),
+    onSuccess: (post) => {
+      queryClient.invalidateQueries({ queryKey: ['posts', String(post.boardId)] })
+      queryClient.invalidateQueries({ queryKey: ['posts', 'all'] })
+    },
   })
 }
 

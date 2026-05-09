@@ -14,7 +14,7 @@ CREATE TABLE university_report (
     avg_difficulty      NUMERIC(3,2),
     avg_cost_monthly    VARCHAR(100),
     cost_currency       VARCHAR(20),
-    aggregate_stats     JSONB,
+    aggregate_stats     JSONB,          -- 집계 통계 (비용 분포, 평점 분포, 태그 빈도 등)
     supported_langs     TEXT[]       NOT NULL DEFAULT '{ko}',
     created_at          TIMESTAMPTZ  NOT NULL DEFAULT now(),
     updated_at          TIMESTAMPTZ  NOT NULL DEFAULT now(),
@@ -23,22 +23,24 @@ CREATE TABLE university_report (
 
 CREATE TABLE university_report_translation (
     report_id   BIGINT       NOT NULL REFERENCES university_report(id) ON DELETE CASCADE,
-    lang        VARCHAR(5)   NOT NULL,
+    lang        VARCHAR(5)   NOT NULL,  -- 'ko', 'en', 'ja', 'zh', 'de', 'fr', 'es', ...
     title       TEXT         NOT NULL,
-    summary     TEXT,
-    body        TEXT         NOT NULL,
-    content     JSONB        NOT NULL DEFAULT '{}',
+    summary     TEXT,                   -- 200자 내외 한줄 요약
+    body        TEXT         NOT NULL,  -- 500자 이상 마크다운 형식 상세 분석 글
+    content     JSONB        NOT NULL DEFAULT '{}', -- exchange_info 구조화 데이터
     created_at  TIMESTAMPTZ  NOT NULL DEFAULT now(),
     updated_at  TIMESTAMPTZ  NOT NULL DEFAULT now(),
     PRIMARY KEY (report_id, lang)
 );
 
+-- 인덱스
 CREATE INDEX idx_ur_global_univ   ON university_report(global_univ_id);
 CREATE INDEX idx_ur_exchange_univ ON university_report(exchange_univ_id);
 CREATE INDEX idx_ur_status        ON university_report(status);
 CREATE INDEX idx_urt_lang         ON university_report_translation(lang);
 CREATE INDEX idx_urt_report_lang  ON university_report_translation(report_id, lang);
 
+-- updated_at 자동 갱신 트리거
 CREATE TRIGGER trg_ur_updated_at
     BEFORE UPDATE ON university_report
     FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
