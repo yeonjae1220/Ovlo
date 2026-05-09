@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import React from 'react'
+import ReactMarkdown from 'react-markdown'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useExchangeUniversity, useExchangeUniversityReviews } from '../../hooks/useUniversity'
 import { useUniversityReportByUniv } from '../../hooks/useUniversityReport'
@@ -187,7 +188,7 @@ export default function ExchangeUniversityDetailPage() {
               {report && <div style={{ fontSize: 15, fontWeight: 700, color: C.textPrimary, marginTop: 2 }}>{report.title}</div>}
             </div>
             <div style={{ display: 'flex', gap: 6 }}>
-              {['ko', 'en'].map(l => (
+              {['ko', 'en', 'ja', 'zh', 'de', 'fr', 'vi'].map(l => (
                 <button key={l} onClick={() => setReportLang(l)}
                   style={{
                     padding: '4px 12px', borderRadius: 16, fontSize: 12, cursor: 'pointer',
@@ -259,8 +260,56 @@ export default function ExchangeUniversityDetailPage() {
                   <summary style={{ cursor: 'pointer', fontSize: 13, color: C.textMuted, padding: '8px 0', userSelect: 'none' }}>
                     ▼ 전체 보고서 보기
                   </summary>
-                  <div style={{ marginTop: 12, fontSize: 13, color: C.textSec, lineHeight: 1.9, whiteSpace: 'pre-wrap', borderTop: `1px solid ${C.border}`, paddingTop: 12 }}>
-                    {report.body}
+                  <div style={{ marginTop: 12, fontSize: 13, color: C.textSec, lineHeight: 1.9, borderTop: `1px solid ${C.border}`, paddingTop: 12 }}>
+                    <ReactMarkdown
+                      components={{
+                        h2: ({ children }) => (
+                          <h2 style={{ fontSize: 15, fontWeight: 700, marginTop: 20, marginBottom: 6, color: C.textPrimary, borderBottom: `1px solid ${C.border}`, paddingBottom: 4 }}>
+                            {children}
+                          </h2>
+                        ),
+                        h3: ({ children }) => (
+                          <h3 style={{ fontSize: 14, fontWeight: 600, marginTop: 14, marginBottom: 4, color: C.textPrimary }}>
+                            {children}
+                          </h3>
+                        ),
+                        p: ({ children }) => (
+                          <p style={{ margin: '6px 0', color: C.textSec, lineHeight: 1.9 }}>
+                            {children}
+                          </p>
+                        ),
+                        strong: ({ children }) => (
+                          <strong style={{ fontWeight: 700, color: C.textPrimary }}>
+                            {children}
+                          </strong>
+                        ),
+                        em: ({ children }) => (
+                          <em style={{ fontStyle: 'italic', color: C.textSec }}>
+                            {children}
+                          </em>
+                        ),
+                        ul: ({ children }) => (
+                          <ul style={{ paddingLeft: 20, margin: '6px 0' }}>
+                            {children}
+                          </ul>
+                        ),
+                        ol: ({ children }) => (
+                          <ol style={{ paddingLeft: 20, margin: '6px 0' }}>
+                            {children}
+                          </ol>
+                        ),
+                        li: ({ children }) => (
+                          <li style={{ margin: '3px 0', color: C.textSec }}>
+                            {children}
+                          </li>
+                        ),
+                        hr: () => (
+                          <hr style={{ border: 'none', borderTop: `1px solid ${C.border}`, margin: '16px 0' }} />
+                        ),
+                      }}
+                    >
+                      {report.body}
+                    </ReactMarkdown>
                   </div>
                 </details>
               )}
