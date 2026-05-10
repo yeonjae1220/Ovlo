@@ -25,7 +25,7 @@ const C = {
 export default function ProfilePage() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
-  const { currentUser, refreshToken, clearAuth } = useAuthStore()
+  const { currentUser, clearAuth } = useAuthStore()
   const { data: member, isLoading } = useMember(id!)
   const { data: followers } = useFollowers(id!)
   const { data: followings } = useFollowings(id!)
@@ -68,7 +68,7 @@ export default function ProfilePage() {
 
   const handleLogout = async () => {
     try {
-      if (refreshToken) await authApi.logout(refreshToken)
+      await authApi.logout()
     } finally {
       queryClient.clear()
       clearAuth()

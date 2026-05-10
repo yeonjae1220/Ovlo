@@ -24,7 +24,7 @@ spring:
 jwt:
   secret: dGVzdC1zZWNyZXQta2V5LXRoYXQtaXMtbG9uZy1lbm91Z2gtZm9yLUhTMjU2
   access-token-ttl-minutes: 15
-  refresh-token-ttl-minutes: 10080
+  refresh-token-ttl-minutes: 43200
 
 logging:
   level:

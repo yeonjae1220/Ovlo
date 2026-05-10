@@ -14,11 +14,21 @@ import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 
+/**
+ * 다중 세션 Redis 어댑터.
+ *
+ * 키 구조:
+ *   auth:session:{sessionId}           — 세션 Hash (기기별 독립)
+ *   auth:member:sessions:{memberId}    — 해당 멤버의 sessionId Set
+ *   auth:token:{refreshToken}          — refreshToken → sessionId 역인덱스
+ */
 @Component
 public class RedisTokenAdapter implements TokenStorePort {
 
-    private static final String SESSION_BY_MEMBER_PREFIX = "auth:session:member:";
+    private static final String SESSION_PREFIX = "auth:session:";
+    private static final String MEMBER_SESSIONS_PREFIX = "auth:member:sessions:";
     private static final String TOKEN_INDEX_PREFIX = "auth:token:";
 
     private final RedisTemplate<String, String> redisTemplate;
@@ -29,14 +39,15 @@ public class RedisTokenAdapter implements TokenStorePort {
 
     @Override
     public void save(AuthSession session) {
-        String memberKey = memberKey(session.getMemberId());
+        String sessionKey = sessionKey(session.getId());
         String tokenIndexKey = tokenIndexKey(session.getRefreshToken());
+        String memberSessionsKey = memberSessionsKey(session.getMemberId());
 
         Duration ttl = Duration.between(Instant.now(), session.getExpiresAt());
         if (ttl.isNegative() || ttl.isZero()) return;
 
-        // Rotation 시 구 토큰 역인덱스 조회 — MULTI 블록 내 삭제를 위해 사전에 읽음
-        Map<Object, Object> existing = redisTemplate.opsForHash().entries(memberKey);
+        // 토큰 rotation 시 구 토큰 역인덱스 삭제 (MULTI 블록 이전에 읽어 둠)
+        Map<Object, Object> existing = redisTemplate.opsForHash().entries(sessionKey);
         String oldToken = existing.isEmpty() ? null : (String) existing.get("refreshToken");
         final String oldTokenToDelete = (oldToken != null && !oldToken.equals(session.getRefreshToken()))
                 ? oldToken : null;
@@ -48,8 +59,7 @@ public class RedisTokenAdapter implements TokenStorePort {
         fields.put("expiresAt", String.valueOf(session.getExpiresAt().toEpochMilli()));
         fields.put("revoked", String.valueOf(session.isRevoked()));
 
-        // MULTI/EXEC: 구 토큰 삭제 + putAll + expire 를 원자적으로 실행
-        // → 구 토큰 삭제와 신 세션 저장이 같은 트랜잭션 안에 있어 크래시 시 불일치 방지
+        // MULTI/EXEC: 구 토큰 삭제 + 세션 저장 + 멤버 세션 Set 등록을 원자적으로 실행
         redisTemplate.execute(new SessionCallback<Void>() {
             @Override
             @SuppressWarnings("unchecked")
@@ -59,69 +69,109 @@ public class RedisTokenAdapter implements TokenStorePort {
                 if (oldTokenToDelete != null) {
                     operations.delete(tokenIndexKey(oldTokenToDelete));
                 }
-                operations.opsForHash().putAll(memberKey, fields);
-                operations.expire(memberKey, ttl);
+                operations.opsForHash().putAll(sessionKey, fields);
+                operations.expire(sessionKey, ttl);
+                operations.opsForSet().add(memberSessionsKey, session.getId().value());
                 operations.exec();
                 return null;
             }
         });
 
-        // token → memberId 역인덱스 (빠른 조회용, SET + TTL은 단일 명령으로 원자적)
-        redisTemplate.opsForValue().set(tokenIndexKey, String.valueOf(session.getMemberId().value()), ttl);
+        // 멤버 세션 Set TTL은 세션보다 하루 길게 유지 (stale entry 자동 정리용)
+        redisTemplate.expire(memberSessionsKey, ttl.plusDays(1));
+
+        // 토큰 역인덱스: refreshToken → sessionId
+        redisTemplate.opsForValue().set(tokenIndexKey, session.getId().value(), ttl);
     }
 
     @Override
-    public Optional<AuthSession> findByMemberId(MemberId memberId) {
-        String memberKey = memberKey(memberId);
-        Map<Object, Object> fields = redisTemplate.opsForHash().entries(memberKey);
+    public Optional<AuthSession> findByRefreshToken(String refreshToken) {
+        String sessionId = redisTemplate.opsForValue().get(tokenIndexKey(refreshToken));
+        if (sessionId == null) return Optional.empty();
+
+        Map<Object, Object> fields = redisTemplate.opsForHash().entries(sessionKey(new AuthSessionId(sessionId)));
         if (fields.isEmpty()) return Optional.empty();
         return Optional.of(toAuthSession(fields));
     }
 
     @Override
-    public Optional<AuthSession> findByRefreshToken(String refreshToken) {
-        String tokenIndexKey = tokenIndexKey(refreshToken);
-        String memberIdStr = redisTemplate.opsForValue().get(tokenIndexKey);
-        if (memberIdStr == null) return Optional.empty();
+    public Optional<AuthSession> findByMemberId(MemberId memberId) {
+        Set<String> sessionIds = redisTemplate.opsForSet().members(memberSessionsKey(memberId));
+        if (sessionIds == null || sessionIds.isEmpty()) return Optional.empty();
 
-        MemberId memberId = new MemberId(Long.valueOf(memberIdStr));
-        return findByMemberId(memberId);
+        for (String sessionId : sessionIds) {
+            Map<Object, Object> fields = redisTemplate.opsForHash().entries(sessionKey(new AuthSessionId(sessionId)));
+            if (!fields.isEmpty()) return Optional.of(toAuthSession(fields));
+        }
+        return Optional.empty();
+    }
+
+    @Override
+    public void deleteByRefreshToken(String refreshToken) {
+        String tokenIndexKey = tokenIndexKey(refreshToken);
+        String sessionId = redisTemplate.opsForValue().get(tokenIndexKey);
+        if (sessionId == null) return;
+
+        String sessionKey = sessionKey(new AuthSessionId(sessionId));
+        Map<Object, Object> fields = redisTemplate.opsForHash().entries(sessionKey);
+
+        if (!fields.isEmpty()) {
+            String memberIdStr = (String) fields.get("memberId");
+            if (memberIdStr != null) {
+                redisTemplate.opsForSet().remove(
+                        memberSessionsKey(new MemberId(Long.valueOf(memberIdStr))), sessionId);
+            }
+        }
+
+        redisTemplate.delete(tokenIndexKey);
+        redisTemplate.delete(sessionKey);
     }
 
     @Override
     public void delete(MemberId memberId) {
-        String memberKey = memberKey(memberId);
-        Map<Object, Object> fields = redisTemplate.opsForHash().entries(memberKey);
-        if (!fields.isEmpty()) {
-            String refreshToken = (String) fields.get("refreshToken");
-            if (refreshToken != null) {
-                redisTemplate.delete(tokenIndexKey(refreshToken));
+        String memberSessionsKey = memberSessionsKey(memberId);
+        Set<String> sessionIds = redisTemplate.opsForSet().members(memberSessionsKey);
+
+        if (sessionIds != null) {
+            for (String sessionId : sessionIds) {
+                String sessionKey = sessionKey(new AuthSessionId(sessionId));
+                Map<Object, Object> fields = redisTemplate.opsForHash().entries(sessionKey);
+                if (!fields.isEmpty()) {
+                    String token = (String) fields.get("refreshToken");
+                    if (token != null) redisTemplate.delete(tokenIndexKey(token));
+                    redisTemplate.delete(sessionKey);
+                }
             }
         }
-        redisTemplate.delete(memberKey);
+        redisTemplate.delete(memberSessionsKey);
     }
 
     private AuthSession toAuthSession(Map<Object, Object> fields) {
-        String sessionIdStr  = (String) fields.get("sessionId");
-        String memberIdStr   = (String) fields.get("memberId");
-        String refreshToken  = (String) fields.get("refreshToken");
-        String expiresAtStr  = (String) fields.get("expiresAt");
-        String revokedStr    = (String) fields.get("revoked");
+        String sessionIdStr = (String) fields.get("sessionId");
+        String memberIdStr  = (String) fields.get("memberId");
+        String refreshToken = (String) fields.get("refreshToken");
+        String expiresAtStr = (String) fields.get("expiresAt");
+        String revokedStr   = (String) fields.get("revoked");
 
         if (sessionIdStr == null || memberIdStr == null || refreshToken == null || expiresAtStr == null) {
             throw new IllegalStateException("Redis 세션 데이터가 손상되었습니다");
         }
 
-        AuthSessionId sessionId = new AuthSessionId(sessionIdStr);
-        MemberId memberId = new MemberId(Long.valueOf(memberIdStr));
-        Instant expiresAt = Instant.ofEpochMilli(Long.parseLong(expiresAtStr));
-        boolean revoked = Boolean.parseBoolean(revokedStr);
-
-        return AuthSession.restore(sessionId, memberId, refreshToken, expiresAt, revoked);
+        return AuthSession.restore(
+                new AuthSessionId(sessionIdStr),
+                new MemberId(Long.valueOf(memberIdStr)),
+                refreshToken,
+                Instant.ofEpochMilli(Long.parseLong(expiresAtStr)),
+                Boolean.parseBoolean(revokedStr)
+        );
     }
 
-    private String memberKey(MemberId memberId) {
-        return SESSION_BY_MEMBER_PREFIX + memberId.value();
+    private String sessionKey(AuthSessionId sessionId) {
+        return SESSION_PREFIX + sessionId.value();
+    }
+
+    private String memberSessionsKey(MemberId memberId) {
+        return MEMBER_SESSIONS_PREFIX + memberId.value();
     }
 
     private String tokenIndexKey(String token) {

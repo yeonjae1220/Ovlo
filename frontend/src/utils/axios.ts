@@ -4,6 +4,7 @@ import { useAuthStore } from '../store/authStore'
 const apiClient = axios.create({
   baseURL: '/api/v1',
   headers: { 'Content-Type': 'application/json' },
+  withCredentials: true, // refresh_token httpOnly 쿠키 자동 전송
 })
 
 // Request interceptor: attach JWT
@@ -15,7 +16,7 @@ apiClient.interceptors.request.use((config) => {
   return config
 })
 
-// Response interceptor: 401 → refresh → retry
+// Response interceptor: 401 → refresh(쿠키) → retry
 let isRefreshing = false
 let pendingQueue: Array<{
   resolve: (token: string) => void
@@ -37,15 +38,7 @@ apiClient.interceptors.response.use(
 
     const status = error.response?.status
     // 403 = 인가 실패(권한 없음) — 세션은 유효하므로 auth를 클리어하지 않음.
-    // AdminRoute가 이미 role 체크 후 /boards로 리다이렉트 처리함.
     if (status !== 401 || original._retry) {
-      return Promise.reject(error)
-    }
-
-    const { refreshToken, setAccessToken, clearAuth } = useAuthStore.getState()
-    if (!refreshToken) {
-      clearAuth()
-      window.location.href = '/login'
       return Promise.reject(error)
     }
 
@@ -62,15 +55,20 @@ apiClient.interceptors.response.use(
     isRefreshing = true
 
     try {
-      const { data } = await axios.post('/api/v1/auth/refresh', { refreshToken })
+      // 쿠키(refresh_token)가 자동 전송됨 — 별도 body 불필요
+      const { data } = await axios.post(
+        '/api/v1/auth/refresh',
+        undefined,
+        { withCredentials: true }
+      )
       const newToken: string = data.accessToken
-      setAccessToken(newToken)
+      useAuthStore.getState().setAccessToken(newToken)
       processQueue(null, newToken)
       original.headers.Authorization = `Bearer ${newToken}`
       return apiClient(original)
     } catch (err) {
       processQueue(err, null)
-      clearAuth()
+      useAuthStore.getState().clearAuth()
       window.location.href = '/login'
       return Promise.reject(err)
     } finally {

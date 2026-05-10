@@ -26,7 +26,7 @@ import java.time.temporal.ChronoUnit;
 @Transactional
 public class AuthCommandService implements LoginUseCase, LogoutUseCase, RefreshTokenUseCase {
 
-    private static final long REFRESH_TOKEN_TTL_DAYS = 7L;
+    private static final long REFRESH_TOKEN_TTL_DAYS = 30L;
 
     private final LoadMemberCredentialsPort loadMemberCredentialsPort;
     private final PasswordHasherPort passwordHasherPort;
@@ -71,10 +71,7 @@ public class AuthCommandService implements LoginUseCase, LogoutUseCase, RefreshT
 
     @Override
     public void logout(LogoutCommand command) {
-        AuthSession session = tokenStorePort.findByRefreshToken(command.refreshToken())
-                .orElseThrow(() -> new AuthException("유효하지 않은 리프레시 토큰입니다"));
-
-        tokenStorePort.delete(session.getMemberId());
+        tokenStorePort.deleteByRefreshToken(command.refreshToken());
     }
 
     @Override

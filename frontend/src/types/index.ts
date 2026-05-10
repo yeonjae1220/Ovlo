@@ -1,13 +1,11 @@
 // ─── Auth ───────────────────────────────────────────────────────────────────
 export interface AuthToken {
   accessToken: string
-  refreshToken: string
   memberId: number
 }
 
 export interface GoogleLoginResult {
   accessToken: string
-  refreshToken: string
   memberId: number
   newMember: boolean
 }

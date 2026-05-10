@@ -10,4 +10,5 @@ public interface TokenStorePort {
     Optional<AuthSession> findByMemberId(MemberId memberId);
     Optional<AuthSession> findByRefreshToken(String refreshToken);
     void delete(MemberId memberId);
+    void deleteByRefreshToken(String refreshToken);
 }

@@ -26,6 +26,7 @@ import java.time.temporal.ChronoUnit;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import me.yeonjae.ovlo.domain.member.model.MemberRole;
 
@@ -116,25 +117,22 @@ class AuthCommandServiceTest {
         @Test
         @DisplayName("유효한 refresh token으로 로그아웃하면 세션이 삭제된다")
         void shouldDeleteSession_whenValidToken() {
-            MemberId memberId = new MemberId(1L);
             String refreshToken = "valid-refresh-token";
-            AuthSession session = AuthSession.create(memberId, refreshToken,
-                    Instant.now().plus(7, ChronoUnit.DAYS));
-            given(tokenStorePort.findByRefreshToken(refreshToken)).willReturn(Optional.of(session));
 
             sut.logout(new LogoutCommand(refreshToken));
 
-            then(tokenStorePort).should().delete(memberId);
+            then(tokenStorePort).should().deleteByRefreshToken(refreshToken);
         }
 
         @Test
-        @DisplayName("존재하지 않는 토큰으로 로그아웃하면 예외가 발생한다")
-        void shouldThrow_whenTokenNotFound() {
-            given(tokenStorePort.findByRefreshToken(anyString())).willReturn(Optional.empty());
+        @DisplayName("존재하지 않는 토큰으로 로그아웃해도 예외 없이 완료된다")
+        void shouldCompleteGracefully_whenTokenNotFound() {
+            String unknownToken = "unknown-token";
 
-            assertThatThrownBy(() -> sut.logout(new LogoutCommand("unknown-token")))
-                    .isInstanceOf(AuthException.class)
-                    .hasMessageContaining("유효하지 않은 리프레시 토큰입니다");
+            // deleteByRefreshToken은 없는 토큰을 조용히 무시한다 (이미 로그아웃된 상태)
+            assertThatCode(() -> sut.logout(new LogoutCommand(unknownToken)))
+                    .doesNotThrowAnyException();
+            then(tokenStorePort).should().deleteByRefreshToken(unknownToken);
         }
     }
 

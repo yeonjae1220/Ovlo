@@ -18,7 +18,7 @@ export function useLogin() {
       // 토큰을 먼저 store에 저장해야 axios 인터셉터가 Authorization 헤더를 붙일 수 있다
       setAccessToken(token.accessToken)
       const user = await memberApi.getById(String(token.memberId))
-      setAuth(token.accessToken, token.refreshToken, user)
+      setAuth(token.accessToken, user)
       navigate('/boards')
     },
   })
@@ -26,17 +26,16 @@ export function useLogin() {
 
 /**
  * Access Token 만료 1분 전에 선제적으로 갱신.
- * WebSocket 전용 세션처럼 REST 호출이 드문 환경에서도 토큰이 유효하게 유지된다.
+ * WebSocket처럼 REST 호출이 드문 환경에서도 토큰이 유효하게 유지된다.
  * App 루트(또는 인증이 필요한 레이아웃)에서 한 번만 호출하면 된다.
  */
 export function useProactiveRefresh() {
   const accessToken = useAuthStore((s) => s.accessToken)
-  const refreshToken = useAuthStore((s) => s.refreshToken)
   const setAccessToken = useAuthStore((s) => s.setAccessToken)
   const clearAuth = useAuthStore((s) => s.clearAuth)
 
   useEffect(() => {
-    if (!accessToken || !refreshToken) return
+    if (!accessToken) return
 
     let expiryMs: number
     try {
@@ -52,16 +51,20 @@ export function useProactiveRefresh() {
 
     const timer = setTimeout(() => {
       // 인터셉터 루프를 피하기 위해 raw axios 사용
-      // 4xx: 즉시 로그아웃 / 5xx·네트워크: 최대 3회 exponential backoff 재시도
+      // 쿠키(refresh_token)가 자동 전송됨
       let attempts = 0
       const tryRefresh = async () => {
         try {
-          const { data } = await axios.post<{ accessToken: string }>('/api/v1/auth/refresh', { refreshToken })
+          const { data } = await axios.post<{ accessToken: string }>(
+            '/api/v1/auth/refresh',
+            undefined,
+            { withCredentials: true }
+          )
           setAccessToken(data.accessToken)
         } catch (err: unknown) {
           const status = (err as { response?: { status?: number } })?.response?.status
           if (status && status >= 400 && status < 500) {
-            // 토큰 자체가 유효하지 않음 → 즉시 로그아웃
+            // 쿠키가 만료됨 → 로그아웃
             clearAuth()
             window.location.href = '/login'
             return
@@ -80,7 +83,7 @@ export function useProactiveRefresh() {
     }, msUntilRefresh)
 
     return () => clearTimeout(timer)
-  }, [accessToken, refreshToken, setAccessToken, clearAuth])
+  }, [accessToken, setAccessToken, clearAuth])
 }
 
 export function useRegister() {
@@ -93,17 +96,16 @@ export function useRegister() {
 }
 
 export function useGoogleLogin() {
-  const { setAuth, setTokens } = useAuthStore()
+  const { setAuth, setAccessToken } = useAuthStore()
   const navigate = useNavigate()
 
   return useMutation({
     mutationFn: ({ code, redirectUri }: { code: string; redirectUri: string }) =>
       authApi.googleLogin(code, redirectUri),
     onSuccess: async (result) => {
-      // refreshToken까지 먼저 저장 → getById가 401을 받더라도 인터셉터가 재시도 가능
-      setTokens(result.accessToken, result.refreshToken)
+      setAccessToken(result.accessToken)
       const user = await memberApi.getById(String(result.memberId))
-      setAuth(result.accessToken, result.refreshToken, user)
+      setAuth(result.accessToken, user)
       navigate(result.newMember ? '/onboarding' : '/boards')
     },
   })
