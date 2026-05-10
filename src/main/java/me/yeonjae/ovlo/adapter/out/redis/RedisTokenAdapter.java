@@ -59,7 +59,7 @@ public class RedisTokenAdapter implements TokenStorePort {
         fields.put("expiresAt", String.valueOf(session.getExpiresAt().toEpochMilli()));
         fields.put("revoked", String.valueOf(session.isRevoked()));
 
-        // MULTI/EXEC: 구 토큰 삭제 + 세션 저장 + 멤버 세션 Set 등록을 원자적으로 실행
+        // MULTI/EXEC: 구 토큰 삭제 + 세션 저장 + 멤버 세션 Set 등록 + 역인덱스 저장을 원자적으로 실행
         redisTemplate.execute(new SessionCallback<Void>() {
             @Override
             @SuppressWarnings("unchecked")
@@ -72,16 +72,12 @@ public class RedisTokenAdapter implements TokenStorePort {
                 operations.opsForHash().putAll(sessionKey, fields);
                 operations.expire(sessionKey, ttl);
                 operations.opsForSet().add(memberSessionsKey, session.getId().value());
+                operations.expire(memberSessionsKey, ttl.plusDays(1));
+                operations.opsForValue().set(tokenIndexKey, session.getId().value(), ttl);
                 operations.exec();
                 return null;
             }
         });
-
-        // 멤버 세션 Set TTL은 세션보다 하루 길게 유지 (stale entry 자동 정리용)
-        redisTemplate.expire(memberSessionsKey, ttl.plusDays(1));
-
-        // 토큰 역인덱스: refreshToken → sessionId
-        redisTemplate.opsForValue().set(tokenIndexKey, session.getId().value(), ttl);
     }
 
     @Override

@@ -126,7 +126,7 @@ public class AuthApiController {
     private ResponseCookie buildRefreshCookie(String refreshToken) {
         return ResponseCookie.from(REFRESH_COOKIE_NAME, refreshToken)
                 .httpOnly(true)
-                .secure(isProd())
+                .secure(isSecureCookieRequired())
                 .sameSite("Lax")
                 .maxAge(REFRESH_COOKIE_MAX_AGE)
                 .path(REFRESH_COOKIE_PATH)
@@ -136,15 +136,16 @@ public class AuthApiController {
     private ResponseCookie clearRefreshCookie() {
         return ResponseCookie.from(REFRESH_COOKIE_NAME, "")
                 .httpOnly(true)
-                .secure(isProd())
+                .secure(isSecureCookieRequired())
                 .sameSite("Lax")
                 .maxAge(0)
                 .path(REFRESH_COOKIE_PATH)
                 .build();
     }
 
-    private boolean isProd() {
-        return Arrays.asList(environment.getActiveProfiles()).contains("prod");
+    private boolean isSecureCookieRequired() {
+        return Arrays.stream(environment.getActiveProfiles())
+                .noneMatch(p -> p.equalsIgnoreCase("local") || p.equalsIgnoreCase("test"));
     }
 
     /**
