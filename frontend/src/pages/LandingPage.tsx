@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom'
 import { useAuthStore } from '../store/authStore'
 import { useBreakpoint } from '../hooks/useBreakpoint'
+import { InstallBanner } from '../components/InstallBanner'
 
 const FEATURES = [
   {
@@ -261,6 +262,10 @@ export default function LandingPage() {
               지금 시작하기
             </Link>
           )}
+        </div>
+
+        <div style={{ maxWidth: 400, margin: '0 auto' }}>
+          <InstallBanner />
         </div>
 
         {/* 스탯 */}
