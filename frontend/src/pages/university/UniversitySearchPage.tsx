@@ -15,7 +15,7 @@ export default function UniversitySearchPage() {
       <p style={{ marginBottom: 12, fontSize: 13, color: '#6b7280' }}>
         {t('univ.search.info')}{' '}
         <Link to="/exchange-universities" style={{ color: '#2563eb', fontWeight: 600 }}>{t('univ.search.infoLink')}</Link>
-        {t('univ.search.info') === t('univ.search.info') ? '' : ''}에서 확인하세요.
+        {t('univ.search.infoTrail')}
       </p>
       <div style={{ display: 'flex', gap: 8, marginBottom: 16 }}>
         <input

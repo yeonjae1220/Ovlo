@@ -327,7 +327,7 @@ export default function ExchangeUniversityDetailPage() {
 
       {/* 리뷰 제목 */}
       <h2 style={{ fontSize: 18, fontWeight: 700, color: C.textPrimary, marginBottom: 16 }}>
-        {t('univ.reports.videos', { count: reviewPage?.totalElements ?? 0 })}
+        {t('exch.detail.reviews')} ({reviewPage?.totalElements ?? 0})
       </h2>
 
       {reviewLoading && <p style={{ color: C.textMuted }}>{t('common.loading')}</p>}
@@ -479,7 +479,7 @@ function ReviewCard({ review: r, univ }: { review: VideoReview; univ: ExchangeUn
                         <p style={{ margin: `${hasVisa ? '12px' : '0'} 0 6px`, fontSize: 11, fontWeight: 700, color: C.textDim, textTransform: 'uppercase', letterSpacing: 0.5 }}>{t('exch.detail.dorm')}</p>
                         <InfoRow label={t('exch.detail.dorm')} value={r.dormAvailable} />
                         <InfoRow label="Type" value={r.dormType} />
-                        <InfoRow label={t('exch.detail.visaCost')} value={r.dormPrice} />
+                        <InfoRow label={t('exch.detail.cost')} value={r.dormPrice} />
                       </>
                     )}
                   </div>

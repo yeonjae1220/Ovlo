@@ -5,6 +5,7 @@ import { useUniversitySearch } from '../../hooks/useUniversity'
 import { useMemberSearch } from '../../hooks/useMember'
 import { useI18n } from '../../i18n/I18nProvider'
 import { SUPPORTED_UI_LANGUAGES, LANGUAGE_LABELS } from '../../i18n/messages'
+import type { MessageKey } from '../../i18n/messages'
 
 const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID || null
 
@@ -37,7 +38,7 @@ const PW_TESTS: Array<{ key: 'register.pw.min8' | 'register.pw.upper' | 'registe
 
 const TOTAL_STEPS = 3
 
-type TFn = (key: string) => string
+type TFn = (key: MessageKey, vars?: Record<string, string | number>) => string
 
 function PasswordConditions({ password, t }: { password: string; t: TFn }) {
   return (
@@ -318,7 +319,7 @@ export default function RegisterPage() {
           {stepError && <p style={{ color: '#dc2626', margin: 0, fontSize: 13 }}>{stepError}</p>}
 
           <div style={{ display: 'flex', gap: 10 }}>
-            <button type="button" onClick={handleBack} style={{ ...secondaryBtn, flex: 1 }}>← 이전</button>
+            <button type="button" onClick={handleBack} style={{ ...secondaryBtn, flex: 1 }}>{t('register.back')}</button>
             <button type="submit" style={{ ...primaryBtn, flex: 2 }}>{t('register.next')}</button>
           </div>
         </form>

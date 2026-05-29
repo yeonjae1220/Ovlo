@@ -29,7 +29,7 @@ export default function BoardDetailPage() {
           <button onClick={() => unsubscribe.mutate(id!)}>{t('board.unsubscribe')}</button>
           {currentUser && (
             <Link to={`/posts/new?boardId=${id}`}>
-              <button>+ {t('community.write').replace('+ ', '')}</button>
+              <button>{t('community.write')}</button>
             </Link>
           )}
         </div>
