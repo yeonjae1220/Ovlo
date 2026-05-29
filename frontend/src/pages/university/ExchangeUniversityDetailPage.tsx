@@ -4,6 +4,7 @@ import { useParams, useNavigate } from 'react-router-dom'
 import { useExchangeUniversity, useExchangeUniversityReviews, useUniversityReportByExchangeUniv } from '../../hooks/useUniversity'
 import type { VideoReview, ExchangeUniversity } from '../../types'
 import { useI18n } from '../../i18n/I18nProvider'
+import type { MessageKey } from '../../i18n/messages'
 
 // ── 다크 테마 색상 상수 ──────────────────────────────────────
 const C = {
@@ -71,46 +72,48 @@ function isTagMismatch(review: VideoReview, univ: ExchangeUniversity): boolean {
 }
 
 // ── 확장 요약 생성 (3~6문장 줄글) ────────────────────────────
-function buildDetailedSummary(r: VideoReview): string {
+type ReviewTFn = (key: MessageKey) => string
+
+function buildDetailedSummary(r: VideoReview, t: ReviewTFn): string {
   const parts: string[] = []
 
   if (r.summary) parts.push(r.summary)
 
   const ratingParts: string[] = []
-  if (r.overallRating != null) ratingParts.push(`Rating: ${r.overallRating}/5`)
+  if (r.overallRating != null) ratingParts.push(`${r.overallRating}/5`)
   if (r.overallTone) ratingParts.push(r.overallTone)
-  if (r.recommend != null) ratingParts.push(r.recommend ? '✓ Recommended' : '✗ Not recommended')
+  if (r.recommend != null) ratingParts.push(r.recommend ? t('exch.detail.recommended') : t('exch.detail.notRecommended'))
   if (ratingParts.length > 0) parts.push(ratingParts.join(' · '))
 
   if (r.costTotal || r.costRent || r.costFood) {
     const currency = r.costCurrency ? ` (${r.costCurrency})` : ''
     const costParts: string[] = []
-    if (r.costTotal) costParts.push(`Total: ${r.costTotal}`)
-    if (r.costRent) costParts.push(`Rent: ${r.costRent}`)
-    if (r.costFood) costParts.push(`Food: ${r.costFood}`)
-    if (r.costTransport) costParts.push(`Transport: ${r.costTransport}`)
-    parts.push(`Cost of living${currency}: ${costParts.join(', ')}`)
+    if (r.costTotal) costParts.push(r.costTotal)
+    if (r.costRent) costParts.push(`${t('exch.detail.rent')}: ${r.costRent}`)
+    if (r.costFood) costParts.push(`${t('exch.detail.food')}: ${r.costFood}`)
+    if (r.costTransport) costParts.push(`${t('exch.detail.transport')}: ${r.costTransport}`)
+    parts.push(`${t('exch.detail.costLabel')}${currency}: ${costParts.join(', ')}`)
   }
 
   if (r.difficulty != null || r.workload != null) {
     const acadParts: string[] = []
-    if (r.difficulty != null) acadParts.push(`Difficulty: ${r.difficulty}/5`)
-    if (r.workload != null) acadParts.push(`Workload: ${r.workload}/5`)
-    parts.push(`Academics — ${acadParts.join(', ')}`)
+    if (r.difficulty != null) acadParts.push(`${t('exch.detail.difficulty')}: ${r.difficulty}/5`)
+    if (r.workload != null) acadParts.push(`${t('exch.detail.workload')}: ${r.workload}/5`)
+    parts.push(`${t('exch.detail.academics')} — ${acadParts.join(', ')}`)
   }
 
   if (r.dormAvailable != null) {
-    let dormLine = r.dormAvailable ? 'Dormitory available' : 'No school dormitory'
+    let dormLine = r.dormAvailable ? t('exch.detail.dormAvailableText') : t('exch.detail.dormNotAvailableText')
     if (r.dormType) dormLine += ` (${r.dormType})`
-    if (r.dormPrice) dormLine += `, cost: ${r.dormPrice}`
+    if (r.dormPrice) dormLine += `, ${t('exch.detail.cost')}: ${r.dormPrice}`
     parts.push(dormLine)
   }
 
   const reqParts: string[] = []
-  if (r.visaType) reqParts.push(`${r.visaType} visa`)
-  if (r.languageReq) reqParts.push(`Language: ${r.languageReq}`)
-  if (r.gpaRequirement) reqParts.push(`GPA: ${r.gpaRequirement}`)
-  if (reqParts.length > 0) parts.push(`Requirements: ${reqParts.join(', ')}`)
+  if (r.visaType) reqParts.push(`${t('exch.detail.visa')}: ${r.visaType}`)
+  if (r.languageReq) reqParts.push(`${t('exch.detail.language')}: ${r.languageReq}`)
+  if (r.gpaRequirement) reqParts.push(`${t('exch.detail.gpa')}: ${r.gpaRequirement}`)
+  if (reqParts.length > 0) parts.push(`${t('exch.detail.requirements')}: ${reqParts.join(', ')}`)
 
   return parts.join(' | ')
 }
@@ -355,7 +358,7 @@ function ReviewCard({ review: r, univ }: { review: VideoReview; univ: ExchangeUn
   const hasDorm = r.dormAvailable != null || r.dormType || r.dormPrice
   const hasAcademic = r.difficulty || r.workload || r.gpaRequirement || r.languageReq || r.deadlineInfo
 
-  const detailedSummary = buildDetailedSummary(r)
+  const detailedSummary = buildDetailedSummary(r, t)
 
   return (
     <div style={{ border: `1px solid ${C.border}`, borderRadius: 10, overflow: 'hidden', background: C.bg }}>
@@ -446,8 +449,8 @@ function ReviewCard({ review: r, univ }: { review: VideoReview; univ: ExchangeUn
                   <div style={{ flex: 1, minWidth: 200 }}>
                     <p style={{ margin: '0 0 6px', fontSize: 11, fontWeight: 700, color: C.textDim, textTransform: 'uppercase', letterSpacing: 0.5 }}>{t('exch.detail.academics')}</p>
                     <InfoRow label={t('exch.detail.difficulty')} value={r.difficulty ? `${r.difficulty}/5` : null} />
-                    <InfoRow label="GPA" value={r.workload ? `${r.workload}/5` : null} />
-                    <InfoRow label="GPA" value={r.gpaRequirement} />
+                    <InfoRow label={t('exch.detail.workload')} value={r.workload ? `${r.workload}/5` : null} />
+                    <InfoRow label={t('exch.detail.gpa')} value={r.gpaRequirement} />
                     <InfoRow label={t('exch.detail.languageReq')} value={r.languageReq} />
                     <InfoRow label={t('exch.detail.deadline')} value={r.deadlineInfo} />
                   </div>
@@ -459,8 +462,8 @@ function ReviewCard({ review: r, univ }: { review: VideoReview; univ: ExchangeUn
                     </p>
                     <InfoRow label={t('exch.detail.cost')} value={r.costTotal} />
                     <InfoRow label={t('exch.detail.rent')} value={r.costRent} />
-                    <InfoRow label="Food" value={r.costFood} />
-                    <InfoRow label="Transport" value={r.costTransport} />
+                    <InfoRow label={t('exch.detail.food')} value={r.costFood} />
+                    <InfoRow label={t('exch.detail.transport')} value={r.costTransport} />
                   </div>
                 )}
                 {(hasVisa || hasDorm) && (
@@ -468,9 +471,9 @@ function ReviewCard({ review: r, univ }: { review: VideoReview; univ: ExchangeUn
                     {hasVisa && (
                       <>
                         <p style={{ margin: '0 0 6px', fontSize: 11, fontWeight: 700, color: C.textDim, textTransform: 'uppercase', letterSpacing: 0.5 }}>{t('exch.detail.visa')}</p>
-                        <InfoRow label="Type" value={r.visaType} />
+                        <InfoRow label={t('exch.detail.type')} value={r.visaType} />
                         <InfoRow label={t('exch.detail.visaCost')} value={r.visaCost} />
-                        <InfoRow label="Duration" value={r.visaDuration} />
+                        <InfoRow label={t('exch.detail.duration')} value={r.visaDuration} />
                         <InfoRow label={t('exch.detail.processing')} value={r.visaProcessingDays} />
                       </>
                     )}
@@ -478,7 +481,7 @@ function ReviewCard({ review: r, univ }: { review: VideoReview; univ: ExchangeUn
                       <>
                         <p style={{ margin: `${hasVisa ? '12px' : '0'} 0 6px`, fontSize: 11, fontWeight: 700, color: C.textDim, textTransform: 'uppercase', letterSpacing: 0.5 }}>{t('exch.detail.dorm')}</p>
                         <InfoRow label={t('exch.detail.dorm')} value={r.dormAvailable} />
-                        <InfoRow label="Type" value={r.dormType} />
+                        <InfoRow label={t('exch.detail.type')} value={r.dormType} />
                         <InfoRow label={t('exch.detail.cost')} value={r.dormPrice} />
                       </>
                     )}
