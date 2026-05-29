@@ -139,49 +139,43 @@ jobs:
 
   deploy:
     name: Deploy to Lenovo Server
-    runs-on: ubuntu-latest
+    # self-hosted runner가 lenovo에서 직접 실행 — SSH 불필요
+    runs-on: [self-hosted, homelab]
     needs: [build-and-push, build-and-push-frontend]
     if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
-    environment: production  # GitHub Environment 보호 규칙 적용 (Settings > Environments 에서 설정)
 
     steps:
-      - name: Deploy via SSH
-        uses: appleboy/ssh-action@v1.0.3
+      - name: Pull and deploy images
         env:
           IMAGE_TAG: ${{ needs.build-and-push.outputs.image-tag }}
           FRONTEND_IMAGE_TAG: ${{ needs.build-and-push-frontend.outputs.image-tag }}
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          host: ${{ secrets.LENOVO_HOST }}
-          port: ${{ secrets.LENOVO_PORT }}
-          username: ${{ secrets.LENOVO_USER }}
-          key: ${{ secrets.LENOVO_SSH_KEY }}
-          envs: IMAGE_TAG,FRONTEND_IMAGE_TAG,GH_TOKEN
-          script: |
-            # ── Backend ───────────────────────────────────────────────────────
-            # --user user:token 인라인 형식으로 TTY 없이 인증
-            sudo k3s ctr images pull \
-              --user "yeonjae1220:${GH_TOKEN}" \
-              ghcr.io/yeonjae1220/ovlo:$IMAGE_TAG
+        run: |
+          set -e
 
-            sudo kubectl set image deployment/app \
-              app=ghcr.io/yeonjae1220/ovlo:$IMAGE_TAG \
-              -n ovlo
+          # ── Backend ─────────────────────────────────────────────────────────
+          sudo k3s ctr images pull \
+            --user "yeonjae1220:${GH_TOKEN}" \
+            ghcr.io/yeonjae1220/ovlo:${IMAGE_TAG}
 
-            sudo kubectl rollout status deployment/app \
-              -n ovlo --timeout=300s
+          sudo kubectl set image deployment/app \
+            app=ghcr.io/yeonjae1220/ovlo:${IMAGE_TAG} \
+            -n ovlo
 
-            # ── Frontend ──────────────────────────────────────────────────────
-            sudo k3s ctr images pull \
-              --user "yeonjae1220:${GH_TOKEN}" \
-              ghcr.io/yeonjae1220/ovlo-frontend:$FRONTEND_IMAGE_TAG
+          sudo kubectl rollout status deployment/app \
+            -n ovlo --timeout=300s
 
-            sudo kubectl set image deployment/frontend \
-              frontend=ghcr.io/yeonjae1220/ovlo-frontend:$FRONTEND_IMAGE_TAG \
-              -n ovlo
+          # ── Frontend ────────────────────────────────────────────────────────
+          sudo k3s ctr images pull \
+            --user "yeonjae1220:${GH_TOKEN}" \
+            ghcr.io/yeonjae1220/ovlo-frontend:${FRONTEND_IMAGE_TAG}
 
-            sudo kubectl rollout status deployment/frontend \
-              -n ovlo --timeout=300s
+          sudo kubectl set image deployment/frontend \
+            frontend=ghcr.io/yeonjae1220/ovlo-frontend:${FRONTEND_IMAGE_TAG} \
+            -n ovlo
+
+          sudo kubectl rollout status deployment/frontend \
+            -n ovlo --timeout=300s
 
       - name: Notify deploy result
         if: always()
@@ -191,6 +185,6 @@ jobs:
             echo "✅ Frontend: ghcr.io/yeonjae1220/ovlo-frontend:${{ needs.build-and-push-frontend.outputs.image-tag }}"
           else
             echo "❌ Deploy failed. Rollback with:"
-            echo "kubectl set image deployment/app      app=ghcr.io/yeonjae1220/ovlo:<PREV_SHA_TAG> -n ovlo"
-            echo "kubectl set image deployment/frontend frontend=ghcr.io/yeonjae1220/ovlo-frontend:<PREV_SHA_TAG> -n ovlo"
+            echo "sudo kubectl set image deployment/app      app=ghcr.io/yeonjae1220/ovlo:<PREV_SHA_TAG> -n ovlo"
+            echo "sudo kubectl set image deployment/frontend frontend=ghcr.io/yeonjae1220/ovlo-frontend:<PREV_SHA_TAG> -n ovlo"
           fi
