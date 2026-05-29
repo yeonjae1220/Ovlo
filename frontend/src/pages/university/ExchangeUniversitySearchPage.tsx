@@ -5,6 +5,7 @@ import {
   useExchangeUniversityCountries,
   useGlobalUniversitySearch,
 } from '../../hooks/useUniversity'
+import { useI18n } from '../../i18n/I18nProvider'
 
 const STAR = (avg?: number | null) =>
   avg !== undefined && avg !== null
@@ -39,6 +40,7 @@ const inputStyle: React.CSSProperties = {
 }
 
 export default function ExchangeUniversitySearchPage() {
+  const { t } = useI18n()
   const navigate = useNavigate()
 
   const [uniQuery, setUniQuery] = useState('')
@@ -67,17 +69,15 @@ export default function ExchangeUniversitySearchPage() {
         onClick={() => navigate(-1)}
         style={{ background: 'none', border: 'none', cursor: 'pointer', color: C.textMuted, fontSize: 14, marginBottom: 16, padding: 0 }}
       >
-        ← 뒤로
+        {t('exch.back')}
       </button>
 
       <div style={{ marginBottom: 24 }}>
-        <h1 style={{ fontSize: 24, fontWeight: 700, color: C.textPrimary, margin: '0 0 6px' }}>교환 대학</h1>
-        <p style={{ color: C.textMuted, fontSize: 14, margin: 0 }}>
-          파견 가능한 교환 대학을 검색하고, 대학 클릭 시 AI 보고서를 확인하세요.
-        </p>
+        <h1 style={{ fontSize: 24, fontWeight: 700, color: C.textPrimary, margin: '0 0 6px' }}>{t('exch.title')}</h1>
+        <p style={{ color: C.textMuted, fontSize: 14, margin: 0 }}>{t('exch.subtitle')}</p>
       </div>
 
-      {/* 대학명 검색 (autocomplete) */}
+      {/* University name search (autocomplete) */}
       <div style={{ marginBottom: 12 }}>
         {selectedUniName ? (
           <button
@@ -89,13 +89,13 @@ export default function ExchangeUniversitySearchPage() {
               color: '#4ade80', fontWeight: 500, fontSize: 14, cursor: 'pointer',
             }}
           >
-            ✓ {selectedUniName} <span style={{ color: C.textDim, fontSize: 12, fontWeight: 400 }}>(클릭하여 변경)</span>
+            ✓ {selectedUniName} <span style={{ color: C.textDim, fontSize: 12, fontWeight: 400 }}>{t('exch.change')}</span>
           </button>
         ) : (
           <div style={{ position: 'relative' }}>
             <input
               style={{ ...inputStyle, width: '100%', boxSizing: 'border-box' }}
-              placeholder="대학 이름 검색 (10,000+ 대학)"
+              placeholder={t('exch.searchPlaceholder')}
               value={uniQuery}
               onChange={(e) => setUniQuery(e.target.value)}
             />
@@ -125,13 +125,13 @@ export default function ExchangeUniversitySearchPage() {
               </ul>
             )}
             {uniQuery.length >= 1 && globalResults?.length === 0 && (
-              <p style={{ margin: '4px 0 0', fontSize: 13, color: C.textDim }}>검색 결과 없음</p>
+              <p style={{ margin: '4px 0 0', fontSize: 13, color: C.textDim }}>{t('chat.noResults')}</p>
             )}
           </div>
         )}
       </div>
 
-      {/* 국가 드롭다운 */}
+      {/* Country dropdown */}
       <div style={{ marginBottom: 24 }}>
         <select
           style={{
@@ -143,21 +143,21 @@ export default function ExchangeUniversitySearchPage() {
           value={countryCode}
           onChange={handleCountryChange}
         >
-          <option value="">전체 국가</option>
+          <option value="">{t('exch.countryAll')}</option>
           {countries.map((c) => (
             <option key={c.countryCode} value={c.countryCode}>
-              {c.country} ({c.universityCount}개)
+              {c.country} ({c.universityCount})
             </option>
           ))}
         </select>
       </div>
 
-      {exchLoading && <p style={{ color: C.textMuted }}>검색 중...</p>}
+      {exchLoading && <p style={{ color: C.textMuted }}>{t('exch.loading')}</p>}
       {!exchLoading && exchHasSearched && exchUniversities.length === 0 && (
-        <p style={{ color: C.textDim, textAlign: 'center', paddingTop: 40 }}>해당하는 교환대학 데이터가 없습니다.</p>
+        <p style={{ color: C.textDim, textAlign: 'center', paddingTop: 40 }}>{t('exch.empty')}</p>
       )}
       {!exchHasSearched && !exchLoading && (
-        <p style={{ color: C.textDim, textAlign: 'center', paddingTop: 40 }}>대학명 또는 국가를 입력해 검색하세요.</p>
+        <p style={{ color: C.textDim, textAlign: 'center', paddingTop: 40 }}>{t('exch.searchHint')}</p>
       )}
 
       <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: 10 }}>
@@ -189,7 +189,7 @@ export default function ExchangeUniversitySearchPage() {
             <div style={{ textAlign: 'right', flexShrink: 0, marginLeft: 16 }}>
               <div style={{ color: '#f59e0b', fontSize: 14, letterSpacing: 1 }}>{STAR(u.avgRating)}</div>
               <div style={{ fontSize: 12, color: C.textDim, marginTop: 2 }}>
-                {(u.avgRating ?? 0).toFixed(1)} · 리뷰 {u.reviewCount}개
+                {(u.avgRating ?? 0).toFixed(1)} · {u.reviewCount} {t('exch.reviews')}
               </div>
             </div>
           </li>
@@ -208,10 +208,10 @@ export default function ExchangeUniversitySearchPage() {
               cursor: exchPage === 0 ? 'default' : 'pointer', fontSize: 14,
             }}
           >
-            ← 이전
+            {t('common.prev')}
           </button>
           <span style={{ color: C.textMuted, fontSize: 13 }}>
-            {exchPage + 1} / {exchData.totalPages}페이지 ({exchData.totalElements}개)
+            {exchPage + 1} / {exchData.totalPages} ({exchData.totalElements})
           </span>
           <button
             onClick={() => setExchPage((p) => p + 1)}
@@ -223,7 +223,7 @@ export default function ExchangeUniversitySearchPage() {
               cursor: !exchData.hasNext ? 'default' : 'pointer', fontSize: 14,
             }}
           >
-            다음 →
+            {t('common.next')}
           </button>
         </div>
       )}

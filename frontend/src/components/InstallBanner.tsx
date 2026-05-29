@@ -1,11 +1,13 @@
 import { useState } from 'react'
 import { usePWAInstall } from '../hooks/usePWAInstall'
+import { useI18n } from '../i18n/I18nProvider'
 
 // 앱스토어 출시 후 URL을 채워 넣으세요
 const APP_STORE_URL = ''
 const PLAY_STORE_URL = ''
 
 export function InstallBanner() {
+  const { t } = useI18n()
   const { installPrompt, isInstalled, platform, triggerInstall } = usePWAInstall()
   const [showIOSGuide, setShowIOSGuide] = useState(false)
   const [dismissed, setDismissed] = useState(false)
@@ -16,6 +18,12 @@ export function InstallBanner() {
   const showPWAButton = platform === 'android' ? !!installPrompt : platform === 'ios'
 
   if (!showPWAButton && !hasNativeApp) return null
+
+  const iosSteps = [
+    { step: '1', titleKey: 'install.step1.title' as const, descKey: 'install.step1.desc' as const },
+    { step: '2', titleKey: 'install.step2.title' as const, descKey: 'install.step2.desc' as const },
+    { step: '3', titleKey: 'install.step3.title' as const, descKey: 'install.step3.desc' as const },
+  ]
 
   return (
     <>
@@ -30,8 +38,8 @@ export function InstallBanner() {
         marginTop: 16,
       }}>
         <div style={{ flex: 1, minWidth: 0 }}>
-          <p style={{ margin: 0, fontSize: 13, fontWeight: 600, color: '#e2e8f0' }}>Ovlo 앱으로 더 편리하게</p>
-          <p style={{ margin: '2px 0 0', fontSize: 11, color: '#94a3b8' }}>홈 화면에 추가해서 앱처럼 사용하세요</p>
+          <p style={{ margin: 0, fontSize: 13, fontWeight: 600, color: '#e2e8f0' }}>{t('install.title')}</p>
+          <p style={{ margin: '2px 0 0', fontSize: 11, color: '#94a3b8' }}>{t('install.desc')}</p>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
           {showPWAButton && (
@@ -48,7 +56,7 @@ export function InstallBanner() {
                 cursor: 'pointer',
               }}
             >
-              {platform === 'ios' ? '추가 방법' : '홈 화면에 추가'}
+              {platform === 'ios' ? t('install.ios.btn') : t('install.android.btn')}
             </button>
           )}
           {platform === 'android' && PLAY_STORE_URL && (
@@ -81,7 +89,7 @@ export function InstallBanner() {
           )}
           <button
             onClick={() => setDismissed(true)}
-            aria-label="닫기"
+            aria-label={t('install.close')}
             style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#64748b', padding: 4, lineHeight: 1 }}
           >
             ✕
@@ -107,15 +115,11 @@ export function InstallBanner() {
             }}
           >
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
-              <h2 style={{ margin: 0, fontSize: 16, fontWeight: 700, color: '#e2e8f0' }}>홈 화면에 추가</h2>
+              <h2 style={{ margin: 0, fontSize: 16, fontWeight: 700, color: '#e2e8f0' }}>{t('install.guide.title')}</h2>
               <button onClick={() => setShowIOSGuide(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#64748b', fontSize: 18 }}>✕</button>
             </div>
             <ol style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: 16 }}>
-              {[
-                { step: '1', title: 'Safari 하단 공유 버튼 탭', desc: '화면 아래 가운데 □↑ 아이콘' },
-                { step: '2', title: '스크롤 내려서 "홈 화면에 추가" 탭', desc: '목록에서 + 아이콘과 함께 표시돼요' },
-                { step: '3', title: '오른쪽 위 "추가" 탭', desc: '홈 화면에 Ovlo 아이콘이 생겨요' },
-              ].map(({ step, title, desc }) => (
+              {iosSteps.map(({ step, titleKey, descKey }) => (
                 <li key={step} style={{ display: 'flex', alignItems: 'flex-start', gap: 12 }}>
                   <span style={{
                     flexShrink: 0, width: 24, height: 24, borderRadius: '50%',
@@ -123,8 +127,8 @@ export function InstallBanner() {
                     display: 'flex', alignItems: 'center', justifyContent: 'center', marginTop: 2,
                   }}>{step}</span>
                   <div>
-                    <p style={{ margin: 0, fontSize: 13, fontWeight: 600, color: '#e2e8f0' }}>{title}</p>
-                    <p style={{ margin: '2px 0 0', fontSize: 11, color: '#94a3b8' }}>{desc}</p>
+                    <p style={{ margin: 0, fontSize: 13, fontWeight: 600, color: '#e2e8f0' }}>{t(titleKey)}</p>
+                    <p style={{ margin: '2px 0 0', fontSize: 11, color: '#94a3b8' }}>{t(descKey)}</p>
                   </div>
                 </li>
               ))}
@@ -137,7 +141,7 @@ export function InstallBanner() {
                 borderRadius: 12, fontSize: 14, fontWeight: 600, cursor: 'pointer',
               }}
             >
-              확인
+              {t('install.confirm')}
             </button>
           </div>
         </div>

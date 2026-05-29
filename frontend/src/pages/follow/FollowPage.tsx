@@ -1,8 +1,10 @@
 import { Link } from 'react-router-dom'
 import { useFollowers, useFollowings, useUnfollow } from '../../hooks/useFollow'
 import { useAuthStore } from '../../store/authStore'
+import { useI18n } from '../../i18n/I18nProvider'
 
 export default function FollowPage() {
+  const { t } = useI18n()
   const { currentUser } = useAuthStore()
   const { data: followers, isLoading: fl } = useFollowers(currentUser?.id ?? '')
   const { data: followings, isLoading: fgl } = useFollowings(currentUser?.id ?? '')
@@ -11,8 +13,8 @@ export default function FollowPage() {
   return (
     <div style={{ display: 'flex', gap: 32 }}>
       <div style={{ flex: 1 }}>
-        <h2>팔로워 ({followers?.length ?? 0})</h2>
-        {fl && <p>로딩 중...</p>}
+        <h2>{t('follow.followers')} ({followers?.length ?? 0})</h2>
+        {fl && <p>{t('follow.loading')}</p>}
         <ul style={{ listStyle: 'none', padding: 0 }}>
           {followers?.map((m) => (
             <li key={m.id} style={{ padding: '8px 0', borderBottom: '1px solid #eee' }}>
@@ -23,17 +25,14 @@ export default function FollowPage() {
       </div>
 
       <div style={{ flex: 1 }}>
-        <h2>팔로잉 ({followings?.length ?? 0})</h2>
-        {fgl && <p>로딩 중...</p>}
+        <h2>{t('follow.following')} ({followings?.length ?? 0})</h2>
+        {fgl && <p>{t('follow.loading')}</p>}
         <ul style={{ listStyle: 'none', padding: 0 }}>
           {followings?.map((m) => (
             <li key={m.id} style={{ padding: '8px 0', borderBottom: '1px solid #eee', display: 'flex', justifyContent: 'space-between' }}>
               <Link to={`/profile/${m.id}`}>{m.nickname}</Link>
-              <button
-                onClick={() => unfollow.mutate(m.id)}
-                style={{ fontSize: 12, color: 'red' }}
-              >
-                언팔로우
+              <button onClick={() => unfollow.mutate(m.id)} style={{ fontSize: 12, color: 'red' }}>
+                {t('follow.unfollow')}
               </button>
             </li>
           ))}

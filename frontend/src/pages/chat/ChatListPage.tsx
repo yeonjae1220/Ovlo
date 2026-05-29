@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useChatRooms, useCreateChatRoom } from '../../hooks/useChat'
+import { useI18n } from '../../i18n/I18nProvider'
 import { useMemberSearch } from '../../hooks/useMember'
 import { useAuthStore } from '../../store/authStore'
 import type { ChatRoomType, Member } from '../../types'
@@ -19,6 +20,7 @@ const C = {
 }
 
 export default function ChatListPage() {
+  const { t } = useI18n()
   const { data: rooms, isLoading } = useChatRooms()
   const { currentUser } = useAuthStore()
   const createRoom = useCreateChatRoom()
@@ -69,7 +71,7 @@ export default function ChatListPage() {
   }
 
   const handleCreate = () => {
-    if (!selectedMember) { alert('채팅 상대를 검색하여 선택해주세요.'); return }
+    if (!selectedMember) { alert(t('chat.form.selectAlert')); return }
     createRoom.mutate(
       { type, name: roomName || undefined, participantIds: [Number(selectedMember.id)] },
       {
@@ -90,14 +92,14 @@ export default function ChatListPage() {
     setRoomName('')
   }
 
-  if (isLoading) return <p style={{ color: C.textMuted, padding: 24 }}>로딩 중...</p>
+  if (isLoading) return <p style={{ color: C.textMuted, padding: 24 }}>{t('chat.room.loading')}</p>
 
   const currentUserId = currentUser?.id ? Number(currentUser.id) : null
 
   return (
     <div style={{ maxWidth: 760, margin: '0 auto' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
-        <h1 style={{ margin: 0, fontSize: 22, fontWeight: 800, color: C.textPrimary }}>채팅</h1>
+        <h1 style={{ margin: 0, fontSize: 22, fontWeight: 800, color: C.textPrimary }}>{t('chat.title')}</h1>
         <button
           onClick={() => setShowForm((v) => !v)}
           style={{
@@ -105,7 +107,7 @@ export default function ChatListPage() {
             border: `1px solid ${C.borderLight}`, background: 'transparent', color: C.textMuted,
           }}
         >
-          + 채팅방 만들기
+          {t('chat.createRoom')}
         </button>
       </div>
 
@@ -113,7 +115,7 @@ export default function ChatListPage() {
       <div style={{ marginBottom: 20 }}>
         <div style={{ position: 'relative' }}>
           <input
-            placeholder="닉네임으로 사용자 검색하여 DM 시작..."
+            placeholder={t('chat.dm.searchPlaceholder')}
             value={dmQuery}
             onChange={(e) => { setDmQuery(e.target.value); setDmDropdownOpen(true) }}
             onFocus={() => setDmDropdownOpen(true)}
@@ -161,7 +163,7 @@ export default function ChatListPage() {
                     <div style={{ fontSize: 14, fontWeight: 600, color: C.textPrimary }}>@{m.nickname}</div>
                     <div style={{ fontSize: 12, color: C.textDim }}>{m.name}</div>
                   </div>
-                  <span style={{ marginLeft: 'auto', fontSize: 12, color: C.activeText }}>DM 시작 →</span>
+                  <span style={{ marginLeft: 'auto', fontSize: 12, color: C.activeText }}>{t('chat.dm.start')}</span>
                 </li>
               ))}
             </ul>
@@ -172,7 +174,7 @@ export default function ChatListPage() {
               padding: '12px 14px', border: `1px solid ${C.borderLight}`, borderRadius: 10,
               background: C.card, color: C.textDim, fontSize: 13,
             }}>
-              검색 결과 없음
+              {t('chat.noResults')}
             </div>
           )}
         </div>
@@ -187,12 +189,12 @@ export default function ChatListPage() {
             style={{ marginBottom: 8, padding: '7px 10px', borderRadius: 6, border: `1px solid ${C.borderLight}`, background: '#242424', color: C.textSec, fontSize: 13 }}
           >
             <option value="DM">DM</option>
-            <option value="GROUP">그룹</option>
+            <option value="GROUP">{t('chat.form.group')}</option>
           </select>
 
           {type === 'GROUP' && (
             <input
-              placeholder="채팅방 이름"
+              placeholder={t('chat.form.roomName')}
               value={roomName}
               onChange={(e) => setRoomName(e.target.value)}
               style={{ display: 'block', width: '100%', marginBottom: 8, padding: '8px 12px', borderRadius: 6, border: `1px solid ${C.borderLight}`, background: '#242424', color: C.textPrimary, fontSize: 14, boxSizing: 'border-box' }}
@@ -201,7 +203,7 @@ export default function ChatListPage() {
 
           <div style={{ position: 'relative', marginBottom: 8 }}>
             <input
-              placeholder="닉네임으로 검색..."
+              placeholder={t('chat.form.searchMember')}
               value={nicknameQuery}
               onChange={(e) => { setNicknameQuery(e.target.value); setSelectedMember(null) }}
               style={{ width: '100%', padding: '8px 12px', borderRadius: 6, border: `1px solid ${C.borderLight}`, background: '#242424', color: C.textPrimary, fontSize: 14, boxSizing: 'border-box' }}
@@ -228,13 +230,13 @@ export default function ChatListPage() {
               </ul>
             )}
             {nicknameQuery.length >= 1 && !selectedMember && filteredResults.length === 0 && (
-              <div style={{ padding: '6px 0', fontSize: 13, color: C.textDim }}>검색 결과 없음</div>
+              <div style={{ padding: '6px 0', fontSize: 13, color: C.textDim }}>{t('chat.noResults')}</div>
             )}
           </div>
 
           {selectedMember && (
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8, padding: '6px 10px', background: C.activeBg, borderRadius: 6 }}>
-              <span style={{ color: C.textSec, fontSize: 13 }}>선택됨: <strong style={{ color: C.purple }}>@{selectedMember.nickname}</strong> ({selectedMember.name})</span>
+              <span style={{ color: C.textSec, fontSize: 13 }}>{t('chat.form.selected')} <strong style={{ color: C.purple }}>@{selectedMember.nickname}</strong> ({selectedMember.name})</span>
               <button
                 type="button"
                 onClick={() => { setSelectedMember(null); setNicknameQuery('') }}
@@ -255,17 +257,17 @@ export default function ChatListPage() {
                 color: '#fff', fontSize: 13, cursor: selectedMember ? 'pointer' : 'default', fontWeight: 600,
               }}
             >
-              생성
+              {t('chat.form.create')}
             </button>
             <button
               onClick={resetForm}
               style={{ padding: '7px 12px', borderRadius: 6, border: `1px solid ${C.borderLight}`, background: 'transparent', color: C.textMuted, fontSize: 13, cursor: 'pointer' }}
             >
-              취소
+              {t('chat.form.cancel')}
             </button>
           </div>
           {createRoom.isError && (
-            <p style={{ color: '#f87171', marginTop: 8, fontSize: 13 }}>생성 실패. 이미 DM이 존재하거나 오류가 발생했습니다.</p>
+            <p style={{ color: '#f87171', marginTop: 8, fontSize: 13 }}>{t('chat.form.error')}</p>
           )}
         </div>
       )}
@@ -293,9 +295,9 @@ export default function ChatListPage() {
                     {displayName?.[0]?.toUpperCase() ?? '?'}
                   </div>
                   <div>
-                    <div style={{ fontWeight: 600, fontSize: 14, color: C.textPrimary }}>{displayName || '채팅방'}</div>
+                    <div style={{ fontWeight: 600, fontSize: 14, color: C.textPrimary }}>{displayName || t('chat.room.defaultName')}</div>
                     <div style={{ fontSize: 12, color: C.textDim, marginTop: 2 }}>
-                      {room.type === 'DM' ? 'DM' : '그룹'}
+                      {room.type === 'DM' ? 'DM' : t('chat.type.group')}
                     </div>
                   </div>
                 </div>
@@ -315,7 +317,7 @@ export default function ChatListPage() {
 
       {rooms?.length === 0 && (
         <p style={{ color: C.textDim, textAlign: 'center', paddingTop: 40 }}>
-          채팅방이 없습니다. 위에서 사용자를 검색해 DM을 시작해보세요.
+          {t('chat.empty')}
         </p>
       )}
     </div>

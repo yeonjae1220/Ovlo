@@ -1,17 +1,19 @@
 import { Link, NavLink, Outlet } from 'react-router-dom'
 import { useAuthStore } from '../../store/authStore'
 import { useBreakpoint } from '../../hooks/useBreakpoint'
-
-const NAV_ITEMS = [
-  { to: '/boards', label: '홈' },
-  { to: '/exchange-universities', label: '교환대학' },
-  { to: '/chat', label: '채팅' },
-]
+import { useI18n } from '../../i18n/I18nProvider'
 
 export default function AppLayout() {
+  const { t } = useI18n()
   const { currentUser } = useAuthStore()
   const { isMobile } = useBreakpoint()
-  const userLabel = currentUser?.nickname ?? currentUser?.name ?? '프로필'
+  const userLabel = currentUser?.nickname ?? currentUser?.name ?? t('nav.profile')
+
+  const NAV_ITEMS = [
+    { to: '/boards', labelKey: 'nav.home' as const },
+    { to: '/exchange-universities', labelKey: 'nav.exchange' as const },
+    { to: '/chat', labelKey: 'nav.chat' as const },
+  ]
 
   const desktopLinkStyle = (isActive: boolean): React.CSSProperties => ({
     padding: '6px 12px',
@@ -45,14 +47,14 @@ export default function AppLayout() {
 
         {!isMobile && (
           <nav style={{ display: 'flex', gap: 4, alignItems: 'center' }}>
-            {NAV_ITEMS.map(({ to, label }) => (
+            {NAV_ITEMS.map(({ to, labelKey }) => (
               <NavLink key={to} to={to} style={({ isActive }) => desktopLinkStyle(isActive)}>
-                {label}
+                {t(labelKey)}
               </NavLink>
             ))}
             {currentUser && (
               <NavLink to={`/profile/${currentUser.id}`} style={({ isActive }) => desktopLinkStyle(isActive)}>
-                프로필
+                {t('nav.profile')}
               </NavLink>
             )}
           </nav>
@@ -106,7 +108,7 @@ export default function AppLayout() {
             zIndex: 100,
           }}
         >
-          {NAV_ITEMS.map(({ to, label }) => (
+          {NAV_ITEMS.map(({ to, labelKey }) => (
             <NavLink
               key={to}
               to={to}
@@ -122,7 +124,7 @@ export default function AppLayout() {
                 flex: 1,
               })}
             >
-              {label}
+              {t(labelKey)}
             </NavLink>
           ))}
           {currentUser && (
@@ -140,7 +142,7 @@ export default function AppLayout() {
                 flex: 1,
               })}
             >
-              프로필
+              {t('nav.profile')}
             </NavLink>
           )}
         </nav>

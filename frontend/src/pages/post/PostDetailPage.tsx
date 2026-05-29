@@ -9,8 +9,10 @@ import {
   useUnreact,
 } from '../../hooks/usePost'
 import { useAuthStore } from '../../store/authStore'
+import { useI18n } from '../../i18n/I18nProvider'
 
 export default function PostDetailPage() {
+  const { t } = useI18n()
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
   const { data: post, isLoading } = usePost(id!)
@@ -23,8 +25,8 @@ export default function PostDetailPage() {
 
   const [commentContent, setCommentContent] = useState('')
 
-  if (isLoading) return <p>로딩 중...</p>
-  if (!post) return <p>게시글을 찾을 수 없습니다.</p>
+  if (isLoading) return <p>{t('common.loading')}</p>
+  if (!post) return <p>{t('post.notFound')}</p>
 
   const isMyPost = currentUser && String(post.authorId) === currentUser.id
   const likedByMe = post.likedByMe ?? false
@@ -50,8 +52,8 @@ export default function PostDetailPage() {
 
   return (
     <div>
-      <h1>{post.deleted ? '[삭제된 게시글]' : post.title}</h1>
-      <p style={{ color: '#888', fontSize: 13 }}>작성자 #{post.authorId}</p>
+      <h1>{post.deleted ? t('post.deleted') : post.title}</h1>
+      <p style={{ color: '#888', fontSize: 13 }}>{t('post.author')}{post.authorId}</p>
 
       {!post.deleted && (
         <>
@@ -65,23 +67,21 @@ export default function PostDetailPage() {
                 padding: '6px 14px',
                 background: likedByMe ? '#4a90e2' : '#f0f0f0',
                 color: likedByMe ? 'white' : 'inherit',
-                border: 'none',
-                borderRadius: 6,
-                cursor: 'pointer',
+                border: 'none', borderRadius: 6, cursor: 'pointer',
               }}
             >
               👍 {post.likeCount}
             </button>
             {isMyPost && (
               <button onClick={handleDelete} style={{ marginLeft: 'auto', color: 'red' }}>
-                삭제
+                {t('post.delete')}
               </button>
             )}
           </div>
         </>
       )}
 
-      <h3>댓글 {post.comments.filter((c) => !c.deleted).length}</h3>
+      <h3>{t('post.comments')} {post.comments.filter((c) => !c.deleted).length}</h3>
       <ul style={{ listStyle: 'none', padding: 0 }}>
         {post.comments.filter((c) => !c.deleted).map((c) => (
           <li key={c.id} style={{ padding: '10px 0', borderBottom: '1px solid #eee' }}>
@@ -92,7 +92,7 @@ export default function PostDetailPage() {
                   onClick={() => deleteComment.mutate({ postId: id!, commentId: String(c.id) })}
                   style={{ color: 'red', fontSize: 12, background: 'none', border: 'none', cursor: 'pointer' }}
                 >
-                  삭제
+                  {t('post.delete')}
                 </button>
               )}
             </div>
@@ -103,13 +103,13 @@ export default function PostDetailPage() {
 
       <div style={{ display: 'flex', gap: 8, marginTop: 12 }}>
         <input
-          placeholder="댓글을 입력하세요..."
+          placeholder={t('post.comment.placeholder')}
           value={commentContent}
           onChange={(e) => setCommentContent(e.target.value)}
           style={{ flex: 1 }}
           onKeyDown={(e) => e.key === 'Enter' && handleComment()}
         />
-        <button onClick={handleComment} disabled={addComment.isPending}>등록</button>
+        <button onClick={handleComment} disabled={addComment.isPending}>{t('post.comment.submit')}</button>
       </div>
     </div>
   )

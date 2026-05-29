@@ -4,8 +4,10 @@ import { useCreatePost } from '../../hooks/usePost'
 import { useUploadMedia } from '../../hooks/useMedia'
 import { useDropzone } from 'react-dropzone'
 import type { MediaFile } from '../../types'
+import { useI18n } from '../../i18n/I18nProvider'
 
 export default function CreatePostPage() {
+  const { t } = useI18n()
   const [searchParams] = useSearchParams()
   const boardId = searchParams.get('boardId') ?? ''
   const navigate = useNavigate()
@@ -35,15 +37,15 @@ export default function CreatePostPage() {
 
   return (
     <div>
-      <h1>글쓰기</h1>
+      <h1>{t('post.write.title')}</h1>
       <input
-        placeholder="제목"
+        placeholder={t('post.write.titlePlaceholder')}
         value={title}
         onChange={(e) => setTitle(e.target.value)}
         style={{ display: 'block', width: '100%', marginBottom: 12, padding: 8 }}
       />
       <textarea
-        placeholder="내용을 입력하세요..."
+        placeholder={t('post.write.contentPlaceholder')}
         value={content}
         onChange={(e) => setContent(e.target.value)}
         rows={12}
@@ -53,16 +55,13 @@ export default function CreatePostPage() {
       <div
         {...getRootProps()}
         style={{
-          border: '2px dashed #ccc',
-          padding: 16,
-          marginBottom: 12,
-          borderRadius: 8,
-          cursor: 'pointer',
+          border: '2px dashed #ccc', padding: 16, marginBottom: 12,
+          borderRadius: 8, cursor: 'pointer',
           background: isDragActive ? '#f0f0f0' : 'transparent',
         }}
       >
         <input {...getInputProps()} />
-        {isDragActive ? <p>파일을 놓으세요</p> : <p>파일 첨부 (드래그 또는 클릭)</p>}
+        {isDragActive ? <p>{t('post.write.dropActive')}</p> : <p>{t('post.write.dropIdle')}</p>}
       </div>
 
       {uploadedMedia.length > 0 && (
@@ -73,11 +72,8 @@ export default function CreatePostPage() {
         </ul>
       )}
 
-      <button
-        onClick={handleSubmit}
-        disabled={createPost.isPending || !title || !content}
-      >
-        {createPost.isPending ? '등록 중...' : '게시글 등록'}
+      <button onClick={handleSubmit} disabled={createPost.isPending || !title || !content}>
+        {createPost.isPending ? t('post.write.submitting') : t('post.write.submit')}
       </button>
     </div>
   )

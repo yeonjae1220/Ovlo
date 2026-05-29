@@ -80,7 +80,7 @@ export default function ProfilePage() {
   }
 
   const handleWithdraw = async () => {
-    if (!confirm('정말 탈퇴하시겠습니까? 이 작업은 되돌릴 수 없습니다.')) return
+    if (!confirm(t('profile.withdraw.confirm'))) return
     try {
       await memberApi.withdraw(id!)
     } finally {
@@ -98,7 +98,7 @@ export default function ProfilePage() {
         {isOwner ? (
           <div {...getRootProps()} style={{ cursor: 'pointer', width: 80, height: 80, borderRadius: '50%', background: '#eee', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <input {...getInputProps()} />
-            <span style={{ fontSize: 12 }}>사진 변경</span>
+            <span style={{ fontSize: 12 }}>{t('profile.changePhoto')}</span>
           </div>
         ) : (
           <div style={{ width: 80, height: 80, borderRadius: '50%', background: '#eee' }} />
@@ -107,24 +107,24 @@ export default function ProfilePage() {
         <div style={{ flex: 1 }}>
           {editing ? (
             <>
-              <input value={nickname} onChange={(e) => setNickname(e.target.value)} placeholder="닉네임" />
-              <textarea value={bio} onChange={(e) => setBio(e.target.value)} placeholder="소개" rows={3} style={{ display: 'block', width: '100%' }} />
-              <button onClick={saveEdit}>저장</button>
-              <button onClick={() => setEditing(false)}>취소</button>
+              <input value={nickname} onChange={(e) => setNickname(e.target.value)} placeholder={t('profile.nickname.placeholder')} />
+              <textarea value={bio} onChange={(e) => setBio(e.target.value)} placeholder={t('profile.bio.placeholder')} rows={3} style={{ display: 'block', width: '100%' }} />
+              <button onClick={saveEdit}>{t('profile.save')}</button>
+              <button onClick={() => setEditing(false)}>{t('profile.cancel')}</button>
             </>
           ) : (
             <>
               <h2>{member.nickname}</h2>
               <p>{member.name} · {member.email}</p>
               {member.bio && <p>{member.bio}</p>}
-              <p>팔로워 {followers?.length ?? 0} · 팔로잉 {followings?.length ?? 0}</p>
+              <p>{t('profile.followers')} {followers?.length ?? 0} · {t('profile.following')} {followings?.length ?? 0}</p>
               {isOwner ? (
-                <button onClick={startEdit}>프로필 편집</button>
+                <button onClick={startEdit}>{t('profile.editBtn')}</button>
               ) : (
                 isFollowing ? (
-                  <button onClick={() => unfollowMutation.mutate(id!)}>언팔로우</button>
+                  <button onClick={() => unfollowMutation.mutate(id!)}>{t('profile.unfollow')}</button>
                 ) : (
-                  <button onClick={() => followMutation.mutate(id!)}>팔로우</button>
+                  <button onClick={() => followMutation.mutate(id!)}>{t('profile.follow')}</button>
                 )
               )}
             </>
@@ -135,11 +135,11 @@ export default function ProfilePage() {
       {/* 내가 쓴 글 */}
       <div style={{ marginTop: 32, paddingTop: 24, borderTop: `1px solid ${C.border}` }}>
         <h3 style={{ margin: '0 0 12px', fontSize: 16, fontWeight: 700, color: C.textPrimary }}>
-          {isOwner ? '내가 쓴 글' : '작성한 글'}
+          {isOwner ? t('profile.myPosts') : t('profile.theirPosts')}
         </h3>
-        {myPostsLoading && <p style={{ color: C.textMuted, fontSize: 14 }}>불러오는 중...</p>}
+        {myPostsLoading && <p style={{ color: C.textMuted, fontSize: 14 }}>{t('profile.postsLoading')}</p>}
         {!myPostsLoading && (myPostsData?.content ?? []).length === 0 && (
-          <p style={{ color: C.textDim, fontSize: 14 }}>아직 작성한 게시글이 없습니다.</p>
+          <p style={{ color: C.textDim, fontSize: 14 }}>{t('profile.noPosts')}</p>
         )}
         <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
           {(myPostsData?.content ?? []).map((post) => (
@@ -149,7 +149,7 @@ export default function ProfilePage() {
                 style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 4px', textDecoration: 'none', color: 'inherit' }}
               >
                 <span style={{ fontSize: 14, color: C.textPrimary, fontWeight: 500 }}>
-                  {post.deleted ? <span style={{ color: C.textDim }}>[삭제된 게시글]</span> : post.title}
+                  {post.deleted ? <span style={{ color: C.textDim }}>{t('post.deleted')}</span> : post.title}
                 </span>
                 {post.boardName && (
                   <span style={{ fontSize: 11, color: C.activeText, background: '#1e3a5f', padding: '2px 6px', borderRadius: 4, flexShrink: 0, marginLeft: 8 }}>
@@ -166,13 +166,13 @@ export default function ProfilePage() {
               onClick={() => setMyPostsPage((p) => p - 1)}
               disabled={myPostsPage === 0}
               style={{ padding: '6px 16px', borderRadius: 8, border: `1px solid ${C.borderLight}`, background: myPostsPage === 0 ? '#1a2234' : C.card, color: myPostsPage === 0 ? '#475569' : C.textSec, cursor: myPostsPage === 0 ? 'default' : 'pointer', fontSize: 13 }}
-            >← 이전</button>
-            <span style={{ color: C.textMuted, fontSize: 13 }}>{myPostsPage + 1}페이지</span>
+            >{t('common.prev')}</button>
+            <span style={{ color: C.textMuted, fontSize: 13 }}>{myPostsPage + 1}</span>
             <button
               onClick={() => setMyPostsPage((p) => p + 1)}
               disabled={!(myPostsData?.hasNext)}
               style={{ padding: '6px 16px', borderRadius: 8, border: `1px solid ${C.borderLight}`, background: !(myPostsData?.hasNext) ? '#1a2234' : C.card, color: !(myPostsData?.hasNext) ? '#475569' : C.textSec, cursor: !(myPostsData?.hasNext) ? 'default' : 'pointer', fontSize: 13 }}
-            >다음 →</button>
+            >{t('common.next')}</button>
           </div>
         )}
       </div>

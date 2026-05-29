@@ -2,6 +2,7 @@ import { useState } from 'react'
 import ReactMarkdown from 'react-markdown'
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom'
 import { useUniversityReport, useUniversityReportLanguages } from '../../hooks/useUniversity'
+import { useI18n } from '../../i18n/I18nProvider'
 
 const C = {
   bg:          '#242424',
@@ -52,11 +53,12 @@ function InfoCard({ icon, title, children }: { icon: string; title: string; chil
 }
 
 export default function UniversityReportDetailPage() {
+  const { t } = useI18n()
   const { id } = useParams<{ id: string }>()
   const [searchParams] = useSearchParams()
   const navigate = useNavigate()
   const reportId = Number(id)
-  const [lang, setLang] = useState(searchParams.get('lang') ?? 'ko')
+  const [lang, setLang] = useState(searchParams.get('lang') ?? 'en')
 
   const { data: report, isLoading } = useUniversityReport(reportId, lang)
   const { data: langs = [] } = useUniversityReportLanguages(reportId)
@@ -66,8 +68,8 @@ export default function UniversityReportDetailPage() {
     navigate(`/university-reports/${reportId}?lang=${l}`, { replace: true })
   }
 
-  if (isLoading) return <div style={{ padding: 40, color: C.textMuted }}>불러오는 중...</div>
-  if (!report)   return <div style={{ padding: 40, color: '#f87171' }}>보고서를 찾을 수 없습니다.</div>
+  if (isLoading) return <div style={{ padding: 40, color: C.textMuted }}>{t('univ.detail.loading')}</div>
+  if (!report)   return <div style={{ padding: 40, color: '#f87171' }}>{t('univ.detail.notFound')}</div>
 
   let parsed: ReportContent | null = null
   if (report.content) {
@@ -83,7 +85,7 @@ export default function UniversityReportDetailPage() {
         onClick={() => navigate(-1)}
         style={{ background: 'none', border: 'none', cursor: 'pointer', color: C.textMuted, fontSize: 14, marginBottom: 20, padding: 0 }}
       >
-        ← 목록으로
+        {t('univ.detail.back')}
       </button>
 
       {/* 헤더 */}
@@ -111,8 +113,8 @@ export default function UniversityReportDetailPage() {
           )}
         </div>
         <div style={{ marginTop: 10, fontSize: 12, color: C.textDim }}>
-          영상 {report.sourceVideoCount}개 분석
-          {report.sourceWebCount > 0 && ` · 웹 ${report.sourceWebCount}개`}
+          {t('univ.detail.videos', { count: report.sourceVideoCount })}
+          {report.sourceWebCount > 0 && ` · ${t('univ.reports.web', { count: report.sourceWebCount })}`}
         </div>
       </div>
 
@@ -122,7 +124,7 @@ export default function UniversityReportDetailPage() {
         background: '#1a2234', border: `1px solid #2d3748`,
         fontSize: 12, color: C.textDim,
       }}>
-        ⓘ AI가 영상 후기를 요약한 가이드입니다. 정확하지 않을 수 있습니다.
+        {t('univ.detail.aiDisclaimer')}
       </div>
 
       {/* 요약 */}
@@ -136,7 +138,7 @@ export default function UniversityReportDetailPage() {
       {parsed && (
         <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', marginBottom: 24 }}>
           {parsed.costs && (
-            <InfoCard icon="💰" title="생활비">
+            <InfoCard icon="💰" title={t('univ.detail.cost')}>
               <div style={{ fontSize: 13, color: C.textSec, fontWeight: 600 }}>
                 {parsed.costs.monthly_total ?? '-'}
               </div>
@@ -144,14 +146,14 @@ export default function UniversityReportDetailPage() {
                 <div style={{ fontSize: 11, color: C.textMuted, marginTop: 2 }}>{parsed.costs.currency}</div>
               )}
               {parsed.costs.rent && (
-                <div style={{ fontSize: 12, color: C.textMuted, marginTop: 4 }}>월세 {parsed.costs.rent}</div>
+                <div style={{ fontSize: 12, color: C.textMuted, marginTop: 4 }}>{t('univ.detail.rent')} {parsed.costs.rent}</div>
               )}
             </InfoCard>
           )}
           {parsed.housing && (
-            <InfoCard icon="🏠" title="기숙사">
+            <InfoCard icon="🏠" title={t('univ.detail.dorm')}>
               <div style={{ fontSize: 13, fontWeight: 600, color: parsed.housing.dorm_available ? '#4ade80' : '#f87171' }}>
-                {parsed.housing.dorm_available ? '입사 가능' : '입사 불가'}
+                {parsed.housing.dorm_available ? t('univ.detail.dormAvailable') : t('univ.detail.dormNotAvailable')}
               </div>
               {parsed.housing.dorm_price && (
                 <div style={{ fontSize: 11, color: C.textMuted, marginTop: 2 }}>{parsed.housing.dorm_price}</div>
@@ -162,29 +164,29 @@ export default function UniversityReportDetailPage() {
             </InfoCard>
           )}
           {parsed.visa && (
-            <InfoCard icon="🛂" title="비자">
+            <InfoCard icon="🛂" title={t('univ.detail.visa')}>
               <div style={{ fontSize: 13, color: C.textSec, fontWeight: 600 }}>{parsed.visa.type ?? '-'}</div>
               {parsed.visa.cost && (
-                <div style={{ fontSize: 11, color: C.textMuted, marginTop: 2 }}>비용 {parsed.visa.cost}</div>
+                <div style={{ fontSize: 11, color: C.textMuted, marginTop: 2 }}>{t('univ.detail.visaCost')} {parsed.visa.cost}</div>
               )}
               {parsed.visa.processing_days && (
-                <div style={{ fontSize: 11, color: C.textMuted }}>처리 {parsed.visa.processing_days}</div>
+                <div style={{ fontSize: 11, color: C.textMuted }}>{t('univ.detail.processing')} {parsed.visa.processing_days}</div>
               )}
             </InfoCard>
           )}
           {parsed.academics && (
-            <InfoCard icon="📚" title="학업">
+            <InfoCard icon="📚" title={t('univ.detail.academics')}>
               {parsed.academics.difficulty && (
-                <div style={{ fontSize: 12, color: C.textSec }}>난이도 {parsed.academics.difficulty}</div>
+                <div style={{ fontSize: 12, color: C.textSec }}>{t('univ.detail.difficulty')} {parsed.academics.difficulty}</div>
               )}
               {parsed.academics.gpa_req && (
                 <div style={{ fontSize: 12, color: C.textSec }}>GPA {parsed.academics.gpa_req}</div>
               )}
               {parsed.academics.language_req && (
-                <div style={{ fontSize: 12, color: C.textSec }}>어학 {parsed.academics.language_req}</div>
+                <div style={{ fontSize: 12, color: C.textSec }}>{t('univ.detail.languageReq')} {parsed.academics.language_req}</div>
               )}
               {parsed.academics.deadline && (
-                <div style={{ fontSize: 12, color: C.textMuted, marginTop: 2 }}>마감 {parsed.academics.deadline}</div>
+                <div style={{ fontSize: 12, color: C.textMuted, marginTop: 2 }}>{t('univ.detail.deadline')} {parsed.academics.deadline}</div>
               )}
             </InfoCard>
           )}

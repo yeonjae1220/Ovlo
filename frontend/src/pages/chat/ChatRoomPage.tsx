@@ -6,6 +6,7 @@ import { useAuthStore } from '../../store/authStore'
 import { useBreakpoint } from '../../hooks/useBreakpoint'
 import { stompClient } from '../../utils/stomp'
 import type { HistoryMessage, Message } from '../../types'
+import { useI18n } from '../../i18n/I18nProvider'
 
 const PAGE_SIZE = 50
 
@@ -20,6 +21,7 @@ function toMessage(m: HistoryMessage, chatRoomId: string): Message {
 }
 
 export default function ChatRoomPage() {
+  const { t } = useI18n()
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
   const queryClient = useQueryClient()
@@ -166,8 +168,8 @@ export default function ChatRoomPage() {
     setInput('')
   }
 
-  if (isLoading) return <p>로딩 중...</p>
-  if (!room) return <p>채팅방을 찾을 수 없습니다.</p>
+  if (isLoading) return <p>{t('chat.room.loading')}</p>
+  if (!room) return <p>{t('chat.room.notFound')}</p>
 
   const currentUserId = currentUser?.id ? Number(currentUser.id) : null
   const otherParticipants = room.participantIds.filter((p) => p !== currentUserId)
@@ -186,14 +188,14 @@ export default function ChatRoomPage() {
     (otherParticipants
       .map((pid) => `${room.participantNicknames?.[pid] ?? `#${pid}`}`)
       .join(', ') ||
-    '채팅방')
+    t('chat.room.defaultName'))
   const containerHeight = isMobile ? 'calc(100dvh - 150px)' : '80vh'
 
   return (
     <div style={{ maxWidth: 900, margin: '0 auto', display: 'flex', flexDirection: 'column', height: containerHeight, minHeight: isMobile ? 420 : 520 }}>
       <h2 style={{ borderBottom: '1px solid #eee', paddingBottom: 12, marginBottom: 12, fontSize: isMobile ? 20 : 24, lineHeight: 1.3, overflowWrap: 'anywhere' }}>
         {roomTitle}
-        {!connected && <span style={{ color: 'red', fontSize: 13, marginLeft: 8 }}>(연결 중...)</span>}
+        {!connected && <span style={{ color: 'red', fontSize: 13, marginLeft: 8 }}>{t('chat.room.connecting')}</span>}
       </h2>
 
       {hasMore && (
@@ -202,7 +204,7 @@ export default function ChatRoomPage() {
           disabled={loadingHistory}
           style={{ margin: '4px 0 8px', fontSize: 13, padding: '4px 12px', alignSelf: 'flex-start' }}
         >
-          {loadingHistory ? '불러오는 중...' : '이전 메시지 불러오기'}
+          {loadingHistory ? t('chat.room.loading') : t('chat.room.loadMore')}
         </button>
       )}
 
@@ -272,7 +274,7 @@ export default function ChatRoomPage() {
 
       <div style={{ display: 'flex', gap: 8, paddingTop: 12, borderTop: '1px solid #eee', alignItems: isMobile ? 'stretch' : 'center', flexDirection: isMobile ? 'column' : 'row' }}>
         <input
-          placeholder="메시지를 입력하세요..."
+          placeholder={t('chat.room.msgPlaceholder')}
           value={input}
           onChange={(e) => setInput(e.target.value)}
           onKeyDown={(e) => e.key === 'Enter' && sendMessage()}
@@ -284,7 +286,7 @@ export default function ChatRoomPage() {
           disabled={!connected || !input.trim()}
           style={{ width: isMobile ? '100%' : 'auto', minHeight: isMobile ? 44 : undefined }}
         >
-          전송
+          {t('chat.room.send')}
         </button>
       </div>
     </div>

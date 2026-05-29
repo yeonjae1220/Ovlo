@@ -1,12 +1,13 @@
 import { useState, type FormEvent } from 'react'
 import { Link } from 'react-router-dom'
 import { useLogin } from '../../hooks/useAuth'
+import { useI18n } from '../../i18n/I18nProvider'
 
 const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID || null
 
-function redirectToGoogle() {
+function redirectToGoogle(notConfiguredMsg: string) {
   if (!GOOGLE_CLIENT_ID) {
-    alert('Google 로그인이 현재 설정되지 않았습니다. 관리자에게 문의해주세요.')
+    alert(notConfiguredMsg)
     return
   }
   const redirectUri = `${window.location.origin}/oauth/callback`
@@ -22,6 +23,7 @@ function redirectToGoogle() {
 }
 
 export default function LoginPage() {
+  const { t } = useI18n()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [errorMsg, setErrorMsg] = useState<string | null>(null)
@@ -32,44 +34,42 @@ export default function LoginPage() {
     setErrorMsg(null)
     login.mutate(
       { email, password },
-      {
-        onError: () => setErrorMsg('이메일 또는 비밀번호가 올바르지 않습니다.'),
-      },
+      { onError: () => setErrorMsg(t('login.error')) },
     )
   }
 
   return (
     <div style={{ maxWidth: 400, margin: '80px auto', padding: 24 }}>
-      <h1>Ovlo 로그인</h1>
+      <h1>{t('login.title')}</h1>
       <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
         <input
           type="email"
-          placeholder="이메일"
+          placeholder={t('login.email')}
           value={email}
           onChange={(e) => { setEmail(e.target.value); setErrorMsg(null) }}
           required
         />
         <input
           type="password"
-          placeholder="비밀번호"
+          placeholder={t('login.password')}
           value={password}
           onChange={(e) => { setPassword(e.target.value); setErrorMsg(null) }}
           required
         />
         {errorMsg && <p style={{ color: 'red', margin: 0 }}>{errorMsg}</p>}
         <button type="submit" disabled={login.isPending}>
-          {login.isPending ? '로그인 중...' : '로그인'}
+          {login.isPending ? t('login.pending') : t('login.submit')}
         </button>
       </form>
       <div style={{ display: 'flex', alignItems: 'center', gap: 10, margin: '16px 0' }}>
         <hr style={{ flex: 1, border: 'none', borderTop: '1px solid #e5e7eb' }} />
-        <span style={{ fontSize: 12, color: '#9ca3af' }}>또는</span>
+        <span style={{ fontSize: 12, color: '#9ca3af' }}>{t('common.or')}</span>
         <hr style={{ flex: 1, border: 'none', borderTop: '1px solid #e5e7eb' }} />
       </div>
 
       <button
         type="button"
-        onClick={redirectToGoogle}
+        onClick={() => redirectToGoogle(t('login.google.notConfigured'))}
         style={{
           width: '100%',
           display: 'flex',
@@ -93,11 +93,11 @@ export default function LoginPage() {
           <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.18 1.48-4.97 2.36-8.16 2.36-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
           <path fill="none" d="M0 0h48v48H0z"/>
         </svg>
-        Google로 계속하기
+        {t('login.google.btn')}
       </button>
 
       <p>
-        계정이 없으신가요? <Link to="/register">회원가입</Link>
+        {t('login.noAccount')} <Link to="/register">{t('login.register')}</Link>
       </p>
     </div>
   )

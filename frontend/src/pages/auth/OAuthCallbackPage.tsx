@@ -1,8 +1,10 @@
 import { useEffect } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { useGoogleLogin } from '../../hooks/useAuth'
+import { useI18n } from '../../i18n/I18nProvider'
 
 export default function OAuthCallbackPage() {
+  const { t } = useI18n()
   const [searchParams] = useSearchParams()
   const navigate = useNavigate()
   const googleLogin = useGoogleLogin()
@@ -16,8 +18,6 @@ export default function OAuthCallbackPage() {
       return
     }
 
-    // React StrictMode는 개발 환경에서 컴포넌트를 두 번 마운트한다.
-    // useRef는 재마운트 시 초기화되므로 sessionStorage로 동일 code 중복 처리를 방지한다.
     const sessionKey = `oauth:${code}`
     if (sessionStorage.getItem(sessionKey)) return
     sessionStorage.setItem(sessionKey, '1')
@@ -35,7 +35,7 @@ export default function OAuthCallbackPage() {
     return (
       <div style={{ maxWidth: 400, margin: '100px auto', padding: 24, textAlign: 'center' }}>
         <p style={{ color: '#dc2626', marginBottom: 20 }}>
-          {msg ?? 'Google 로그인에 실패했습니다. 다시 시도해주세요.'}
+          {msg ?? t('oauth.error.default')}
         </p>
         <button
           onClick={() => navigate('/login', { replace: true })}
@@ -49,7 +49,7 @@ export default function OAuthCallbackPage() {
             fontSize: 14,
           }}
         >
-          로그인 화면으로
+          {t('oauth.goBack')}
         </button>
       </div>
     )
@@ -63,7 +63,7 @@ export default function OAuthCallbackPage() {
         animation: 'spin 0.8s linear infinite',
       }} />
       <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
-      <p style={{ color: '#6b7280', fontSize: 14 }}>로그인 처리 중...</p>
+      <p style={{ color: '#6b7280', fontSize: 14 }}>{t('oauth.loading')}</p>
     </div>
   )
 }
