@@ -3,6 +3,8 @@ import { Link } from 'react-router-dom'
 import { useRegister } from '../../hooks/useAuth'
 import { useUniversitySearch } from '../../hooks/useUniversity'
 import { useMemberSearch } from '../../hooks/useMember'
+import { useI18n } from '../../i18n/I18nProvider'
+import { SUPPORTED_UI_LANGUAGES, LANGUAGE_LABELS } from '../../i18n/messages'
 
 const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID || null
 
@@ -163,6 +165,7 @@ type FormData = {
 }
 
 export default function RegisterPage() {
+  const { language, setLanguage } = useI18n()
   const [step, setStep] = useState(1)
   const [form, setForm] = useState<FormData>({
     nickname: '',
@@ -375,6 +378,22 @@ export default function RegisterPage() {
           <div style={fieldStyle}>
             <label style={labelStyle}>전공</label>
             <input style={inputStyle} value={form.majorName} onChange={set('majorName')} placeholder="예: Computer Science" required />
+          </div>
+
+          <div style={fieldStyle}>
+            <label style={labelStyle}>UI 언어 / UI Language</label>
+            <select
+              style={{ ...inputStyle, background: '#f9fafb', color: '#374151' }}
+              value={language}
+              onChange={(e) => setLanguage(e.target.value)}
+            >
+              {SUPPORTED_UI_LANGUAGES.map((lang) => (
+                <option key={lang} value={lang}>{LANGUAGE_LABELS[lang]}</option>
+              ))}
+            </select>
+            <span style={{ fontSize: 11, color: '#9ca3af', marginTop: 2 }}>
+              앱 UI 언어를 선택하세요. 언제든지 프로필에서 변경할 수 있습니다.
+            </span>
           </div>
 
           <div style={{ display: 'flex', gap: 12 }}>

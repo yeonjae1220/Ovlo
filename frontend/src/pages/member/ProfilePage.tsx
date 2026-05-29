@@ -9,6 +9,8 @@ import { memberApi } from '../../api/member'
 import { authApi } from '../../api/auth'
 import { useQueryClient } from '@tanstack/react-query'
 import { usePostsByAuthor } from '../../hooks/usePost'
+import { useI18n } from '../../i18n/I18nProvider'
+import { SUPPORTED_UI_LANGUAGES, LANGUAGE_LABELS } from '../../i18n/messages'
 
 const C = {
   card:        '#1e2836',
@@ -26,6 +28,7 @@ export default function ProfilePage() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
   const { currentUser, clearAuth } = useAuthStore()
+  const { language, setLanguage, t } = useI18n()
   const { data: member, isLoading } = useMember(id!)
   const { data: followers } = useFollowers(id!)
   const { data: followings } = useFollowings(id!)
@@ -86,8 +89,8 @@ export default function ProfilePage() {
     }
   }
 
-  if (isLoading) return <p>로딩 중...</p>
-  if (!member) return <p>회원을 찾을 수 없습니다.</p>
+  if (isLoading) return <p>{t('profile.loading')}</p>
+  if (!member) return <p>{t('profile.notFound')}</p>
 
   return (
     <div style={{ maxWidth: 800, margin: '0 auto' }}>
@@ -175,15 +178,47 @@ export default function ProfilePage() {
       </div>
 
       {isOwner && (
-        <div style={{ marginTop: 32, paddingTop: 24, borderTop: `1px solid ${C.border}`, display: 'flex', gap: 12 }}>
-          <button onClick={handleLogout}>로그아웃</button>
-          <button
-            onClick={handleWithdraw}
-            style={{ color: 'red', border: '1px solid red', background: 'transparent' }}
-          >
-            회원탈퇴
-          </button>
-        </div>
+        <>
+          {/* UI 언어 설정 */}
+          <div style={{ marginTop: 32, paddingTop: 24, borderTop: `1px solid ${C.border}` }}>
+            <h3 style={{ margin: '0 0 12px', fontSize: 16, fontWeight: 700, color: C.textPrimary }}>
+              {t('profile.uiLanguage')}
+            </h3>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+              {SUPPORTED_UI_LANGUAGES.map((lang) => (
+                <button
+                  key={lang}
+                  onClick={() => setLanguage(lang)}
+                  style={{
+                    padding: '6px 14px',
+                    borderRadius: 20,
+                    border: `1.5px solid ${language === lang ? '#a78bfa' : C.borderLight}`,
+                    background: language === lang ? '#2e1a5f' : 'transparent',
+                    color: language === lang ? '#a78bfa' : C.textMuted,
+                    fontSize: 13,
+                    fontWeight: language === lang ? 700 : 400,
+                    cursor: 'pointer',
+                    transition: 'all 0.15s',
+                  }}
+                >
+                  {LANGUAGE_LABELS[lang]}
+                </button>
+              ))}
+            </div>
+            <p style={{ margin: '8px 0 0', fontSize: 12, color: C.textDim }}>{t('profile.uiLanguage.hint')}</p>
+          </div>
+
+          {/* 로그아웃 / 탈퇴 */}
+          <div style={{ marginTop: 32, paddingTop: 24, borderTop: `1px solid ${C.border}`, display: 'flex', gap: 12 }}>
+            <button onClick={handleLogout}>{t('profile.logout')}</button>
+            <button
+              onClick={handleWithdraw}
+              style={{ color: 'red', border: '1px solid red', background: 'transparent' }}
+            >
+              {t('profile.withdraw')}
+            </button>
+          </div>
+        </>
       )}
     </div>
   )
