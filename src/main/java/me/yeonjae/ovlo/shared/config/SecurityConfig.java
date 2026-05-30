@@ -40,7 +40,8 @@ public class SecurityConfig {
     // CRITICAL-1 fix: 동일 인스턴스를 securityFilterChain과 FilterRegistrationBean이 공유
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
 
-    @Value("${cors.allowed-origins:http://localhost:3000}")
+    // WARN fix: 기본값 http://localhost:3000 → 빈 문자열 (운영환경 CORS_ALLOWED_ORIGINS 필수 설정)
+    @Value("${cors.allowed-origins:}")
     private String corsAllowedOrigins;
 
     public SecurityConfig(JwtTokenProvider jwtTokenProvider,
@@ -164,7 +165,7 @@ public class SecurityConfig {
                         .requestMatchers("/webjars/**").permitAll()
                         .requestMatchers("/actuator/health").permitAll()
                         .requestMatchers("/actuator/**").hasAuthority("ADMIN") // WARN fix: 인증 → ADMIN 전용
-                        .requestMatchers("/h2-console/**").authenticated()
+                        .requestMatchers("/h2-console/**").hasAuthority("ADMIN") // WARN fix: ADMIN 전용으로 격상
                         .requestMatchers("/api/v1/admin/**").hasAuthority("ADMIN")
                         .anyRequest().authenticated()
                 )
