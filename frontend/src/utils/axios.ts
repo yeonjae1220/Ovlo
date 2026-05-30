@@ -2,80 +2,50 @@
 
 import axios from 'axios'
 import { useAuthStore } from '../store/authStore'
+import { refreshAuth } from './refreshAuth'
 
 const apiClient = axios.create({
   baseURL: '/api/v1',
   headers: { 'Content-Type': 'application/json' },
-  withCredentials: true, // refresh_token httpOnly 쿠키 자동 전송
+  withCredentials: true,
 })
 
-// Request interceptor: attach JWT
 apiClient.interceptors.request.use((config) => {
   const token = useAuthStore.getState().accessToken
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`
-  }
+  if (token) config.headers.Authorization = `Bearer ${token}`
   return config
 })
 
-// Response interceptor: 401 → refresh(쿠키) → retry
-let isRefreshing = false
-let pendingQueue: Array<{
-  resolve: (token: string) => void
-  reject: (err: unknown) => void
-}> = []
-
-const processQueue = (error: unknown, token: string | null) => {
-  pendingQueue.forEach(({ resolve, reject }) => {
-    if (error) reject(error)
-    else resolve(token!)
-  })
-  pendingQueue = []
-}
+// 401 → refreshAuth() 싱글톤 사용 — layout과 중복 호출 없음
+let pendingQueue: Array<{ resolve: (t: string) => void; reject: (e: unknown) => void }> = []
 
 apiClient.interceptors.response.use(
   (res) => res,
   async (error) => {
     const original = error.config
-
     const status = error.response?.status
-    // 403 = 인가 실패(권한 없음) — 세션은 유효하므로 auth를 클리어하지 않음.
-    if (status !== 401 || original._retry) {
+
+    // 403 = 권한 없음 — 토큰 자체는 유효하므로 auth 클리어 안 함
+    if (status !== 401 || original._retry) return Promise.reject(error)
+
+    original._retry = true
+
+    // refreshAuth가 이미 진행 중이면 같은 Promise를 기다림
+    const newToken = await refreshAuth()
+
+    if (!newToken) {
+      // refresh 실패 — pendingQueue 거절
+      pendingQueue.forEach(({ reject }) => reject(error))
+      pendingQueue = []
+      if (typeof window !== 'undefined') window.location.href = '/login'
       return Promise.reject(error)
     }
 
-    if (isRefreshing) {
-      return new Promise((resolve, reject) => {
-        pendingQueue.push({ resolve, reject })
-      }).then((token) => {
-        original.headers.Authorization = `Bearer ${token}`
-        return apiClient(original)
-      })
-    }
-
-    original._retry = true
-    isRefreshing = true
-
-    try {
-      // 쿠키(refresh_token)가 자동 전송됨 — 별도 body 불필요
-      const { data } = await axios.post(
-        '/api/v1/auth/refresh',
-        undefined,
-        { withCredentials: true }
-      )
-      const newToken: string = data.accessToken
-      useAuthStore.getState().setAccessToken(newToken)
-      processQueue(null, newToken)
-      original.headers.Authorization = `Bearer ${newToken}`
-      return apiClient(original)
-    } catch (err) {
-      processQueue(err, null)
-      useAuthStore.getState().clearAuth()
-      window.location.href = '/login'
-      return Promise.reject(err)
-    } finally {
-      isRefreshing = false
-    }
+    // 대기 중이던 요청들 재시도
+    pendingQueue.forEach(({ resolve }) => resolve(newToken))
+    pendingQueue = []
+    original.headers.Authorization = `Bearer ${newToken}`
+    return apiClient(original)
   }
 )
 

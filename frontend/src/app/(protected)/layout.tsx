@@ -2,32 +2,40 @@
 
 import { useEffect, useState } from 'react'
 import { useRouter, usePathname } from 'next/navigation'
-import axios from 'axios'
 import { useAuthStore } from '@/store/authStore'
-import { memberApi } from '@/api/member'
+import { refreshAuth } from '@/utils/refreshAuth'
 import AppLayout from '@/components/layout/AppLayout'
 
+function AuthSkeleton() {
+  return (
+    <div style={{ minHeight: '100vh', background: '#0c0c0c', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 12, width: 300 }}>
+        {[80, 60, 60, 40].map((w, i) => (
+          <div key={i} style={{
+            height: 14, borderRadius: 7, background: '#1e1e1e',
+            width: `${w}%`, animation: 'pulse 1.4s ease infinite',
+            animationDelay: `${i * 0.1}s`,
+          }} />
+        ))}
+      </div>
+      <style>{`@keyframes pulse { 0%,100%{opacity:.4} 50%{opacity:.8} }`}</style>
+    </div>
+  )
+}
+
 export default function ProtectedLayout({ children }: { children: React.ReactNode }) {
-  const { accessToken, currentUser, setAuth, clearAuth } = useAuthStore()
+  const { accessToken, currentUser, clearAuth } = useAuthStore()
   const router = useRouter()
   const pathname = usePathname()
   const [hydrated, setHydrated] = useState(false)
 
   useEffect(() => {
-    // accessToken은 메모리 전용 — 리로드 시 httpOnly 쿠키로 재발급 시도
     const init = async () => {
       if (!accessToken) {
-        try {
-          const { data } = await axios.post<{ accessToken: string; memberId: number }>(
-            '/api/v1/auth/refresh',
-            undefined,
-            { withCredentials: true }
-          )
-          const user = await memberApi.getById(String(data.memberId))
-          setAuth(data.accessToken, user)
-        } catch {
-          clearAuth()
-        }
+        // currentUser는 localStorage에서 복원됨 — token만 재발급
+        // refreshAuth() 싱글톤: layout과 axios interceptor가 동시 호출해도 1회만 실행
+        const token = await refreshAuth()
+        if (!token) clearAuth()
       }
       setHydrated(true)
     }
@@ -46,7 +54,7 @@ export default function ProtectedLayout({ children }: { children: React.ReactNod
     }
   }, [hydrated, accessToken, currentUser, pathname, router])
 
-  if (!hydrated) return null
+  if (!hydrated) return <AuthSkeleton />
   if (!accessToken || !currentUser) return null
 
   return <AppLayout>{children}</AppLayout>

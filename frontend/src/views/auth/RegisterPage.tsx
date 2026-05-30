@@ -1,5 +1,7 @@
 'use client'
 
+import { saveOauthState } from '''@/utils/oauthState'''
+
 import { useState, type FormEvent } from 'react'
 import Link from 'next/link'
 import { useRegister } from '../../hooks/useAuth'
@@ -17,7 +19,7 @@ function redirectToGoogle(notConfiguredMsg: string) {
     return
   }
   const state = crypto.randomUUID()
-  sessionStorage.setItem('oauth_state', state)
+  saveOauthState(state)
 
   const redirectUri = `${window.location.origin}/oauth/callback`
   const params = new URLSearchParams({

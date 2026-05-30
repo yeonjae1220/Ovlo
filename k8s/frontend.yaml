@@ -19,8 +19,15 @@ spec:
         - name: frontend
           image: ghcr.io/yeonjae1220/ovlo-frontend:latest
           imagePullPolicy: IfNotPresent
+          env:
+            - name: PORT
+              value: "3000"
+            - name: HOSTNAME
+              value: "0.0.0.0"
+            - name: API_URL
+              value: "http://backend.ovlo.svc.cluster.local:8080"
           ports:
-            - containerPort: 80
+            - containerPort: 3000
           resources:
             requests:
               memory: "32Mi"

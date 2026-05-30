@@ -1,5 +1,7 @@
 'use client'
 
+import { saveOauthState } from '''@/utils/oauthState'''
+
 import { useState, type FormEvent } from 'react'
 import Link from 'next/link'
 import { useLogin } from '../../hooks/useAuth'
@@ -14,7 +16,7 @@ function redirectToGoogle(notConfiguredMsg: string) {
   }
   // state 파라미터로 login CSRF 방지
   const state = crypto.randomUUID()
-  sessionStorage.setItem('oauth_state', state)
+  saveOauthState(state)
 
   const redirectUri = `${window.location.origin}/oauth/callback`
   const params = new URLSearchParams({

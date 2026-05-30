@@ -5,6 +5,19 @@ import { messages, resolveUiLang } from './messages'
 import type { MessageKey, UiLanguage } from './messages'
 
 const STORAGE_KEY = 'ovlo_lang'
+const COOKIE_KEY = 'ovlo_lang'
+
+// 쿠키에서 언어를 읽음 — document.cookie는 클라이언트에서 동기적으로 접근 가능
+// SSR 초기 HTML과 클라이언트 첫 렌더의 값 불일치(FOUC)를 최소화
+function readLangCookie(): string | null {
+  if (typeof document === 'undefined') return null
+  const m = document.cookie.match(new RegExp(`(?:^|; )${COOKIE_KEY}=([^;]*)`))
+  return m ? decodeURIComponent(m[1]) : null
+}
+
+function writeLangCookie(lang: string): void {
+  document.cookie = `${COOKIE_KEY}=${lang}; path=/; max-age=31536000; SameSite=Lax`
+}
 
 type I18nContextValue = {
   language: UiLanguage
@@ -15,13 +28,17 @@ type I18nContextValue = {
 const I18nContext = createContext<I18nContextValue | null>(null)
 
 export function I18nProvider({ children }: { children: React.ReactNode }) {
-  // 서버와 클라이언트 초기값을 동일하게 'en'으로 고정하여 hydration 불일치 방지
-  const [language, setLanguageState] = useState<UiLanguage>('en')
+  // 쿠키가 있으면 동기적으로 읽어 FOUC를 최소화, 없으면 'en' (hydration safe)
+  const [language, setLanguageState] = useState<UiLanguage>(() => {
+    const cookie = readLangCookie()
+    return cookie ? resolveUiLang(cookie) : 'en'
+  })
 
   useEffect(() => {
-    // 클라이언트 마운트 후 localStorage/navigator.language 반영
+    // localStorage가 쿠키보다 최신이면 동기화
     const stored = resolveUiLang(localStorage.getItem(STORAGE_KEY) ?? navigator.language)
-    setLanguageState(stored)
+    if (stored !== language) setLanguageState(stored)
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   useEffect(() => {
@@ -34,6 +51,7 @@ export function I18nProvider({ children }: { children: React.ReactNode }) {
       const normalized = resolveUiLang(next)
       setLanguageState(normalized)
       localStorage.setItem(STORAGE_KEY, normalized)
+      writeLangCookie(normalized)
     },
     t: (key, vars) => {
       const raw = messages[language][key] ?? messages.en[key] ?? key

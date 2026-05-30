@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { useSearchParams } from 'next/navigation'
 import { useGoogleLogin } from '../../hooks/useAuth'
 import { useI18n } from '../../i18n/I18nProvider'
+import { consumeOauthState } from '../../utils/oauthState'
 
 export default function OAuthCallbackPage() {
   const { t } = useI18n()
@@ -21,8 +22,8 @@ export default function OAuthCallbackPage() {
     const code = searchParams?.get('code')
     const error = searchParams?.get('error')
     const returnedState = searchParams?.get('state')
-    const savedState = sessionStorage.getItem('oauth_state')
-    sessionStorage.removeItem('oauth_state')
+    const savedState = consumeOauthState()
+    
 
     if (error || !code) {
       router.replace('/login')
