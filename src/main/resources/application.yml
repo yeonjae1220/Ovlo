@@ -73,7 +73,9 @@ management:
   endpoints:
     web:
       exposure:
-        include: health,info,metrics,prometheus
+        # O2 fix: 기본 프로파일에서 health만 공개 (metrics/prometheus는 ADMIN 인증 필요)
+        # prod 오버라이드 불필요 — 기본값 자체를 안전하게 설정
+        include: health
   endpoint:
     health:
       show-details: when-authorized
