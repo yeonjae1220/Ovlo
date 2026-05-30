@@ -1,3 +1,5 @@
+'use client'
+
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { boardApi } from '../api/board'
 import type { CreateBoardRequest } from '../types'

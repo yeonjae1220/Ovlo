@@ -1,3 +1,5 @@
+'use client'
+
 import { createContext, useContext, useEffect, useMemo, useState } from 'react'
 import { messages, resolveUiLang } from './messages'
 import type { MessageKey, UiLanguage } from './messages'
@@ -13,11 +15,10 @@ type I18nContextValue = {
 const I18nContext = createContext<I18nContextValue | null>(null)
 
 export function I18nProvider({ children }: { children: React.ReactNode }) {
-  const [language, setLanguageState] = useState<UiLanguage>(() =>
-    resolveUiLang(
-      localStorage.getItem(STORAGE_KEY) ?? navigator.language
-    )
-  )
+  const [language, setLanguageState] = useState<UiLanguage>(() => {
+    if (typeof window === 'undefined') return 'en'
+    return resolveUiLang(localStorage.getItem(STORAGE_KEY) ?? navigator.language)
+  })
 
   useEffect(() => {
     document.documentElement.lang = language

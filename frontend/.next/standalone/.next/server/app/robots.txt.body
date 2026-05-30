@@ -1,0 +1,15 @@
+User-Agent: *
+Allow: /
+Allow: /exchange-universities
+Allow: /university-reports
+Allow: /login
+Allow: /register
+Disallow: /boards/
+Disallow: /posts/
+Disallow: /profile/
+Disallow: /chat/
+Disallow: /search/
+Disallow: /follow/
+Disallow: /onboarding/
+
+Sitemap: https://ovlo.mungji.com/sitemap.xml

@@ -1,6 +1,8 @@
+'use client'
+
 import { useEffect } from 'react'
 import { useMutation } from '@tanstack/react-query'
-import { useNavigate } from 'react-router-dom'
+import { useRouter } from 'next/navigation'
 import axios from 'axios'
 import { authApi } from '../api/auth'
 import { memberApi } from '../api/member'
@@ -9,17 +11,16 @@ import type { CompleteOnboardingRequest } from '../types'
 
 export function useLogin() {
   const { setAuth, setAccessToken } = useAuthStore()
-  const navigate = useNavigate()
+  const router = useRouter()
 
   return useMutation({
     mutationFn: ({ email, password }: { email: string; password: string }) =>
       authApi.login(email, password),
     onSuccess: async (token) => {
-      // 토큰을 먼저 store에 저장해야 axios 인터셉터가 Authorization 헤더를 붙일 수 있다
       setAccessToken(token.accessToken)
       const user = await memberApi.getById(String(token.memberId))
       setAuth(token.accessToken, user)
-      navigate('/boards')
+      router.push('/boards')
     },
   })
 }
@@ -87,17 +88,17 @@ export function useProactiveRefresh() {
 }
 
 export function useRegister() {
-  const navigate = useNavigate()
+  const router = useRouter()
 
   return useMutation({
     mutationFn: memberApi.register,
-    onSuccess: () => navigate('/login'),
+    onSuccess: () => router.push('/login'),
   })
 }
 
 export function useGoogleLogin() {
   const { setAuth, setAccessToken } = useAuthStore()
-  const navigate = useNavigate()
+  const router = useRouter()
 
   return useMutation({
     mutationFn: ({ code, redirectUri }: { code: string; redirectUri: string }) =>
@@ -106,20 +107,20 @@ export function useGoogleLogin() {
       setAccessToken(result.accessToken)
       const user = await memberApi.getById(String(result.memberId))
       setAuth(result.accessToken, user)
-      navigate(result.newMember ? '/onboarding' : '/boards')
+      router.push(result.newMember ? '/onboarding' : '/boards')
     },
   })
 }
 
 export function useCompleteOnboarding() {
   const { setCurrentUser } = useAuthStore()
-  const navigate = useNavigate()
+  const router = useRouter()
 
   return useMutation({
     mutationFn: (req: CompleteOnboardingRequest) => memberApi.completeOnboarding(req),
     onSuccess: (updatedUser) => {
       setCurrentUser(updatedUser)
-      navigate('/boards')
+      router.push('/boards')
     },
   })
 }

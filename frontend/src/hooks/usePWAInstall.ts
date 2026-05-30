@@ -1,3 +1,5 @@
+'use client'
+
 import { useEffect, useState } from 'react'
 
 interface BeforeInstallPromptEvent extends Event {
@@ -21,6 +23,7 @@ export function usePWAInstall() {
   const [platform] = useState<Platform>(() => detectPlatform())
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     if (window.matchMedia('(display-mode: standalone)').matches) {
       setIsInstalled(true)
       return

@@ -1,13 +1,2 @@
-import { StrictMode } from 'react'
-import { createRoot } from 'react-dom/client'
-import './index.css'
-import App from './App.tsx'
-import { I18nProvider } from './i18n/I18nProvider'
-
-createRoot(document.getElementById('root')!).render(
-  <StrictMode>
-    <I18nProvider>
-      <App />
-    </I18nProvider>
-  </StrictMode>,
-)
+// Next.js App Router로 마이그레이션됨 — 진입점은 src/app/layout.tsx
+export {}

@@ -1,3 +1,5 @@
+'use client'
+
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { postApi } from '../api/post'
 import type { CreatePostRequest, UpdatePostRequest, CreateCommentRequest, ReactionType } from '../types'

@@ -1,12 +1,16 @@
-import { Link, NavLink, Outlet } from 'react-router-dom'
+'use client'
+
+import Link from 'next/link'
+import { usePathname } from 'next/navigation'
 import { useAuthStore } from '../../store/authStore'
 import { useBreakpoint } from '../../hooks/useBreakpoint'
 import { useI18n } from '../../i18n/I18nProvider'
 
-export default function AppLayout() {
+export default function AppLayout({ children }: { children: React.ReactNode }) {
   const { t } = useI18n()
   const { currentUser } = useAuthStore()
   const { isMobile } = useBreakpoint()
+  const pathname = usePathname()
   const userLabel = currentUser?.nickname ?? currentUser?.name ?? t('nav.profile')
 
   const NAV_ITEMS = [
@@ -15,14 +19,16 @@ export default function AppLayout() {
     { to: '/chat', labelKey: 'nav.chat' as const },
   ]
 
-  const desktopLinkStyle = (isActive: boolean): React.CSSProperties => ({
+  const isActive = (path: string) => pathname !== null && (pathname === path || pathname.startsWith(path + '/'))
+
+  const desktopLinkStyle = (active: boolean): React.CSSProperties => ({
     padding: '6px 12px',
     borderRadius: 6,
     textDecoration: 'none',
     fontSize: 14,
-    fontWeight: isActive ? 600 : 400,
-    color: isActive ? '#a78bfa' : '#94a3b8',
-    background: isActive ? '#7c3aed22' : 'transparent',
+    fontWeight: active ? 600 : 400,
+    color: active ? '#a78bfa' : '#94a3b8',
+    background: active ? '#7c3aed22' : 'transparent',
     transition: 'color 0.15s, background 0.15s',
   })
 
@@ -41,21 +47,21 @@ export default function AppLayout() {
           zIndex: 100,
         }}
       >
-        <Link to="/" style={{ fontWeight: 'bold', fontSize: 20, textDecoration: 'none', color: '#a78bfa', flexShrink: 0 }}>
+        <Link href="/" style={{ fontWeight: 'bold', fontSize: 20, textDecoration: 'none', color: '#a78bfa', flexShrink: 0 }}>
           Ovlo
         </Link>
 
         {!isMobile && (
           <nav style={{ display: 'flex', gap: 4, alignItems: 'center' }}>
             {NAV_ITEMS.map(({ to, labelKey }) => (
-              <NavLink key={to} to={to} style={({ isActive }) => desktopLinkStyle(isActive)}>
+              <Link key={to} href={to} style={desktopLinkStyle(isActive(to))}>
                 {t(labelKey)}
-              </NavLink>
+              </Link>
             ))}
             {currentUser && (
-              <NavLink to={`/profile/${currentUser.id}`} style={({ isActive }) => desktopLinkStyle(isActive)}>
+              <Link href={`/profile/${currentUser.id}`} style={desktopLinkStyle(isActive(`/profile/${currentUser.id}`))}>
                 {t('nav.profile')}
-              </NavLink>
+              </Link>
             )}
           </nav>
         )}
@@ -63,7 +69,7 @@ export default function AppLayout() {
         <div style={{ marginLeft: 'auto', display: 'flex', gap: 12, alignItems: 'center' }}>
           {currentUser && (
             <Link
-              to={`/profile/${currentUser.id}`}
+              href={`/profile/${currentUser.id}`}
               style={{
                 color: '#94a3b8',
                 fontSize: 14,
@@ -89,7 +95,7 @@ export default function AppLayout() {
         }}
       >
         <div style={{ maxWidth: 1200, margin: '0 auto', width: '100%' }}>
-          <Outlet />
+          {children}
         </div>
       </main>
 
@@ -109,41 +115,41 @@ export default function AppLayout() {
           }}
         >
           {NAV_ITEMS.map(({ to, labelKey }) => (
-            <NavLink
+            <Link
               key={to}
-              to={to}
-              style={({ isActive }) => ({
+              href={to}
+              style={{
                 display: 'flex',
                 flexDirection: 'column',
                 alignItems: 'center',
                 textDecoration: 'none',
                 fontSize: 12,
-                color: isActive ? '#a78bfa' : '#94a3b8',
+                color: isActive(to) ? '#a78bfa' : '#94a3b8',
                 padding: '4px 8px',
                 minWidth: 0,
                 flex: 1,
-              })}
+              }}
             >
               {t(labelKey)}
-            </NavLink>
+            </Link>
           ))}
           {currentUser && (
-            <NavLink
-              to={`/profile/${currentUser.id}`}
-              style={({ isActive }) => ({
+            <Link
+              href={`/profile/${currentUser.id}`}
+              style={{
                 display: 'flex',
                 flexDirection: 'column',
                 alignItems: 'center',
                 textDecoration: 'none',
                 fontSize: 12,
-                color: isActive ? '#a78bfa' : '#94a3b8',
+                color: isActive(`/profile/${currentUser.id}`) ? '#a78bfa' : '#94a3b8',
                 padding: '4px 8px',
                 minWidth: 0,
                 flex: 1,
-              })}
+              }}
             >
               {t('nav.profile')}
-            </NavLink>
+            </Link>
           )}
         </nav>
       )}
