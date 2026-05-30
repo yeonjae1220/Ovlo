@@ -6,13 +6,14 @@ export function middleware(request: NextRequest) {
 
   const csp = [
     "default-src 'self'",
-    `script-src 'self' 'nonce-${nonce}'`,
+    `script-src 'nonce-${nonce}' 'strict-dynamic' 'unsafe-inline'`,
     "style-src 'self' 'unsafe-inline'",
     "img-src 'self' data: https: blob:",
     "font-src 'self'",
     "connect-src 'self' https://ovlo.mungji.com wss://ovlo.mungji.com",
     "frame-src 'none'",
     "object-src 'none'",
+    "base-uri 'self'",
   ].join('; ')
 
   const requestHeaders = new Headers(request.headers)

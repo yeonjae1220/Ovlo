@@ -67,6 +67,10 @@ public class SecurityConfig {
         if (adminEmail == null || adminEmail.isBlank()) {
             throw new IllegalStateException("[Admin] ADMIN_EMAIL 환경변수가 설정되지 않았습니다.");
         }
+        if (adminEmail.endsWith(".local")) {
+            throw new IllegalStateException(
+                    "[Admin] ADMIN_EMAIL 기본값(.local)이 운영 환경에서 사용되었습니다. ADMIN_EMAIL을 실제 값으로 설정하세요.");
+        }
         if (adminPasswordBcrypt == null
                 || adminPasswordBcrypt.contains("placeholder")
                 || adminPasswordBcrypt.length() < 60
@@ -135,6 +139,7 @@ public class SecurityConfig {
                 )
                 .sessionManagement(session -> session
                         .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED)
+                        .sessionFixation().changeSessionId()
                         .maximumSessions(1)
                 )
                 .csrf(Customizer.withDefaults()) // MEDIUM-1 fix: withDefaults()로 의도 명확화
