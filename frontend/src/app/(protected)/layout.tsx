@@ -2,18 +2,37 @@
 
 import { useEffect, useState } from 'react'
 import { useRouter, usePathname } from 'next/navigation'
+import axios from 'axios'
 import { useAuthStore } from '@/store/authStore'
+import { memberApi } from '@/api/member'
 import AppLayout from '@/components/layout/AppLayout'
 
 export default function ProtectedLayout({ children }: { children: React.ReactNode }) {
-  const { accessToken, currentUser } = useAuthStore()
+  const { accessToken, currentUser, setAuth, clearAuth } = useAuthStore()
   const router = useRouter()
   const pathname = usePathname()
-  // Zustand persist는 클라이언트에서 hydrate되므로, 초기 렌더 시 상태가 없을 수 있음
   const [hydrated, setHydrated] = useState(false)
 
   useEffect(() => {
-    setHydrated(true)
+    // accessToken은 메모리 전용 — 리로드 시 httpOnly 쿠키로 재발급 시도
+    const init = async () => {
+      if (!accessToken) {
+        try {
+          const { data } = await axios.post<{ accessToken: string; memberId: number }>(
+            '/api/v1/auth/refresh',
+            undefined,
+            { withCredentials: true }
+          )
+          const user = await memberApi.getById(String(data.memberId))
+          setAuth(data.accessToken, user)
+        } catch {
+          clearAuth()
+        }
+      }
+      setHydrated(true)
+    }
+    init()
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   useEffect(() => {
@@ -27,7 +46,6 @@ export default function ProtectedLayout({ children }: { children: React.ReactNod
     }
   }, [hydrated, accessToken, currentUser, pathname, router])
 
-  // hydration 전에는 빈 화면 대신 로딩 상태 표시
   if (!hydrated) return null
   if (!accessToken || !currentUser) return null
 

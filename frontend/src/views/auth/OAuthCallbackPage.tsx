@@ -20,8 +20,17 @@ export default function OAuthCallbackPage() {
 
     const code = searchParams?.get('code')
     const error = searchParams?.get('error')
+    const returnedState = searchParams?.get('state')
+    const savedState = sessionStorage.getItem('oauth_state')
+    sessionStorage.removeItem('oauth_state')
 
     if (error || !code) {
+      router.replace('/login')
+      return
+    }
+
+    // state 불일치 시 login CSRF 공격 차단
+    if (!returnedState || returnedState !== savedState) {
       router.replace('/login')
       return
     }

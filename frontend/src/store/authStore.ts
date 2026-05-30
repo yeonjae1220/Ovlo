@@ -31,10 +31,11 @@ export const useAuthStore = create<AuthState>()(
     }),
     {
       name: 'ovlo-auth',
-      version: 3,
+      version: 4,
+      // accessToken은 XSS 탈취 위험으로 localStorage 저장 제외 — 메모리에만 유지
+      // 페이지 리로드 시 httpOnly 쿠키의 refresh token으로 재발급
       migrate: () => ({ accessToken: null, currentUser: null }),
       partialize: (state) => ({
-        accessToken: state.accessToken,
         currentUser: state.currentUser,
       }),
     }

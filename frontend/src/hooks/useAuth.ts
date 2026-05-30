@@ -40,7 +40,9 @@ export function useProactiveRefresh() {
 
     let expiryMs: number
     try {
-      const payload = JSON.parse(atob(accessToken.split('.')[1]))
+      // base64url → base64 변환 후 디코딩 (JWT는 base64url 인코딩 사용)
+      const base64 = accessToken.split('.')[1].replace(/-/g, '+').replace(/_/g, '/')
+      const payload = JSON.parse(atob(base64))
       expiryMs = payload.exp * 1000
     } catch {
       return

@@ -51,3 +51,5 @@ CLAUDE.md
 
 # Next.js
 frontend/.next/
+.env.local
+*.env.local

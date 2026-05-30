@@ -12,6 +12,10 @@ function redirectToGoogle(notConfiguredMsg: string) {
     alert(notConfiguredMsg)
     return
   }
+  // state 파라미터로 login CSRF 방지
+  const state = crypto.randomUUID()
+  sessionStorage.setItem('oauth_state', state)
+
   const redirectUri = `${window.location.origin}/oauth/callback`
   const params = new URLSearchParams({
     client_id: GOOGLE_CLIENT_ID,
@@ -20,6 +24,7 @@ function redirectToGoogle(notConfiguredMsg: string) {
     scope: 'openid email profile',
     access_type: 'offline',
     prompt: 'select_account',
+    state,
   })
   window.location.href = `https://accounts.google.com/o/oauth2/v2/auth?${params.toString()}`
 }
