@@ -163,7 +163,7 @@ public class SecurityConfig {
                             .access((auth2, ctx) -> new org.springframework.security.authorization.AuthorizationDecision(!isProd()))
                         .requestMatchers("/webjars/**").permitAll()
                         .requestMatchers("/actuator/health").permitAll()
-                        .requestMatchers("/actuator/**").authenticated()
+                        .requestMatchers("/actuator/**").hasAuthority("ADMIN") // WARN fix: 인증 → ADMIN 전용
                         .requestMatchers("/h2-console/**").authenticated()
                         .requestMatchers("/api/v1/admin/**").hasAuthority("ADMIN")
                         .anyRequest().authenticated()
