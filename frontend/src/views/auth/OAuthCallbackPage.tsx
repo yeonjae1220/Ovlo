@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect } from 'react'
+import { useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { useSearchParams } from 'next/navigation'
 import { useGoogleLogin } from '../../hooks/useAuth'
@@ -11,8 +11,13 @@ export default function OAuthCallbackPage() {
   const searchParams = useSearchParams()
   const router = useRouter()
   const googleLogin = useGoogleLogin()
+  const calledRef = useRef(false)
 
   useEffect(() => {
+    // OAuth authorization code는 1회만 사용 가능 — Strict Mode 이중 실행 및 searchParams 변경 시 재실행 방지
+    if (calledRef.current) return
+    calledRef.current = true
+
     const code = searchParams?.get('code')
     const error = searchParams?.get('error')
 
@@ -21,16 +26,9 @@ export default function OAuthCallbackPage() {
       return
     }
 
-    const sessionKey = `oauth:${code}`
-    if (sessionStorage.getItem(sessionKey)) return
-    sessionStorage.setItem(sessionKey, '1')
-
     const redirectUri = `${window.location.origin}/oauth/callback`
-    googleLogin.mutate({ code, redirectUri }, {
-      onError: () => sessionStorage.removeItem(sessionKey),
-    })
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+    googleLogin.mutate({ code, redirectUri })
+  }, [searchParams, router, googleLogin])
 
   if (googleLogin.isError) {
     const msg = (googleLogin.error as { response?: { data?: { message?: string } } })

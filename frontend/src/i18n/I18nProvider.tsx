@@ -15,10 +15,14 @@ type I18nContextValue = {
 const I18nContext = createContext<I18nContextValue | null>(null)
 
 export function I18nProvider({ children }: { children: React.ReactNode }) {
-  const [language, setLanguageState] = useState<UiLanguage>(() => {
-    if (typeof window === 'undefined') return 'en'
-    return resolveUiLang(localStorage.getItem(STORAGE_KEY) ?? navigator.language)
-  })
+  // 서버와 클라이언트 초기값을 동일하게 'en'으로 고정하여 hydration 불일치 방지
+  const [language, setLanguageState] = useState<UiLanguage>('en')
+
+  useEffect(() => {
+    // 클라이언트 마운트 후 localStorage/navigator.language 반영
+    const stored = resolveUiLang(localStorage.getItem(STORAGE_KEY) ?? navigator.language)
+    setLanguageState(stored)
+  }, [])
 
   useEffect(() => {
     document.documentElement.lang = language
