@@ -48,3 +48,6 @@ k8s/secret.yaml
 ### Claude Code ###
 CLAUDE.md
 .claude/
+
+# Next.js
+frontend/.next/
