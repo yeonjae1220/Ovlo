@@ -80,6 +80,16 @@ spec:
                 secretKeyRef:
                   name: ovlo-secret
                   key: GOOGLE_CLIENT_SECRET
+            - name: ADMIN_EMAIL
+              valueFrom:
+                secretKeyRef:
+                  name: ovlo-secret
+                  key: ADMIN_EMAIL
+            - name: ADMIN_PASSWORD_BCRYPT
+              valueFrom:
+                secretKeyRef:
+                  name: ovlo-secret
+                  key: ADMIN_PASSWORD_BCRYPT
           volumeMounts:
             - name: media-data
               mountPath: /tmp/ovlo-media

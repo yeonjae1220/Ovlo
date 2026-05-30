@@ -145,6 +145,28 @@ jobs:
     if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
 
     steps:
+      - name: Apply k8s secrets
+        env:
+          POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
+          REDIS_PASSWORD: ${{ secrets.REDIS_PASSWORD }}
+          JWT_SECRET: ${{ secrets.JWT_SECRET }}
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          CORS_ALLOWED_ORIGINS: ${{ secrets.CORS_ALLOWED_ORIGINS }}
+          ADMIN_EMAIL: ${{ secrets.ADMIN_EMAIL }}
+          ADMIN_PASSWORD_BCRYPT: ${{ secrets.ADMIN_PASSWORD_BCRYPT }}
+        run: |
+          sudo kubectl create secret generic ovlo-secret \
+            --from-literal=POSTGRES_PASSWORD="${POSTGRES_PASSWORD}" \
+            --from-literal=REDIS_PASSWORD="${REDIS_PASSWORD}" \
+            --from-literal=JWT_SECRET="${JWT_SECRET}" \
+            --from-literal=GOOGLE_CLIENT_ID="${GOOGLE_CLIENT_ID}" \
+            --from-literal=GOOGLE_CLIENT_SECRET="${GOOGLE_CLIENT_SECRET}" \
+            --from-literal=CORS_ALLOWED_ORIGINS="${CORS_ALLOWED_ORIGINS}" \
+            --from-literal=ADMIN_EMAIL="${ADMIN_EMAIL}" \
+            --from-literal=ADMIN_PASSWORD_BCRYPT="${ADMIN_PASSWORD_BCRYPT}" \
+            -n ovlo --dry-run=client -o yaml | sudo kubectl apply -f -
+
       - name: Pull and deploy images
         env:
           IMAGE_TAG: ${{ needs.build-and-push.outputs.image-tag }}
