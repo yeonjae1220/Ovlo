@@ -37,6 +37,8 @@ public class SecurityConfig {
     private final JwtTokenProvider jwtTokenProvider;
     private final AdminUserDetailsService adminUserDetailsService;
     private final Environment environment;
+    // CRITICAL-1 fix: 동일 인스턴스를 securityFilterChain과 FilterRegistrationBean이 공유
+    private final JwtAuthenticationFilter jwtAuthenticationFilter;
 
     @Value("${cors.allowed-origins:http://localhost:3000}")
     private String corsAllowedOrigins;
@@ -47,6 +49,7 @@ public class SecurityConfig {
         this.jwtTokenProvider = jwtTokenProvider;
         this.adminUserDetailsService = adminUserDetailsService;
         this.environment = environment;
+        this.jwtAuthenticationFilter = new JwtAuthenticationFilter(jwtTokenProvider);
     }
 
     private boolean isProd() {
@@ -97,7 +100,7 @@ public class SecurityConfig {
                         .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED)
                         .maximumSessions(1)
                 )
-                .csrf(csrf -> {}) // CSRF 활성화 (Thymeleaf가 토큰 자동 삽입)
+                .csrf(Customizer.withDefaults()) // MEDIUM-1 fix: withDefaults()로 의도 명확화
                 .headers(headers -> headers
                         .contentSecurityPolicy(csp -> csp.policyDirectives(
                                 "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; frame-ancestors 'none'"))
@@ -109,8 +112,12 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
-        List<String> origins = Arrays.asList(corsAllowedOrigins.split(","));
-        config.setAllowedOriginPatterns(origins);
+        List<String> origins = Arrays.stream(corsAllowedOrigins.split(","))
+                .map(String::trim)
+                .filter(s -> !s.isEmpty())
+                .toList();
+        // CRITICAL-2 fix: setAllowedOrigins로 교체 — 와일드카드 패턴 허용 안 함
+        config.setAllowedOrigins(origins);
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
         config.setAllowedHeaders(List.of("Authorization", "Content-Type", "Accept"));
         config.setAllowCredentials(true);
@@ -151,8 +158,9 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/api/v1/exchange-universities/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/v1/university-reports/**").permitAll()
                         .requestMatchers("/ws/**").permitAll()
+                        // HIGH-5 fix: 람다 AuthorizationDecision → 명시적 분기
                         .requestMatchers("/swagger-ui.html", "/swagger-ui/**", "/v3/api-docs/**")
-                            .access((a, ctx) -> new org.springframework.security.authorization.AuthorizationDecision(!isProd()))
+                            .access((auth2, ctx) -> new org.springframework.security.authorization.AuthorizationDecision(!isProd()))
                         .requestMatchers("/webjars/**").permitAll()
                         .requestMatchers("/actuator/health").permitAll()
                         .requestMatchers("/actuator/**").authenticated()
@@ -164,21 +172,19 @@ public class SecurityConfig {
                         .authenticationEntryPoint((req, res, e) ->
                                 res.sendError(HttpServletResponse.SC_UNAUTHORIZED))
                 )
-                .addFilterBefore(
-                        new JwtAuthenticationFilter(jwtTokenProvider),
-                        UsernamePasswordAuthenticationFilter.class
-                )
+                // CRITICAL-1 fix: 동일 인스턴스 사용
+                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
                 .build();
     }
 
     /**
-     * JwtAuthenticationFilter를 서블릿 필터로 자동 등록하지 않도록 막는다.
+     * CRITICAL-1 fix: 동일 인스턴스를 disabled로 등록해 서블릿 자동 등록 차단.
      * /admin/** 요청에 JWT 필터가 끼어들지 않게 하기 위함.
      */
     @Bean
     public FilterRegistrationBean<JwtAuthenticationFilter> jwtFilterRegistration() {
         FilterRegistrationBean<JwtAuthenticationFilter> reg =
-                new FilterRegistrationBean<>(new JwtAuthenticationFilter(jwtTokenProvider));
+                new FilterRegistrationBean<>(jwtAuthenticationFilter);
         reg.setEnabled(false);
         return reg;
     }

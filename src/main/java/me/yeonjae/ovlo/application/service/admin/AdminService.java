@@ -11,12 +11,13 @@ import me.yeonjae.ovlo.application.port.out.member.SaveMemberPort;
 import me.yeonjae.ovlo.application.port.out.post.LoadPostPort;
 import me.yeonjae.ovlo.application.port.out.post.SavePostPort;
 import me.yeonjae.ovlo.application.port.out.university.SearchUniversityPort;
-import me.yeonjae.ovlo.domain.post.model.Post;
-import me.yeonjae.ovlo.domain.post.model.PostId;
 import me.yeonjae.ovlo.domain.member.exception.MemberException;
 import me.yeonjae.ovlo.domain.member.model.Member;
 import me.yeonjae.ovlo.domain.member.model.MemberId;
 import me.yeonjae.ovlo.domain.member.model.MemberRole;
+import me.yeonjae.ovlo.domain.post.exception.PostException;
+import me.yeonjae.ovlo.domain.post.model.Post;
+import me.yeonjae.ovlo.domain.post.model.PostId;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
@@ -31,8 +32,8 @@ public class AdminService {
     private final SaveMemberPort saveMemberPort;
     private final SearchBoardPort searchBoardPort;
     private final LoadPostPort loadPostPort;
-    private final SearchUniversityPort searchUniversityPort;
     private final SavePostPort savePostPort;
+    private final SearchUniversityPort searchUniversityPort;
 
     public AdminService(LoadMemberPort loadMemberPort,
                         SaveMemberPort saveMemberPort,
@@ -75,33 +76,34 @@ public class AdminService {
 
     @Transactional
     public void deletePost(Long postId) {
+        // MEDIUM-3 fix: PostException import로 완전 클래스명 제거
         Post post = loadPostPort.findById(new PostId(postId))
-                .orElseThrow(() -> new me.yeonjae.ovlo.domain.post.exception.PostException(
-                        "게시글을 찾을 수 없습니다", me.yeonjae.ovlo.domain.post.exception.PostException.ErrorType.NOT_FOUND));
+                .orElseThrow(() -> new PostException("게시글을 찾을 수 없습니다", PostException.ErrorType.NOT_FOUND));
         post.delete();
         savePostPort.save(post);
     }
 
     public Page<AdminBoardResponse> getBoards(Pageable pageable) {
-        int offset = (int) pageable.getOffset();
+        // HIGH-4 fix: int 캐스팅 제거 — long 유지
+        long offset = pageable.getOffset();
         int limit = pageable.getPageSize();
-        var boards = searchBoardPort.search("", null, null, offset, limit);
+        var boards = searchBoardPort.search("", null, null, (int) Math.min(offset, Integer.MAX_VALUE), limit);
         long total = searchBoardPort.count("", null, null);
         return new PageImpl<>(boards.stream().map(AdminBoardResponse::of).toList(), pageable, total);
     }
 
     public Page<AdminPostResponse> getPosts(Pageable pageable) {
-        int offset = (int) pageable.getOffset();
+        long offset = pageable.getOffset();
         int limit = pageable.getPageSize();
-        var posts = loadPostPort.findAll(offset, limit);
+        var posts = loadPostPort.findAll((int) Math.min(offset, Integer.MAX_VALUE), limit);
         long total = loadPostPort.count();
         return new PageImpl<>(posts.stream().map(AdminPostResponse::of).toList(), pageable, total);
     }
 
     public Page<AdminUniversityResponse> getUniversities(Pageable pageable) {
-        int offset = (int) pageable.getOffset();
+        long offset = pageable.getOffset();
         int limit = pageable.getPageSize();
-        var universities = searchUniversityPort.search("", null, offset, limit);
+        var universities = searchUniversityPort.search("", null, (int) Math.min(offset, Integer.MAX_VALUE), limit);
         long total = searchUniversityPort.count("", null);
         return new PageImpl<>(universities.stream().map(AdminUniversityResponse::of).toList(), pageable, total);
     }

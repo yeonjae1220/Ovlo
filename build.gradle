@@ -76,11 +76,9 @@ dependencies {
     implementation 'io.opentelemetry:opentelemetry-exporter-otlp'
 
     // ── Test ──────────────────────────────────────────────────────────────────
-    testImplementation 'org.springframework.boot:spring-boot-starter-test'
-    testImplementation 'org.springframework.boot:spring-boot-starter-data-jpa-test'
-    testImplementation 'org.springframework.boot:spring-boot-starter-security-test'
-    testImplementation 'org.springframework.boot:spring-boot-starter-validation-test'
-    testImplementation 'org.springframework.boot:spring-boot-starter-webmvc-test'
+    // MEDIUM-6 fix: 존재하지 않는 스타터 제거 → 실제 존재하는 의존성으로 교체
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'  // JUnit5, MockMvc, DataJpaTest 포함
+    testImplementation 'org.springframework.security:spring-security-test'   // Spring Security 테스트 지원
     testImplementation platform('org.testcontainers:testcontainers-bom:1.20.4')
     testImplementation 'org.testcontainers:postgresql'
     testImplementation 'org.testcontainers:junit-jupiter'
