@@ -77,7 +77,9 @@ public class GoogleAuthCommandService implements GoogleLoginUseCase {
             isNewMember = true;
         }
 
-        String accessToken = jwtTokenProvider.generateAccessToken(member.getId(), member.getRole());
+        // Google OAuth 유저는 JWT에 ADMIN 권한을 부여하지 않는다.
+        // Admin 기능은 SSR 세션 기반(/admin) 전용이며 JWT로는 접근 불가.
+        String accessToken = jwtTokenProvider.generateAccessToken(member.getId(), MemberRole.MEMBER);
         String refreshToken = jwtTokenProvider.generateRefreshToken();
         Instant expiresAt = Instant.now().plus(REFRESH_TOKEN_TTL_DAYS, ChronoUnit.DAYS);
 
