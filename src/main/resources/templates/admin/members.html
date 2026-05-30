@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{admin/layout :: layout(~{::body}, '멤버 관리', 'members')}"
+      lang="ko">
+<body>
+
+<div class="section-header">
+  <span class="section-title">
+    멤버 목록
+    <span class="text-muted" style="font-size:13px; font-weight:400;"
+          th:text="'(' + ${totalElements} + '명)'"></span>
+  </span>
+</div>
+
+<div class="card" style="padding:0; overflow:hidden;">
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>닉네임</th>
+          <th>이메일</th>
+          <th>가입 경로</th>
+          <th>상태</th>
+          <th>역할</th>
+          <th>액션</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr th:if="${members.empty}">
+          <td colspan="7" style="text-align:center; padding:32px; color:var(--text-muted);">멤버가 없습니다.</td>
+        </tr>
+        <tr th:each="m : ${members}">
+          <td style="color:var(--text-muted);" th:text="${m.id()}"></td>
+          <td style="font-weight:500;" th:text="${m.nickname()}"></td>
+          <td style="color:var(--text-muted);" th:text="${m.email()}"></td>
+          <td>
+            <span class="badge"
+                  th:class="${m.provider() == 'LOCAL'} ? 'badge badge-member' : 'badge badge-admin'"
+                  th:text="${m.provider() ?: 'LOCAL'}"></span>
+          </td>
+          <td>
+            <span class="badge"
+                  th:class="${m.status().name() == 'ACTIVE'} ? 'badge badge-active' :
+                             (${m.status().name() == 'SUSPENDED'} ? 'badge badge-suspended' :
+                             (${m.status().name() == 'PENDING_ONBOARDING'} ? 'badge badge-pending' : 'badge badge-deleted'))"
+                  th:text="${m.status().getDisplayName()}"></span>
+          </td>
+          <td>
+            <span class="badge"
+                  th:class="${m.role().name() == 'ADMIN'} ? 'badge badge-admin' : 'badge badge-member'"
+                  th:text="${m.role().name()}"></span>
+          </td>
+          <td style="display:flex; gap:5px; flex-wrap:wrap;">
+            <!-- 역할 변경 -->
+            <form class="inline-form" th:action="@{/admin/members/{id}/role(id=${m.id()})}" method="post">
+              <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+              <input type="hidden" name="role" th:value="${m.role().name() == 'ADMIN'} ? 'MEMBER' : 'ADMIN'"/>
+              <button type="submit" class="btn btn-ghost btn-sm"
+                      th:text="${m.role().name() == 'ADMIN'} ? '↓ MEMBER' : '↑ ADMIN'">변경</button>
+            </form>
+            <!-- 정지 / 해제 -->
+            <form th:if="${m.status().name() != 'SUSPENDED'}" class="inline-form"
+                  th:action="@{/admin/members/{id}/suspend(id=${m.id()})}" method="post"
+                  onsubmit="return confirm('이 멤버를 정지하시겠습니까?')">
+              <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+              <button type="submit" class="btn btn-warning btn-sm">정지</button>
+            </form>
+            <form th:if="${m.status().name() == 'SUSPENDED'}" class="inline-form"
+                  th:action="@{/admin/members/{id}/unsuspend(id=${m.id()})}" method="post">
+              <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+              <button type="submit" class="btn btn-ghost btn-sm">정지 해제</button>
+            </form>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<div class="pagination" th:if="${totalPages > 1}">
+  <a th:href="@{/admin/members(page=${currentPage - 1})}"
+     th:class="${currentPage == 0} ? 'page-link disabled' : 'page-link'">‹</a>
+  <th:block th:each="i : ${#numbers.sequence(0, totalPages - 1)}">
+    <a th:href="@{/admin/members(page=${i})}"
+       th:class="${i == currentPage} ? 'page-link active' : 'page-link'"
+       th:text="${i + 1}"></a>
+  </th:block>
+  <a th:href="@{/admin/members(page=${currentPage + 1})}"
+     th:class="${currentPage == totalPages - 1} ? 'page-link disabled' : 'page-link'">›</a>
+</div>
+
+</body>
+</html>

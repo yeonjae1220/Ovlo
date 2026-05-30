@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{admin/layout :: layout(~{::body}, '게시글 관리', 'posts')}"
+      lang="ko">
+<body>
+
+<div class="section-header">
+  <span class="section-title">
+    게시글 목록
+    <span class="text-muted" style="font-size:13px; font-weight:400;"
+          th:text="'(' + ${totalElements} + '개)'"></span>
+  </span>
+</div>
+
+<div class="card" style="padding:0; overflow:hidden;">
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>제목</th>
+          <th>게시판 ID</th>
+          <th>작성자 ID</th>
+          <th>좋아요</th>
+          <th>상태</th>
+          <th>액션</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr th:if="${posts.empty}">
+          <td colspan="7" style="text-align:center; padding:32px; color:var(--text-muted);">게시글이 없습니다.</td>
+        </tr>
+        <tr th:each="p : ${posts}">
+          <td style="color:var(--text-muted);" th:text="${p.id()}"></td>
+          <td style="font-weight:500; max-width:300px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;"
+              th:text="${p.title()}"></td>
+          <td style="color:var(--text-muted);" th:text="${p.boardId()}"></td>
+          <td style="color:var(--text-muted);" th:text="${p.authorId()}"></td>
+          <td style="color:var(--text-muted);" th:text="${p.likeCount()}"></td>
+          <td>
+            <span class="badge"
+                  th:class="${p.deleted()} ? 'badge badge-deleted' : 'badge badge-active'"
+                  th:text="${p.deleted()} ? '삭제됨' : '정상'"></span>
+          </td>
+          <td>
+            <form th:if="${!p.deleted()}" class="inline-form"
+                  th:action="@{/admin/posts/{id}/delete(id=${p.id()})}" method="post"
+                  onsubmit="return confirm('게시글을 삭제하시겠습니까?')">
+              <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+              <button type="submit" class="btn btn-danger btn-sm">삭제</button>
+            </form>
+            <span th:if="${p.deleted()}" class="text-muted">—</span>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<div class="pagination" th:if="${totalPages > 1}">
+  <a th:href="@{/admin/posts(page=${currentPage - 1})}"
+     th:class="${currentPage == 0} ? 'page-link disabled' : 'page-link'">‹</a>
+  <th:block th:each="i : ${#numbers.sequence(0, totalPages - 1)}">
+    <a th:href="@{/admin/posts(page=${i})}"
+       th:class="${i == currentPage} ? 'page-link active' : 'page-link'"
+       th:text="${i + 1}"></a>
+  </th:block>
+  <a th:href="@{/admin/posts(page=${currentPage + 1})}"
+     th:class="${currentPage == totalPages - 1} ? 'page-link disabled' : 'page-link'">›</a>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{admin/layout :: layout(~{::body}, '게시판 목록', 'boards')}"
+      lang="ko">
+<body>
+
+<div class="section-header">
+  <span class="section-title">
+    게시판 목록
+    <span class="text-muted" style="font-size:13px; font-weight:400;"
+          th:text="'(' + ${totalElements} + '개)'"></span>
+  </span>
+</div>
+
+<div class="card" style="padding:0; overflow:hidden;">
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>이름</th>
+          <th>카테고리</th>
+          <th>범위</th>
+          <th>대학 ID</th>
+          <th>생성자 ID</th>
+          <th>활성</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr th:if="${boards.empty}">
+          <td colspan="7" style="text-align:center; padding:32px; color:var(--text-muted);">게시판이 없습니다.</td>
+        </tr>
+        <tr th:each="b : ${boards}">
+          <td style="color:var(--text-muted);" th:text="${b.id()}"></td>
+          <td style="font-weight:500;" th:text="${b.name()}"></td>
+          <td><span class="badge badge-member" th:text="${b.category()}"></span></td>
+          <td><span class="badge badge-member" th:text="${b.scope()}"></span></td>
+          <td style="color:var(--text-muted);" th:text="${b.universityId() ?: '—'}"></td>
+          <td style="color:var(--text-muted);" th:text="${b.creatorId()}"></td>
+          <td>
+            <span class="badge"
+                  th:class="${b.active()} ? 'badge badge-active' : 'badge badge-deleted'"
+                  th:text="${b.active()} ? '활성' : '비활성'"></span>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<div class="pagination" th:if="${totalPages > 1}">
+  <a th:href="@{/admin/boards(page=${currentPage - 1})}"
+     th:class="${currentPage == 0} ? 'page-link disabled' : 'page-link'">‹</a>
+  <th:block th:each="i : ${#numbers.sequence(0, totalPages - 1)}">
+    <a th:href="@{/admin/boards(page=${i})}"
+       th:class="${i == currentPage} ? 'page-link active' : 'page-link'"
+       th:text="${i + 1}"></a>
+  </th:block>
+  <a th:href="@{/admin/boards(page=${currentPage + 1})}"
+     th:class="${currentPage == totalPages - 1} ? 'page-link disabled' : 'page-link'">›</a>
+</div>
+
+</body>
+</html>

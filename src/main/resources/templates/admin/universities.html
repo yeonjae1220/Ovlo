@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{admin/layout :: layout(~{::body}, '대학 목록', 'universities')}"
+      lang="ko">
+<body>
+
+<div class="section-header">
+  <span class="section-title">
+    대학 목록
+    <span class="text-muted" style="font-size:13px; font-weight:400;"
+          th:text="'(' + ${totalElements} + '개)'"></span>
+  </span>
+</div>
+
+<div class="card" style="padding:0; overflow:hidden;">
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>영문명</th>
+          <th>현지명</th>
+          <th>국가코드</th>
+          <th>도시</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr th:if="${universities.empty}">
+          <td colspan="5" style="text-align:center; padding:32px; color:var(--text-muted);">대학 데이터가 없습니다.</td>
+        </tr>
+        <tr th:each="u : ${universities}">
+          <td style="color:var(--text-muted);" th:text="${u.id()}"></td>
+          <td style="font-weight:500;" th:text="${u.name()}"></td>
+          <td style="color:var(--text-muted);" th:text="${u.localName() ?: '—'}"></td>
+          <td><span class="badge badge-member" th:text="${u.countryCode()}"></span></td>
+          <td style="color:var(--text-muted);" th:text="${u.city() ?: '—'}"></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<div class="pagination" th:if="${totalPages > 1}">
+  <a th:href="@{/admin/universities(page=${currentPage - 1})}"
+     th:class="${currentPage == 0} ? 'page-link disabled' : 'page-link'">‹</a>
+  <th:block th:each="i : ${#numbers.sequence(0, totalPages - 1)}">
+    <a th:href="@{/admin/universities(page=${i})}"
+       th:class="${i == currentPage} ? 'page-link active' : 'page-link'"
+       th:text="${i + 1}"></a>
+  </th:block>
+  <a th:href="@{/admin/universities(page=${currentPage + 1})}"
+     th:class="${currentPage == totalPages - 1} ? 'page-link disabled' : 'page-link'">›</a>
+</div>
+
+</body>
+</html>

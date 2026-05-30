@@ -214,6 +214,20 @@ public class Member {
         this.role = role;
     }
 
+    public void suspend() {
+        if (status == MemberStatus.SUSPENDED) {
+            throw new IllegalStateException("이미 정지된 회원입니다");
+        }
+        this.status = MemberStatus.SUSPENDED;
+    }
+
+    public void unsuspend() {
+        if (status != MemberStatus.SUSPENDED) {
+            throw new IllegalStateException("정지된 회원만 해제할 수 있습니다. 현재 상태: " + status);
+        }
+        this.status = MemberStatus.ACTIVE;
+    }
+
     public void withdraw() {
         if (status == MemberStatus.WITHDRAWN) {
             throw new IllegalStateException("이미 탈퇴한 회원입니다");

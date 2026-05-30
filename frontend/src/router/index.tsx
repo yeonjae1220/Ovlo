@@ -1,8 +1,6 @@
 import { createBrowserRouter } from 'react-router-dom'
 import AppLayout from '../components/layout/AppLayout'
 import ProtectedRoute from '../components/layout/ProtectedRoute'
-import AdminRoute from '../components/layout/AdminRoute'
-import AdminLayout from '../components/layout/AdminLayout'
 
 import LandingPage from '../pages/LandingPage'
 import LoginPage from '../pages/auth/LoginPage'
@@ -23,11 +21,6 @@ import SearchPage from '../pages/member/SearchPage'
 import FollowPage from '../pages/follow/FollowPage'
 import ChatListPage from '../pages/chat/ChatListPage'
 import ChatRoomPage from '../pages/chat/ChatRoomPage'
-import AdminDashboardPage from '../pages/admin/AdminDashboardPage'
-import AdminMembersPage from '../pages/admin/AdminMembersPage'
-import AdminBoardsPage from '../pages/admin/AdminBoardsPage'
-import AdminPostsPage from '../pages/admin/AdminPostsPage'
-import AdminUniversitiesPage from '../pages/admin/AdminUniversitiesPage'
 
 export const router = createBrowserRouter([
   // Public routes
@@ -37,7 +30,7 @@ export const router = createBrowserRouter([
   { path: '/universities', element: <UniversitySearchPage /> },
   { path: '/oauth/callback', element: <OAuthCallbackPage /> },
 
-  // Public routes with AppLayout (하단바 포함, 인증 불필요)
+  // Public routes with AppLayout
   {
     element: <AppLayout />,
     children: [
@@ -45,23 +38,6 @@ export const router = createBrowserRouter([
       { path: '/exchange-universities/:id', element: <ExchangeUniversityDetailPage /> },
       { path: '/university-reports', element: <UniversityReportsPage /> },
       { path: '/university-reports/:id', element: <UniversityReportDetailPage /> },
-    ],
-  },
-
-  // Admin routes (ADMIN role 전용)
-  {
-    element: <AdminRoute />,
-    children: [
-      {
-        element: <AdminLayout />,
-        children: [
-          { path: '/admin', element: <AdminDashboardPage /> },
-          { path: '/admin/members', element: <AdminMembersPage /> },
-          { path: '/admin/boards', element: <AdminBoardsPage /> },
-          { path: '/admin/posts', element: <AdminPostsPage /> },
-          { path: '/admin/universities', element: <AdminUniversitiesPage /> },
-        ],
-      },
     ],
   },
 

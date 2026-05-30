@@ -9,7 +9,10 @@ import me.yeonjae.ovlo.application.port.out.board.SearchBoardPort;
 import me.yeonjae.ovlo.application.port.out.member.LoadMemberPort;
 import me.yeonjae.ovlo.application.port.out.member.SaveMemberPort;
 import me.yeonjae.ovlo.application.port.out.post.LoadPostPort;
+import me.yeonjae.ovlo.application.port.out.post.SavePostPort;
 import me.yeonjae.ovlo.application.port.out.university.SearchUniversityPort;
+import me.yeonjae.ovlo.domain.post.model.Post;
+import me.yeonjae.ovlo.domain.post.model.PostId;
 import me.yeonjae.ovlo.domain.member.exception.MemberException;
 import me.yeonjae.ovlo.domain.member.model.Member;
 import me.yeonjae.ovlo.domain.member.model.MemberId;
@@ -29,31 +32,54 @@ public class AdminService {
     private final SearchBoardPort searchBoardPort;
     private final LoadPostPort loadPostPort;
     private final SearchUniversityPort searchUniversityPort;
+    private final SavePostPort savePostPort;
 
     public AdminService(LoadMemberPort loadMemberPort,
                         SaveMemberPort saveMemberPort,
                         SearchBoardPort searchBoardPort,
                         LoadPostPort loadPostPort,
+                        SavePostPort savePostPort,
                         SearchUniversityPort searchUniversityPort) {
         this.loadMemberPort = loadMemberPort;
         this.saveMemberPort = saveMemberPort;
         this.searchBoardPort = searchBoardPort;
         this.loadPostPort = loadPostPort;
+        this.savePostPort = savePostPort;
         this.searchUniversityPort = searchUniversityPort;
     }
 
     public Page<AdminMemberResponse> getMembers(Pageable pageable) {
-        return loadMemberPort.findAll(pageable)
-                .map(AdminMemberResponse::of);
+        return loadMemberPort.findAll(pageable).map(AdminMemberResponse::of);
     }
 
     @Transactional
     public AdminMemberResponse updateMemberRole(Long memberId, MemberRole role) {
-        Member member = loadMemberPort.findById(new MemberId(memberId))
-                .orElseThrow(() -> new MemberException("회원을 찾을 수 없습니다", MemberException.ErrorType.NOT_FOUND));
+        Member member = findMemberOrThrow(memberId);
         member.updateRole(role);
-        Member saved = saveMemberPort.save(member);
-        return AdminMemberResponse.of(saved);
+        return AdminMemberResponse.of(saveMemberPort.save(member));
+    }
+
+    @Transactional
+    public void suspendMember(Long memberId) {
+        Member member = findMemberOrThrow(memberId);
+        member.suspend();
+        saveMemberPort.save(member);
+    }
+
+    @Transactional
+    public void unsuspendMember(Long memberId) {
+        Member member = findMemberOrThrow(memberId);
+        member.unsuspend();
+        saveMemberPort.save(member);
+    }
+
+    @Transactional
+    public void deletePost(Long postId) {
+        Post post = loadPostPort.findById(new PostId(postId))
+                .orElseThrow(() -> new me.yeonjae.ovlo.domain.post.exception.PostException(
+                        "게시글을 찾을 수 없습니다", me.yeonjae.ovlo.domain.post.exception.PostException.ErrorType.NOT_FOUND));
+        post.delete();
+        savePostPort.save(post);
     }
 
     public Page<AdminBoardResponse> getBoards(Pageable pageable) {
@@ -87,5 +113,10 @@ public class AdminService {
                 loadPostPort.count(),
                 searchUniversityPort.count("", null)
         );
+    }
+
+    private Member findMemberOrThrow(Long memberId) {
+        return loadMemberPort.findById(new MemberId(memberId))
+                .orElseThrow(() -> new MemberException("회원을 찾을 수 없습니다", MemberException.ErrorType.NOT_FOUND));
     }
 }
