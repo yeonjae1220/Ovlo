@@ -7,6 +7,9 @@ const TABLET_QUERY = '(min-width: 768px) and (max-width: 1023px)'
 const DESKTOP_QUERY = '(min-width: 1024px)'
 
 function getBreakpoint() {
+  if (typeof window === 'undefined') {
+    return { isMobile: false, isTablet: false, isDesktop: true }
+  }
   return {
     isMobile: window.matchMedia(MOBILE_QUERY).matches,
     isTablet: window.matchMedia(TABLET_QUERY).matches,
