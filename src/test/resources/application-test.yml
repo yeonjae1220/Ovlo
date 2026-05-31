@@ -29,7 +29,7 @@ jwt:
 admin:
   email: admin@test.example.com
   password:
-    bcrypt: "$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2uheWG/igi."
+    bcrypt: "$2a$10$fyyaqFdt1gBI6t40O6XTG.BWObN.OFn18IWulQMz7HWnSS6dGy1lW"
 
 logging:
   level:

@@ -50,6 +50,15 @@ admin:
   password:
     bcrypt: ${ADMIN_PASSWORD_BCRYPT:$2a$10$placeholder-must-be-overridden-in-prod}
 
+server:
+  servlet:
+    session:
+      timeout: 15m
+      cookie:
+        http-only: true
+        secure: true
+        same-site: strict
+
 jwt:
   secret: ${JWT_SECRET}
   access-token-ttl-minutes: ${JWT_ACCESS_TTL_MINUTES:15}
