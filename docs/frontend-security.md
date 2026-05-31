@@ -92,3 +92,58 @@ X-Content-Type-Options: nosniff
 Referrer-Policy: strict-origin-when-cross-origin
 Permissions-Policy: camera=(), microphone=(), geolocation=()
 ```
+
+---
+
+## k8s Health Probe (2026-05-31)
+
+liveness/readiness probe를 분리하여 의존성 장애 시 트래픽 차단.
+
+| 경로 | 목적 | 응답 |
+|------|------|------|
+| `GET /health/live` | 프로세스 생사 확인 | 항상 200 |
+| `GET /health/ready` | 백엔드 연결 확인 | 성공 200, 실패 503 |
+
+`/api/*` rewrites 충돌을 피해 `/health/*` 경로 사용. `force-dynamic`으로 캐싱 방지.
+---
+
+## SSR window 가드 패턴 (2026-05-31)
+
+Next.js는 `'use client'` 컴포넌트도 서버에서 초기 HTML 렌더링 시 실행됨.
+`useState(fn)` 형태로 초기화 함수를 전달하면 서버에서도 즉시 호출되어 `window is not defined` 에러 발생.
+
+### 문제가 된 코드 (`useBreakpoint.ts`)
+
+```ts
+// 서버에서 window.matchMedia() 호출 → ReferenceError
+function getBreakpoint() {
+  return {
+    isMobile: window.matchMedia(MOBILE_QUERY).matches,
+    ...
+  }
+}
+export function useBreakpoint() {
+  const [bp, setBp] = useState(getBreakpoint) // ← 서버에서 즉시 실행
+  ...
+}
+```
+
+### 수정된 코드
+
+```ts
+function getBreakpoint() {
+  if (typeof window === 'undefined') {
+    return { isMobile: false, isTablet: false, isDesktop: true } // SSR 기본값
+  }
+  return {
+    isMobile: window.matchMedia(MOBILE_QUERY).matches,
+    ...
+  }
+}
+```
+
+### 주의사항
+
+- `useEffect` 내부의 `window` 접근은 안전 (클라이언트 전용 실행)
+- `useState(fn)` 초기화 함수, 모듈 최상위 레벨 실행은 SSR 시 서버에서 호출됨
+- 브라우저 전용 API(`window`, `document`, `navigator`) 는 항상 `typeof` 가드 필요
