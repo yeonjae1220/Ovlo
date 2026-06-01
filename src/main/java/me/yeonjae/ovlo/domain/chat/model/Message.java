@@ -2,7 +2,7 @@ package me.yeonjae.ovlo.domain.chat.model;
 
 import me.yeonjae.ovlo.domain.member.model.MemberId;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.Objects;
 
 public class Message {
@@ -10,7 +10,7 @@ public class Message {
     private MessageId id;
     private MemberId senderId;
     private String content;
-    private LocalDateTime sentAt;
+    private Instant sentAt;
 
     private Message() {}
 
@@ -24,12 +24,12 @@ public class Message {
         Message message = new Message();
         message.senderId = senderId;
         message.content = content;
-        message.sentAt = LocalDateTime.now();
+        message.sentAt = Instant.now();
         return message;
     }
 
     /** persistence 계층 전용 */
-    public static Message restore(MessageId id, MemberId senderId, String content, LocalDateTime sentAt) {
+    public static Message restore(MessageId id, MemberId senderId, String content, Instant sentAt) {
         Message message = new Message();
         message.id = id;
         message.senderId = senderId;
@@ -41,5 +41,5 @@ public class Message {
     public MessageId getId() { return id; }
     public MemberId getSenderId() { return senderId; }
     public String getContent() { return content; }
-    public LocalDateTime getSentAt() { return sentAt; }
+    public Instant getSentAt() { return sentAt; }
 }

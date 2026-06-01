@@ -6,6 +6,7 @@ import me.yeonjae.ovlo.application.dto.result.ChatRoomResult;
 import me.yeonjae.ovlo.application.dto.result.MessageResult;
 import me.yeonjae.ovlo.application.port.out.chat.LoadChatPort;
 import me.yeonjae.ovlo.application.port.out.chat.SaveChatPort;
+import me.yeonjae.ovlo.application.port.out.chat.SaveReadMarkerPort;
 import me.yeonjae.ovlo.domain.chat.exception.ChatException;
 import me.yeonjae.ovlo.domain.chat.model.ChatRoom;
 import me.yeonjae.ovlo.domain.chat.model.ChatRoomId;
@@ -21,7 +22,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 
@@ -36,6 +37,7 @@ class ChatCommandServiceTest {
 
     @Mock LoadChatPort loadChatPort;
     @Mock SaveChatPort saveChatPort;
+    @Mock SaveReadMarkerPort saveReadMarkerPort;
 
     @InjectMocks
     ChatCommandService service;
@@ -84,15 +86,10 @@ class ChatCommandServiceTest {
         @Test
         @DisplayName("채팅방에 메시지를 전송할 수 있다")
         void shouldSendMessage() {
-            MemberId sender = new MemberId(1L);
-            MemberId other = new MemberId(2L);
-            ChatRoom room = ChatRoom.restore(new ChatRoomId(1L), ChatRoomType.DM, null,
-                    List.of(sender, other), List.of());
-            Message savedMsg = Message.restore(new MessageId(10L), sender, "안녕하세요", LocalDateTime.now());
-            ChatRoom savedRoom = ChatRoom.restore(new ChatRoomId(1L), ChatRoomType.DM, null,
-                    List.of(sender, other), List.of(savedMsg));
-            given(loadChatPort.findById(any())).willReturn(Optional.of(room));
-            given(saveChatPort.save(any())).willReturn(savedRoom);
+            Message savedMsg = Message.restore(
+                    new MessageId(10L), new MemberId(1L), "안녕하세요", Instant.now());
+            given(loadChatPort.isMember(any(), any())).willReturn(true);
+            given(saveChatPort.saveMessage(any(), any(), any())).willReturn(savedMsg);
 
             SendMessageCommand command = new SendMessageCommand(1L, 1L, "안녕하세요");
             MessageResult result = service.sendMessage(command);
@@ -100,17 +97,17 @@ class ChatCommandServiceTest {
             assertThat(result.messageId()).isEqualTo(10L);
             assertThat(result.content()).isEqualTo("안녕하세요");
             assertThat(result.senderId()).isEqualTo(1L);
-            verify(saveChatPort).save(any());
+            verify(saveChatPort).saveMessage(1L, 1L, "안녕하세요");
         }
 
         @Test
-        @DisplayName("채팅방이 없으면 예외가 발생한다")
-        void shouldThrow_whenChatRoomNotFound() {
-            given(loadChatPort.findById(any())).willReturn(Optional.empty());
+        @DisplayName("채팅방 참여자가 아니면 예외가 발생한다")
+        void shouldThrow_whenNotMember() {
+            given(loadChatPort.isMember(any(), any())).willReturn(false);
 
             assertThatThrownBy(() -> service.sendMessage(new SendMessageCommand(99L, 1L, "hi")))
                     .isInstanceOf(ChatException.class)
-                    .hasMessageContaining("채팅방을 찾을 수 없습니다");
+                    .hasMessageContaining("참여자가 아닙니다");
         }
     }
 }

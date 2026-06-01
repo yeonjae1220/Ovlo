@@ -13,7 +13,9 @@ import me.yeonjae.ovlo.domain.member.model.MemberId;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
+import java.util.Objects;
+
+import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -55,22 +57,22 @@ public class ChatQueryService implements GetChatRoomQuery {
 
         // 배치 2: 전체 채팅방 읽음 마커 한 번에 조회 (2N → 1 쿼리)
         List<ChatRoomId> roomIds = rooms.stream().map(ChatRoom::getId).toList();
-        Map<Long, Map<Long, LocalDateTime>> lastReadAtByRoom =
+        Map<Long, Map<Long, Instant>> lastReadAtByRoom =
                 loadChatPort.findAllLastReadAtByRoomIds(roomIds);
 
         // 배치 3: 전체 채팅방 읽음 기준 시각 수집 → 미읽음 수 일괄 조회 (N → 1 배치)
-        Map<Long, LocalDateTime> sinceByRoomId = rooms.stream()
+        Map<Long, Instant> sinceByRoomId = rooms.stream()
                 .collect(Collectors.toMap(
                         r -> r.getId().value(),
                         r -> Optional.ofNullable(lastReadAtByRoom.getOrDefault(r.getId().value(), Map.of()).get(memberId))
-                                .orElse(LocalDateTime.of(1970, 1, 1, 0, 0, 0))
+                                .orElse(Instant.EPOCH)
                 ));
         Map<Long, Long> unreadByRoom = loadChatPort.countUnreadBatch(new MemberId(memberId), sinceByRoomId);
 
         return rooms.stream()
                 .map(room -> {
                     ParticipantInfo info = buildParticipantInfoFromCache(room, memberById);
-                    Map<Long, LocalDateTime> roomReadAt =
+                    Map<Long, Instant> roomReadAt =
                             lastReadAtByRoom.getOrDefault(room.getId().value(), Map.of());
                     int unread = unreadByRoom.getOrDefault(room.getId().value(), 0L).intValue();
                     return ChatRoomResult.from(room, info.nicknames(), info.profileImages(), unread, roomReadAt);
@@ -101,7 +103,7 @@ public class ChatQueryService implements GetChatRoomQuery {
     private ParticipantInfo buildParticipantInfoFromCache(ChatRoom room, Map<Long, Member> cache) {
         List<Member> members = room.getParticipants().stream()
                 .map(pid -> cache.get(pid.value()))
-                .filter(m -> m != null)
+                .filter(Objects::nonNull)
                 .toList();
         return toParticipantInfo(members);
     }

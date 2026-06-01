@@ -3,7 +3,7 @@ package me.yeonjae.ovlo.adapter.out.persistence.entity;
 import jakarta.persistence.*;
 
 import java.io.Serializable;
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.Objects;
 
 @Entity
@@ -14,18 +14,18 @@ public class ChatRoomReadMarkerJpaEntity {
     private ReadMarkerId id;
 
     @Column(name = "last_read_at", nullable = false)
-    private LocalDateTime lastReadAt;
+    private Instant lastReadAt;
 
     public ChatRoomReadMarkerJpaEntity() {}
 
     public ChatRoomReadMarkerJpaEntity(Long chatRoomId, Long memberId) {
         this.id = new ReadMarkerId(chatRoomId, memberId);
-        this.lastReadAt = LocalDateTime.now();
+        this.lastReadAt = Instant.now();
     }
 
     public ReadMarkerId getId() { return id; }
-    public LocalDateTime getLastReadAt() { return lastReadAt; }
-    public void setLastReadAt(LocalDateTime lastReadAt) { this.lastReadAt = lastReadAt; }
+    public Instant getLastReadAt() { return lastReadAt; }
+    public void setLastReadAt(Instant lastReadAt) { this.lastReadAt = lastReadAt; }
 
     @Embeddable
     public static class ReadMarkerId implements Serializable {

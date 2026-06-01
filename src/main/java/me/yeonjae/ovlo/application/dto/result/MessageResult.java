@@ -2,13 +2,13 @@ package me.yeonjae.ovlo.application.dto.result;
 
 import me.yeonjae.ovlo.domain.chat.model.Message;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 public record MessageResult(
         Long messageId,
         Long senderId,
         String content,
-        LocalDateTime sentAt
+        Instant sentAt
 ) {
     public static MessageResult from(Message message) {
         return new MessageResult(

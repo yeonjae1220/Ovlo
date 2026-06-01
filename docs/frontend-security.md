@@ -71,7 +71,24 @@ sessionStorage 대신 쿠키 이유: iOS Safari/인앱 브라우저 OAuth 왕복
 
 ---
 
-## 5. CSP (`src/middleware.ts`)
+## 5. WebSocket 인증 연동
+
+STOMP 연결 시 accessToken을 CONNECT 프레임 헤더로 전송합니다.
+
+```typescript
+// 클라이언트 연결 예시
+client.connectHeaders = {
+  Authorization: `Bearer ${accessToken}`,
+}
+```
+
+백엔드 `JwtChannelInterceptor`가 CONNECT 프레임의 `Authorization` 헤더를 검증하고, 이후 세션에 memberId를 저장합니다. accessToken 만료 시 STOMP 재연결 전 `refreshAuth()`를 호출해야 합니다.
+
+> 상세 백엔드 보안 구조는 [`docs/backend-security.md`](./backend-security.md) 참조.
+
+---
+
+## 6. CSP (`src/middleware.ts`)
 
 ```
 script-src 'nonce-{random}' 'strict-dynamic' 'unsafe-inline'

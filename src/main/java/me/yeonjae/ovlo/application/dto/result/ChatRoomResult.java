@@ -3,7 +3,7 @@ package me.yeonjae.ovlo.application.dto.result;
 import me.yeonjae.ovlo.domain.chat.model.ChatRoom;
 import me.yeonjae.ovlo.domain.chat.model.ChatRoomType;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 
@@ -15,7 +15,7 @@ public record ChatRoomResult(
         Map<Long, String> participantNicknames,
         Map<Long, String> participantProfileImageMediaIds,
         int unreadCount,
-        Map<Long, LocalDateTime> participantLastReadAt
+        Map<Long, Instant> participantLastReadAt
 ) {
     public static ChatRoomResult from(ChatRoom room) {
         return from(room, Map.of(), Map.of(), 0, Map.of());
@@ -26,7 +26,7 @@ public record ChatRoomResult(
             Map<Long, String> nicknames,
             Map<Long, String> profileImages,
             int unreadCount,
-            Map<Long, LocalDateTime> lastReadAt
+            Map<Long, Instant> lastReadAt
     ) {
         return new ChatRoomResult(
                 room.getId() != null ? room.getId().value() : null,

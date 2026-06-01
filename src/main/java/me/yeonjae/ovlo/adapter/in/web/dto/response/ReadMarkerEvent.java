@@ -1,5 +1,5 @@
 package me.yeonjae.ovlo.adapter.in.web.dto.response;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 
-public record ReadMarkerEvent(Long memberId, LocalDateTime lastReadAt) {}
+public record ReadMarkerEvent(Long memberId, Instant lastReadAt) {}

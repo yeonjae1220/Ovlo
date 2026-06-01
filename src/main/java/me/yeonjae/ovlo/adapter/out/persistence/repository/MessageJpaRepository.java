@@ -7,7 +7,7 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.List;
 
 public interface MessageJpaRepository extends JpaRepository<MessageJpaEntity, Long> {
@@ -15,7 +15,7 @@ public interface MessageJpaRepository extends JpaRepository<MessageJpaEntity, Lo
     List<MessageJpaEntity> findByChatRoomIdAndHiddenByWithdrawalFalseOrderBySentAtDesc(Long chatRoomId, Pageable pageable);
 
     @Query("SELECT COUNT(m) FROM MessageJpaEntity m WHERE m.chatRoomId = :chatRoomId AND m.senderId != :memberId AND m.sentAt > :since AND m.hiddenByWithdrawal = false")
-    long countUnread(@Param("chatRoomId") Long chatRoomId, @Param("memberId") Long memberId, @Param("since") LocalDateTime since);
+    long countUnread(@Param("chatRoomId") Long chatRoomId, @Param("memberId") Long memberId, @Param("since") Instant since);
 
     @Modifying
     @Query("UPDATE MessageJpaEntity m SET m.hiddenByWithdrawal = true WHERE m.senderId = :senderId")

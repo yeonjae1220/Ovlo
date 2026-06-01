@@ -13,6 +13,7 @@ import me.yeonjae.ovlo.application.dto.result.MessageResult;
 import me.yeonjae.ovlo.application.port.in.chat.CreateChatRoomUseCase;
 import me.yeonjae.ovlo.application.port.in.chat.GetChatRoomQuery;
 import me.yeonjae.ovlo.application.port.in.chat.MarkMessagesReadUseCase;
+import me.yeonjae.ovlo.domain.chat.exception.ChatException;
 import me.yeonjae.ovlo.domain.chat.model.ChatRoomType;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -27,7 +28,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -81,9 +82,12 @@ public class ChatApiController {
 
     @Operation(summary = "채팅방 조회")
     @GetMapping("/{id}")
-    public ResponseEntity<ChatRoomResult> getById(@PathVariable Long id) {
-        ChatRoomResult result = getChatRoomQuery.getChatRoom(id);
-        return ResponseEntity.ok(result);
+    public ResponseEntity<ChatRoomResult> getById(
+            @PathVariable Long id,
+            @AuthenticationPrincipal Long memberId
+    ) {
+        requireMembership(id, memberId);
+        return ResponseEntity.ok(getChatRoomQuery.getChatRoom(id));
     }
 
     @Operation(summary = "채팅방 메시지 읽음 처리")
@@ -95,7 +99,7 @@ public class ChatApiController {
         markMessagesReadUseCase.markRead(id, memberId);
         messagingTemplate.convertAndSend(
                 "/topic/chat/" + id + "/read",
-                new ReadMarkerEvent(memberId, LocalDateTime.now())
+                new ReadMarkerEvent(memberId, Instant.now())
         );
         return ResponseEntity.noContent().build();
     }
@@ -104,9 +108,17 @@ public class ChatApiController {
     @GetMapping("/{id}/messages")
     public ResponseEntity<List<MessageResult>> getMessages(
             @PathVariable Long id,
+            @AuthenticationPrincipal Long memberId,
             @RequestParam(defaultValue = "0") @Min(0) int page,
             @RequestParam(defaultValue = "50") @Min(1) @Max(100) int size
     ) {
+        requireMembership(id, memberId);
         return ResponseEntity.ok(getChatRoomQuery.getMessages(id, page, size));
+    }
+
+    private void requireMembership(Long chatRoomId, Long memberId) {
+        if (!getChatRoomQuery.isMemberOfRoom(chatRoomId, memberId)) {
+            throw new ChatException("채팅방 접근 권한이 없습니다", ChatException.ErrorType.NOT_FOUND);
+        }
     }
 }

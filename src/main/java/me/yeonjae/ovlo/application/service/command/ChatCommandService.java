@@ -14,7 +14,6 @@ import me.yeonjae.ovlo.domain.chat.exception.ChatException;
 import me.yeonjae.ovlo.domain.chat.model.ChatRoom;
 import me.yeonjae.ovlo.domain.chat.model.ChatRoomId;
 import me.yeonjae.ovlo.domain.chat.model.ChatRoomType;
-import me.yeonjae.ovlo.domain.chat.model.Message;
 import me.yeonjae.ovlo.domain.member.model.MemberId;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
@@ -75,16 +74,13 @@ public class ChatCommandService implements CreateChatRoomUseCase, SendMessageUse
 
     @Override
     public MessageResult sendMessage(SendMessageCommand command) {
-        ChatRoom room = loadChatPort.findById(new ChatRoomId(command.chatRoomId()))
-                .orElseThrow(() -> new ChatException("채팅방을 찾을 수 없습니다", ChatException.ErrorType.NOT_FOUND));
-
+        ChatRoomId chatRoomId = new ChatRoomId(command.chatRoomId());
         MemberId senderId = new MemberId(command.senderId());
-        room.addMessage(senderId, command.content());
-        ChatRoom saved = saveChatPort.save(room);
-        List<Message> savedMessages = saved.getMessages();
-        if (savedMessages.isEmpty()) {
-            throw new ChatException("메시지 저장에 실패했습니다", ChatException.ErrorType.BAD_REQUEST);
+
+        if (!loadChatPort.isMember(chatRoomId, senderId)) {
+            throw new ChatException("채팅방을 찾을 수 없거나 참여자가 아닙니다", ChatException.ErrorType.NOT_FOUND);
         }
-        return MessageResult.from(savedMessages.get(savedMessages.size() - 1));
+
+        return MessageResult.from(saveChatPort.saveMessage(command.chatRoomId(), command.senderId(), command.content()));
     }
 }

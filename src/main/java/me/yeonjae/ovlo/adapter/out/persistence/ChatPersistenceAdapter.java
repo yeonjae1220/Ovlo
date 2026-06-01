@@ -1,6 +1,7 @@
 package me.yeonjae.ovlo.adapter.out.persistence;
 
 import me.yeonjae.ovlo.adapter.out.persistence.entity.ChatRoomReadMarkerJpaEntity;
+import me.yeonjae.ovlo.adapter.out.persistence.entity.MessageJpaEntity;
 import me.yeonjae.ovlo.adapter.out.persistence.mapper.ChatMapper;
 import me.yeonjae.ovlo.adapter.out.persistence.repository.ChatRoomJpaRepository;
 import me.yeonjae.ovlo.adapter.out.persistence.repository.ChatRoomReadMarkerRepository;
@@ -18,7 +19,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -91,7 +92,7 @@ public class ChatPersistenceAdapter implements LoadChatPort, SaveChatPort, SaveR
     }
 
     @Override
-    public Map<Long, LocalDateTime> findAllLastReadAt(ChatRoomId chatRoomId) {
+    public Map<Long, Instant> findAllLastReadAt(ChatRoomId chatRoomId) {
         return readMarkerRepository.findAllByChatRoomId(chatRoomId.value()).stream()
                 .collect(Collectors.toMap(
                         m -> m.getId().getMemberId(),
@@ -100,7 +101,7 @@ public class ChatPersistenceAdapter implements LoadChatPort, SaveChatPort, SaveR
     }
 
     @Override
-    public Map<Long, Map<Long, LocalDateTime>> findAllLastReadAtByRoomIds(List<ChatRoomId> roomIds) {
+    public Map<Long, Map<Long, Instant>> findAllLastReadAtByRoomIds(List<ChatRoomId> roomIds) {
         if (roomIds.isEmpty()) return Map.of();
         List<Long> rawIds = roomIds.stream().map(ChatRoomId::value).toList();
         return readMarkerRepository.findAllByChatRoomIdIn(rawIds).stream()
@@ -114,7 +115,7 @@ public class ChatPersistenceAdapter implements LoadChatPort, SaveChatPort, SaveR
     }
 
     @Override
-    public Optional<LocalDateTime> findLastReadAt(ChatRoomId chatRoomId, MemberId memberId) {
+    public Optional<Instant> findLastReadAt(ChatRoomId chatRoomId, MemberId memberId) {
         return readMarkerRepository.findById(
                 new ChatRoomReadMarkerJpaEntity.ReadMarkerId(chatRoomId.value(), memberId.value())
         ).map(ChatRoomReadMarkerJpaEntity::getLastReadAt);
@@ -126,12 +127,12 @@ public class ChatPersistenceAdapter implements LoadChatPort, SaveChatPort, SaveR
     }
 
     @Override
-    public long countUnread(ChatRoomId chatRoomId, MemberId memberId, LocalDateTime since) {
+    public long countUnread(ChatRoomId chatRoomId, MemberId memberId, Instant since) {
         return messageJpaRepository.countUnread(chatRoomId.value(), memberId.value(), since);
     }
 
     @Override
-    public Map<Long, Long> countUnreadBatch(MemberId memberId, Map<Long, LocalDateTime> sinceByRoomId) {
+    public Map<Long, Long> countUnreadBatch(MemberId memberId, Map<Long, Instant> sinceByRoomId) {
         if (sinceByRoomId.isEmpty()) return Map.of();
         return sinceByRoomId.entrySet().stream()
                 .collect(Collectors.toMap(
@@ -146,8 +147,27 @@ public class ChatPersistenceAdapter implements LoadChatPort, SaveChatPort, SaveR
         var id = new ChatRoomReadMarkerJpaEntity.ReadMarkerId(chatRoomId.value(), memberId.value());
         var marker = readMarkerRepository.findById(id)
                 .orElse(new ChatRoomReadMarkerJpaEntity(chatRoomId.value(), memberId.value()));
-        marker.setLastReadAt(LocalDateTime.now());
+        marker.setLastReadAt(Instant.now());
         readMarkerRepository.save(marker);
+    }
+
+    @Override
+    @Transactional
+    public Message saveMessage(Long chatRoomId, Long senderId, String content) {
+        if (content == null || content.isBlank()) {
+            throw new IllegalArgumentException("메시지 내용은 빈 값일 수 없습니다");
+        }
+        var entity = new MessageJpaEntity();
+        entity.setChatRoomId(chatRoomId);
+        entity.setSenderId(senderId);
+        entity.setContent(content);
+        entity.setSentAt(Instant.now());
+        var saved = messageJpaRepository.save(entity);
+        return Message.restore(
+                new MessageId(saved.getId()),
+                new MemberId(saved.getSenderId()),
+                saved.getContent(),
+                saved.getSentAt());
     }
 
     private void saveNewMessages(Long chatRoomId, List<Message> messages) {
