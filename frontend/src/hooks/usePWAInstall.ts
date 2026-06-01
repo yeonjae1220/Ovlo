@@ -23,8 +23,9 @@ export function usePWAInstall() {
   const [platform] = useState<Platform>(() => detectPlatform())
 
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
     if (window.matchMedia('(display-mode: standalone)').matches) {
+      // 외부 시스템(display-mode 미디어쿼리)과의 동기화 — 의도된 mount-time setState
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setIsInstalled(true)
       return
     }

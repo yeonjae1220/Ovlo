@@ -17,18 +17,23 @@ const STAR = (avg?: number | null) =>
 const PAGE_SIZE = 20
 
 const C = {
-  bg:          '#242424',
-  card:        '#1e2836',
-  border:      '#2d3748',
-  borderLight: '#374151',
-  textPrimary: '#f1f5f9',
-  textSec:     '#cbd5e1',
-  textMuted:   '#94a3b8',
-  textDim:     '#64748b',
-  activeBg:    '#1e3a5f',
-  activeBorder:'#2563eb',
-  activeText:  '#60a5fa',
-  purple:      '#a78bfa',
+  bg:          'var(--color-bg)',
+  card:        'var(--color-surface)',
+  hover:       'var(--color-surface-hover)',
+  disabled:    'var(--color-surface-disabled)',
+  border:      'var(--color-border)',
+  borderLight: 'var(--color-border-strong)',
+  textPrimary: 'var(--color-text)',
+  textSec:     'var(--color-text-secondary)',
+  textMuted:   'var(--color-text-muted)',
+  textDim:     'var(--color-text-dim)',
+  activeBg:    'var(--color-info-soft)',
+  activeBorder:'var(--color-info)',
+  activeText:  'var(--color-info)',
+  purple:      'var(--color-accent)',
+  success:     'var(--color-success)',
+  successSoft: 'var(--color-success-soft)',
+  warning:     'var(--color-warning)',
 }
 
 const inputStyle: React.CSSProperties = {
@@ -87,8 +92,8 @@ export default function ExchangeUniversitySearchPage() {
             onClick={handleUniClear}
             style={{
               width: '100%', padding: '10px 14px', textAlign: 'left',
-              border: '1px solid #4ade80', borderRadius: 8, background: '#0d2a1a',
-              color: '#4ade80', fontWeight: 500, fontSize: 14, cursor: 'pointer',
+              border: `1px solid ${C.success}`, borderRadius: 8, background: C.successSoft,
+              color: C.success, fontWeight: 500, fontSize: 14, cursor: 'pointer',
             }}
           >
             ✓ {selectedUniName} <span style={{ color: C.textDim, fontSize: 12, fontWeight: 400 }}>{t('exch.change')}</span>
@@ -174,7 +179,7 @@ export default function ExchangeUniversitySearchPage() {
             }}
             onMouseEnter={(e) => {
               const el = e.currentTarget as HTMLLIElement
-              el.style.borderColor = '#4c6ef5'
+              el.style.borderColor = 'var(--color-info)'
               el.style.boxShadow = '0 4px 16px rgba(0,0,0,0.3)'
             }}
             onMouseLeave={(e) => {
@@ -189,7 +194,7 @@ export default function ExchangeUniversitySearchPage() {
               <div style={{ fontSize: 13, color: C.textDim, marginTop: 4 }}>{u.country} · {u.city}</div>
             </div>
             <div style={{ textAlign: 'right', flexShrink: 0, marginLeft: 16 }}>
-              <div style={{ color: '#f59e0b', fontSize: 14, letterSpacing: 1 }}>{STAR(u.avgRating)}</div>
+              <div style={{ color: C.warning, fontSize: 14, letterSpacing: 1 }}>{STAR(u.avgRating)}</div>
               <div style={{ fontSize: 12, color: C.textDim, marginTop: 2 }}>
                 {(u.avgRating ?? 0).toFixed(1)} · {u.reviewCount} {t('exch.reviews')}
               </div>
@@ -205,8 +210,8 @@ export default function ExchangeUniversitySearchPage() {
             disabled={exchPage === 0}
             style={{
               padding: '8px 18px', borderRadius: 8, border: `1px solid ${C.borderLight}`,
-              background: exchPage === 0 ? '#1a2234' : C.card,
-              color: exchPage === 0 ? '#475569' : C.textSec,
+              background: exchPage === 0 ? C.disabled : C.card,
+              color: exchPage === 0 ? C.textDim : C.textSec,
               cursor: exchPage === 0 ? 'default' : 'pointer', fontSize: 14,
             }}
           >
@@ -220,8 +225,8 @@ export default function ExchangeUniversitySearchPage() {
             disabled={!exchData.hasNext}
             style={{
               padding: '8px 18px', borderRadius: 8, border: `1px solid ${C.borderLight}`,
-              background: !exchData.hasNext ? '#1a2234' : C.card,
-              color: !exchData.hasNext ? '#475569' : C.textSec,
+              background: !exchData.hasNext ? C.disabled : C.card,
+              color: !exchData.hasNext ? C.textDim : C.textSec,
               cursor: !exchData.hasNext ? 'default' : 'pointer', fontSize: 14,
             }}
           >

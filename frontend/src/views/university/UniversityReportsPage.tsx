@@ -13,17 +13,19 @@ function stripReportSuffix(title: string) {
 }
 
 const C = {
-  bg:          '#242424',
-  card:        '#1e2836',
-  border:      '#2d3748',
-  borderLight: '#374151',
-  textPrimary: '#f1f5f9',
-  textSec:     '#cbd5e1',
-  textMuted:   '#94a3b8',
-  textDim:     '#64748b',
-  activeBg:    '#1e3a5f',
-  activeBorder:'#2563eb',
-  activeText:  '#60a5fa',
+  bg:          'var(--color-bg)',
+  card:        'var(--color-surface)',
+  hover:       'var(--color-surface-hover)',
+  disabled:    'var(--color-surface-disabled)',
+  border:      'var(--color-border)',
+  borderLight: 'var(--color-border-strong)',
+  textPrimary: 'var(--color-text)',
+  textSec:     'var(--color-text-secondary)',
+  textMuted:   'var(--color-text-muted)',
+  textDim:     'var(--color-text-dim)',
+  activeBg:    'var(--color-info-soft)',
+  activeBorder:'var(--color-info)',
+  activeText:  'var(--color-info)',
 }
 
 const LANG_LABEL: Record<string, string> = {
@@ -108,7 +110,7 @@ export default function UniversityReportsPage() {
               padding: '16px 20px', borderBottom: `1px solid ${C.border}`,
               cursor: 'pointer', transition: 'background 0.15s',
             }}
-            onMouseEnter={(e) => { (e.currentTarget as HTMLLIElement).style.background = C.card }}
+            onMouseEnter={(e) => { (e.currentTarget as HTMLLIElement).style.background = C.hover }}
             onMouseLeave={(e) => { (e.currentTarget as HTMLLIElement).style.background = 'transparent' }}
           >
             <div style={{ fontWeight: 600, fontSize: 16, color: C.textPrimary, marginBottom: 4 }}>
@@ -140,8 +142,8 @@ export default function UniversityReportsPage() {
             disabled={page === 0}
             style={{
               padding: '8px 18px', borderRadius: 8, border: `1px solid ${C.borderLight}`,
-              background: page === 0 ? '#1a2234' : C.card,
-              color: page === 0 ? '#475569' : C.textSec,
+              background: page === 0 ? C.disabled : C.card,
+              color: page === 0 ? C.textDim : C.textSec,
               cursor: page === 0 ? 'default' : 'pointer', fontSize: 14,
             }}
           >
@@ -155,8 +157,8 @@ export default function UniversityReportsPage() {
             disabled={!data.hasNext}
             style={{
               padding: '8px 18px', borderRadius: 8, border: `1px solid ${C.borderLight}`,
-              background: !data.hasNext ? '#1a2234' : C.card,
-              color: !data.hasNext ? '#475569' : C.textSec,
+              background: !data.hasNext ? C.disabled : C.card,
+              color: !data.hasNext ? C.textDim : C.textSec,
               cursor: !data.hasNext ? 'default' : 'pointer', fontSize: 14,
             }}
           >

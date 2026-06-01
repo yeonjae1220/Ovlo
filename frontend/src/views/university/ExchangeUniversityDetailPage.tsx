@@ -9,24 +9,25 @@ import type { VideoReview, ExchangeUniversity } from '../../types'
 import { useI18n } from '../../i18n/I18nProvider'
 import type { MessageKey } from '../../i18n/messages'
 
-// ── 다크 테마 색상 상수 ──────────────────────────────────────
 const C = {
-  bg:          '#242424',
-  card:        '#1e2836',
-  cardHeader:  '#1a2332',
-  border:      '#2d3748',
-  borderLight: '#374151',
-  textPrimary: '#f1f5f9',
-  textSec:     '#cbd5e1',
-  textMuted:   '#94a3b8',
-  textDim:     '#64748b',
-  activeBg:    '#1e3a5f',
-  activeBorder:'#2563eb',
-  activeText:  '#60a5fa',
-  recommendBg: '#0d2a1a',
-  notRecBg:    '#2a0d0d',
-  recommendTx: '#4ade80',
-  notRecTx:    '#f87171',
+  bg:          'var(--color-bg)',
+  card:        'var(--color-surface)',
+  cardHeader:  'var(--color-surface-soft)',
+  border:      'var(--color-border)',
+  borderLight: 'var(--color-border-strong)',
+  textPrimary: 'var(--color-text)',
+  textSec:     'var(--color-text-secondary)',
+  textMuted:   'var(--color-text-muted)',
+  textDim:     'var(--color-text-dim)',
+  activeBg:    'var(--color-info-soft)',
+  activeBorder:'var(--color-info)',
+  activeText:  'var(--color-info)',
+  recommendBg: 'var(--color-success-soft)',
+  notRecBg:    'var(--color-danger-soft)',
+  recommendTx: 'var(--color-success)',
+  notRecTx:    'var(--color-danger)',
+  warning:     'var(--color-warning)',
+  purple:      'var(--color-accent)',
 }
 
 // ── 언어 국기 ────────────────────────────────────────────────
@@ -44,7 +45,7 @@ const DIRECTION_VALUES = [
 ] as const
 
 // ── 뱃지 ─────────────────────────────────────────────────────
-const Badge = ({ text, color = '#2563eb' }: { text: string; color?: string }) => (
+const Badge = ({ text, color = 'var(--color-info)' }: { text: string; color?: string }) => (
   <span style={{
     display: 'inline-block', padding: '2px 10px', borderRadius: 20,
     background: color + '28', color, fontSize: 12, fontWeight: 600, marginRight: 4, marginBottom: 4,
@@ -158,10 +159,10 @@ export default function ExchangeUniversityDetailPage() {
           <p style={{ margin: '0 0 12px', color: C.textMuted, fontSize: 15 }}>{univ.nameEn}</p>
         )}
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, alignItems: 'center' }}>
-          <Badge text={`${univ.country} · ${univ.city}`} color="#94a3b8" />
+          <Badge text={`${univ.country} · ${univ.city}`} color={C.textMuted} />
           {univ.avgRating != null && (
             <>
-              <span style={{ color: '#f59e0b', fontSize: 18, letterSpacing: 1 }}>
+              <span style={{ color: C.warning, fontSize: 18, letterSpacing: 1 }}>
                 {'★'.repeat(starCount)}{'☆'.repeat(5 - starCount)}
               </span>
               <span style={{ fontSize: 14, fontWeight: 700, color: C.textSec }}>
@@ -169,11 +170,11 @@ export default function ExchangeUniversityDetailPage() {
               </span>
             </>
           )}
-          <Badge text={`${univ.reviewCount} ${t('exch.detail.reviews')}`} color="#60a5fa" />
+          <Badge text={`${univ.reviewCount} ${t('exch.detail.reviews')}`} color={C.activeText} />
         </div>
         {univ.website && (
           <a href={univ.website} target="_blank" rel="noopener noreferrer"
-            style={{ display: 'inline-block', marginTop: 14, color: '#60a5fa', fontSize: 14, fontWeight: 500 }}>
+            style={{ display: 'inline-block', marginTop: 14, color: C.activeText, fontSize: 14, fontWeight: 500 }}>
             {t('exch.detail.website')}
           </a>
         )}
@@ -227,7 +228,7 @@ export default function ExchangeUniversityDetailPage() {
                   {parsed.housing && (
                     <div style={{ flex: 1, minWidth: 130, background: C.bg, borderRadius: 8, padding: '10px 12px', border: `1px solid ${C.border}` }}>
                       <div style={{ fontSize: 10, fontWeight: 700, color: C.textDim, textTransform: 'uppercase', marginBottom: 4 }}>🏠 {t('exch.detail.dorm')}</div>
-                      <div style={{ fontSize: 13, fontWeight: 600, color: parsed.housing.dorm_available ? '#4ade80' : '#f87171' }}>
+                      <div style={{ fontSize: 13, fontWeight: 600, color: parsed.housing.dorm_available ? C.recommendTx : C.notRecTx }}>
                         {parsed.housing.dorm_available ? t('exch.detail.dormAvailable') : t('exch.detail.dormNotAvailable')}
                       </div>
                       {parsed.housing.dorm_price && <div style={{ fontSize: 11, color: C.textMuted }}>{parsed.housing.dorm_price}</div>}
@@ -370,17 +371,17 @@ function ReviewCard({ review: r, univ }: { review: VideoReview; univ: ExchangeUn
       <div style={{ padding: '16px 20px', background: C.cardHeader, borderBottom: `1px solid ${C.border}` }}>
         {/* 배지 행 */}
         <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 8, alignItems: 'center' }}>
-          {r.direction === 'INBOUND' && <Badge text={t('exch.direction.inbound')} color="#60a5fa" />}
-          {r.direction === 'OUTBOUND' && <Badge text={t('exch.direction.outbound')} color="#4ade80" />}
-          {langFlag && <Badge text={langFlag} color="#94a3b8" />}
-          {mismatch && <Badge text="⚠️" color="#fbbf24" />}
+          {r.direction === 'INBOUND' && <Badge text={t('exch.direction.inbound')} color={C.activeText} />}
+          {r.direction === 'OUTBOUND' && <Badge text={t('exch.direction.outbound')} color={C.recommendTx} />}
+          {langFlag && <Badge text={langFlag} color={C.textMuted} />}
+          {mismatch && <Badge text="⚠️" color={C.warning} />}
         </div>
 
         {/* 제목 + 평점 */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 12 }}>
           <div style={{ flex: 1 }}>
             <a href={r.youtubeUrl} target="_blank" rel="noopener noreferrer"
-              style={{ fontSize: 15, fontWeight: 700, color: '#93c5fd', textDecoration: 'none', lineHeight: 1.4 }}>
+              style={{ fontSize: 15, fontWeight: 700, color: C.activeText, textDecoration: 'none', lineHeight: 1.4 }}>
               ▶ {r.title}
             </a>
             <div style={{ fontSize: 12, color: C.textDim, marginTop: 4 }}>
@@ -392,7 +393,7 @@ function ReviewCard({ review: r, univ }: { review: VideoReview; univ: ExchangeUn
           </div>
           {r.overallRating != null && (
             <div style={{ textAlign: 'right', flexShrink: 0 }}>
-              <span style={{ color: '#f59e0b', fontSize: 16 }}>
+              <span style={{ color: C.warning, fontSize: 16 }}>
                 {'★'.repeat(r.overallRating)}{'☆'.repeat(5 - r.overallRating)}
               </span>
               <div style={{ fontSize: 11, color: C.textDim }}>{r.overallRating}/5</div>
@@ -403,7 +404,7 @@ function ReviewCard({ review: r, univ }: { review: VideoReview; univ: ExchangeUn
         {/* 태그 */}
         {r.tags && r.tags.length > 0 && (
           <div style={{ marginTop: 10 }}>
-            {r.tags.map(tag => <Badge key={tag} text={tag} color="#a78bfa" />)}
+            {r.tags.map(tag => <Badge key={tag} text={tag} color={C.purple} />)}
           </div>
         )}
       </div>

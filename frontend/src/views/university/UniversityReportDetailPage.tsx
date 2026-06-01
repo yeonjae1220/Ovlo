@@ -8,18 +8,21 @@ import { useUniversityReport, useUniversityReportLanguages } from '../../hooks/u
 import { useI18n } from '../../i18n/I18nProvider'
 
 const C = {
-  bg:          '#242424',
-  card:        '#1e2836',
-  cardHeader:  '#1a2332',
-  border:      '#2d3748',
-  borderLight: '#374151',
-  textPrimary: '#f1f5f9',
-  textSec:     '#cbd5e1',
-  textMuted:   '#94a3b8',
-  textDim:     '#64748b',
-  activeBg:    '#1e3a5f',
-  activeBorder:'#2563eb',
-  activeText:  '#60a5fa',
+  bg:          'var(--color-bg)',
+  card:        'var(--color-surface)',
+  cardHeader:  'var(--color-surface-soft)',
+  border:      'var(--color-border)',
+  borderLight: 'var(--color-border-strong)',
+  textPrimary: 'var(--color-text)',
+  textSec:     'var(--color-text-secondary)',
+  textMuted:   'var(--color-text-muted)',
+  textDim:     'var(--color-text-dim)',
+  activeBg:    'var(--color-info-soft)',
+  activeBorder:'var(--color-info)',
+  activeText:  'var(--color-info)',
+  disabled:    'var(--color-surface-disabled)',
+  danger:      'var(--color-danger)',
+  success:     'var(--color-success)',
 }
 
 const LANG_LABEL: Record<string, string> = {
@@ -73,7 +76,7 @@ export default function UniversityReportDetailPage() {
   }
 
   if (isLoading) return <div style={{ padding: 40, color: C.textMuted }}>{t('univ.detail.loading')}</div>
-  if (!report)   return <div style={{ padding: 40, color: '#f87171' }}>{t('univ.detail.notFound')}</div>
+  if (!report)   return <div style={{ padding: 40, color: C.danger }}>{t('univ.detail.notFound')}</div>
 
   let parsed: ReportContent | null = null
   if (report.content) {
@@ -125,7 +128,7 @@ export default function UniversityReportDetailPage() {
       {/* AI 면책 고지 */}
       <div style={{
         padding: '10px 14px', marginBottom: 20, borderRadius: 6,
-        background: '#1a2234', border: `1px solid #2d3748`,
+        background: C.disabled, border: `1px solid ${C.border}`,
         fontSize: 12, color: C.textDim,
       }}>
         {t('univ.detail.aiDisclaimer')}
@@ -156,7 +159,7 @@ export default function UniversityReportDetailPage() {
           )}
           {parsed.housing && (
             <InfoCard icon="🏠" title={t('univ.detail.dorm')}>
-              <div style={{ fontSize: 13, fontWeight: 600, color: parsed.housing.dorm_available ? '#4ade80' : '#f87171' }}>
+              <div style={{ fontSize: 13, fontWeight: 600, color: parsed.housing.dorm_available ? C.success : C.danger }}>
                 {parsed.housing.dorm_available ? t('univ.detail.dormAvailable') : t('univ.detail.dormNotAvailable')}
               </div>
               {parsed.housing.dorm_price && (

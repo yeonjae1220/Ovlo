@@ -12,6 +12,17 @@ import type { HistoryMessage, Message } from '../../types'
 import { useI18n } from '../../i18n/I18nProvider'
 
 const PAGE_SIZE = 50
+const C = {
+  border: 'var(--color-border)',
+  surface: 'var(--color-surface)',
+  surfaceSoft: 'var(--color-surface-soft)',
+  text: 'var(--color-text)',
+  muted: 'var(--color-text-muted)',
+  dim: 'var(--color-text-dim)',
+  accent: 'var(--color-accent-strong)',
+  onAccent: 'var(--color-on-accent)',
+  danger: 'var(--color-danger)',
+}
 
 function toMessage(m: HistoryMessage, chatRoomId: string): Message {
   return {
@@ -55,8 +66,8 @@ export default function ChatRoomPage() {
 
   const { data: history, isFetching: loadingHistory } = useChatMessages(id!, page, PAGE_SIZE)
 
-  // 채팅방 변경 시 상태 초기화
-  // eslint-disable-next-line react-hooks/set-state-in-effect
+  // 채팅방 변경 시 상태 초기화 — id(라우트)라는 외부 입력에 맞춰 상태를 리셋하는 의도된 동기화
+  /* eslint-disable react-hooks/set-state-in-effect */
   useEffect(() => {
     setMessages([])
     setPage(0)
@@ -65,6 +76,7 @@ export default function ChatRoomPage() {
     wsBufferRef.current = []
     seenIdsRef.current = new Set()
   }, [id])
+  /* eslint-enable react-hooks/set-state-in-effect */
 
   // 히스토리 로드 → 메시지 상태에 병합
   useEffect(() => {
@@ -91,7 +103,6 @@ export default function ChatRoomPage() {
     setHasMore(history.length === PAGE_SIZE)
     historyLoadedRef.current = true
   // reconnectVersion: doConnect 후 history 데이터가 바뀌지 않아도 effect 재실행 보장
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [history, page, id, reconnectVersion])
 
   // connect + subscribe 로직을 콜백으로 추출 — 메인 effect와 visibilitychange 핸들러에서 공유
@@ -135,6 +146,8 @@ export default function ChatRoomPage() {
   // STOMP WebSocket 연결 (accessToken 갱신 시 재연결 포함)
   useEffect(() => {
     if (!accessToken || !id) return
+    // doConnect는 WebSocket(외부 시스템) 연결 콜백 — 내부 setState는 의도된 동기화
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     doConnect(accessToken, id)
     return () => stompClient.disconnect()
   }, [id, accessToken, doConnect])
@@ -198,9 +211,9 @@ export default function ChatRoomPage() {
 
   return (
     <div style={{ maxWidth: 900, margin: '0 auto', display: 'flex', flexDirection: 'column', height: containerHeight, minHeight: isMobile ? 420 : 520 }}>
-      <h2 style={{ borderBottom: '1px solid #eee', paddingBottom: 12, marginBottom: 12, fontSize: isMobile ? 20 : 24, lineHeight: 1.3, overflowWrap: 'anywhere' }}>
+      <h2 style={{ borderBottom: `1px solid ${C.border}`, color: C.text, paddingBottom: 12, marginBottom: 12, fontSize: isMobile ? 20 : 24, lineHeight: 1.3, overflowWrap: 'anywhere' }}>
         {roomTitle}
-        {!connected && <span style={{ color: 'red', fontSize: 13, marginLeft: 8 }}>{t('chat.room.connecting')}</span>}
+        {!connected && <span style={{ color: C.danger, fontSize: 13, marginLeft: 8 }}>{t('chat.room.connecting')}</span>}
       </h2>
 
       {hasMore && (
@@ -240,8 +253,8 @@ export default function ChatRoomPage() {
                     />
                   ) : (
                     <div style={{
-                      width: 32, height: 32, borderRadius: '50%', background: '#6c757d',
-                      color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      width: 32, height: 32, borderRadius: '50%', background: C.surfaceSoft,
+                      color: C.muted, display: 'flex', alignItems: 'center', justifyContent: 'center',
                       fontSize: 13, fontWeight: 'bold',
                     }}>
                       {nickname[0]?.toUpperCase() ?? '?'}
@@ -254,17 +267,18 @@ export default function ChatRoomPage() {
                   maxWidth: isMobile ? '82%' : '70%',
                   padding: isMobile ? '10px 12px' : '8px 12px',
                   borderRadius: 12,
-                  background: isMine ? '#007bff' : '#f0f0f0',
-                  color: isMine ? '#fff' : '#000',
+                  background: isMine ? C.accent : C.surface,
+                  color: isMine ? C.onAccent : C.text,
+                  border: isMine ? 'none' : `1px solid ${C.border}`,
                   overflowWrap: 'anywhere',
                   wordBreak: 'break-word',
                 }}
               >
                 {!isMine && (
-                  <div style={{ fontSize: 11, marginBottom: 2, color: '#888' }}>{nickname}</div>
+                  <div style={{ fontSize: 11, marginBottom: 2, color: C.muted }}>{nickname}</div>
                 )}
                 {msg.content}
-                <div style={{ fontSize: 10, color: isMine ? 'rgba(255,255,255,0.7)' : '#aaa', marginTop: 4, textAlign: 'right', display: 'flex', justifyContent: 'flex-end', gap: 4, alignItems: 'center' }}>
+                <div style={{ fontSize: 10, color: isMine ? 'rgba(255,255,255,0.7)' : C.dim, marginTop: 4, textAlign: 'right', display: 'flex', justifyContent: 'flex-end', gap: 4, alignItems: 'center' }}>
                   {isMine && (
                     <span style={{ opacity: 0.8 }}>{getReadStatus(msg.sentAt)}</span>
                   )}
@@ -277,13 +291,13 @@ export default function ChatRoomPage() {
         <div ref={bottomRef} />
       </div>
 
-      <div style={{ display: 'flex', gap: 8, paddingTop: 12, borderTop: '1px solid #eee', alignItems: isMobile ? 'stretch' : 'center', flexDirection: isMobile ? 'column' : 'row' }}>
+      <div style={{ display: 'flex', gap: 8, paddingTop: 12, borderTop: `1px solid ${C.border}`, alignItems: isMobile ? 'stretch' : 'center', flexDirection: isMobile ? 'column' : 'row' }}>
         <input
           placeholder={t('chat.room.msgPlaceholder')}
           value={input}
           onChange={(e) => setInput(e.target.value)}
           onKeyDown={(e) => e.key === 'Enter' && sendMessage()}
-          style={{ flex: 1, padding: isMobile ? 12 : 8, fontSize: 16, borderRadius: 10, border: '1px solid #d1d5db' }}
+          style={{ flex: 1, padding: isMobile ? 12 : 8, fontSize: 16, borderRadius: 10, border: `1px solid ${C.border}` }}
           disabled={!connected}
         />
         <button

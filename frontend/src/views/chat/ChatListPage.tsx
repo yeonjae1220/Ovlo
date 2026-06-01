@@ -10,16 +10,19 @@ import { useAuthStore } from '../../store/authStore'
 import type { ChatRoomType, Member } from '../../types'
 
 const C = {
-  card:        '#1e2836',
-  border:      '#2d3748',
-  borderLight: '#374151',
-  textPrimary: '#f1f5f9',
-  textSec:     '#cbd5e1',
-  textMuted:   '#94a3b8',
-  textDim:     '#64748b',
-  activeBg:    '#1e3a5f',
-  activeText:  '#60a5fa',
-  purple:      '#a78bfa',
+  bg:          'var(--color-bg)',
+  card:        'var(--color-surface)',
+  border:      'var(--color-border)',
+  borderLight: 'var(--color-border-strong)',
+  textPrimary: 'var(--color-text)',
+  textSec:     'var(--color-text-secondary)',
+  textMuted:   'var(--color-text-muted)',
+  textDim:     'var(--color-text-dim)',
+  activeBg:    'var(--color-info-soft)',
+  activeText:  'var(--color-info)',
+  purple:      'var(--color-accent)',
+  purpleStrong:'var(--color-accent-strong)',
+  danger:      'var(--color-danger)',
 }
 
 export default function ChatListPage() {
@@ -140,7 +143,7 @@ export default function ChatListPage() {
               position: 'absolute', top: '100%', left: 0, right: 0, zIndex: 20,
               listStyle: 'none', padding: 0, margin: 0,
               border: `1px solid ${C.borderLight}`, borderRadius: 10,
-              background: C.card, boxShadow: '0 8px 24px rgba(0,0,0,0.4)',
+              background: C.card, boxShadow: 'var(--shadow-soft)',
               maxHeight: 240, overflowY: 'auto',
             }}>
               {filteredDmResults.slice(0, 8).map((m) => (
@@ -189,7 +192,7 @@ export default function ChatListPage() {
           <select
             value={type}
             onChange={(e) => setType(e.target.value as ChatRoomType)}
-            style={{ marginBottom: 8, padding: '7px 10px', borderRadius: 6, border: `1px solid ${C.borderLight}`, background: '#242424', color: C.textSec, fontSize: 13 }}
+            style={{ marginBottom: 8, padding: '7px 10px', borderRadius: 6, border: `1px solid ${C.borderLight}`, background: C.bg, color: C.textSec, fontSize: 13 }}
           >
             <option value="DM">DM</option>
             <option value="GROUP">{t('chat.form.group')}</option>
@@ -200,7 +203,7 @@ export default function ChatListPage() {
               placeholder={t('chat.form.roomName')}
               value={roomName}
               onChange={(e) => setRoomName(e.target.value)}
-              style={{ display: 'block', width: '100%', marginBottom: 8, padding: '8px 12px', borderRadius: 6, border: `1px solid ${C.borderLight}`, background: '#242424', color: C.textPrimary, fontSize: 14, boxSizing: 'border-box' }}
+              style={{ display: 'block', width: '100%', marginBottom: 8, padding: '8px 12px', borderRadius: 6, border: `1px solid ${C.borderLight}`, background: C.bg, color: C.textPrimary, fontSize: 14, boxSizing: 'border-box' }}
             />
           )}
 
@@ -209,7 +212,7 @@ export default function ChatListPage() {
               placeholder={t('chat.form.searchMember')}
               value={nicknameQuery}
               onChange={(e) => { setNicknameQuery(e.target.value); setSelectedMember(null) }}
-              style={{ width: '100%', padding: '8px 12px', borderRadius: 6, border: `1px solid ${C.borderLight}`, background: '#242424', color: C.textPrimary, fontSize: 14, boxSizing: 'border-box' }}
+              style={{ width: '100%', padding: '8px 12px', borderRadius: 6, border: `1px solid ${C.borderLight}`, background: C.bg, color: C.textPrimary, fontSize: 14, boxSizing: 'border-box' }}
             />
             {nicknameQuery.length >= 1 && !selectedMember && filteredResults.length > 0 && (
               <ul style={{
@@ -256,7 +259,7 @@ export default function ChatListPage() {
               disabled={createRoom.isPending || !selectedMember}
               style={{
                 padding: '7px 16px', borderRadius: 6, border: 'none',
-                background: selectedMember ? C.purple : C.borderLight,
+                background: selectedMember ? C.purpleStrong : C.borderLight,
                 color: '#fff', fontSize: 13, cursor: selectedMember ? 'pointer' : 'default', fontWeight: 600,
               }}
             >
@@ -270,7 +273,7 @@ export default function ChatListPage() {
             </button>
           </div>
           {createRoom.isError && (
-            <p style={{ color: '#f87171', marginTop: 8, fontSize: 13 }}>{t('chat.form.error')}</p>
+            <p style={{ color: C.danger, marginTop: 8, fontSize: 13 }}>{t('chat.form.error')}</p>
           )}
         </div>
       )}
@@ -306,7 +309,7 @@ export default function ChatListPage() {
                 </div>
                 {room.unreadCount > 0 && (
                   <span style={{
-                    background: '#ef4444', color: '#fff', borderRadius: 12,
+                    background: C.danger, color: '#fff', borderRadius: 12,
                     padding: '2px 8px', fontSize: 12, fontWeight: 700, minWidth: 20, textAlign: 'center',
                   }}>
                     {room.unreadCount > 99 ? '99+' : room.unreadCount}

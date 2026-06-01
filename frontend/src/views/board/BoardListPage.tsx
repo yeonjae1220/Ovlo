@@ -12,18 +12,25 @@ import { useI18n } from '../../i18n/I18nProvider'
 import { resolveReportLang } from '../../utils/resolveReportLang'
 
 const C = {
-  bg:          '#242424',
-  card:        '#1e2836',
-  border:      '#2d3748',
-  borderLight: '#374151',
-  textPrimary: '#f1f5f9',
-  textSec:     '#cbd5e1',
-  textMuted:   '#94a3b8',
-  textDim:     '#64748b',
-  activeBg:    '#1e3a5f',
-  activeBorder:'#2563eb',
-  activeText:  '#60a5fa',
-  purple:      '#a78bfa',
+  bg:          'var(--color-bg)',
+  card:        'var(--color-surface)',
+  surfaceSoft: 'var(--color-surface-soft)',
+  hover:       'var(--color-surface-hover)',
+  disabled:    'var(--color-surface-disabled)',
+  border:      'var(--color-border)',
+  borderLight: 'var(--color-border-strong)',
+  textPrimary: 'var(--color-text)',
+  textSec:     'var(--color-text-secondary)',
+  textMuted:   'var(--color-text-muted)',
+  textDim:     'var(--color-text-dim)',
+  activeBg:    'var(--color-info-soft)',
+  activeBorder:'var(--color-info)',
+  activeText:  'var(--color-info)',
+  purple:      'var(--color-accent)',
+  purpleStrong:'var(--color-accent-strong)',
+  purpleSoft:  'var(--color-accent-soft)',
+  onAccent:    'var(--color-on-accent)',
+  warning:     'var(--color-warning)',
 }
 
 type TabId = 'all' | 'free' | 'reports'
@@ -82,7 +89,7 @@ export default function BoardListPage() {
               onClick={() => router.push(`/posts/new?boardId=${freeBoard.id}`)}
               style={{
                 padding: '7px 14px', borderRadius: 8, fontSize: 13, cursor: 'pointer',
-                border: 'none', background: C.purple, color: '#fff', fontWeight: 600,
+                border: 'none', background: C.purpleStrong, color: C.onAccent, fontWeight: 600,
               }}
             >
               {t('community.write')}
@@ -137,7 +144,7 @@ export default function BoardListPage() {
             <button
               onClick={handleCreate}
               disabled={createBoard.isPending || !form.name.trim()}
-              style={{ padding: '7px 16px', borderRadius: 6, border: 'none', background: C.purple, color: '#fff', fontSize: 13, cursor: createBoard.isPending ? 'wait' : 'pointer', fontWeight: 600 }}
+              style={{ padding: '7px 16px', borderRadius: 6, border: 'none', background: C.purpleStrong, color: C.onAccent, fontSize: 13, cursor: createBoard.isPending ? 'wait' : 'pointer', fontWeight: 600 }}
             >
               {t('board.form.create')}
             </button>
@@ -203,7 +210,7 @@ export default function BoardListPage() {
                       gap: 4, padding: '10px 4px', borderBottom: `1px solid ${C.border}`,
                       alignItems: 'center', cursor: 'pointer', transition: 'background 0.12s',
                     }}
-                    onMouseEnter={(e) => { (e.currentTarget as HTMLDivElement).style.background = C.card }}
+                    onMouseEnter={(e) => { (e.currentTarget as HTMLDivElement).style.background = C.hover }}
                     onMouseLeave={(e) => { (e.currentTarget as HTMLDivElement).style.background = 'transparent' }}
                   >
                     <span style={{ fontSize: 12, color: C.textDim }}>{num}</span>
@@ -214,14 +221,14 @@ export default function BoardListPage() {
                         <>
                           <span style={{ fontSize: 14, color: C.textPrimary, fontWeight: 500 }}>{post.title}</span>
                           {post.boardName && (
-                            <span style={{ marginLeft: 8, fontSize: 11, color: C.activeText, background: '#1e3a5f', padding: '2px 6px', borderRadius: 4 }}>
+                            <span style={{ marginLeft: 8, fontSize: 11, color: C.activeText, background: C.activeBg, padding: '2px 6px', borderRadius: 4 }}>
                               {post.boardName}
                             </span>
                           )}
                         </>
                       )}
                     </span>
-                    <span style={{ fontSize: 12, color: post.likeCount > 0 ? '#f59e0b' : C.textDim, textAlign: 'center' }}>
+                    <span style={{ fontSize: 12, color: post.likeCount > 0 ? C.warning : C.textDim, textAlign: 'center' }}>
                       {post.likeCount > 0 ? post.likeCount : ''}
                     </span>
                   </div>
@@ -238,13 +245,13 @@ export default function BoardListPage() {
                     gap: 4, padding: '10px 4px', borderBottom: `1px solid ${C.border}`,
                     alignItems: 'center', cursor: 'pointer', transition: 'background 0.12s',
                   }}
-                  onMouseEnter={(e) => { (e.currentTarget as HTMLDivElement).style.background = C.card }}
+                  onMouseEnter={(e) => { (e.currentTarget as HTMLDivElement).style.background = C.hover }}
                   onMouseLeave={(e) => { (e.currentTarget as HTMLDivElement).style.background = 'transparent' }}
                 >
                   <span style={{ fontSize: 12, color: C.textDim }}>{num}</span>
                   <span>
                     <span style={{ fontSize: 14, color: C.textPrimary, fontWeight: 500 }}>{tip.title}</span>
-                    <span style={{ marginLeft: 8, fontSize: 11, color: C.purple, background: '#2e1a5f', padding: '2px 6px', borderRadius: 4 }}>
+                    <span style={{ marginLeft: 8, fontSize: 11, color: C.purple, background: C.purpleSoft, padding: '2px 6px', borderRadius: 4 }}>
                       {t('community.tip.badge')}
                     </span>
                   </span>
@@ -259,13 +266,13 @@ export default function BoardListPage() {
               <button
                 onClick={() => setAllPage((p) => p - 1)}
                 disabled={allPage === 0}
-                style={{ padding: '7px 18px', borderRadius: 8, border: `1px solid ${C.border}`, background: allPage === 0 ? '#1a2234' : C.card, color: allPage === 0 ? '#475569' : C.textSec, cursor: allPage === 0 ? 'default' : 'pointer', fontSize: 13 }}
+                style={{ padding: '7px 18px', borderRadius: 8, border: `1px solid ${C.border}`, background: allPage === 0 ? C.disabled : C.card, color: allPage === 0 ? C.textDim : C.textSec, cursor: allPage === 0 ? 'default' : 'pointer', fontSize: 13 }}
               >← 이전</button>
               <span style={{ color: C.textMuted, fontSize: 13 }}>{allPage + 1}페이지</span>
               <button
                 onClick={() => setAllPage((p) => p + 1)}
                 disabled={!(allPostsPage?.hasNext ?? false)}
-                style={{ padding: '7px 18px', borderRadius: 8, border: `1px solid ${C.border}`, background: !(allPostsPage?.hasNext) ? '#1a2234' : C.card, color: !(allPostsPage?.hasNext) ? '#475569' : C.textSec, cursor: !(allPostsPage?.hasNext) ? 'default' : 'pointer', fontSize: 13 }}
+                style={{ padding: '7px 18px', borderRadius: 8, border: `1px solid ${C.border}`, background: !(allPostsPage?.hasNext) ? C.disabled : C.card, color: !(allPostsPage?.hasNext) ? C.textDim : C.textSec, cursor: !(allPostsPage?.hasNext) ? 'default' : 'pointer', fontSize: 13 }}
               >다음 →</button>
             </div>
           )}
@@ -318,7 +325,7 @@ export default function BoardListPage() {
                   padding: '14px 4px', borderBottom: `1px solid ${C.border}`, cursor: 'pointer',
                   transition: 'background 0.12s',
                 }}
-                onMouseEnter={(e) => { (e.currentTarget as HTMLLIElement).style.background = C.card }}
+                onMouseEnter={(e) => { (e.currentTarget as HTMLLIElement).style.background = C.hover }}
                 onMouseLeave={(e) => { (e.currentTarget as HTMLLIElement).style.background = 'transparent' }}
               >
                 <div style={{ fontWeight: 600, fontSize: 15, color: C.textPrimary, marginBottom: 4 }}>{r.title}</div>
@@ -364,14 +371,18 @@ interface PostTableProps {
 
 
 const C2 = {
-  border:      '#2d3748',
-  borderLight: '#374151',
-  textPrimary: '#f1f5f9',
-  textSec:     '#cbd5e1',
-  textMuted:   '#94a3b8',
-  textDim:     '#64748b',
-  card:        '#1e2836',
-  activeText:  '#60a5fa',
+  border:      'var(--color-border)',
+  borderLight: 'var(--color-border-strong)',
+  textPrimary: 'var(--color-text)',
+  textSec:     'var(--color-text-secondary)',
+  textMuted:   'var(--color-text-muted)',
+  textDim:     'var(--color-text-dim)',
+  card:        'var(--color-surface)',
+  hover:       'var(--color-surface-hover)',
+  disabled:    'var(--color-surface-disabled)',
+  activeText:  'var(--color-info)',
+  activeBg:    'var(--color-info-soft)',
+  warning:     'var(--color-warning)',
 }
 
 function PostTable({ posts, isLoading, showBoardName, emptyText, page, hasNext, totalElements, onPrev, onNext }: PostTableProps) {
@@ -408,7 +419,7 @@ function PostTable({ posts, isLoading, showBoardName, emptyText, page, hasNext, 
               transition: 'background 0.12s',
               cursor: 'pointer',
             }}
-            onMouseEnter={(e) => { (e.currentTarget as HTMLDivElement).style.background = C2.card }}
+            onMouseEnter={(e) => { (e.currentTarget as HTMLDivElement).style.background = C2.hover }}
             onMouseLeave={(e) => { (e.currentTarget as HTMLDivElement).style.background = 'transparent' }}
           >
             <span style={{ fontSize: 12, color: C2.textDim }}>
@@ -423,7 +434,7 @@ function PostTable({ posts, isLoading, showBoardName, emptyText, page, hasNext, 
                   {showBoardName && post.boardName && (
                     <span style={{
                       marginLeft: 8, fontSize: 11, color: C2.activeText,
-                      background: '#1e3a5f', padding: '2px 6px', borderRadius: 4,
+                      background: C2.activeBg, padding: '2px 6px', borderRadius: 4,
                     }}>
                       {post.boardName}
                     </span>
@@ -431,7 +442,7 @@ function PostTable({ posts, isLoading, showBoardName, emptyText, page, hasNext, 
                 </>
               )}
             </span>
-            <span style={{ fontSize: 12, color: post.likeCount > 0 ? '#f59e0b' : C2.textDim, textAlign: 'center' }}>
+            <span style={{ fontSize: 12, color: post.likeCount > 0 ? C2.warning : C2.textDim, textAlign: 'center' }}>
               {post.likeCount > 0 ? post.likeCount : ''}
             </span>
           </div>
@@ -445,8 +456,8 @@ function PostTable({ posts, isLoading, showBoardName, emptyText, page, hasNext, 
             disabled={page === 0}
             style={{
               padding: '7px 18px', borderRadius: 8, border: `1px solid ${C2.borderLight}`,
-              background: page === 0 ? '#1a2234' : C2.card,
-              color: page === 0 ? '#475569' : C2.textSec,
+              background: page === 0 ? C2.disabled : C2.card,
+              color: page === 0 ? C2.textDim : C2.textSec,
               cursor: page === 0 ? 'default' : 'pointer', fontSize: 13,
             }}
           >
@@ -460,8 +471,8 @@ function PostTable({ posts, isLoading, showBoardName, emptyText, page, hasNext, 
             disabled={!hasNext}
             style={{
               padding: '7px 18px', borderRadius: 8, border: `1px solid ${C2.borderLight}`,
-              background: !hasNext ? '#1a2234' : C2.card,
-              color: !hasNext ? '#475569' : C2.textSec,
+              background: !hasNext ? C2.disabled : C2.card,
+              color: !hasNext ? C2.textDim : C2.textSec,
               cursor: !hasNext ? 'default' : 'pointer', fontSize: 13,
             }}
           >

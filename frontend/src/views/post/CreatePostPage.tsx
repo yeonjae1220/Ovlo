@@ -9,6 +9,15 @@ import { useDropzone } from 'react-dropzone'
 import type { MediaFile } from '../../types'
 import { useI18n } from '../../i18n/I18nProvider'
 
+const C = {
+  border: 'var(--color-border-strong)',
+  surface: 'var(--color-surface)',
+  surfaceSoft: 'var(--color-surface-soft)',
+  text: 'var(--color-text)',
+  muted: 'var(--color-text-muted)',
+  accent: 'var(--color-accent-strong)',
+}
+
 export default function CreatePostPage() {
   const { t } = useI18n()
   const searchParams = useSearchParams()
@@ -40,27 +49,28 @@ export default function CreatePostPage() {
 
   return (
     <div>
-      <h1>{t('post.write.title')}</h1>
+      <h1 style={{ color: C.text }}>{t('post.write.title')}</h1>
       <input
         placeholder={t('post.write.titlePlaceholder')}
         value={title}
         onChange={(e) => setTitle(e.target.value)}
-        style={{ display: 'block', width: '100%', marginBottom: 12, padding: 8 }}
+        style={{ display: 'block', width: '100%', marginBottom: 12, padding: 10 }}
       />
       <textarea
         placeholder={t('post.write.contentPlaceholder')}
         value={content}
         onChange={(e) => setContent(e.target.value)}
         rows={12}
-        style={{ display: 'block', width: '100%', marginBottom: 12, padding: 8 }}
+        style={{ display: 'block', width: '100%', marginBottom: 12, padding: 10, resize: 'vertical' }}
       />
 
       <div
         {...getRootProps()}
         style={{
-          border: '2px dashed #ccc', padding: 16, marginBottom: 12,
+          border: `2px dashed ${C.border}`, padding: 16, marginBottom: 12,
           borderRadius: 8, cursor: 'pointer',
-          background: isDragActive ? '#f0f0f0' : 'transparent',
+          background: isDragActive ? C.surfaceSoft : C.surface,
+          color: C.muted,
         }}
       >
         <input {...getInputProps()} />
@@ -75,7 +85,11 @@ export default function CreatePostPage() {
         </ul>
       )}
 
-      <button onClick={handleSubmit} disabled={createPost.isPending || !title || !content}>
+      <button
+        onClick={handleSubmit}
+        disabled={createPost.isPending || !title || !content}
+        style={{ background: C.accent, color: '#fff', border: 'none', fontWeight: 700 }}
+      >
         {createPost.isPending ? t('post.write.submitting') : t('post.write.submit')}
       </button>
     </div>

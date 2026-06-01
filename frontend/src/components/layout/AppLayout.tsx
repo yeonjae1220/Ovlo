@@ -27,27 +27,27 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
     textDecoration: 'none',
     fontSize: 14,
     fontWeight: active ? 600 : 400,
-    color: active ? '#a78bfa' : '#94a3b8',
-    background: active ? '#7c3aed22' : 'transparent',
+    color: active ? 'var(--color-accent)' : 'var(--color-text-muted)',
+    background: active ? 'var(--color-accent-subtle)' : 'transparent',
     transition: 'color 0.15s, background 0.15s',
   })
 
   return (
-    <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
+    <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', background: 'var(--color-bg)', color: 'var(--color-text)' }}>
       <header
         style={{
           padding: '12px 24px',
-          borderBottom: '1px solid #2d3748',
+          borderBottom: '1px solid var(--color-border)',
           display: 'flex',
           alignItems: 'center',
           gap: 16,
           position: 'sticky',
           top: 0,
-          background: '#242424',
+          background: 'var(--color-bg-elevated)',
           zIndex: 100,
         }}
       >
-        <Link href="/" style={{ fontWeight: 'bold', fontSize: 20, textDecoration: 'none', color: '#a78bfa', flexShrink: 0 }}>
+        <Link href="/" style={{ fontWeight: 'bold', fontSize: 20, textDecoration: 'none', color: 'var(--color-accent)', flexShrink: 0 }}>
           Ovlo
         </Link>
 
@@ -71,7 +71,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
             <Link
               href={`/profile/${currentUser.id}`}
               style={{
-                color: '#94a3b8',
+                color: 'var(--color-text-muted)',
                 fontSize: 14,
                 textDecoration: 'none',
                 maxWidth: isMobile ? 120 : 220,
@@ -102,7 +102,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
       {isMobile && (
         <nav
           style={{
-            borderTop: '1px solid #2d3748',
+            borderTop: '1px solid var(--color-border)',
             padding: '8px 0',
             display: 'flex',
             justifyContent: 'space-around',
@@ -110,7 +110,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
             bottom: 0,
             left: 0,
             right: 0,
-            background: '#242424',
+            background: 'var(--color-bg-elevated)',
             zIndex: 100,
           }}
         >
@@ -124,7 +124,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                 alignItems: 'center',
                 textDecoration: 'none',
                 fontSize: 12,
-                color: isActive(to) ? '#a78bfa' : '#94a3b8',
+                color: isActive(to) ? 'var(--color-accent)' : 'var(--color-text-muted)',
                 padding: '4px 8px',
                 minWidth: 0,
                 flex: 1,
@@ -142,7 +142,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                 alignItems: 'center',
                 textDecoration: 'none',
                 fontSize: 12,
-                color: isActive(`/profile/${currentUser.id}`) ? '#a78bfa' : '#94a3b8',
+                color: isActive(`/profile/${currentUser.id}`) ? 'var(--color-accent)' : 'var(--color-text-muted)',
                 padding: '4px 8px',
                 minWidth: 0,
                 flex: 1,

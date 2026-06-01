@@ -7,6 +7,12 @@ import { usePosts } from '../../hooks/usePost'
 import { useAuthStore } from '../../store/authStore'
 import { useI18n } from '../../i18n/I18nProvider'
 
+const C = {
+  border: 'var(--color-border)',
+  text: 'var(--color-text)',
+  muted: 'var(--color-text-muted)',
+}
+
 export default function BoardDetailPage() {
   const { t } = useI18n()
   const params = useParams()
@@ -24,9 +30,9 @@ export default function BoardDetailPage() {
     <div>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
         <div>
-          <h1>{board.name}</h1>
-          <p style={{ color: '#888' }}>{board.category} · {board.scope}</p>
-          {board.description && <p>{board.description}</p>}
+          <h1 style={{ color: C.text }}>{board.name}</h1>
+          <p style={{ color: C.muted }}>{board.category} · {board.scope}</p>
+          {board.description && <p style={{ color: 'var(--color-text-secondary)' }}>{board.description}</p>}
         </div>
         <div style={{ display: 'flex', gap: 8 }}>
           <button onClick={() => subscribe.mutate(id!)}>{t('board.subscribe')}</button>
@@ -42,11 +48,11 @@ export default function BoardDetailPage() {
       {postsLoading && <p>{t('board.postsLoading')}</p>}
       <ul style={{ listStyle: 'none', padding: 0 }}>
         {posts?.map((post) => (
-          <li key={post.id} style={{ padding: 12, borderBottom: '1px solid #eee' }}>
+          <li key={post.id} style={{ padding: 12, borderBottom: `1px solid ${C.border}` }}>
             <Link href={`/posts/${post.id}`} style={{ fontWeight: 'bold' }}>
               {post.deleted ? t('post.deleted') : post.title}
             </Link>
-            <span style={{ marginLeft: 8, color: '#888', fontSize: 13 }}>
+            <span style={{ marginLeft: 8, color: C.muted, fontSize: 13 }}>
               {t('board.comments')} {post.comments.length} · 👍 {post.likeCount}
             </span>
           </li>

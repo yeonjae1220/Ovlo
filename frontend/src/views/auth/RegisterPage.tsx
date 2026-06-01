@@ -41,7 +41,7 @@ const PW_TESTS: Array<{ key: 'register.pw.min8' | 'register.pw.upper' | 'registe
   { key: 'register.pw.upper',    test: (p) => /[A-Z]/.test(p) },
   { key: 'register.pw.lower',    test: (p) => /[a-z]/.test(p) },
   { key: 'register.pw.number',   test: (p) => /\d/.test(p) },
-  { key: 'register.pw.special',  test: (p) => /[@$!%*?&_#^()\-]/.test(p) },
+  { key: 'register.pw.special',  test: (p) => /[@$!%*?&_#^()-]/.test(p) },
 ]
 
 const TOTAL_STEPS = 3
@@ -111,10 +111,11 @@ const containerStyle: React.CSSProperties = {
   maxWidth: 460,
   margin: '60px auto',
   padding: '32px 28px',
-  border: '1px solid #e5e7eb',
+  border: '1px solid var(--color-border)',
   borderRadius: 12,
-  boxShadow: '0 4px 24px rgba(0,0,0,0.06)',
+  boxShadow: 'var(--shadow-soft)',
   fontFamily: 'system-ui, sans-serif',
+  background: 'var(--color-surface)',
 }
 
 const fieldStyle: React.CSSProperties = {
@@ -126,21 +127,23 @@ const fieldStyle: React.CSSProperties = {
 const labelStyle: React.CSSProperties = {
   fontSize: 13,
   fontWeight: 600,
-  color: '#374151',
+  color: 'var(--color-text-secondary)',
 }
 
 const inputStyle: React.CSSProperties = {
   padding: '10px 12px',
-  border: '1px solid #d1d5db',
+  border: '1px solid var(--color-border-strong)',
   borderRadius: 8,
   fontSize: 14,
   outline: 'none',
   transition: 'border-color 0.15s',
+  background: 'var(--color-input-bg)',
+  color: 'var(--color-text)',
 }
 
 const primaryBtn: React.CSSProperties = {
   padding: '11px 0',
-  background: '#2563eb',
+  background: 'var(--color-accent-strong)',
   color: '#fff',
   border: 'none',
   borderRadius: 8,
@@ -152,9 +155,9 @@ const primaryBtn: React.CSSProperties = {
 
 const secondaryBtn: React.CSSProperties = {
   padding: '11px 0',
-  background: '#f3f4f6',
-  color: '#374151',
-  border: '1px solid #e5e7eb',
+  background: 'var(--color-surface-soft)',
+  color: 'var(--color-text-secondary)',
+  border: '1px solid var(--color-border)',
   borderRadius: 8,
   fontSize: 14,
   cursor: 'pointer',

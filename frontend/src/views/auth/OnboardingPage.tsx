@@ -73,28 +73,29 @@ export default function OnboardingPage() {
     maxWidth: 460,
     margin: '60px auto',
     padding: '32px 28px',
-    border: '1px solid #e5e7eb',
+    border: '1px solid var(--color-border)',
     borderRadius: 12,
-    boxShadow: '0 4px 24px rgba(0,0,0,0.06)',
+    boxShadow: 'var(--shadow-soft)',
     fontFamily: 'system-ui, sans-serif',
-    background: '#ffffff',
-    colorScheme: 'light',
+    background: 'var(--color-surface)',
   }
 
   const fieldStyle: React.CSSProperties  = { display: 'flex', flexDirection: 'column', gap: 6 }
-  const labelStyle: React.CSSProperties  = { fontSize: 13, fontWeight: 600, color: '#374151' }
-  const hintStyle: React.CSSProperties   = { fontSize: 11, color: '#9ca3af', marginTop: 2 }
+  const labelStyle: React.CSSProperties  = { fontSize: 13, fontWeight: 600, color: 'var(--color-text-secondary)' }
+  const hintStyle: React.CSSProperties   = { fontSize: 11, color: 'var(--color-text-dim)', marginTop: 2 }
   const inputStyle: React.CSSProperties  = {
     padding: '10px 12px',
-    border: '1px solid #d1d5db',
+    border: '1px solid var(--color-border-strong)',
     borderRadius: 8,
     fontSize: 14,
     outline: 'none',
+    background: 'var(--color-input-bg)',
+    color: 'var(--color-text)',
   }
-  const selectStyle: React.CSSProperties = { ...inputStyle, background: '#f9fafb', color: '#374151' }
+  const selectStyle: React.CSSProperties = { ...inputStyle }
   const primaryBtn: React.CSSProperties  = {
     padding: '11px 0',
-    background: '#2563eb',
+    background: 'var(--color-accent-strong)',
     color: '#fff',
     border: 'none',
     borderRadius: 8,

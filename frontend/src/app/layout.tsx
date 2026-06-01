@@ -2,8 +2,8 @@ import type { Metadata } from 'next'
 import { headers } from 'next/headers'
 import './globals.css'
 import { Providers } from './providers'
+import { themeInitScript } from '@/theme/themeConfig'
 
-// eslint-disable-next-line react-refresh/only-export-components
 export const dynamic = 'force-dynamic'
 
 const BASE_URL = 'https://ovlo.mungji.com'
@@ -40,6 +40,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   return (
     <html lang="ko">
       <body data-nonce={nonce}>
+        <script nonce={nonce} dangerouslySetInnerHTML={{ __html: themeInitScript }} />
         <Providers>{children}</Providers>
       </body>
     </html>

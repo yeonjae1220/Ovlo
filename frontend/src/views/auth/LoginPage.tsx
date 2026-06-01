@@ -8,6 +8,15 @@ import { useLogin } from '../../hooks/useAuth'
 import { useI18n } from '../../i18n/I18nProvider'
 
 const GOOGLE_CLIENT_ID = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || null
+const C = {
+  border: 'var(--color-border)',
+  borderStrong: 'var(--color-border-strong)',
+  surface: 'var(--color-surface)',
+  text: 'var(--color-text)',
+  textSecondary: 'var(--color-text-secondary)',
+  muted: 'var(--color-text-muted)',
+  danger: 'var(--color-danger)',
+}
 
 function redirectToGoogle(notConfiguredMsg: string) {
   if (!GOOGLE_CLIENT_ID) {
@@ -49,7 +58,7 @@ export default function LoginPage() {
 
   return (
     <div style={{ maxWidth: 400, margin: '80px auto', padding: 24 }}>
-      <h1>{t('login.title')}</h1>
+      <h1 style={{ color: C.text }}>{t('login.title')}</h1>
       <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
         <input
           type="email"
@@ -65,15 +74,15 @@ export default function LoginPage() {
           onChange={(e) => { setPassword(e.target.value); setErrorMsg(null) }}
           required
         />
-        {errorMsg && <p style={{ color: 'red', margin: 0 }}>{errorMsg}</p>}
+        {errorMsg && <p style={{ color: C.danger, margin: 0 }}>{errorMsg}</p>}
         <button type="submit" disabled={login.isPending}>
           {login.isPending ? t('login.pending') : t('login.submit')}
         </button>
       </form>
       <div style={{ display: 'flex', alignItems: 'center', gap: 10, margin: '16px 0' }}>
-        <hr style={{ flex: 1, border: 'none', borderTop: '1px solid #e5e7eb' }} />
-        <span style={{ fontSize: 12, color: '#9ca3af' }}>{t('common.or')}</span>
-        <hr style={{ flex: 1, border: 'none', borderTop: '1px solid #e5e7eb' }} />
+        <hr style={{ flex: 1, border: 'none', borderTop: `1px solid ${C.border}` }} />
+        <span style={{ fontSize: 12, color: C.muted }}>{t('common.or')}</span>
+        <hr style={{ flex: 1, border: 'none', borderTop: `1px solid ${C.border}` }} />
       </div>
 
       <button
@@ -86,12 +95,12 @@ export default function LoginPage() {
           justifyContent: 'center',
           gap: 10,
           padding: '10px 0',
-          border: '1px solid #d1d5db',
+          border: `1px solid ${C.borderStrong}`,
           borderRadius: 8,
-          background: '#fff',
+          background: C.surface,
           fontSize: 14,
           fontWeight: 500,
-          color: '#374151',
+          color: C.textSecondary,
           cursor: 'pointer',
         }}
       >
@@ -105,7 +114,7 @@ export default function LoginPage() {
         {t('login.google.btn')}
       </button>
 
-      <p>
+      <p style={{ color: C.muted }}>
         {t('login.noAccount')} <Link href="/register">{t('login.register')}</Link>
       </p>
     </div>

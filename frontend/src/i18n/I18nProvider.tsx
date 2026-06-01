@@ -35,8 +35,9 @@ export function I18nProvider({ children }: { children: React.ReactNode }) {
   })
 
   useEffect(() => {
-    // localStorage가 쿠키보다 최신이면 동기화
+    // localStorage가 쿠키보다 최신이면 동기화 — 외부 저장소(localStorage)와의 의도된 mount-time 동기화
     const stored = resolveUiLang(localStorage.getItem(STORAGE_KEY) ?? navigator.language)
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     if (stored !== language) setLanguageState(stored)
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
@@ -66,6 +67,8 @@ export function I18nProvider({ children }: { children: React.ReactNode }) {
   return <I18nContext.Provider value={value}>{children}</I18nContext.Provider>
 }
 
+// import가 많아 별도 파일 분리 시 churn이 큼 — Fast Refresh(DX) 전용 룰만 타게팅 비활성
+// eslint-disable-next-line react-refresh/only-export-components
 export function useI18n() {
   const value = useContext(I18nContext)
   if (!value) throw new Error('useI18n must be used within I18nProvider')

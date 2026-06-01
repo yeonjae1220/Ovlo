@@ -5,6 +5,12 @@ import Link from 'next/link'
 import { useUniversitySearch } from '../../hooks/useUniversity'
 import { useI18n } from '../../i18n/I18nProvider'
 
+const C = {
+  border: 'var(--color-border)',
+  muted: 'var(--color-text-muted)',
+  accent: 'var(--color-info)',
+}
+
 export default function UniversitySearchPage() {
   const { t } = useI18n()
   const [keyword, setKeyword] = useState('')
@@ -14,9 +20,9 @@ export default function UniversitySearchPage() {
   return (
     <div>
       <h1>{t('univ.search.title')}</h1>
-      <p style={{ marginBottom: 12, fontSize: 13, color: '#6b7280' }}>
+      <p style={{ marginBottom: 12, fontSize: 13, color: C.muted }}>
         {t('univ.search.info')}{' '}
-        <Link href="/exchange-universities" style={{ color: '#2563eb', fontWeight: 600 }}>{t('univ.search.infoLink')}</Link>
+        <Link href="/exchange-universities" style={{ color: C.accent, fontWeight: 600 }}>{t('univ.search.infoLink')}</Link>
         {t('univ.search.infoTrail')}
       </p>
       <div style={{ display: 'flex', gap: 8, marginBottom: 16 }}>
@@ -39,9 +45,9 @@ export default function UniversitySearchPage() {
 
       <ul style={{ listStyle: 'none', padding: 0 }}>
         {universities?.map((u) => (
-          <li key={u.id} style={{ padding: 12, borderBottom: '1px solid #eee' }}>
+          <li key={u.id} style={{ padding: 12, borderBottom: `1px solid ${C.border}` }}>
             <strong>{u.name}</strong>
-            <span style={{ marginLeft: 8, color: '#888' }}>{u.countryCode} · {u.city}</span>
+            <span style={{ marginLeft: 8, color: C.muted }}>{u.countryCode} · {u.city}</span>
           </li>
         ))}
       </ul>

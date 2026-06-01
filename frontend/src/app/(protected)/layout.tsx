@@ -8,11 +8,11 @@ import AppLayout from '@/components/layout/AppLayout'
 
 function AuthSkeleton() {
   return (
-    <div style={{ minHeight: '100vh', background: '#0c0c0c', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+    <div style={{ minHeight: '100vh', background: 'var(--color-bg)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 12, width: 300 }}>
         {[80, 60, 60, 40].map((w, i) => (
           <div key={i} style={{
-            height: 14, borderRadius: 7, background: '#1e1e1e',
+            height: 14, borderRadius: 7, background: 'var(--color-surface-soft)',
             width: `${w}%`, animation: 'pulse 1.4s ease infinite',
             animationDelay: `${i * 0.1}s`,
           }} />
