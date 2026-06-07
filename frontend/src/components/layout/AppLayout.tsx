@@ -2,11 +2,13 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
+import type { CSSProperties, ReactNode } from 'react'
 import { useAuthStore } from '../../store/authStore'
 import { useBreakpoint } from '../../hooks/useBreakpoint'
 import { useI18n } from '../../i18n/I18nProvider'
+import { Avatar } from '../ui'
 
-export default function AppLayout({ children }: { children: React.ReactNode }) {
+export default function AppLayout({ children }: { children: ReactNode }) {
   const { t } = useI18n()
   const { currentUser } = useAuthStore()
   const { isMobile } = useBreakpoint()
@@ -14,19 +16,19 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   const userLabel = currentUser?.nickname ?? currentUser?.name ?? t('nav.profile')
 
   const NAV_ITEMS = [
-    { to: '/boards', labelKey: 'nav.home' as const },
-    { to: '/exchange-universities', labelKey: 'nav.exchange' as const },
-    { to: '/chat', labelKey: 'nav.chat' as const },
+    { to: '/boards', labelKey: 'nav.home' as const, icon: '⌂' },
+    { to: '/exchange-universities', labelKey: 'nav.exchange' as const, icon: '⌕' },
+    { to: '/chat', labelKey: 'nav.chat' as const, icon: '◦' },
   ]
 
   const isActive = (path: string) => pathname !== null && (pathname === path || pathname.startsWith(path + '/'))
 
-  const desktopLinkStyle = (active: boolean): React.CSSProperties => ({
-    padding: '6px 12px',
-    borderRadius: 6,
+  const desktopLinkStyle = (active: boolean): CSSProperties => ({
+    padding: '8px 13px',
+    borderRadius: 8,
     textDecoration: 'none',
     fontSize: 14,
-    fontWeight: active ? 600 : 400,
+    fontWeight: active ? 800 : 650,
     color: active ? 'var(--color-accent)' : 'var(--color-text-muted)',
     background: active ? 'var(--color-accent-subtle)' : 'transparent',
     transition: 'color 0.15s, background 0.15s',
@@ -36,18 +38,20 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
     <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', background: 'var(--color-bg)', color: 'var(--color-text)' }}>
       <header
         style={{
-          padding: '12px 24px',
+          padding: isMobile ? '10px 14px' : '12px 24px',
           borderBottom: '1px solid var(--color-border)',
           display: 'flex',
           alignItems: 'center',
           gap: 16,
           position: 'sticky',
           top: 0,
-          background: 'var(--color-bg-elevated)',
+          background: 'color-mix(in srgb, var(--color-bg-elevated) 92%, transparent)',
+          backdropFilter: 'blur(14px)',
           zIndex: 100,
         }}
       >
-        <Link href="/" style={{ fontWeight: 'bold', fontSize: 20, textDecoration: 'none', color: 'var(--color-accent)', flexShrink: 0 }}>
+        <Link href="/" style={{ display: 'inline-flex', alignItems: 'center', gap: 8, fontWeight: 900, fontSize: 21, textDecoration: 'none', color: 'var(--color-text)', flexShrink: 0 }}>
+          <span style={{ width: 28, height: 28, borderRadius: 9, background: 'var(--color-accent-strong)', color: 'var(--color-on-accent)', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontSize: 15 }}>O</span>
           Ovlo
         </Link>
 
@@ -71,17 +75,20 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
             <Link
               href={`/profile/${currentUser.id}`}
               style={{
-                color: 'var(--color-text-muted)',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: 8,
+                color: 'var(--color-text-secondary)',
                 fontSize: 14,
+                fontWeight: 750,
                 textDecoration: 'none',
                 maxWidth: isMobile ? 120 : 220,
                 overflow: 'hidden',
-                textOverflow: 'ellipsis',
-                whiteSpace: 'nowrap',
               }}
               title={userLabel}
             >
-              {userLabel}
+              <Avatar label={userLabel} size="sm" />
+              {!isMobile && <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{userLabel}</span>}
             </Link>
           )}
         </div>
@@ -90,11 +97,11 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
       <main
         style={{
           flex: 1,
-          padding: isMobile ? '16px 16px' : '32px 24px',
-          paddingBottom: isMobile ? 'calc(16px + 60px)' : '32px',
+          padding: isMobile ? '18px 14px' : '34px 24px',
+          paddingBottom: isMobile ? 'calc(22px + 72px)' : '34px',
         }}
       >
-        <div style={{ maxWidth: 1200, margin: '0 auto', width: '100%' }}>
+        <div style={{ maxWidth: 'var(--layout-max)', margin: '0 auto', width: '100%' }}>
           {children}
         </div>
       </main>
@@ -103,18 +110,19 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         <nav
           style={{
             borderTop: '1px solid var(--color-border)',
-            padding: '8px 0',
+            padding: '7px 8px max(7px, env(safe-area-inset-bottom))',
             display: 'flex',
-            justifyContent: 'space-around',
+            gap: 6,
             position: 'fixed',
             bottom: 0,
             left: 0,
             right: 0,
-            background: 'var(--color-bg-elevated)',
+            background: 'color-mix(in srgb, var(--color-bg-elevated) 94%, transparent)',
+            backdropFilter: 'blur(14px)',
             zIndex: 100,
           }}
         >
-          {NAV_ITEMS.map(({ to, labelKey }) => (
+          {NAV_ITEMS.map(({ to, labelKey, icon }) => (
             <Link
               key={to}
               href={to}
@@ -122,14 +130,20 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                 display: 'flex',
                 flexDirection: 'column',
                 alignItems: 'center',
+                justifyContent: 'center',
+                gap: 3,
                 textDecoration: 'none',
-                fontSize: 12,
+                fontSize: 11,
+                fontWeight: 800,
                 color: isActive(to) ? 'var(--color-accent)' : 'var(--color-text-muted)',
-                padding: '4px 8px',
+                background: isActive(to) ? 'var(--color-accent-subtle)' : 'transparent',
+                borderRadius: 10,
+                padding: '7px 6px',
                 minWidth: 0,
                 flex: 1,
               }}
             >
+              <span aria-hidden="true" style={{ fontSize: 18, lineHeight: 1 }}>{icon}</span>
               {t(labelKey)}
             </Link>
           ))}
@@ -140,14 +154,20 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                 display: 'flex',
                 flexDirection: 'column',
                 alignItems: 'center',
+                justifyContent: 'center',
+                gap: 3,
                 textDecoration: 'none',
-                fontSize: 12,
+                fontSize: 11,
+                fontWeight: 800,
                 color: isActive(`/profile/${currentUser.id}`) ? 'var(--color-accent)' : 'var(--color-text-muted)',
-                padding: '4px 8px',
+                background: isActive(`/profile/${currentUser.id}`) ? 'var(--color-accent-subtle)' : 'transparent',
+                borderRadius: 10,
+                padding: '7px 6px',
                 minWidth: 0,
                 flex: 1,
               }}
             >
+              <span aria-hidden="true" style={{ fontSize: 18, lineHeight: 1 }}>◎</span>
               {t('nav.profile')}
             </Link>
           )}

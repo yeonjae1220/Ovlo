@@ -1,21 +1,14 @@
 'use client'
 
 import { useState } from 'react'
-import { useRouter } from 'next/navigation'
-import { useSearchParams } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { useCreatePost } from '../../hooks/usePost'
-import { useUploadMedia } from '../../hooks/useMedia'
-import { useDropzone } from 'react-dropzone'
-import type { MediaFile } from '../../types'
 import { useI18n } from '../../i18n/I18nProvider'
+import { Button, Card, EmptyState, FieldGroup, PageHeader, TextAreaField, TextField } from '../../components/ui'
 
 const C = {
-  border: 'var(--color-border-strong)',
-  surface: 'var(--color-surface)',
-  surfaceSoft: 'var(--color-surface-soft)',
-  text: 'var(--color-text)',
-  muted: 'var(--color-text-muted)',
-  accent: 'var(--color-accent-strong)',
+  dim: 'var(--color-text-dim)',
+  accent: 'var(--color-accent)',
 }
 
 export default function CreatePostPage() {
@@ -24,74 +17,72 @@ export default function CreatePostPage() {
   const boardId = searchParams?.get('boardId') ?? ''
   const router = useRouter()
   const createPost = useCreatePost()
-  const uploadMedia = useUploadMedia()
 
   const [title, setTitle] = useState('')
   const [content, setContent] = useState('')
-  const [uploadedMedia, setUploadedMedia] = useState<MediaFile[]>([])
 
-  const { getRootProps, getInputProps, isDragActive } = useDropzone({
-    onDrop: async (files) => {
-      for (const file of files) {
-        const media = await uploadMedia.mutateAsync(file)
-        setUploadedMedia((prev) => [...prev, media])
-      }
-    },
-  })
+  const disabledReason = !boardId
+    ? t('post.write.noBoard')
+    : !title.trim()
+      ? t('post.write.titlePlaceholder')
+      : !content.trim()
+        ? t('post.write.contentPlaceholder')
+        : ''
 
   const handleSubmit = () => {
-    if (!title || !content || !boardId) return
+    if (disabledReason) return
     createPost.mutate(
-      { boardId: Number(boardId), title, content },
+      { boardId: Number(boardId), title: title.trim(), content: content.trim() },
       { onSuccess: (post) => router.push(`/posts/${post.id}`) }
     )
   }
 
   return (
-    <div>
-      <h1 style={{ color: C.text }}>{t('post.write.title')}</h1>
-      <input
-        placeholder={t('post.write.titlePlaceholder')}
-        value={title}
-        onChange={(e) => setTitle(e.target.value)}
-        style={{ display: 'block', width: '100%', marginBottom: 12, padding: 10 }}
-      />
-      <textarea
-        placeholder={t('post.write.contentPlaceholder')}
-        value={content}
-        onChange={(e) => setContent(e.target.value)}
-        rows={12}
-        style={{ display: 'block', width: '100%', marginBottom: 12, padding: 10, resize: 'vertical' }}
+    <div style={{ maxWidth: 820, margin: '0 auto' }}>
+      <PageHeader
+        title={t('post.write.title')}
+        description={t('post.write.description')}
+        actions={<Button variant="ghost" onClick={() => router.back()} icon="←">{t('exch.back').replace('← ', '')}</Button>}
       />
 
-      <div
-        {...getRootProps()}
-        style={{
-          border: `2px dashed ${C.border}`, padding: 16, marginBottom: 12,
-          borderRadius: 8, cursor: 'pointer',
-          background: isDragActive ? C.surfaceSoft : C.surface,
-          color: C.muted,
-        }}
-      >
-        <input {...getInputProps()} />
-        {isDragActive ? <p>{t('post.write.dropActive')}</p> : <p>{t('post.write.dropIdle')}</p>}
-      </div>
+      {!boardId ? (
+        <EmptyState icon="!" title={t('post.write.noBoard')} description={t('post.write.noBoardDesc')} />
+      ) : (
+        <Card style={{ padding: 18 }}>
+          <div style={{ display: 'grid', gap: 16 }}>
+            <FieldGroup label={t('post.write.titlePlaceholder')} hint={`${title.length}/80`}>
+              <TextField
+                placeholder={t('post.write.titleExample')}
+                value={title}
+                maxLength={80}
+                onChange={(event) => setTitle(event.target.value)}
+              />
+            </FieldGroup>
 
-      {uploadedMedia.length > 0 && (
-        <ul style={{ marginBottom: 12 }}>
-          {uploadedMedia.map((m) => (
-            <li key={m.mediaId}>{m.originalFilename}</li>
-          ))}
-        </ul>
+            <FieldGroup label={t('post.write.contentPlaceholder')} hint={t('post.write.contentLength', { count: content.length })}>
+              <TextAreaField
+                placeholder={t('post.write.contentHint')}
+                value={content}
+                onChange={(event) => setContent(event.target.value)}
+                rows={12}
+              />
+            </FieldGroup>
+
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
+              <span style={{ color: disabledReason ? C.dim : C.accent, fontSize: 13, fontWeight: 750 }}>
+                {disabledReason ? `${disabledReason}` : t('post.write.ready')}
+              </span>
+              <Button
+                onClick={handleSubmit}
+                disabled={createPost.isPending || !!disabledReason}
+                variant="primary"
+              >
+                {createPost.isPending ? t('post.write.submitting') : t('post.write.submit')}
+              </Button>
+            </div>
+          </div>
+        </Card>
       )}
-
-      <button
-        onClick={handleSubmit}
-        disabled={createPost.isPending || !title || !content}
-        style={{ background: C.accent, color: '#fff', border: 'none', fontWeight: 700 }}
-      >
-        {createPost.isPending ? t('post.write.submitting') : t('post.write.submit')}
-      </button>
     </div>
   )
 }

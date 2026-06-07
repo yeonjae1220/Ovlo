@@ -10,6 +10,7 @@ import { useBreakpoint } from '../../hooks/useBreakpoint'
 import { stompClient } from '../../utils/stomp'
 import type { HistoryMessage, Message } from '../../types'
 import { useI18n } from '../../i18n/I18nProvider'
+import { Avatar, Badge, Button, Card, TextField } from '../../components/ui'
 
 const PAGE_SIZE = 50
 const C = {
@@ -17,6 +18,7 @@ const C = {
   surface: 'var(--color-surface)',
   surfaceSoft: 'var(--color-surface-soft)',
   text: 'var(--color-text)',
+  textSecondary: 'var(--color-text-secondary)',
   muted: 'var(--color-text-muted)',
   dim: 'var(--color-text-dim)',
   accent: 'var(--color-accent-strong)',
@@ -186,8 +188,8 @@ export default function ChatRoomPage() {
     setInput('')
   }
 
-  if (isLoading) return <p>{t('chat.room.loading')}</p>
-  if (!room) return <p>{t('chat.room.notFound')}</p>
+  if (isLoading) return <p style={{ color: C.muted }}>{t('chat.room.loading')}</p>
+  if (!room) return <p style={{ color: C.muted }}>{t('chat.room.notFound')}</p>
 
   const currentUserId = currentUser?.id ? Number(currentUser.id) : null
   const otherParticipants = room.participantIds.filter((p) => p !== currentUserId)
@@ -211,22 +213,33 @@ export default function ChatRoomPage() {
 
   return (
     <div style={{ maxWidth: 900, margin: '0 auto', display: 'flex', flexDirection: 'column', height: containerHeight, minHeight: isMobile ? 420 : 520 }}>
-      <h2 style={{ borderBottom: `1px solid ${C.border}`, color: C.text, paddingBottom: 12, marginBottom: 12, fontSize: isMobile ? 20 : 24, lineHeight: 1.3, overflowWrap: 'anywhere' }}>
-        {roomTitle}
-        {!connected && <span style={{ color: C.danger, fontSize: 13, marginLeft: 8 }}>{t('chat.room.connecting')}</span>}
-      </h2>
+      <Card style={{ padding: isMobile ? 12 : 14, marginBottom: 12 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+          <Avatar label={roomTitle} />
+          <div style={{ minWidth: 0, flex: 1 }}>
+            <h2 style={{ color: C.text, margin: 0, fontSize: isMobile ? 18 : 21, lineHeight: 1.25, overflowWrap: 'anywhere' }}>
+              {roomTitle}
+            </h2>
+            <div style={{ display: 'flex', gap: 8, alignItems: 'center', marginTop: 5, flexWrap: 'wrap' }}>
+              <Badge tone={connected ? 'success' : 'danger'}>{connected ? t('chat.online') : t('chat.room.connecting')}</Badge>
+              <span style={{ color: C.dim, fontSize: 12 }}>{t('chat.participants', { count: room.participantIds.length })}</span>
+            </div>
+          </div>
+        </div>
+      </Card>
 
       {hasMore && (
-        <button
+        <Button
           onClick={() => setPage((p) => p + 1)}
           disabled={loadingHistory}
-          style={{ margin: '4px 0 8px', fontSize: 13, padding: '4px 12px', alignSelf: 'flex-start' }}
+          variant="ghost"
+          style={{ margin: '0 0 8px', alignSelf: 'flex-start', minHeight: 34 }}
         >
           {loadingHistory ? t('chat.room.loading') : t('chat.room.loadMore')}
-        </button>
+        </Button>
       )}
 
-      <div style={{ flex: 1, overflowY: 'auto', padding: '8px 0' }}>
+      <div style={{ flex: 1, overflowY: 'auto', padding: isMobile ? '8px 2px' : '10px 4px' }}>
         {messages.map((msg) => {
           const isMine = String(msg.senderId) === String(currentUser?.id)
           const senderIdNum = Number(msg.senderId)
@@ -252,26 +265,21 @@ export default function ChatRoomPage() {
                       style={{ width: 32, height: 32, borderRadius: '50%', objectFit: 'cover' }}
                     />
                   ) : (
-                    <div style={{
-                      width: 32, height: 32, borderRadius: '50%', background: C.surfaceSoft,
-                      color: C.muted, display: 'flex', alignItems: 'center', justifyContent: 'center',
-                      fontSize: 13, fontWeight: 'bold',
-                    }}>
-                      {nickname[0]?.toUpperCase() ?? '?'}
-                    </div>
+                    <Avatar label={nickname} size="sm" />
                   )}
                 </div>
               )}
               <div
                 style={{
                   maxWidth: isMobile ? '82%' : '70%',
-                  padding: isMobile ? '10px 12px' : '8px 12px',
-                  borderRadius: 12,
+                  padding: isMobile ? '11px 13px' : '10px 13px',
+                  borderRadius: isMine ? '14px 14px 4px 14px' : '14px 14px 14px 4px',
                   background: isMine ? C.accent : C.surface,
                   color: isMine ? C.onAccent : C.text,
                   border: isMine ? 'none' : `1px solid ${C.border}`,
                   overflowWrap: 'anywhere',
                   wordBreak: 'break-word',
+                  boxShadow: isMine ? '0 10px 24px rgb(13 107 96 / 0.18)' : 'none',
                 }}
               >
                 {!isMine && (
@@ -291,23 +299,26 @@ export default function ChatRoomPage() {
         <div ref={bottomRef} />
       </div>
 
-      <div style={{ display: 'flex', gap: 8, paddingTop: 12, borderTop: `1px solid ${C.border}`, alignItems: isMobile ? 'stretch' : 'center', flexDirection: isMobile ? 'column' : 'row' }}>
-        <input
-          placeholder={t('chat.room.msgPlaceholder')}
-          value={input}
-          onChange={(e) => setInput(e.target.value)}
-          onKeyDown={(e) => e.key === 'Enter' && sendMessage()}
-          style={{ flex: 1, padding: isMobile ? 12 : 8, fontSize: 16, borderRadius: 10, border: `1px solid ${C.border}` }}
-          disabled={!connected}
-        />
-        <button
-          onClick={sendMessage}
-          disabled={!connected || !input.trim()}
-          style={{ width: isMobile ? '100%' : 'auto', minHeight: isMobile ? 44 : undefined }}
-        >
-          {t('chat.room.send')}
-        </button>
-      </div>
+      <Card style={{ padding: 10, marginTop: 10 }}>
+        <div style={{ display: 'flex', gap: 8, alignItems: isMobile ? 'stretch' : 'center', flexDirection: isMobile ? 'column' : 'row' }}>
+          <TextField
+            placeholder={t('chat.room.msgPlaceholder')}
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            onKeyDown={(e) => e.key === 'Enter' && sendMessage()}
+            style={{ flex: 1, fontSize: 16 }}
+            disabled={!connected}
+          />
+          <Button
+            onClick={sendMessage}
+            disabled={!connected || !input.trim()}
+            variant="primary"
+            style={{ width: isMobile ? '100%' : 'auto', minHeight: isMobile ? 44 : undefined }}
+          >
+            {t('chat.room.send')}
+          </Button>
+        </div>
+      </Card>
     </div>
   )
 }

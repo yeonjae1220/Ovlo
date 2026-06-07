@@ -8,21 +8,18 @@ import { useI18n } from '../../i18n/I18nProvider'
 import { useMemberSearch } from '../../hooks/useMember'
 import { useAuthStore } from '../../store/authStore'
 import type { ChatRoomType, Member } from '../../types'
+import { Avatar, Badge, Button, Card, EmptyState, PageHeader, SearchBox, SelectField, TextField } from '../../components/ui'
 
 const C = {
-  bg:          'var(--color-bg)',
-  card:        'var(--color-surface)',
-  border:      'var(--color-border)',
-  borderLight: 'var(--color-border-strong)',
-  textPrimary: 'var(--color-text)',
-  textSec:     'var(--color-text-secondary)',
-  textMuted:   'var(--color-text-muted)',
-  textDim:     'var(--color-text-dim)',
-  activeBg:    'var(--color-info-soft)',
-  activeText:  'var(--color-info)',
-  purple:      'var(--color-accent)',
-  purpleStrong:'var(--color-accent-strong)',
-  danger:      'var(--color-danger)',
+  border: 'var(--color-border)',
+  card: 'var(--color-surface)',
+  hover: 'var(--color-surface-hover)',
+  text: 'var(--color-text)',
+  textSec: 'var(--color-text-secondary)',
+  muted: 'var(--color-text-muted)',
+  dim: 'var(--color-text-dim)',
+  accent: 'var(--color-accent)',
+  danger: 'var(--color-danger)',
 }
 
 export default function ChatListPage() {
@@ -32,23 +29,30 @@ export default function ChatListPage() {
   const createRoom = useCreateChatRoom()
   const router = useRouter()
 
-  // ── 상단 사용자 검색 (DM 빠른 시작) ────────────────────────────
   const [dmQuery, setDmQuery] = useState('')
   const [dmDropdownOpen, setDmDropdownOpen] = useState(false)
   const { data: dmResults } = useMemberSearch(dmQuery)
   const filteredDmResults = dmResults?.filter((m) => m.id !== currentUser?.id) ?? []
 
+  const [showForm, setShowForm] = useState(false)
+  const [type, setType] = useState<ChatRoomType>('DM')
+  const [roomName, setRoomName] = useState('')
+  const [nicknameQuery, setNicknameQuery] = useState('')
+  const [selectedMember, setSelectedMember] = useState<Member | null>(null)
+
+  const { data: searchResults } = useMemberSearch(nicknameQuery)
+  const filteredResults = searchResults?.filter((m) => m.id !== currentUser?.id) ?? []
+
   const handleStartDm = (member: Member) => {
     setDmQuery('')
     setDmDropdownOpen(false)
 
-    // 이미 존재하는 DM 방 탐색
     const currentUserId = currentUser?.id ? Number(currentUser.id) : null
     const memberId = Number(member.id)
     const existingRoom = rooms?.find(
-      (r) => r.type === 'DM' &&
-        r.participantIds.includes(memberId) &&
-        (currentUserId === null || r.participantIds.includes(currentUserId))
+      (room) => room.type === 'DM' &&
+        room.participantIds.includes(memberId) &&
+        (currentUserId === null || room.participantIds.includes(currentUserId))
     )
     if (existingRoom) {
       router.push(`/chat/${existingRoom.chatRoomId}`)
@@ -61,23 +65,16 @@ export default function ChatListPage() {
     )
   }
 
-  // ── 채팅방 생성 폼 (GROUP 전용) ─────────────────────────────────
-  const [showForm, setShowForm] = useState(false)
-  const [type, setType] = useState<ChatRoomType>('DM')
-  const [roomName, setRoomName] = useState('')
-  const [nicknameQuery, setNicknameQuery] = useState('')
-  const [selectedMember, setSelectedMember] = useState<Member | null>(null)
-
-  const { data: searchResults } = useMemberSearch(nicknameQuery)
-  const filteredResults = searchResults?.filter((m) => m.id !== currentUser?.id) ?? []
-
   const handleSelectMember = (member: Member) => {
     setSelectedMember(member)
     setNicknameQuery(member.nickname)
   }
 
   const handleCreate = () => {
-    if (!selectedMember) { alert(t('chat.form.selectAlert')); return }
+    if (!selectedMember) {
+      window.alert(t('chat.form.selectAlert'))
+      return
+    }
     createRoom.mutate(
       { type, name: roomName || undefined, participantIds: [Number(selectedMember.id)] },
       {
@@ -98,233 +95,230 @@ export default function ChatListPage() {
     setRoomName('')
   }
 
-  if (isLoading) return <p style={{ color: C.textMuted, padding: 24 }}>{t('chat.room.loading')}</p>
+  if (isLoading) return <p style={{ color: C.muted, padding: 24 }}>{t('chat.room.loading')}</p>
 
   const currentUserId = currentUser?.id ? Number(currentUser.id) : null
 
   return (
-    <div style={{ maxWidth: 760, margin: '0 auto' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
-        <h1 style={{ margin: 0, fontSize: 22, fontWeight: 800, color: C.textPrimary }}>{t('chat.title')}</h1>
-        <button
-          onClick={() => setShowForm((v) => !v)}
-          style={{
-            padding: '7px 14px', borderRadius: 8, fontSize: 13, cursor: 'pointer',
-            border: `1px solid ${C.borderLight}`, background: 'transparent', color: C.textMuted,
-          }}
-        >
-          {t('chat.createRoom')}
-        </button>
-      </div>
+    <div style={{ maxWidth: 780, margin: '0 auto' }}>
+      <PageHeader
+        title={t('chat.title')}
+        description={t('chat.description')}
+        actions={
+          <Button onClick={() => setShowForm((v) => !v)} variant="secondary" icon="+">
+            {t('chat.createRoom').replace('+ ', '')}
+          </Button>
+        }
+      />
 
-      {/* ── 사용자 검색 (DM 빠른 시작) ─────────────────────────────── */}
-      <div style={{ marginBottom: 20 }}>
+      <Card style={{ padding: 16, marginBottom: 16 }}>
         <div style={{ position: 'relative' }}>
-          <input
+          <SearchBox
             placeholder={t('chat.dm.searchPlaceholder')}
             value={dmQuery}
-            onChange={(e) => { setDmQuery(e.target.value); setDmDropdownOpen(true) }}
+            onChange={(event) => { setDmQuery(event.target.value); setDmDropdownOpen(true) }}
             onFocus={() => setDmDropdownOpen(true)}
             onBlur={() => setTimeout(() => setDmDropdownOpen(false), 150)}
-            style={{
-              width: '100%', boxSizing: 'border-box',
-              padding: '10px 14px 10px 38px',
-              border: `1px solid ${C.borderLight}`, borderRadius: 10,
-              background: C.card, color: C.textPrimary, fontSize: 14, outline: 'none',
-            }}
           />
-          <span style={{
-            position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)',
-            color: C.textDim, fontSize: 16, pointerEvents: 'none',
-          }}>🔍</span>
 
           {dmDropdownOpen && dmQuery.length >= 1 && filteredDmResults.length > 0 && (
             <ul style={{
-              position: 'absolute', top: '100%', left: 0, right: 0, zIndex: 20,
-              listStyle: 'none', padding: 0, margin: 0,
-              border: `1px solid ${C.borderLight}`, borderRadius: 10,
-              background: C.card, boxShadow: 'var(--shadow-soft)',
-              maxHeight: 240, overflowY: 'auto',
+              position: 'absolute',
+              top: 'calc(100% + 6px)',
+              left: 0,
+              right: 0,
+              zIndex: 20,
+              listStyle: 'none',
+              padding: 0,
+              margin: 0,
+              border: `1px solid ${C.border}`,
+              borderRadius: 10,
+              background: C.card,
+              boxShadow: 'var(--shadow-soft)',
+              maxHeight: 260,
+              overflowY: 'auto',
             }}>
-              {filteredDmResults.slice(0, 8).map((m) => (
+              {filteredDmResults.slice(0, 8).map((member) => (
                 <li
-                  key={m.id}
-                  onMouseDown={() => handleStartDm(m)}
+                  key={member.id}
+                  onMouseDown={() => handleStartDm(member)}
                   style={{
-                    padding: '10px 14px', cursor: 'pointer',
+                    padding: '11px 14px',
+                    cursor: 'pointer',
                     borderBottom: `1px solid ${C.border}`,
-                    display: 'flex', alignItems: 'center', gap: 10,
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 10,
                   }}
-                  onMouseEnter={(e) => { (e.currentTarget as HTMLLIElement).style.background = C.activeBg }}
-                  onMouseLeave={(e) => { (e.currentTarget as HTMLLIElement).style.background = 'transparent' }}
+                  onMouseEnter={(event) => { event.currentTarget.style.background = C.hover }}
+                  onMouseLeave={(event) => { event.currentTarget.style.background = 'transparent' }}
                 >
-                  <div style={{
-                    width: 34, height: 34, borderRadius: '50%',
-                    background: C.borderLight, display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    fontSize: 14, color: C.purple, fontWeight: 700, flexShrink: 0,
-                  }}>
-                    {m.nickname?.[0]?.toUpperCase() ?? '?'}
-                  </div>
+                  <Avatar label={member.nickname} />
                   <div>
-                    <div style={{ fontSize: 14, fontWeight: 600, color: C.textPrimary }}>@{m.nickname}</div>
-                    <div style={{ fontSize: 12, color: C.textDim }}>{m.name}</div>
+                    <div style={{ fontSize: 14, fontWeight: 850, color: C.text }}>@{member.nickname}</div>
+                    <div style={{ fontSize: 12, color: C.dim }}>{member.name}</div>
                   </div>
-                  <span style={{ marginLeft: 'auto', fontSize: 12, color: C.activeText }}>{t('chat.dm.start')}</span>
+                  <span style={{ marginLeft: 'auto', fontSize: 12, color: C.accent, fontWeight: 850 }}>{t('chat.dm.start')}</span>
                 </li>
               ))}
             </ul>
           )}
           {dmDropdownOpen && dmQuery.length >= 1 && filteredDmResults.length === 0 && (
             <div style={{
-              position: 'absolute', top: '100%', left: 0, right: 0, zIndex: 20,
-              padding: '12px 14px', border: `1px solid ${C.borderLight}`, borderRadius: 10,
-              background: C.card, color: C.textDim, fontSize: 13,
+              position: 'absolute',
+              top: 'calc(100% + 6px)',
+              left: 0,
+              right: 0,
+              zIndex: 20,
+              padding: '12px 14px',
+              border: `1px solid ${C.border}`,
+              borderRadius: 10,
+              background: C.card,
+              color: C.dim,
+              fontSize: 13,
             }}>
               {t('chat.noResults')}
             </div>
           )}
         </div>
-      </div>
+      </Card>
 
-      {/* ── 채팅방 생성 폼 ──────────────────────────────────────────── */}
       {showForm && (
-        <div style={{ border: `1px solid ${C.borderLight}`, padding: 16, marginBottom: 16, borderRadius: 10, background: C.card }}>
-          <select
-            value={type}
-            onChange={(e) => setType(e.target.value as ChatRoomType)}
-            style={{ marginBottom: 8, padding: '7px 10px', borderRadius: 6, border: `1px solid ${C.borderLight}`, background: C.bg, color: C.textSec, fontSize: 13 }}
-          >
-            <option value="DM">DM</option>
-            <option value="GROUP">{t('chat.form.group')}</option>
-          </select>
+        <Card style={{ padding: 16, marginBottom: 16 }}>
+          <div style={{ display: 'grid', gap: 10 }}>
+            <SelectField value={type} onChange={(event) => setType(event.target.value as ChatRoomType)}>
+              <option value="DM">DM</option>
+              <option value="GROUP">{t('chat.form.group')}</option>
+            </SelectField>
 
-          {type === 'GROUP' && (
-            <input
-              placeholder={t('chat.form.roomName')}
-              value={roomName}
-              onChange={(e) => setRoomName(e.target.value)}
-              style={{ display: 'block', width: '100%', marginBottom: 8, padding: '8px 12px', borderRadius: 6, border: `1px solid ${C.borderLight}`, background: C.bg, color: C.textPrimary, fontSize: 14, boxSizing: 'border-box' }}
-            />
-          )}
-
-          <div style={{ position: 'relative', marginBottom: 8 }}>
-            <input
-              placeholder={t('chat.form.searchMember')}
-              value={nicknameQuery}
-              onChange={(e) => { setNicknameQuery(e.target.value); setSelectedMember(null) }}
-              style={{ width: '100%', padding: '8px 12px', borderRadius: 6, border: `1px solid ${C.borderLight}`, background: C.bg, color: C.textPrimary, fontSize: 14, boxSizing: 'border-box' }}
-            />
-            {nicknameQuery.length >= 1 && !selectedMember && filteredResults.length > 0 && (
-              <ul style={{
-                position: 'absolute', top: '100%', left: 0, right: 0,
-                listStyle: 'none', margin: 0, padding: 0,
-                border: `1px solid ${C.borderLight}`, borderRadius: 6, background: C.card,
-                zIndex: 10, maxHeight: 200, overflowY: 'auto',
-              }}>
-                {filteredResults.map((m) => (
-                  <li
-                    key={m.id}
-                    onClick={() => handleSelectMember(m)}
-                    style={{ padding: '8px 12px', cursor: 'pointer', borderBottom: `1px solid ${C.border}`, color: C.textPrimary, fontSize: 14 }}
-                    onMouseEnter={(e) => { (e.currentTarget as HTMLLIElement).style.background = C.activeBg }}
-                    onMouseLeave={(e) => { (e.currentTarget as HTMLLIElement).style.background = 'transparent' }}
-                  >
-                    <strong style={{ color: C.purple }}>@{m.nickname}</strong>
-                    <span style={{ color: C.textDim, fontSize: 12, marginLeft: 8 }}>{m.name}</span>
-                  </li>
-                ))}
-              </ul>
+            {type === 'GROUP' && (
+              <TextField
+                placeholder={t('chat.form.roomName')}
+                value={roomName}
+                onChange={(event) => setRoomName(event.target.value)}
+              />
             )}
-            {nicknameQuery.length >= 1 && !selectedMember && filteredResults.length === 0 && (
-              <div style={{ padding: '6px 0', fontSize: 13, color: C.textDim }}>{t('chat.noResults')}</div>
-            )}
-          </div>
 
-          {selectedMember && (
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8, padding: '6px 10px', background: C.activeBg, borderRadius: 6 }}>
-              <span style={{ color: C.textSec, fontSize: 13 }}>{t('chat.form.selected')} <strong style={{ color: C.purple }}>@{selectedMember.nickname}</strong> ({selectedMember.name})</span>
-              <button
-                type="button"
-                onClick={() => { setSelectedMember(null); setNicknameQuery('') }}
-                style={{ fontSize: 12, background: 'none', border: 'none', color: C.textMuted, cursor: 'pointer', marginLeft: 'auto' }}
-              >
-                ×
-              </button>
+            <div style={{ position: 'relative' }}>
+              <TextField
+                placeholder={t('chat.form.searchMember')}
+                value={nicknameQuery}
+                onChange={(event) => { setNicknameQuery(event.target.value); setSelectedMember(null) }}
+              />
+              {nicknameQuery.length >= 1 && !selectedMember && filteredResults.length > 0 && (
+                <ul style={{
+                  position: 'absolute',
+                  top: 'calc(100% + 6px)',
+                  left: 0,
+                  right: 0,
+                  listStyle: 'none',
+                  margin: 0,
+                  padding: 0,
+                  border: `1px solid ${C.border}`,
+                  borderRadius: 10,
+                  background: C.card,
+                  zIndex: 10,
+                  maxHeight: 220,
+                  overflowY: 'auto',
+                }}>
+                  {filteredResults.map((member) => (
+                    <li
+                      key={member.id}
+                      onClick={() => handleSelectMember(member)}
+                      style={{ padding: '10px 12px', cursor: 'pointer', borderBottom: `1px solid ${C.border}`, color: C.text, fontSize: 14 }}
+                      onMouseEnter={(event) => { event.currentTarget.style.background = C.hover }}
+                      onMouseLeave={(event) => { event.currentTarget.style.background = 'transparent' }}
+                    >
+                      <strong style={{ color: C.accent }}>@{member.nickname}</strong>
+                      <span style={{ color: C.dim, fontSize: 12, marginLeft: 8 }}>{member.name}</span>
+                    </li>
+                  ))}
+                </ul>
+              )}
             </div>
-          )}
 
-          <div style={{ display: 'flex', gap: 8 }}>
-            <button
-              onClick={handleCreate}
-              disabled={createRoom.isPending || !selectedMember}
-              style={{
-                padding: '7px 16px', borderRadius: 6, border: 'none',
-                background: selectedMember ? C.purpleStrong : C.borderLight,
-                color: '#fff', fontSize: 13, cursor: selectedMember ? 'pointer' : 'default', fontWeight: 600,
-              }}
-            >
-              {t('chat.form.create')}
-            </button>
-            <button
-              onClick={resetForm}
-              style={{ padding: '7px 12px', borderRadius: 6, border: `1px solid ${C.borderLight}`, background: 'transparent', color: C.textMuted, fontSize: 13, cursor: 'pointer' }}
-            >
-              {t('chat.form.cancel')}
-            </button>
+            {selectedMember && (
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 10px', background: 'var(--color-accent-subtle)', borderRadius: 8 }}>
+                <Avatar label={selectedMember.nickname} size="sm" />
+                <span style={{ color: C.textSec, fontSize: 13 }}>{t('chat.form.selected')} <strong style={{ color: C.accent }}>@{selectedMember.nickname}</strong></span>
+                <button
+                  type="button"
+                  onClick={() => { setSelectedMember(null); setNicknameQuery('') }}
+                  style={{ fontSize: 16, background: 'none', border: 'none', color: C.muted, cursor: 'pointer', marginLeft: 'auto', padding: 4 }}
+                >
+                  ×
+                </button>
+              </div>
+            )}
+
+            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+              <Button onClick={handleCreate} disabled={createRoom.isPending || !selectedMember} variant="primary">
+                {t('chat.form.create')}
+              </Button>
+              <Button onClick={resetForm} variant="ghost">
+                {t('chat.form.cancel')}
+              </Button>
+            </div>
+            {createRoom.isError && (
+              <p style={{ color: C.danger, margin: 0, fontSize: 13 }}>{t('chat.form.error')}</p>
+            )}
           </div>
-          {createRoom.isError && (
-            <p style={{ color: C.danger, marginTop: 8, fontSize: 13 }}>{t('chat.form.error')}</p>
-          )}
-        </div>
+        </Card>
       )}
 
-      {/* ── 채팅방 목록 ─────────────────────────────────────────────── */}
-      <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
+      <div style={{ display: 'grid', gap: 10 }}>
         {rooms?.map((room) => {
-          const otherParticipants = room.participantIds.filter((p) => p !== currentUserId)
+          const otherParticipants = room.participantIds.filter((participantId) => participantId !== currentUserId)
           const displayName = room.name ?? otherParticipants
             .map((id) => `${room.participantNicknames?.[id] ?? `#${id}`}`)
             .join(', ')
+          const firstOtherId = otherParticipants[0]
+          const mediaId = firstOtherId ? room.participantProfileImageMediaIds?.[firstOtherId] : null
+          const avatarUrl = mediaId ? `/api/v1/media/${mediaId}/file` : null
 
           return (
-            <li key={room.chatRoomId} style={{ borderBottom: `1px solid ${C.border}` }}>
-              <Link
-                href={`/chat/${room.chatRoomId}`}
-                style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 4px', textDecoration: 'none', color: 'inherit' }}
-              >
+            <Link key={room.chatRoomId} href={`/chat/${room.chatRoomId}`} style={{ color: 'inherit', textDecoration: 'none' }}>
+              <Card interactive style={{ padding: 14 }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                  <div style={{
-                    width: 40, height: 40, borderRadius: '50%', background: C.borderLight,
-                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    fontSize: 15, color: C.purple, fontWeight: 700, flexShrink: 0,
-                  }}>
-                    {displayName?.[0]?.toUpperCase() ?? '?'}
-                  </div>
-                  <div>
-                    <div style={{ fontWeight: 600, fontSize: 14, color: C.textPrimary }}>{displayName || t('chat.room.defaultName')}</div>
-                    <div style={{ fontSize: 12, color: C.textDim, marginTop: 2 }}>
-                      {room.type === 'DM' ? 'DM' : t('chat.type.group')}
+                  <Avatar label={displayName || t('chat.room.defaultName')} imageUrl={avatarUrl} />
+                  <div style={{ minWidth: 0, flex: 1 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 3 }}>
+                      <div style={{ fontWeight: 900, fontSize: 15, color: C.text, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                        {displayName || t('chat.room.defaultName')}
+                      </div>
+                      <Badge tone={room.type === 'DM' ? 'accent' : 'info'}>{room.type === 'DM' ? 'DM' : t('chat.type.group')}</Badge>
+                    </div>
+                    <div style={{ fontSize: 13, color: C.dim, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                      {t('chat.participants', { count: room.participantIds.length })}
                     </div>
                   </div>
+                  {room.unreadCount > 0 && (
+                    <span style={{
+                      background: C.danger,
+                      color: '#fff',
+                      borderRadius: 999,
+                      padding: '4px 9px',
+                      fontSize: 12,
+                      fontWeight: 900,
+                      minWidth: 26,
+                      textAlign: 'center',
+                    }}>
+                      {room.unreadCount > 99 ? '99+' : room.unreadCount}
+                    </span>
+                  )}
                 </div>
-                {room.unreadCount > 0 && (
-                  <span style={{
-                    background: C.danger, color: '#fff', borderRadius: 12,
-                    padding: '2px 8px', fontSize: 12, fontWeight: 700, minWidth: 20, textAlign: 'center',
-                  }}>
-                    {room.unreadCount > 99 ? '99+' : room.unreadCount}
-                  </span>
-                )}
-              </Link>
-            </li>
+              </Card>
+            </Link>
           )
         })}
-      </ul>
+      </div>
 
       {rooms?.length === 0 && (
-        <p style={{ color: C.textDim, textAlign: 'center', paddingTop: 40 }}>
-          {t('chat.empty')}
-        </p>
+        <EmptyState
+          icon="⌕"
+          title={t('chat.empty')}
+          description={t('chat.dm.searchPlaceholder')}
+        />
       )}
     </div>
   )

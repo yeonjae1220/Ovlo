@@ -7,36 +7,43 @@ import { useBoards, useCreateBoard } from '../../hooks/useBoard'
 import { usePosts, useAllPosts } from '../../hooks/usePost'
 import { useUniversityReports } from '../../hooks/useUniversity'
 import { useAuthStore } from '../../store/authStore'
-import type { CreateBoardRequest, BoardCategory, LocationScope } from '../../types'
+import { useBreakpoint } from '../../hooks/useBreakpoint'
+import type { CreateBoardRequest, BoardCategory, LocationScope, Post } from '../../types'
 import { useI18n } from '../../i18n/I18nProvider'
 import { resolveReportLang } from '../../utils/resolveReportLang'
+import { Badge, Button, Card, EmptyState, PageHeader, SelectField, Tabs, TextField } from '../../components/ui'
 
 const C = {
-  bg:          'var(--color-bg)',
-  card:        'var(--color-surface)',
-  surfaceSoft: 'var(--color-surface-soft)',
-  hover:       'var(--color-surface-hover)',
-  disabled:    'var(--color-surface-disabled)',
-  border:      'var(--color-border)',
-  borderLight: 'var(--color-border-strong)',
-  textPrimary: 'var(--color-text)',
-  textSec:     'var(--color-text-secondary)',
-  textMuted:   'var(--color-text-muted)',
-  textDim:     'var(--color-text-dim)',
-  activeBg:    'var(--color-info-soft)',
-  activeBorder:'var(--color-info)',
-  activeText:  'var(--color-info)',
-  purple:      'var(--color-accent)',
-  purpleStrong:'var(--color-accent-strong)',
-  purpleSoft:  'var(--color-accent-soft)',
-  onAccent:    'var(--color-on-accent)',
-  warning:     'var(--color-warning)',
+  border: 'var(--color-border)',
+  card: 'var(--color-surface)',
+  hover: 'var(--color-surface-hover)',
+  text: 'var(--color-text)',
+  textSec: 'var(--color-text-secondary)',
+  muted: 'var(--color-text-muted)',
+  dim: 'var(--color-text-dim)',
+  accent: 'var(--color-accent)',
+  warm: 'var(--color-warm)',
 }
 
 type TabId = 'all' | 'free' | 'reports'
+type FeedItem =
+  | { type: 'post'; data: Post }
+  | { type: 'tip'; data: import('../../api/university').UniversityReportSummary }
+
+function formatDate(value?: string) {
+  if (!value) return ''
+  const date = new Date(value)
+  if (Number.isNaN(date.getTime())) return ''
+  return new Intl.DateTimeFormat(undefined, { month: 'short', day: 'numeric' }).format(date)
+}
+
+function preview(content: string) {
+  return content.replace(/\s+/g, ' ').trim().slice(0, 120)
+}
 
 export default function BoardListPage() {
   const { t, language } = useI18n()
+  const { isMobile } = useBreakpoint()
   const [activeTab, setActiveTab] = useState<TabId>('all')
   const [allPage, setAllPage] = useState(0)
   const [showCreateForm, setShowCreateForm] = useState(false)
@@ -47,439 +54,306 @@ export default function BoardListPage() {
   const { data: boards } = useBoards()
   const createBoard = useCreateBoard()
 
-  // 자유게시판: GENERAL+GLOBAL 첫 번째 보드 자동 선택
   const freeBoard = boards?.find((b) => b.category === 'GENERAL' && b.scope === 'GLOBAL') ?? null
 
   const { data: allPostsPage, isLoading: allPostsLoading } = useAllPosts(allPage, 20)
   const { data: freePosts, isLoading: freeLoading } = usePosts(freeBoard?.id ? String(freeBoard.id) : '')
-
-  // tip list is fetched with a preliminary lang; per-item lang is resolved on click
   const { data: tipsPage, isLoading: tipsLoading } = useUniversityReports(language, '', 0, 20)
   const { data: reportsPage, isLoading: reportsLoading } = useUniversityReports(language, '', 0, 20)
-
-  // 전체 탭: 게시글 + 팁을 createdAt 기준 최신순 병합
-  type FeedItem =
-    | { type: 'post'; data: import('../../types').Post }
-    | { type: 'tip'; data: import('../../api/university').UniversityReportSummary }
 
   const allLoading = allPostsLoading || tipsLoading
   const allFeedItems: FeedItem[] = (() => {
     const posts = (allPostsPage?.content ?? []).map((p): FeedItem => ({ type: 'post', data: p }))
     const tips = (tipsPage?.content ?? []).map((r): FeedItem => ({ type: 'tip', data: r }))
     return [...posts, ...tips].sort((a, b) => {
-      const dateA = a.type === 'post' ? a.data.createdAt : a.data.createdAt
-      const dateB = b.type === 'post' ? b.data.createdAt : b.data.createdAt
+      const dateA = a.data.createdAt
+      const dateB = b.data.createdAt
       if (!dateA || !dateB) return 0
       return dateB.localeCompare(dateA)
     })
   })()
 
   const handleCreate = () => {
-    createBoard.mutate(form, { onSuccess: () => { setShowCreateForm(false); setForm({ name: '', category: 'GENERAL', scope: 'GLOBAL' }) } })
+    createBoard.mutate(form, {
+      onSuccess: () => {
+        setShowCreateForm(false)
+        setForm({ name: '', category: 'GENERAL', scope: 'GLOBAL' })
+      },
+    })
   }
 
-  return (
-    <div style={{ maxWidth: 860, margin: '0 auto' }}>
-      {/* 헤더 */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 }}>
-        <h1 style={{ margin: 0, fontSize: 22, fontWeight: 800, color: C.textPrimary }}>{t('community.title')}</h1>
-        <div style={{ display: 'flex', gap: 8 }}>
-          {currentUser && activeTab !== 'reports' && freeBoard && (
-            <button
-              onClick={() => router.push(`/posts/new?boardId=${freeBoard.id}`)}
-              style={{
-                padding: '7px 14px', borderRadius: 8, fontSize: 13, cursor: 'pointer',
-                border: 'none', background: C.purpleStrong, color: C.onAccent, fontWeight: 600,
-              }}
-            >
-              {t('community.write')}
-            </button>
-          )}
-          <button
-            onClick={() => setShowCreateForm((v) => !v)}
-            style={{
-              padding: '7px 12px', borderRadius: 8, fontSize: 12, cursor: 'pointer',
-              border: `1px solid ${C.borderLight}`, background: 'transparent', color: C.textDim,
-            }}
-          >
-            {showCreateForm ? t('community.createBoard.close') : t('community.createBoard')}
-          </button>
-        </div>
-      </div>
+  const canWrite = currentUser && activeTab !== 'reports' && freeBoard
 
-      {/* 게시판 생성 폼 */}
+  return (
+    <div style={{ maxWidth: 900, margin: '0 auto' }}>
+      <PageHeader
+        title={t('community.title')}
+        description={isMobile ? undefined : t('landing.feature3.desc')}
+        actions={
+          <>
+            {canWrite && (
+              <Button variant="primary" icon="+" onClick={() => router.push(`/posts/new?boardId=${freeBoard.id}`)}>
+                {t('community.write').replace('+ ', '')}
+              </Button>
+            )}
+            <Button variant="secondary" onClick={() => setShowCreateForm((v) => !v)}>
+              {showCreateForm ? t('community.createBoard.close').replace('▲ ', '') : t('community.createBoard').replace('▼ ', '')}
+            </Button>
+          </>
+        }
+      />
+
       {showCreateForm && (
-        <div style={{ border: `1px solid ${C.borderLight}`, padding: 16, marginBottom: 16, borderRadius: 10, background: C.card }}>
-          <input
-            placeholder={t('board.form.name')}
-            value={form.name}
-            onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
-            style={{ display: 'block', width: '100%', marginBottom: 8, padding: '8px 12px', borderRadius: 6, border: `1px solid ${C.borderLight}`, background: C.bg, color: C.textPrimary, fontSize: 14, boxSizing: 'border-box' }}
-          />
-          <input
-            placeholder={t('board.form.desc')}
-            value={form.description ?? ''}
-            onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))}
-            style={{ display: 'block', width: '100%', marginBottom: 8, padding: '8px 12px', borderRadius: 6, border: `1px solid ${C.borderLight}`, background: C.bg, color: C.textPrimary, fontSize: 14, boxSizing: 'border-box' }}
-          />
-          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-            <select
-              value={form.category}
-              onChange={(e) => setForm((f) => ({ ...f, category: e.target.value as BoardCategory }))}
-              style={{ padding: '7px 10px', borderRadius: 6, border: `1px solid ${C.borderLight}`, background: C.bg, color: C.textSec, fontSize: 13 }}
-            >
-              {(['GENERAL','LANGUAGE_EXCHANGE','TRADE','CULTURE','HOUSING','ACADEMIC','JOB'] as BoardCategory[]).map(
-                (c) => <option key={c} value={c}>{c}</option>
-              )}
-            </select>
-            <select
-              value={form.scope}
-              onChange={(e) => setForm((f) => ({ ...f, scope: e.target.value as LocationScope }))}
-              style={{ padding: '7px 10px', borderRadius: 6, border: `1px solid ${C.borderLight}`, background: C.bg, color: C.textSec, fontSize: 13 }}
-            >
-              {(['GLOBAL','COUNTRY','REGION','UNIVERSITY'] as LocationScope[]).map(
-                (s) => <option key={s} value={s}>{s}</option>
-              )}
-            </select>
-            <button
-              onClick={handleCreate}
-              disabled={createBoard.isPending || !form.name.trim()}
-              style={{ padding: '7px 16px', borderRadius: 6, border: 'none', background: C.purpleStrong, color: C.onAccent, fontSize: 13, cursor: createBoard.isPending ? 'wait' : 'pointer', fontWeight: 600 }}
-            >
-              {t('board.form.create')}
-            </button>
-            <button
-              onClick={() => setShowCreateForm(false)}
-              style={{ padding: '7px 12px', borderRadius: 6, border: `1px solid ${C.borderLight}`, background: 'transparent', color: C.textMuted, fontSize: 13, cursor: 'pointer' }}
-            >
-              {t('board.form.cancel')}
-            </button>
+        <Card style={{ padding: 16, marginBottom: 16 }}>
+          <div style={{ display: 'grid', gap: 10 }}>
+            <TextField
+              placeholder={t('board.form.name')}
+              value={form.name}
+              onChange={(event) => setForm((f) => ({ ...f, name: event.target.value }))}
+            />
+            <TextField
+              placeholder={t('board.form.desc')}
+              value={form.description ?? ''}
+              onChange={(event) => setForm((f) => ({ ...f, description: event.target.value }))}
+            />
+            <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr auto auto', gap: 8 }}>
+              <SelectField
+                value={form.category}
+                onChange={(event) => setForm((f) => ({ ...f, category: event.target.value as BoardCategory }))}
+              >
+                {(['GENERAL','LANGUAGE_EXCHANGE','TRADE','CULTURE','HOUSING','ACADEMIC','JOB'] as BoardCategory[]).map(
+                  (c) => <option key={c} value={c}>{c}</option>
+                )}
+              </SelectField>
+              <SelectField
+                value={form.scope}
+                onChange={(event) => setForm((f) => ({ ...f, scope: event.target.value as LocationScope }))}
+              >
+                {(['GLOBAL','COUNTRY','REGION','UNIVERSITY'] as LocationScope[]).map(
+                  (s) => <option key={s} value={s}>{s}</option>
+                )}
+              </SelectField>
+              <Button onClick={handleCreate} disabled={createBoard.isPending || !form.name.trim()} variant="primary">
+                {t('board.form.create')}
+              </Button>
+              <Button onClick={() => setShowCreateForm(false)} variant="ghost">
+                {t('board.form.cancel')}
+              </Button>
+            </div>
           </div>
-        </div>
+        </Card>
       )}
 
-      {/* 탭 바 */}
-      <div style={{ display: 'flex', borderBottom: `1px solid ${C.border}`, marginBottom: 0 }}>
-        {(['all', 'free', 'reports'] as TabId[]).map((tabId) => (
-          <button
-            key={tabId}
-            onClick={() => setActiveTab(tabId)}
-            style={{
-              padding: '10px 20px', border: 'none', cursor: 'pointer', fontSize: 14, fontWeight: activeTab === tabId ? 700 : 400,
-              background: 'transparent',
-              color: activeTab === tabId ? C.purple : C.textMuted,
-              borderBottom: activeTab === tabId ? `2px solid ${C.purple}` : '2px solid transparent',
-              marginBottom: -1,
-              transition: 'color 0.15s',
-            }}
-          >
-            {tabId === 'all' ? t('tab.all') : tabId === 'free' ? t('tab.free') : t('tab.tips')}
-          </button>
-        ))}
+      <div style={{ marginBottom: 16 }}>
+        <Tabs
+          value={activeTab}
+          onChange={setActiveTab}
+          items={[
+            { value: 'all', label: t('tab.all'), icon: '◎' },
+            { value: 'free', label: t('tab.free'), icon: '⌂' },
+            { value: 'reports', label: t('tab.tips'), icon: '✦' },
+          ]}
+        />
       </div>
 
-      {/* 전체 탭 */}
       {activeTab === 'all' && (
         <div>
-          {allLoading && <p style={{ color: C.textMuted, padding: '24px 0' }}>불러오는 중...</p>}
-          {!allLoading && allFeedItems.length === 0 && (
-            <p style={{ color: C.textDim, padding: '40px 0', textAlign: 'center' }}>아직 게시글이 없습니다.</p>
-          )}
-          {/* 테이블 헤더 */}
-          {allFeedItems.length > 0 && (
-            <div style={{
-              display: 'grid', gridTemplateColumns: '60px 1fr 56px',
-              gap: 4, padding: '8px 4px', borderBottom: `1px solid ${C.border}`,
-              fontSize: 12, color: C.textDim, fontWeight: 600,
-            }}>
-              <span>번호</span>
-              <span>제목</span>
-              <span style={{ textAlign: 'center' }}>👍</span>
-            </div>
-          )}
-          {allFeedItems.map((item, idx) => {
-            const total = allFeedItems.length
-            const num = total - idx
-            if (item.type === 'post') {
-              const post = item.data
-              return (
-                <Link key={`post-${post.id}`} href={`/posts/${post.id}`} style={{ textDecoration: 'none', color: 'inherit' }}>
-                  <div
-                    style={{
-                      display: 'grid', gridTemplateColumns: '60px 1fr 56px',
-                      gap: 4, padding: '10px 4px', borderBottom: `1px solid ${C.border}`,
-                      alignItems: 'center', cursor: 'pointer', transition: 'background 0.12s',
-                    }}
-                    onMouseEnter={(e) => { (e.currentTarget as HTMLDivElement).style.background = C.hover }}
-                    onMouseLeave={(e) => { (e.currentTarget as HTMLDivElement).style.background = 'transparent' }}
-                  >
-                    <span style={{ fontSize: 12, color: C.textDim }}>{num}</span>
-                    <span>
-                      {post.deleted ? (
-                        <span style={{ fontSize: 14, color: C.textDim }}>[삭제된 게시글]</span>
-                      ) : (
-                        <>
-                          <span style={{ fontSize: 14, color: C.textPrimary, fontWeight: 500 }}>{post.title}</span>
-                          {post.boardName && (
-                            <span style={{ marginLeft: 8, fontSize: 11, color: C.activeText, background: C.activeBg, padding: '2px 6px', borderRadius: 4 }}>
-                              {post.boardName}
-                            </span>
-                          )}
-                        </>
-                      )}
-                    </span>
-                    <span style={{ fontSize: 12, color: post.likeCount > 0 ? C.warning : C.textDim, textAlign: 'center' }}>
-                      {post.likeCount > 0 ? post.likeCount : ''}
-                    </span>
-                  </div>
-                </Link>
-              )
-            } else {
-              const tip = item.data
-              return (
-                <div
-                  key={`tip-${tip.id}`}
-                  onClick={() => router.push(`/university-reports/${tip.id}?lang=${resolveReportLang(language, tip.supportedLangs)}`)}
-                  style={{
-                    display: 'grid', gridTemplateColumns: '60px 1fr 56px',
-                    gap: 4, padding: '10px 4px', borderBottom: `1px solid ${C.border}`,
-                    alignItems: 'center', cursor: 'pointer', transition: 'background 0.12s',
-                  }}
-                  onMouseEnter={(e) => { (e.currentTarget as HTMLDivElement).style.background = C.hover }}
-                  onMouseLeave={(e) => { (e.currentTarget as HTMLDivElement).style.background = 'transparent' }}
-                >
-                  <span style={{ fontSize: 12, color: C.textDim }}>{num}</span>
-                  <span>
-                    <span style={{ fontSize: 14, color: C.textPrimary, fontWeight: 500 }}>{tip.title}</span>
-                    <span style={{ marginLeft: 8, fontSize: 11, color: C.purple, background: C.purpleSoft, padding: '2px 6px', borderRadius: 4 }}>
-                      {t('community.tip.badge')}
-                    </span>
-                  </span>
-                  <span style={{ fontSize: 12, color: C.textDim, textAlign: 'center' }}></span>
-                </div>
-              )
-            }
-          })}
-          {/* 페이지네이션 (post 기준) */}
+          <MixedFeed
+            items={allFeedItems}
+            isLoading={allLoading}
+            emptyText={t('community.empty')}
+            language={language}
+            onOpenTip={(id, lang) => router.push(`/university-reports/${id}?lang=${lang}`)}
+          />
           {(allPostsPage?.totalElements ?? 0) > 20 && (
-            <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 16, marginTop: 20 }}>
-              <button
-                onClick={() => setAllPage((p) => p - 1)}
-                disabled={allPage === 0}
-                style={{ padding: '7px 18px', borderRadius: 8, border: `1px solid ${C.border}`, background: allPage === 0 ? C.disabled : C.card, color: allPage === 0 ? C.textDim : C.textSec, cursor: allPage === 0 ? 'default' : 'pointer', fontSize: 13 }}
-              >← 이전</button>
-              <span style={{ color: C.textMuted, fontSize: 13 }}>{allPage + 1}페이지</span>
-              <button
-                onClick={() => setAllPage((p) => p + 1)}
-                disabled={!(allPostsPage?.hasNext ?? false)}
-                style={{ padding: '7px 18px', borderRadius: 8, border: `1px solid ${C.border}`, background: !(allPostsPage?.hasNext) ? C.disabled : C.card, color: !(allPostsPage?.hasNext) ? C.textDim : C.textSec, cursor: !(allPostsPage?.hasNext) ? 'default' : 'pointer', fontSize: 13 }}
-              >다음 →</button>
-            </div>
+            <Pagination
+              page={allPage}
+              hasNext={allPostsPage?.hasNext ?? false}
+              total={allPostsPage?.totalElements ?? 0}
+              onPrev={() => setAllPage((p) => p - 1)}
+              onNext={() => setAllPage((p) => p + 1)}
+            />
           )}
         </div>
       )}
 
-      {/* 자유 탭 */}
       {activeTab === 'free' && (
         <>
-          {!freeBoard && !freeLoading && (
-            <div style={{ padding: '40px 0', textAlign: 'center', color: C.textDim }}>
-              <p style={{ marginBottom: 12 }}>자유게시판이 아직 없습니다.</p>
-              <button
-                onClick={() => setShowCreateForm(true)}
-                style={{ padding: '8px 18px', borderRadius: 8, border: `1px solid ${C.borderLight}`, background: C.card, color: C.activeText, fontSize: 13, cursor: 'pointer' }}
-              >
-                게시판 만들기
-              </button>
-            </div>
-          )}
-          {freeBoard && (
-            <PostTable
-              posts={freePosts ?? []}
-              isLoading={freeLoading}
-              showBoardName={false}
-              emptyText="아직 게시글이 없습니다."
-              page={0}
-              hasNext={false}
-              totalElements={freePosts?.length ?? 0}
-              onPrev={() => {}}
-              onNext={() => {}}
+          {!freeBoard && !freeLoading ? (
+            <EmptyState
+              icon="⌂"
+              title={t('community.noBoard')}
+              action={<Button onClick={() => setShowCreateForm(true)}>{t('community.createBoard.action')}</Button>}
             />
+          ) : (
+            <PostFeed posts={freePosts ?? []} isLoading={freeLoading} emptyText={t('community.empty')} showBoardName={false} />
           )}
         </>
       )}
 
-      {/* AI 보고서 탭 */}
       {activeTab === 'reports' && (
-        <div>
-          {reportsLoading && <p style={{ color: C.textMuted, padding: '24px 0' }}>불러오는 중...</p>}
-          {!reportsLoading && (reportsPage?.content ?? []).length === 0 && (
-            <p style={{ color: C.textDim, padding: '40px 0', textAlign: 'center' }}>아직 팁이 없습니다.</p>
-          )}
-          <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
-            {(reportsPage?.content ?? []).map((r) => (
-              <li
-                key={r.id}
-                onClick={() => router.push(`/university-reports/${r.id}?lang=${resolveReportLang(language, r.supportedLangs)}`)}
-                style={{
-                  padding: '14px 4px', borderBottom: `1px solid ${C.border}`, cursor: 'pointer',
-                  transition: 'background 0.12s',
-                }}
-                onMouseEnter={(e) => { (e.currentTarget as HTMLLIElement).style.background = C.hover }}
-                onMouseLeave={(e) => { (e.currentTarget as HTMLLIElement).style.background = 'transparent' }}
-              >
-                <div style={{ fontWeight: 600, fontSize: 15, color: C.textPrimary, marginBottom: 4 }}>{r.title}</div>
-                {r.summary && (
-                  <div style={{ fontSize: 13, color: C.textSec, lineHeight: 1.6, marginBottom: 6,
-                    display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
-                    {r.summary}
-                  </div>
-                )}
-                <div style={{ display: 'flex', gap: 12, fontSize: 12, color: C.textDim }}>
-                  <span>영상 {r.sourceVideoCount}개 분석</span>
-                  {r.sourceWebCount > 0 && <span>웹 {r.sourceWebCount}개</span>}
-                  <span style={{ marginLeft: 'auto' }}>{r.supportedLangs.map((l) => l.toUpperCase()).join(' · ')}</span>
-                </div>
-              </li>
-            ))}
-          </ul>
-          {(reportsPage?.totalElements ?? 0) > 0 && (
-            <div style={{ textAlign: 'center', marginTop: 16 }}>
-              <Link href="/university-reports" style={{ color: C.activeText, fontSize: 13, fontWeight: 600 }}>
-                AI 보고서 전체 보기 →
-              </Link>
-            </div>
-          )}
-        </div>
+        <ReportFeed
+          reports={reportsPage?.content ?? []}
+          isLoading={reportsLoading}
+          language={language}
+          onOpen={(id, lang) => router.push(`/university-reports/${id}?lang=${lang}`)}
+        />
       )}
     </div>
   )
 }
 
-// ── 게시글 테이블 (DC Inside 스타일) ─────────────────────────────────────────
-interface PostTableProps {
-  posts: import('../../types').Post[]
+function MixedFeed({
+  items,
+  isLoading,
+  emptyText,
+  language,
+  onOpenTip,
+}: {
+  items: FeedItem[]
   isLoading: boolean
-  showBoardName: boolean
   emptyText: string
-  page: number
-  hasNext: boolean
-  totalElements: number
-  onPrev: () => void
-  onNext: () => void
-}
-
-
-const C2 = {
-  border:      'var(--color-border)',
-  borderLight: 'var(--color-border-strong)',
-  textPrimary: 'var(--color-text)',
-  textSec:     'var(--color-text-secondary)',
-  textMuted:   'var(--color-text-muted)',
-  textDim:     'var(--color-text-dim)',
-  card:        'var(--color-surface)',
-  hover:       'var(--color-surface-hover)',
-  disabled:    'var(--color-surface-disabled)',
-  activeText:  'var(--color-info)',
-  activeBg:    'var(--color-info-soft)',
-  warning:     'var(--color-warning)',
-}
-
-function PostTable({ posts, isLoading, showBoardName, emptyText, page, hasNext, totalElements, onPrev, onNext }: PostTableProps) {
-  if (isLoading) return <p style={{ color: C2.textMuted, padding: '24px 0' }}>불러오는 중...</p>
-  if (posts.length === 0) return <p style={{ color: C2.textDim, padding: '40px 0', textAlign: 'center' }}>{emptyText}</p>
+  language: string
+  onOpenTip: (id: number, lang: string) => void
+}) {
+  const { t } = useI18n()
+  if (isLoading) return <p style={{ color: C.muted, padding: '24px 0' }}>{t('community.loading')}</p>
+  if (items.length === 0) return <EmptyState icon="◎" title={emptyText} />
 
   return (
-    <div>
-      {/* 테이블 헤더 */}
-      <div style={{
-        display: 'grid',
-        gridTemplateColumns: '60px 1fr 56px',
-        gap: 4, padding: '8px 4px', borderBottom: `1px solid ${C2.border}`,
-        fontSize: 12, color: C2.textDim, fontWeight: 600,
-      }}>
-        <span>번호</span>
-        <span>{showBoardName ? '제목 (게시판)' : '제목'}</span>
-        <span style={{ textAlign: 'center' }}>👍</span>
-      </div>
-
-      {posts.map((post, idx) => (
-        <Link
-          key={post.id}
-          href={`/posts/${post.id}`}
-          style={{ textDecoration: 'none', color: 'inherit' }}
-        >
-          <div
-            style={{
-              display: 'grid',
-              gridTemplateColumns: '60px 1fr 56px',
-              gap: 4, padding: '10px 4px',
-              borderBottom: `1px solid ${C2.border}`,
-              alignItems: 'center',
-              transition: 'background 0.12s',
-              cursor: 'pointer',
-            }}
-            onMouseEnter={(e) => { (e.currentTarget as HTMLDivElement).style.background = C2.hover }}
-            onMouseLeave={(e) => { (e.currentTarget as HTMLDivElement).style.background = 'transparent' }}
-          >
-            <span style={{ fontSize: 12, color: C2.textDim }}>
-              {totalElements > 0 ? totalElements - (page * 20) - idx : idx + 1}
-            </span>
-            <span>
-              {post.deleted ? (
-                <span style={{ fontSize: 14, color: C2.textDim }}>[삭제된 게시글]</span>
-              ) : (
-                <>
-                  <span style={{ fontSize: 14, color: C2.textPrimary, fontWeight: 500 }}>{post.title}</span>
-                  {showBoardName && post.boardName && (
-                    <span style={{
-                      marginLeft: 8, fontSize: 11, color: C2.activeText,
-                      background: C2.activeBg, padding: '2px 6px', borderRadius: 4,
-                    }}>
-                      {post.boardName}
-                    </span>
-                  )}
-                </>
-              )}
-            </span>
-            <span style={{ fontSize: 12, color: post.likeCount > 0 ? C2.warning : C2.textDim, textAlign: 'center' }}>
-              {post.likeCount > 0 ? post.likeCount : ''}
-            </span>
-          </div>
-        </Link>
+    <div style={{ display: 'grid', gap: 10 }}>
+      {items.map((item) => (
+        item.type === 'post' ? (
+          <PostCard key={`post-${item.data.id}`} post={item.data} showBoardName />
+        ) : (
+          <ReportCard
+            key={`tip-${item.data.id}`}
+            report={item.data}
+            onClick={() => onOpenTip(item.data.id, resolveReportLang(language, item.data.supportedLangs))}
+          />
+        )
       ))}
+    </div>
+  )
+}
 
-      {totalElements > 20 && (
-        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 16, marginTop: 20 }}>
-          <button
-            onClick={onPrev}
-            disabled={page === 0}
-            style={{
-              padding: '7px 18px', borderRadius: 8, border: `1px solid ${C2.borderLight}`,
-              background: page === 0 ? C2.disabled : C2.card,
-              color: page === 0 ? C2.textDim : C2.textSec,
-              cursor: page === 0 ? 'default' : 'pointer', fontSize: 13,
-            }}
-          >
-            ← 이전
-          </button>
-          <span style={{ color: C2.textMuted, fontSize: 13 }}>
-            {page + 1}페이지 ({totalElements}개)
-          </span>
-          <button
-            onClick={onNext}
-            disabled={!hasNext}
-            style={{
-              padding: '7px 18px', borderRadius: 8, border: `1px solid ${C2.borderLight}`,
-              background: !hasNext ? C2.disabled : C2.card,
-              color: !hasNext ? C2.textDim : C2.textSec,
-              cursor: !hasNext ? 'default' : 'pointer', fontSize: 13,
-            }}
-          >
-            다음 →
-          </button>
+function PostFeed({ posts, isLoading, emptyText, showBoardName }: { posts: Post[]; isLoading: boolean; emptyText: string; showBoardName: boolean }) {
+  const { t } = useI18n()
+  if (isLoading) return <p style={{ color: C.muted, padding: '24px 0' }}>{t('community.loading')}</p>
+  if (posts.length === 0) return <EmptyState icon="◎" title={emptyText} />
+
+  return (
+    <div style={{ display: 'grid', gap: 10 }}>
+      {posts.map((post) => <PostCard key={post.id} post={post} showBoardName={showBoardName} />)}
+    </div>
+  )
+}
+
+function PostCard({ post, showBoardName }: { post: Post; showBoardName: boolean }) {
+  const { t } = useI18n()
+  return (
+    <Link href={`/posts/${post.id}`} style={{ color: 'inherit', textDecoration: 'none' }}>
+      <Card interactive style={{ padding: 16 }}>
+        <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12 }}>
+          <div style={{ minWidth: 0 }}>
+            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center', marginBottom: 8 }}>
+              {showBoardName && post.boardName && <Badge tone="info">{post.boardName}</Badge>}
+              {post.createdAt && <span style={{ color: C.dim, fontSize: 12, fontWeight: 750 }}>{formatDate(post.createdAt)}</span>}
+            </div>
+            <div style={{ color: post.deleted ? C.dim : C.text, fontWeight: 900, fontSize: 16, lineHeight: 1.45, overflowWrap: 'anywhere' }}>
+              {post.deleted ? t('community.deleted') : post.title}
+            </div>
+            {!post.deleted && post.content && (
+              <p style={{ margin: '6px 0 0', color: C.muted, fontSize: 13, lineHeight: 1.6, overflowWrap: 'anywhere' }}>
+                {preview(post.content)}
+              </p>
+            )}
+          </div>
+          <div style={{ display: 'grid', gap: 6, justifyItems: 'end', flexShrink: 0 }}>
+            <Badge tone={post.likeCount > 0 ? 'warning' : 'neutral'}>♥ {post.likeCount}</Badge>
+            <Badge tone={post.comments?.length ? 'accent' : 'neutral'}>↳ {post.comments?.filter((c) => !c.deleted).length ?? 0}</Badge>
+          </div>
         </div>
-      )}
+      </Card>
+    </Link>
+  )
+}
+
+function ReportFeed({
+  reports,
+  isLoading,
+  language,
+  onOpen,
+}: {
+  reports: import('../../api/university').UniversityReportSummary[]
+  isLoading: boolean
+  language: string
+  onOpen: (id: number, lang: string) => void
+}) {
+  const { t } = useI18n()
+  if (isLoading) return <p style={{ color: C.muted, padding: '24px 0' }}>{t('community.loading')}</p>
+  if (reports.length === 0) return <EmptyState icon="✦" title={t('community.emptyTips')} />
+
+  return (
+    <div style={{ display: 'grid', gap: 10 }}>
+      {reports.map((report) => (
+        <ReportCard
+          key={report.id}
+          report={report}
+          onClick={() => onOpen(report.id, resolveReportLang(language, report.supportedLangs))}
+        />
+      ))}
+      <div style={{ textAlign: 'center', marginTop: 10 }}>
+        <Link href="/university-reports" style={{ color: C.accent, fontSize: 13, fontWeight: 850 }}>
+          {t('community.viewAll')}
+        </Link>
+      </div>
+    </div>
+  )
+}
+
+function ReportCard({ report, onClick }: { report: import('../../api/university').UniversityReportSummary; onClick: () => void }) {
+  const { t } = useI18n()
+  return (
+    <Card interactive onClick={onClick} style={{ padding: 16 }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, alignItems: 'flex-start' }}>
+        <div style={{ minWidth: 0 }}>
+          <Badge tone="accent">{t('community.tip.badge')}</Badge>
+          <div style={{ marginTop: 8, color: C.text, fontWeight: 900, fontSize: 16, lineHeight: 1.45, overflowWrap: 'anywhere' }}>{report.title}</div>
+          {report.summary && (
+            <p style={{ margin: '6px 0 0', color: C.muted, fontSize: 13, lineHeight: 1.6, overflowWrap: 'anywhere' }}>
+              {preview(report.summary)}
+            </p>
+          )}
+        </div>
+        <div style={{ display: 'grid', gap: 6, justifyItems: 'end', flexShrink: 0 }}>
+          <Badge tone="neutral">{report.sourceVideoCount}</Badge>
+          <span style={{ color: C.dim, fontSize: 12, fontWeight: 750 }}>{report.supportedLangs.map((l) => l.toUpperCase()).join(' · ')}</span>
+        </div>
+      </div>
+    </Card>
+  )
+}
+
+function Pagination({
+  page,
+  hasNext,
+  total,
+  onPrev,
+  onNext,
+}: {
+  page: number
+  hasNext: boolean
+  total: number
+  onPrev: () => void
+  onNext: () => void
+}) {
+  const { t } = useI18n()
+  return (
+    <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 12, marginTop: 20, flexWrap: 'wrap' }}>
+      <Button onClick={onPrev} disabled={page === 0}>{t('common.prev')}</Button>
+      <span style={{ color: C.muted, fontSize: 13, fontWeight: 750 }}>{page + 1} · {total}</span>
+      <Button onClick={onNext} disabled={!hasNext}>{t('common.next')}</Button>
     </div>
   )
 }

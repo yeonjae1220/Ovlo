@@ -1,13 +1,15 @@
 'use client'
 
 import { useState } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import {
   useExchangeUniversitySearch,
   useExchangeUniversityCountries,
   useGlobalUniversitySearch,
 } from '../../hooks/useUniversity'
+import { useBreakpoint } from '../../hooks/useBreakpoint'
 import { useI18n } from '../../i18n/I18nProvider'
+import { Badge, Button, Card, EmptyState, PageHeader, SearchBox, SelectField, SkeletonLines } from '../../components/ui'
 
 const STAR = (avg?: number | null) =>
   avg !== undefined && avg !== null
@@ -17,221 +19,255 @@ const STAR = (avg?: number | null) =>
 const PAGE_SIZE = 20
 
 const C = {
-  bg:          'var(--color-bg)',
-  card:        'var(--color-surface)',
-  hover:       'var(--color-surface-hover)',
-  disabled:    'var(--color-surface-disabled)',
-  border:      'var(--color-border)',
-  borderLight: 'var(--color-border-strong)',
-  textPrimary: 'var(--color-text)',
-  textSec:     'var(--color-text-secondary)',
-  textMuted:   'var(--color-text-muted)',
-  textDim:     'var(--color-text-dim)',
-  activeBg:    'var(--color-info-soft)',
-  activeBorder:'var(--color-info)',
-  activeText:  'var(--color-info)',
-  purple:      'var(--color-accent)',
-  success:     'var(--color-success)',
-  successSoft: 'var(--color-success-soft)',
-  warning:     'var(--color-warning)',
-}
-
-const inputStyle: React.CSSProperties = {
-  padding: '10px 14px',
-  border: `1px solid ${C.borderLight}`,
-  borderRadius: 8,
-  fontSize: 14,
-  outline: 'none',
-  background: C.card,
-  color: C.textPrimary,
+  border: 'var(--color-border)',
+  card: 'var(--color-surface)',
+  hover: 'var(--color-surface-hover)',
+  text: 'var(--color-text)',
+  textSec: 'var(--color-text-secondary)',
+  muted: 'var(--color-text-muted)',
+  dim: 'var(--color-text-dim)',
+  accent: 'var(--color-accent)',
+  success: 'var(--color-success)',
+  warning: 'var(--color-warning)',
 }
 
 export default function ExchangeUniversitySearchPage() {
   const { t } = useI18n()
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const { isMobile } = useBreakpoint()
+  const initialQuery = searchParams?.get('q')?.trim() ?? ''
 
   const [uniQuery, setUniQuery] = useState('')
-  const [selectedUniName, setSelectedUniName] = useState('')
+  const [selectedUniName, setSelectedUniName] = useState(initialQuery)
   const [countryCode, setCountryCode] = useState('')
   const [exchPage, setExchPage] = useState(0)
 
   const { data: countries = [] } = useExchangeUniversityCountries()
   const { data: globalResults } = useGlobalUniversitySearch(uniQuery)
   const { data: exchData, isLoading: exchLoading } = useExchangeUniversitySearch(
-    selectedUniName, countryCode, exchPage, PAGE_SIZE
+    selectedUniName,
+    countryCode,
+    exchPage,
+    PAGE_SIZE
   )
   const exchUniversities = exchData?.content ?? []
   const exchHasSearched = !!(selectedUniName || countryCode)
 
-  const handleCountryChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    setCountryCode(e.target.value)
+  const handleUniSelect = (name: string) => {
+    setSelectedUniName(name)
+    setUniQuery('')
     setExchPage(0)
   }
-  const handleUniSelect = (name: string) => { setSelectedUniName(name); setUniQuery(''); setExchPage(0) }
-  const handleUniClear = () => { setSelectedUniName(''); setUniQuery(''); setExchPage(0) }
+
+  const handleUniClear = () => {
+    setSelectedUniName('')
+    setUniQuery('')
+    setExchPage(0)
+  }
+
+  const handleAllClear = () => {
+    setSelectedUniName('')
+    setUniQuery('')
+    setCountryCode('')
+    setExchPage(0)
+  }
 
   return (
-    <div style={{ padding: '28px 20px', fontFamily: 'system-ui, sans-serif' }}>
-      <button
-        onClick={() => router.back()}
-        style={{ background: 'none', border: 'none', cursor: 'pointer', color: C.textMuted, fontSize: 14, marginBottom: 16, padding: 0 }}
-      >
-        {t('exch.back')}
-      </button>
+    <div>
+      <PageHeader
+        eyebrow={t('exch.back')}
+        title={t('exch.title')}
+        description={t('exch.subtitle')}
+        actions={
+          <Button variant="ghost" onClick={() => router.back()} icon="←">
+            {t('exch.back').replace('← ', '')}
+          </Button>
+        }
+      />
 
-      <div style={{ marginBottom: 24 }}>
-        <h1 style={{ fontSize: 24, fontWeight: 700, color: C.textPrimary, margin: '0 0 6px' }}>{t('exch.title')}</h1>
-        <p style={{ color: C.textMuted, fontSize: 14, margin: 0 }}>{t('exch.subtitle')}</p>
-      </div>
-
-      {/* University name search (autocomplete) */}
-      <div style={{ marginBottom: 12 }}>
-        {selectedUniName ? (
-          <button
-            type="button"
-            onClick={handleUniClear}
-            style={{
-              width: '100%', padding: '10px 14px', textAlign: 'left',
-              border: `1px solid ${C.success}`, borderRadius: 8, background: C.successSoft,
-              color: C.success, fontWeight: 500, fontSize: 14, cursor: 'pointer',
-            }}
-          >
-            ✓ {selectedUniName} <span style={{ color: C.textDim, fontSize: 12, fontWeight: 400 }}>{t('exch.change')}</span>
-          </button>
-        ) : (
+      <Card style={{ padding: isMobile ? 14 : 18, marginBottom: 18 }}>
+        <div style={{
+          display: 'grid',
+          gridTemplateColumns: isMobile ? '1fr' : 'minmax(0, 1.4fr) minmax(220px, .6fr)',
+          gap: 12,
+          alignItems: 'start',
+        }}>
           <div style={{ position: 'relative' }}>
-            <input
-              style={{ ...inputStyle, width: '100%', boxSizing: 'border-box' }}
-              placeholder={t('exch.searchPlaceholder')}
-              value={uniQuery}
-              onChange={(e) => setUniQuery(e.target.value)}
-            />
-            {uniQuery.length >= 1 && globalResults && globalResults.length > 0 && (
-              <ul style={{
-                position: 'absolute', top: '100%', left: 0, right: 0, zIndex: 10,
-                listStyle: 'none', padding: 0, margin: 0,
-                border: `1px solid ${C.borderLight}`, borderRadius: 8, maxHeight: 200, overflowY: 'auto',
-                background: C.card, boxShadow: '0 4px 16px rgba(0,0,0,0.4)',
-              }}>
-                {globalResults.slice(0, 8).map((u) => (
-                  <li
-                    key={u.id}
-                    onClick={() => handleUniSelect(u.name)}
-                    style={{
-                      padding: '9px 14px', cursor: 'pointer', fontSize: 14,
-                      display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-                      borderBottom: `1px solid ${C.border}`, color: C.textPrimary,
-                    }}
-                    onMouseEnter={(e) => { (e.currentTarget as HTMLLIElement).style.background = C.border }}
-                    onMouseLeave={(e) => { (e.currentTarget as HTMLLIElement).style.background = 'transparent' }}
-                  >
-                    <span>{u.name}</span>
-                    <span style={{ color: C.textDim, fontSize: 12 }}>{u.countryCode} · {u.city}</span>
-                  </li>
-                ))}
-              </ul>
-            )}
-            {uniQuery.length >= 1 && globalResults?.length === 0 && (
-              <p style={{ margin: '4px 0 0', fontSize: 13, color: C.textDim }}>{t('chat.noResults')}</p>
+            {selectedUniName ? (
+              <button
+                type="button"
+                onClick={handleUniClear}
+                className="ui-field"
+                style={{
+                  textAlign: 'left',
+                  borderColor: C.success,
+                  background: 'var(--color-success-soft)',
+                  color: C.success,
+                  fontWeight: 800,
+                  cursor: 'pointer',
+                }}
+              >
+                ✓ {selectedUniName} <span style={{ color: C.dim, fontSize: 12, fontWeight: 600 }}>{t('exch.change')}</span>
+              </button>
+            ) : (
+              <>
+                <SearchBox
+                  placeholder={t('exch.searchPlaceholder')}
+                  value={uniQuery}
+                  onChange={(event) => setUniQuery(event.target.value)}
+                  aria-label={t('exch.searchPlaceholder')}
+                />
+                {uniQuery.length >= 1 && globalResults && globalResults.length > 0 && (
+                  <ul style={{
+                    position: 'absolute',
+                    top: 'calc(100% + 6px)',
+                    left: 0,
+                    right: 0,
+                    zIndex: 10,
+                    listStyle: 'none',
+                    padding: 0,
+                    margin: 0,
+                    border: `1px solid ${C.border}`,
+                    borderRadius: 10,
+                    maxHeight: 260,
+                    overflowY: 'auto',
+                    background: C.card,
+                    boxShadow: 'var(--shadow-soft)',
+                  }}>
+                    {globalResults.slice(0, 8).map((u) => (
+                      <li
+                        key={u.id}
+                        onClick={() => handleUniSelect(u.name)}
+                        style={{
+                          padding: '11px 14px',
+                          cursor: 'pointer',
+                          display: 'flex',
+                          justifyContent: 'space-between',
+                          gap: 14,
+                          alignItems: 'center',
+                          borderBottom: `1px solid ${C.border}`,
+                          color: C.text,
+                        }}
+                        onMouseEnter={(event) => { event.currentTarget.style.background = C.hover }}
+                        onMouseLeave={(event) => { event.currentTarget.style.background = 'transparent' }}
+                      >
+                        <span style={{ fontWeight: 800 }}>{u.name}</span>
+                        <span style={{ color: C.dim, fontSize: 12, textAlign: 'right' }}>{u.countryCode} · {u.city}</span>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+                {uniQuery.length >= 1 && globalResults?.length === 0 && (
+                  <p style={{ margin: '8px 2px 0', fontSize: 13, color: C.dim }}>{t('chat.noResults')}</p>
+                )}
+              </>
             )}
           </div>
-        )}
-      </div>
 
-      {/* Country dropdown */}
-      <div style={{ marginBottom: 24 }}>
-        <select
-          style={{
-            ...inputStyle, width: '100%', boxSizing: 'border-box', cursor: 'pointer',
-            appearance: 'none',
-            backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%2394a3b8' d='M6 8L1 3h10z'/%3E%3C/svg%3E")`,
-            backgroundRepeat: 'no-repeat', backgroundPosition: 'right 14px center', paddingRight: 36,
-          }}
-          value={countryCode}
-          onChange={handleCountryChange}
-        >
-          <option value="">{t('exch.countryAll')}</option>
-          {countries.map((c) => (
-            <option key={c.countryCode} value={c.countryCode}>
-              {c.country} ({c.universityCount})
-            </option>
-          ))}
-        </select>
-      </div>
-
-      {exchLoading && <p style={{ color: C.textMuted }}>{t('exch.loading')}</p>}
-      {!exchLoading && exchHasSearched && exchUniversities.length === 0 && (
-        <p style={{ color: C.textDim, textAlign: 'center', paddingTop: 40 }}>{t('exch.empty')}</p>
-      )}
-      {!exchHasSearched && !exchLoading && (
-        <p style={{ color: C.textDim, textAlign: 'center', paddingTop: 40 }}>{t('exch.searchHint')}</p>
-      )}
-
-      <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: 10 }}>
-        {exchUniversities.map((u) => (
-          <li
-            key={u.id}
-            onClick={() => router.push(`/exchange-universities/${u.id}`)}
-            style={{
-              padding: '16px 20px', border: `1px solid ${C.border}`, borderRadius: 10,
-              cursor: 'pointer', display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-              background: C.card, transition: 'border-color 0.15s, box-shadow 0.15s',
+          <SelectField
+            value={countryCode}
+            onChange={(event) => {
+              setCountryCode(event.target.value)
+              setExchPage(0)
             }}
-            onMouseEnter={(e) => {
-              const el = e.currentTarget as HTMLLIElement
-              el.style.borderColor = 'var(--color-info)'
-              el.style.boxShadow = '0 4px 16px rgba(0,0,0,0.3)'
-            }}
-            onMouseLeave={(e) => {
-              const el = e.currentTarget as HTMLLIElement
-              el.style.borderColor = C.border
-              el.style.boxShadow = 'none'
-            }}
+            aria-label={t('exch.countryAll')}
           >
-            <div>
-              <div style={{ fontWeight: 700, fontSize: 16, color: C.textPrimary }}>{u.nameKo || u.nameEn}</div>
-              {u.nameKo && u.nameEn && <div style={{ fontSize: 13, color: C.textMuted, marginTop: 2 }}>{u.nameEn}</div>}
-              <div style={{ fontSize: 13, color: C.textDim, marginTop: 4 }}>{u.country} · {u.city}</div>
-            </div>
-            <div style={{ textAlign: 'right', flexShrink: 0, marginLeft: 16 }}>
-              <div style={{ color: C.warning, fontSize: 14, letterSpacing: 1 }}>{STAR(u.avgRating)}</div>
-              <div style={{ fontSize: 12, color: C.textDim, marginTop: 2 }}>
-                {(u.avgRating ?? 0).toFixed(1)} · {u.reviewCount} {t('exch.reviews')}
+            <option value="">{t('exch.countryAll')}</option>
+            {countries.map((c) => (
+              <option key={c.countryCode} value={c.countryCode}>
+                {c.country} ({c.universityCount})
+              </option>
+            ))}
+          </SelectField>
+        </div>
+
+        {(selectedUniName || countryCode) && (
+          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 12 }}>
+            {selectedUniName && <Badge tone="success">{selectedUniName}</Badge>}
+            {countryCode && <Badge tone="info">{countryCode}</Badge>}
+          </div>
+        )}
+      </Card>
+
+      {exchLoading && <SkeletonLines count={4} />}
+
+      {!exchLoading && exchHasSearched && exchUniversities.length === 0 && (
+        <EmptyState
+          icon="⌕"
+          title={t('exch.empty')}
+          description={t('exch.searchHint')}
+          action={<Button variant="secondary" onClick={handleAllClear}>{t('exch.countryAll')}</Button>}
+        />
+      )}
+
+      {!exchHasSearched && !exchLoading && (
+        <EmptyState
+          icon="⌕"
+          title={t('exch.searchHint')}
+          description={t('exch.subtitle')}
+        />
+      )}
+
+      <ul style={{
+        listStyle: 'none',
+        padding: 0,
+        margin: 0,
+        display: 'grid',
+        gridTemplateColumns: isMobile ? '1fr' : 'repeat(2, minmax(0, 1fr))',
+        gap: 12,
+      }}>
+        {exchUniversities.map((u) => (
+          <li key={u.id}>
+            <Card
+              interactive
+              onClick={() => router.push(`/exchange-universities/${u.id}`)}
+              style={{ padding: 18, minHeight: 178, display: 'flex', flexDirection: 'column', gap: 14 }}
+            >
+              <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, alignItems: 'flex-start' }}>
+                <div style={{ minWidth: 0 }}>
+                  <div style={{ fontWeight: 900, fontSize: 17, lineHeight: 1.35, color: C.text, overflowWrap: 'anywhere' }}>
+                    {u.nameKo || u.nameEn}
+                  </div>
+                  {u.nameKo && u.nameEn && (
+                    <div style={{ fontSize: 13, color: C.muted, marginTop: 4, overflowWrap: 'anywhere' }}>{u.nameEn}</div>
+                  )}
+                </div>
+                <Badge tone="accent">{u.reviewCount} {t('exch.reviews')}</Badge>
               </div>
-            </div>
+
+              <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                <Badge tone="neutral">{u.country}</Badge>
+                <Badge tone="neutral">{u.city}</Badge>
+              </div>
+
+              <div style={{ marginTop: 'auto', display: 'flex', justifyContent: 'space-between', gap: 12, alignItems: 'flex-end' }}>
+                <div>
+                  <div style={{ color: C.warning, fontSize: 15 }}>{STAR(u.avgRating)}</div>
+                  <div style={{ fontSize: 12, color: C.dim, marginTop: 3 }}>
+                    {(u.avgRating ?? 0).toFixed(1)} · {u.reviewCount} {t('exch.reviews')}
+                  </div>
+                </div>
+                <span style={{ color: C.accent, fontSize: 13, fontWeight: 900 }}>
+                  {t('exch.detail.viewFull')}
+                </span>
+              </div>
+            </Card>
           </li>
         ))}
       </ul>
 
       {exchData && exchData.totalElements > 0 && (
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 16, marginTop: 24 }}>
-          <button
-            onClick={() => setExchPage((p) => p - 1)}
-            disabled={exchPage === 0}
-            style={{
-              padding: '8px 18px', borderRadius: 8, border: `1px solid ${C.borderLight}`,
-              background: exchPage === 0 ? C.disabled : C.card,
-              color: exchPage === 0 ? C.textDim : C.textSec,
-              cursor: exchPage === 0 ? 'default' : 'pointer', fontSize: 14,
-            }}
-          >
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 12, marginTop: 22, flexWrap: 'wrap' }}>
+          <Button onClick={() => setExchPage((p) => p - 1)} disabled={exchPage === 0} variant="secondary">
             {t('common.prev')}
-          </button>
-          <span style={{ color: C.textMuted, fontSize: 13 }}>
-            {exchPage + 1} / {exchData.totalPages} ({exchData.totalElements})
+          </Button>
+          <span style={{ color: C.muted, fontSize: 13, fontWeight: 750 }}>
+            {exchPage + 1} / {exchData.totalPages} · {exchData.totalElements}
           </span>
-          <button
-            onClick={() => setExchPage((p) => p + 1)}
-            disabled={!exchData.hasNext}
-            style={{
-              padding: '8px 18px', borderRadius: 8, border: `1px solid ${C.borderLight}`,
-              background: !exchData.hasNext ? C.disabled : C.card,
-              color: !exchData.hasNext ? C.textDim : C.textSec,
-              cursor: !exchData.hasNext ? 'default' : 'pointer', fontSize: 14,
-            }}
-          >
+          <Button onClick={() => setExchPage((p) => p + 1)} disabled={!exchData.hasNext} variant="secondary">
             {t('common.next')}
-          </button>
+          </Button>
         </div>
       )}
     </div>
