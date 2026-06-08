@@ -21,11 +21,14 @@ import me.yeonjae.ovlo.application.port.in.member.UpdateProfileImageUseCase;
 import me.yeonjae.ovlo.application.port.in.member.WithdrawMemberUseCase;
 import me.yeonjae.ovlo.domain.member.exception.MemberException;
 import me.yeonjae.ovlo.domain.member.model.MemberId;
+import me.yeonjae.ovlo.shared.security.ClientIpResolver;
+import me.yeonjae.ovlo.shared.security.RateLimiterService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
+import jakarta.servlet.http.HttpServletRequest;
 import java.util.List;
 
 @Tag(name = "Member", description = "회원 API")
@@ -39,6 +42,8 @@ public class MemberApiController {
     private final WithdrawMemberUseCase withdrawMemberUseCase;
     private final CompleteOnboardingUseCase completeOnboardingUseCase;
     private final GetMemberQuery getMemberQuery;
+    private final RateLimiterService rateLimiterService;
+    private final ClientIpResolver clientIpResolver;
 
     public MemberApiController(
             RegisterMemberUseCase registerMemberUseCase,
@@ -46,7 +51,9 @@ public class MemberApiController {
             UpdateProfileImageUseCase updateProfileImageUseCase,
             WithdrawMemberUseCase withdrawMemberUseCase,
             CompleteOnboardingUseCase completeOnboardingUseCase,
-            GetMemberQuery getMemberQuery
+            GetMemberQuery getMemberQuery,
+            RateLimiterService rateLimiterService,
+            ClientIpResolver clientIpResolver
     ) {
         this.registerMemberUseCase = registerMemberUseCase;
         this.updateMemberProfileUseCase = updateMemberProfileUseCase;
@@ -54,11 +61,15 @@ public class MemberApiController {
         this.withdrawMemberUseCase = withdrawMemberUseCase;
         this.completeOnboardingUseCase = completeOnboardingUseCase;
         this.getMemberQuery = getMemberQuery;
+        this.rateLimiterService = rateLimiterService;
+        this.clientIpResolver = clientIpResolver;
     }
 
     @Operation(summary = "회원 가입")
     @PostMapping
-    public ResponseEntity<MemberResult> register(@Valid @RequestBody RegisterMemberRequest request) {
+    public ResponseEntity<MemberResult> register(@Valid @RequestBody RegisterMemberRequest request,
+                                                 HttpServletRequest httpRequest) {
+        rateLimiterService.checkSignupRate(clientIpResolver.resolve(httpRequest));
         MemberResult result = registerMemberUseCase.register(
                 new RegisterMemberCommand(
                         request.nickname(),

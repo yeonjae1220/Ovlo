@@ -17,8 +17,8 @@ import me.yeonjae.ovlo.application.port.in.auth.GoogleLoginUseCase;
 import me.yeonjae.ovlo.application.port.in.auth.LoginUseCase;
 import me.yeonjae.ovlo.application.port.in.auth.LogoutUseCase;
 import me.yeonjae.ovlo.application.port.in.auth.RefreshTokenUseCase;
+import me.yeonjae.ovlo.shared.security.ClientIpResolver;
 import me.yeonjae.ovlo.shared.security.RateLimiterService;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.env.Environment;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -28,8 +28,6 @@ import org.springframework.web.bind.annotation.*;
 
 import jakarta.servlet.http.HttpServletRequest;
 import java.util.Arrays;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 @Tag(name = "Auth", description = "인증/인가 API")
 @RestController
@@ -46,7 +44,7 @@ public class AuthApiController {
     private final GoogleLoginUseCase googleLoginUseCase;
     private final RateLimiterService rateLimiterService;
     private final Environment environment;
-    private final Set<String> trustedProxyIps;
+    private final ClientIpResolver clientIpResolver;
 
     public AuthApiController(
             LoginUseCase loginUseCase,
@@ -55,7 +53,7 @@ public class AuthApiController {
             GoogleLoginUseCase googleLoginUseCase,
             RateLimiterService rateLimiterService,
             Environment environment,
-            @Value("${ovlo.trusted-proxy-ips:127.0.0.1,::1}") String trustedProxyIpsConfig
+            ClientIpResolver clientIpResolver
     ) {
         this.loginUseCase = loginUseCase;
         this.refreshTokenUseCase = refreshTokenUseCase;
@@ -63,16 +61,14 @@ public class AuthApiController {
         this.googleLoginUseCase = googleLoginUseCase;
         this.rateLimiterService = rateLimiterService;
         this.environment = environment;
-        this.trustedProxyIps = Arrays.stream(trustedProxyIpsConfig.split(","))
-                .map(String::trim)
-                .collect(Collectors.toSet());
+        this.clientIpResolver = clientIpResolver;
     }
 
     @Operation(summary = "로그인")
     @PostMapping("/login")
     public ResponseEntity<LoginResponse> login(@Valid @RequestBody LoginRequest request,
                                                HttpServletRequest httpRequest) {
-        rateLimiterService.checkLoginRate(extractClientIp(httpRequest), request.email());
+        rateLimiterService.checkLoginRate(clientIpResolver.resolve(httpRequest), request.email());
         TokenPairResult result = loginUseCase.login(
                 new LoginCommand(request.email(), request.password())
         );
@@ -89,7 +85,7 @@ public class AuthApiController {
         if (refreshTokenCookie == null || refreshTokenCookie.isBlank()) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
-        rateLimiterService.checkRefreshRate(extractClientIp(httpRequest));
+        rateLimiterService.checkRefreshRate(clientIpResolver.resolve(httpRequest));
         TokenPairResult result = refreshTokenUseCase.refresh(
                 new RefreshTokenCommand(refreshTokenCookie)
         );
@@ -114,7 +110,7 @@ public class AuthApiController {
     @PostMapping("/google")
     public ResponseEntity<GoogleAuthResponse> googleLogin(@Valid @RequestBody GoogleLoginRequest request,
                                                           HttpServletRequest httpRequest) {
-        rateLimiterService.checkLoginRate(extractClientIp(httpRequest), "google");
+        rateLimiterService.checkLoginRate(clientIpResolver.resolve(httpRequest), "google");
         GoogleLoginResult result = googleLoginUseCase.loginWithGoogle(
                 new GoogleLoginCommand(request.code(), request.redirectUri())
         );
@@ -146,19 +142,5 @@ public class AuthApiController {
     private boolean isSecureCookieRequired() {
         return Arrays.stream(environment.getActiveProfiles())
                 .noneMatch(p -> p.equalsIgnoreCase("local") || p.equalsIgnoreCase("test"));
-    }
-
-    /**
-     * 신뢰 프록시(nginx 등) IP에서 온 요청만 X-Real-IP 헤더를 신뢰.
-     */
-    private String extractClientIp(HttpServletRequest request) {
-        String remoteAddr = request.getRemoteAddr();
-        if (trustedProxyIps.contains(remoteAddr)) {
-            String realIp = request.getHeader("X-Real-IP");
-            if (realIp != null && !realIp.isBlank()) {
-                return realIp.trim();
-            }
-        }
-        return remoteAddr;
     }
 }

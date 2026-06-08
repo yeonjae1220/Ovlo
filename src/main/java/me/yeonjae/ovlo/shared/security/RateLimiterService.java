@@ -28,17 +28,20 @@ public class RateLimiterService {
     private final RedisTemplate<String, String> redisTemplate;
     private final int loginLimit;
     private final int refreshLimit;
+    private final int signupLimit;
     private final int windowSeconds;
 
     public RateLimiterService(
             RedisTemplate<String, String> redisTemplate,
             @Value("${ovlo.rate-limit.login-limit:10}") int loginLimit,
             @Value("${ovlo.rate-limit.refresh-limit:30}") int refreshLimit,
+            @Value("${ovlo.rate-limit.signup-limit:5}") int signupLimit,
             @Value("${ovlo.rate-limit.window-seconds:600}") int windowSeconds
     ) {
         this.redisTemplate = redisTemplate;
         this.loginLimit = loginLimit;
         this.refreshLimit = refreshLimit;
+        this.signupLimit = signupLimit;
         this.windowSeconds = windowSeconds;
     }
 
@@ -49,6 +52,10 @@ public class RateLimiterService {
 
     public void checkRefreshRate(String clientIp) {
         check("rl:refresh:" + clientIp, refreshLimit);
+    }
+
+    public void checkSignupRate(String clientIp) {
+        check("rl:signup:ip:" + clientIp, signupLimit);
     }
 
     private void check(String key, int limit) {
