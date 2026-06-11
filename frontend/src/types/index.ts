@@ -75,22 +75,6 @@ export interface UpdateMemberProfileRequest {
   bio?: string
 }
 
-// ─── University ─────────────────────────────────────────────────────────────
-export interface GeoLocation {
-  latitude: number
-  longitude: number
-}
-
-export interface University {
-  id: string
-  name: string
-  countryCode: string
-  city: string
-  geoLocation?: GeoLocation
-  websiteUrl?: string
-  description?: string
-}
-
 // ─── Board ──────────────────────────────────────────────────────────────────
 export type BoardCategory =
   | 'GENERAL'
