@@ -12,9 +12,9 @@ import org.springframework.stereotype.Component;
 public class UniversityMapper {
 
     public University toDomain(GlobalUniversityJpaEntity e) {
-        CountryCode countryCode = (e.getCountryCode() != null && !e.getCountryCode().isBlank())
-                ? new CountryCode(e.getCountryCode())
-                : null;
+        // 외부 적재(약 10k) 카탈로그라 형식 위반 country_code가 섞일 수 있어
+        // VO 검증 실패 시 500이 아니라 null로 관대하게 처리한다.
+        CountryCode countryCode = toCountryCodeOrNull(e.getCountryCode());
 
         GeoLocation geoLocation = (e.getLatitude() != null && e.getLongitude() != null)
                 ? new GeoLocation(e.getLatitude(), e.getLongitude())
@@ -32,5 +32,16 @@ public class UniversityMapper {
                 e.getWebsite(),
                 e.getDomain()
         );
+    }
+
+    private CountryCode toCountryCodeOrNull(String raw) {
+        if (raw == null || raw.isBlank()) {
+            return null;
+        }
+        try {
+            return new CountryCode(raw);
+        } catch (IllegalArgumentException ex) {
+            return null; // 형식 위반 카탈로그 데이터는 조회를 막지 않고 무시
+        }
     }
 }
