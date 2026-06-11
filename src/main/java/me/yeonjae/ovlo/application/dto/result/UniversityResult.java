@@ -8,20 +8,22 @@ public record UniversityResult(
         String localName,
         String countryCode,
         String city,
-        double latitude,
-        double longitude,
-        String websiteUrl
+        Double latitude,
+        Double longitude,
+        String websiteUrl,
+        String domain
 ) {
-    public static UniversityResult from(University university) {
+    public static UniversityResult from(University u) {
         return new UniversityResult(
-                university.getId() != null ? university.getId().value() : null,
-                university.getName(),
-                university.getLocalName(),
-                university.getCountryCode().value(),
-                university.getCity(),
-                university.getGeoLocation().latitude(),
-                university.getGeoLocation().longitude(),
-                university.getWebsiteUrl()
+                u.getId() != null ? u.getId().value() : null,
+                u.getName(),
+                u.getLocalName(),
+                u.getCountryCode() != null ? u.getCountryCode().value() : null,
+                u.getCity(),
+                u.getGeoLocation() != null ? u.getGeoLocation().latitude() : null,
+                u.getGeoLocation() != null ? u.getGeoLocation().longitude() : null,
+                u.getWebsiteUrl(),
+                u.getDomain()
         );
     }
 }

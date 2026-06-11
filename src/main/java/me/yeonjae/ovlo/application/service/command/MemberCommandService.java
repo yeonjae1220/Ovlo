@@ -15,6 +15,7 @@ import me.yeonjae.ovlo.application.port.out.auth.PasswordHasherPort;
 import me.yeonjae.ovlo.application.port.out.member.HideContentByWithdrawnMemberPort;
 import me.yeonjae.ovlo.application.port.out.member.LoadMemberPort;
 import me.yeonjae.ovlo.application.port.out.member.SaveMemberPort;
+import me.yeonjae.ovlo.application.port.out.university.LoadUniversityPort;
 import me.yeonjae.ovlo.domain.member.exception.MemberException;
 import me.yeonjae.ovlo.domain.member.model.*;
 import me.yeonjae.ovlo.domain.university.model.UniversityId;
@@ -32,15 +33,27 @@ public class MemberCommandService implements
     private final SaveMemberPort saveMemberPort;
     private final PasswordHasherPort passwordHasherPort;
     private final HideContentByWithdrawnMemberPort hideContentByWithdrawnMemberPort;
+    private final LoadUniversityPort loadUniversityPort;
 
     public MemberCommandService(LoadMemberPort loadMemberPort,
                                 SaveMemberPort saveMemberPort,
                                 PasswordHasherPort passwordHasherPort,
-                                HideContentByWithdrawnMemberPort hideContentByWithdrawnMemberPort) {
+                                HideContentByWithdrawnMemberPort hideContentByWithdrawnMemberPort,
+                                LoadUniversityPort loadUniversityPort) {
         this.loadMemberPort = loadMemberPort;
         this.saveMemberPort = saveMemberPort;
         this.passwordHasherPort = passwordHasherPort;
         this.hideContentByWithdrawnMemberPort = hideContentByWithdrawnMemberPort;
+        this.loadUniversityPort = loadUniversityPort;
+    }
+
+    /** 본교가 카탈로그(global_universities)에 실재하는지 검증. */
+    private void verifyUniversityExists(UniversityId universityId) {
+        if (!loadUniversityPort.existsById(universityId)) {
+            throw new MemberException(
+                    "존재하지 않는 대학입니다: " + universityId.value(),
+                    MemberException.ErrorType.NOT_FOUND);
+        }
     }
 
     @Override
@@ -51,6 +64,8 @@ public class MemberCommandService implements
         if (loadMemberPort.existsByNickname(command.nickname())) {
             throw new MemberException("이미 사용 중인 닉네임입니다: " + command.nickname(), MemberException.ErrorType.CONFLICT);
         }
+
+        verifyUniversityExists(new UniversityId(command.homeUniversityId()));
 
         String hashed = passwordHasherPort.encode(command.rawPassword());
         Major major = new Major(
@@ -121,6 +136,8 @@ public class MemberCommandService implements
     public void completeOnboarding(CompleteOnboardingCommand command) {
         Member member = loadMemberPort.findById(new MemberId(command.memberId()))
                 .orElseThrow(() -> new MemberException("회원을 찾을 수 없습니다: " + command.memberId(), MemberException.ErrorType.NOT_FOUND));
+
+        verifyUniversityExists(new UniversityId(command.homeUniversityId()));
 
         Major major = new Major(
                 command.majorName(),

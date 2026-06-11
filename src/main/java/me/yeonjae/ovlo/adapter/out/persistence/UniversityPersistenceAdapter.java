@@ -1,10 +1,7 @@
 package me.yeonjae.ovlo.adapter.out.persistence;
 
-import com.querydsl.core.BooleanBuilder;
-import com.querydsl.jpa.impl.JPAQueryFactory;
-import me.yeonjae.ovlo.adapter.out.persistence.entity.QUniversityJpaEntity;
 import me.yeonjae.ovlo.adapter.out.persistence.mapper.UniversityMapper;
-import me.yeonjae.ovlo.adapter.out.persistence.repository.UniversityJpaRepository;
+import me.yeonjae.ovlo.adapter.out.persistence.repository.GlobalUniversityJpaRepository;
 import me.yeonjae.ovlo.application.port.out.university.LoadUniversityPort;
 import me.yeonjae.ovlo.application.port.out.university.SearchUniversityPort;
 import me.yeonjae.ovlo.domain.university.model.University;
@@ -14,55 +11,46 @@ import org.springframework.stereotype.Component;
 import java.util.List;
 import java.util.Optional;
 
+/**
+ * 단일 대학 카탈로그 어댑터. global_universities(약 10,150개)를 백킹으로
+ * 조회·검색을 제공한다. (구 university 40-테이블 스택은 폐기됨)
+ */
 @Component
 public class UniversityPersistenceAdapter implements LoadUniversityPort, SearchUniversityPort {
 
-    private final UniversityJpaRepository universityJpaRepository;
-    private final UniversityMapper universityMapper;
-    private final JPAQueryFactory queryFactory;
+    private final GlobalUniversityJpaRepository repository;
+    private final UniversityMapper mapper;
 
-    public UniversityPersistenceAdapter(UniversityJpaRepository universityJpaRepository,
-                                        UniversityMapper universityMapper,
-                                        JPAQueryFactory queryFactory) {
-        this.universityJpaRepository = universityJpaRepository;
-        this.universityMapper = universityMapper;
-        this.queryFactory = queryFactory;
+    public UniversityPersistenceAdapter(GlobalUniversityJpaRepository repository,
+                                        UniversityMapper mapper) {
+        this.repository = repository;
+        this.mapper = mapper;
     }
 
     @Override
     public Optional<University> findById(UniversityId id) {
-        return universityJpaRepository.findById(id.value()).map(universityMapper::toDomain);
+        return repository.findById(id.value()).map(mapper::toDomain);
+    }
+
+    @Override
+    public boolean existsById(UniversityId id) {
+        return repository.existsById(id.value());
     }
 
     @Override
     public List<University> search(String keyword, String countryCode, int offset, int limit) {
-        QUniversityJpaEntity q = QUniversityJpaEntity.universityJpaEntity;
-        return queryFactory.selectFrom(q)
-                .where(buildPredicate(q, keyword, countryCode))
-                .orderBy(q.name.asc())
-                .offset(offset)
-                .limit(limit)
-                .fetch()
+        return repository.search(blankToNull(keyword), blankToNull(countryCode), limit, offset)
                 .stream()
-                .map(universityMapper::toDomain)
+                .map(mapper::toDomain)
                 .toList();
     }
 
     @Override
     public long count(String keyword, String countryCode) {
-        QUniversityJpaEntity q = QUniversityJpaEntity.universityJpaEntity;
-        Long result = queryFactory.select(q.count()).from(q).where(buildPredicate(q, keyword, countryCode)).fetchOne();
-        return result != null ? result : 0L;
+        return repository.countSearch(blankToNull(keyword), blankToNull(countryCode));
     }
 
-    private BooleanBuilder buildPredicate(QUniversityJpaEntity q, String keyword, String countryCode) {
-        BooleanBuilder predicate = new BooleanBuilder();
-        if (keyword != null && !keyword.isBlank()) {
-            predicate.and(q.name.containsIgnoreCase(keyword).or(q.localName.containsIgnoreCase(keyword)));
-        }
-        if (countryCode != null && !countryCode.isBlank()) {
-            predicate.and(q.countryCode.eq(countryCode));
-        }
-        return predicate;
+    private String blankToNull(String s) {
+        return (s == null || s.isBlank()) ? null : s;
     }
 }

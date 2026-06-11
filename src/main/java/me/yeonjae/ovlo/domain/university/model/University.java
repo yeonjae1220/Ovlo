@@ -1,72 +1,63 @@
 package me.yeonjae.ovlo.domain.university.model;
 
-import java.util.Objects;
-
+/**
+ * 대학 (단일 카탈로그). global_universities(약 10,150개)를 백킹으로 한다.
+ * 카탈로그 데이터는 외부에서 적재되므로 도메인에서 생성하지 않고 {@link #restore} 로만 복원한다.
+ * 좌표(geoLocation)는 큐레이션된 일부 대학에만 존재하므로 nullable.
+ */
 public class University {
 
     private UniversityId id;
-    private String name;
-    private String localName;
+    private String name;          // global.name_en
+    private String localName;     // 현지어/약칭 (nullable)
+    private String country;       // 한국어 국가명 (nullable)
+    private String countryEn;     // 영문 국가명 (nullable)
     private CountryCode countryCode;
-    private String city;
-    private GeoLocation geoLocation;
-    private String websiteUrl;
+    private String city;          // nullable
+    private GeoLocation geoLocation; // nullable (좌표 보유 대학만)
+    private String websiteUrl;    // global.website
+    private String domain;        // 학교 이메일 도메인 (검증용, nullable)
 
     private University() {}
-
-    public static University create(
-            String name,
-            String localName,
-            CountryCode countryCode,
-            String city,
-            GeoLocation geoLocation,
-            String websiteUrl) {
-
-        Objects.requireNonNull(name, "대학명은 필수입니다");
-        if (name.isBlank()) throw new IllegalArgumentException("대학명은 빈 값일 수 없습니다");
-        Objects.requireNonNull(countryCode, "국가 코드는 필수입니다");
-        Objects.requireNonNull(city, "도시는 필수입니다");
-        if (city.isBlank()) throw new IllegalArgumentException("도시는 빈 값일 수 없습니다");
-        Objects.requireNonNull(geoLocation, "좌표는 필수입니다");
-
-        University university = new University();
-        university.name = name;
-        university.localName = localName;
-        university.countryCode = countryCode;
-        university.city = city;
-        university.geoLocation = geoLocation;
-        university.websiteUrl = websiteUrl;
-        return university;
-    }
 
     public static University restore(
             UniversityId id,
             String name,
             String localName,
+            String country,
+            String countryEn,
             CountryCode countryCode,
             String city,
             GeoLocation geoLocation,
-            String websiteUrl) {
+            String websiteUrl,
+            String domain) {
 
-        University university = create(name, localName, countryCode, city, geoLocation, websiteUrl);
-        university.id = id;
-        return university;
+        University u = new University();
+        u.id = id;
+        u.name = name;
+        u.localName = localName;
+        u.country = country;
+        u.countryEn = countryEn;
+        u.countryCode = countryCode;
+        u.city = city;
+        u.geoLocation = geoLocation;
+        u.websiteUrl = websiteUrl;
+        u.domain = domain;
+        return u;
     }
 
-    public void updateGeoLocation(GeoLocation newLocation) {
-        Objects.requireNonNull(newLocation, "좌표는 필수입니다");
-        this.geoLocation = newLocation;
+    public boolean hasCoordinates() {
+        return geoLocation != null;
     }
 
-    public void updateWebsiteUrl(String websiteUrl) {
-        this.websiteUrl = websiteUrl;
-    }
-
-    public UniversityId getId() { return id; }
-    public String getName() { return name; }
-    public String getLocalName() { return localName; }
+    public UniversityId getId()       { return id; }
+    public String getName()           { return name; }
+    public String getLocalName()      { return localName; }
+    public String getCountry()        { return country; }
+    public String getCountryEn()      { return countryEn; }
     public CountryCode getCountryCode() { return countryCode; }
-    public String getCity() { return city; }
+    public String getCity()           { return city; }
     public GeoLocation getGeoLocation() { return geoLocation; }
-    public String getWebsiteUrl() { return websiteUrl; }
+    public String getWebsiteUrl()     { return websiteUrl; }
+    public String getDomain()         { return domain; }
 }

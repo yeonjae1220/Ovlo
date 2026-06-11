@@ -8,4 +8,9 @@ SELECT 'dev', 'dev', 'dev', 'dev@dev.com',
        'dev', 'BACHELOR', 1, 'ACTIVE'
 WHERE NOT EXISTS (
     SELECT 1 FROM member WHERE email = 'dev@dev.com'
+)
+-- global_universities 미적재(빈 카탈로그) 환경에서 NOT NULL 위반 방지
+AND EXISTS (
+    SELECT 1 FROM global_universities
+    WHERE name_en = 'University of California, Los Angeles'
 );

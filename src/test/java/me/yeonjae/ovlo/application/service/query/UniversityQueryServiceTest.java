@@ -49,19 +49,25 @@ class UniversityQueryServiceTest {
                 new UniversityId(1L),
                 "Seoul National University",
                 "서울대학교",
+                "대한민국",
+                "South Korea",
                 new CountryCode("KR"),
                 "Seoul",
                 new GeoLocation(37.4600, 126.9514),
-                "https://www.snu.ac.kr");
+                "https://www.snu.ac.kr",
+                "snu.ac.kr");
 
         yonsei = University.restore(
                 new UniversityId(2L),
                 "Yonsei University",
                 "연세대학교",
+                "대한민국",
+                "South Korea",
                 new CountryCode("KR"),
                 "Seoul",
                 new GeoLocation(37.5665, 126.9390),
-                "https://www.yonsei.ac.kr");
+                "https://www.yonsei.ac.kr",
+                "yonsei.ac.kr");
     }
 
     @Nested
