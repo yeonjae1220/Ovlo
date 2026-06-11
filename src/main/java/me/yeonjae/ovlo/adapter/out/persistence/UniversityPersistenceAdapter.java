@@ -4,6 +4,7 @@ import me.yeonjae.ovlo.adapter.out.persistence.mapper.UniversityMapper;
 import me.yeonjae.ovlo.adapter.out.persistence.repository.GlobalUniversityJpaRepository;
 import me.yeonjae.ovlo.application.port.out.university.LoadUniversityPort;
 import me.yeonjae.ovlo.application.port.out.university.SearchUniversityPort;
+import me.yeonjae.ovlo.application.port.out.university.UniversityDomainLookupPort;
 import me.yeonjae.ovlo.domain.university.model.University;
 import me.yeonjae.ovlo.domain.university.model.UniversityId;
 import org.springframework.stereotype.Component;
@@ -16,7 +17,8 @@ import java.util.Optional;
  * 조회·검색을 제공한다. (구 university 40-테이블 스택은 폐기됨)
  */
 @Component
-public class UniversityPersistenceAdapter implements LoadUniversityPort, SearchUniversityPort {
+public class UniversityPersistenceAdapter
+        implements LoadUniversityPort, SearchUniversityPort, UniversityDomainLookupPort {
 
     private final GlobalUniversityJpaRepository repository;
     private final UniversityMapper mapper;
@@ -48,6 +50,17 @@ public class UniversityPersistenceAdapter implements LoadUniversityPort, SearchU
     @Override
     public long count(String keyword, String countryCode) {
         return repository.countSearch(blankToNull(keyword), blankToNull(countryCode));
+    }
+
+    @Override
+    public List<University> findByEmailDomain(String domain) {
+        if (domain == null || domain.isBlank()) {
+            return List.of();
+        }
+        return repository.findByDomainIgnoreCase(domain.trim())
+                .stream()
+                .map(mapper::toDomain)
+                .toList();
     }
 
     private String blankToNull(String s) {
