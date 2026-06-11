@@ -29,4 +29,14 @@ public interface GlobalUniversityJpaRepository extends JpaRepository<GlobalUnive
               AND (:countryCode IS NULL OR country_code = :countryCode)
             """, nativeQuery = true)
     long countSearch(@Param("keyword") String keyword, @Param("countryCode") String countryCode);
+
+    /**
+     * 이메일 도메인으로 대학 역조회 (학교 이메일 검증용).
+     * 데이터셋상 동일 domain을 가진 별개 대학이 존재할 수 있어 List 반환(1:N).
+     */
+    @Query(value = """
+            SELECT * FROM global_universities
+            WHERE lower(domain) = lower(:domain)
+            """, nativeQuery = true)
+    List<GlobalUniversityJpaEntity> findByDomainIgnoreCase(@Param("domain") String domain);
 }

@@ -1,7 +1,7 @@
 'use client'
 
 import { useQuery } from '@tanstack/react-query'
-import { universityApi, globalUniversityApi, exchangeUniversityApi, universityReportApi } from '../api/university'
+import { globalUniversityApi, exchangeUniversityApi, universityReportApi } from '../api/university'
 
 export function useExchangeUniversityCountries() {
   return useQuery({
@@ -24,14 +24,6 @@ export function useGlobalUniversitySearch(keyword: string, countryCode?: string)
     queryKey: ['global-universities', 'search', keyword, countryCode],
     queryFn: () => globalUniversityApi.search(keyword, countryCode),
     enabled: keyword.length >= 1,
-  })
-}
-
-export function useUniversity(id: string) {
-  return useQuery({
-    queryKey: ['university', id],
-    queryFn: () => universityApi.getById(id),
-    enabled: !!id,
   })
 }
 

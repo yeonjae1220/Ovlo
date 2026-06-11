@@ -8,6 +8,7 @@ import me.yeonjae.ovlo.application.port.out.auth.PasswordHasherPort;
 import me.yeonjae.ovlo.application.port.out.member.HideContentByWithdrawnMemberPort;
 import me.yeonjae.ovlo.application.port.out.member.LoadMemberPort;
 import me.yeonjae.ovlo.application.port.out.member.SaveMemberPort;
+import me.yeonjae.ovlo.application.port.out.university.LoadUniversityPort;
 import me.yeonjae.ovlo.domain.member.exception.MemberException;
 import me.yeonjae.ovlo.domain.member.model.*;
 import me.yeonjae.ovlo.domain.university.model.UniversityId;
@@ -36,6 +37,7 @@ class MemberCommandServiceTest {
     @Mock private SaveMemberPort saveMemberPort;
     @Mock private PasswordHasherPort passwordHasherPort;
     @Mock private HideContentByWithdrawnMemberPort hideContentByWithdrawnMemberPort;
+    @Mock private LoadUniversityPort loadUniversityPort;
 
     @InjectMocks
     private MemberCommandService memberCommandService;
@@ -66,6 +68,7 @@ class MemberCommandServiceTest {
         @DisplayName("정상적으로 회원을 등록할 수 있다")
         void shouldRegister_successfully() {
             given(loadMemberPort.existsByEmail("test@example.com")).willReturn(false);
+            given(loadUniversityPort.existsById(new UniversityId(1L))).willReturn(true);
             given(passwordHasherPort.encode("rawPassword123")).willReturn("hashedPassword");
             given(saveMemberPort.save(any(Member.class))).willReturn(savedMember);
 
@@ -75,6 +78,17 @@ class MemberCommandServiceTest {
             assertThat(result.email()).isEqualTo("test@example.com");
             assertThat(result.status()).isEqualTo("ACTIVE");
             verify(saveMemberPort).save(any(Member.class));
+        }
+
+        @Test
+        @DisplayName("존재하지 않는 본교(대학)면 예외가 발생한다")
+        void shouldThrow_whenHomeUniversityNotExists() {
+            given(loadMemberPort.existsByEmail("test@example.com")).willReturn(false);
+            given(loadUniversityPort.existsById(new UniversityId(1L))).willReturn(false);
+
+            assertThatThrownBy(() -> memberCommandService.register(registerCommand))
+                    .isInstanceOf(MemberException.class)
+                    .hasMessageContaining("존재하지 않는 대학입니다");
         }
 
         @Test

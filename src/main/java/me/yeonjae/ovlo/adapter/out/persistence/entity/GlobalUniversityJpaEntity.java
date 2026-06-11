@@ -2,6 +2,10 @@ package me.yeonjae.ovlo.adapter.out.persistence.entity;
 
 import jakarta.persistence.*;
 
+/**
+ * 단일 대학 카탈로그 엔티티. global_universities 테이블 매핑 (약 10,150개).
+ * 좌표(latitude/longitude)·현지어명(local_name)은 큐레이션된 일부 대학에만 존재 → nullable.
+ */
 @Entity
 @Table(name = "global_universities")
 public class GlobalUniversityJpaEntity {
@@ -24,6 +28,12 @@ public class GlobalUniversityJpaEntity {
     private String website;
     private String domain;
 
+    @Column(name = "local_name")
+    private String localName;
+
+    private Double latitude;
+    private Double longitude;
+
     public GlobalUniversityJpaEntity() {}
 
     public Long getId()          { return id; }
@@ -34,4 +44,7 @@ public class GlobalUniversityJpaEntity {
     public String getCity()      { return city; }
     public String getWebsite()   { return website; }
     public String getDomain()    { return domain; }
+    public String getLocalName() { return localName; }
+    public Double getLatitude()  { return latitude; }
+    public Double getLongitude() { return longitude; }
 }
