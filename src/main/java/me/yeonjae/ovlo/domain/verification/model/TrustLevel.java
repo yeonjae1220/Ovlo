@@ -19,6 +19,23 @@ public enum TrustLevel {
     STUDENT,
     EXCHANGE_VERIFIED;
 
+    /** 이 등급이 {@code required} 이상인지(게시판 트러스트 게이팅 등에 사용). 순위는 선언 순서. */
+    public boolean atLeast(TrustLevel required) {
+        return this.ordinal() >= required.ordinal();
+    }
+
+    /** 문자열명을 TrustLevel로 파싱하되 알 수 없으면 UNVERIFIED. */
+    public static TrustLevel parseOrUnverified(String name) {
+        if (name == null || name.isBlank()) {
+            return UNVERIFIED;
+        }
+        try {
+            return TrustLevel.valueOf(name.trim().toUpperCase());
+        } catch (IllegalArgumentException e) {
+            return UNVERIFIED;
+        }
+    }
+
     /**
      * 본교 정보 없이 파생.
      * 본교와의 비교가 불가능하므로 EXCHANGE_VERIFIED로는 올라가지 않고 STUDENT까지만 판정한다.

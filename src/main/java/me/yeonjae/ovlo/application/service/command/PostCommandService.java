@@ -15,11 +15,14 @@ import me.yeonjae.ovlo.application.port.in.post.DeleteCommentUseCase;
 import me.yeonjae.ovlo.application.port.in.post.DeletePostUseCase;
 import me.yeonjae.ovlo.application.port.in.post.ReactToPostUseCase;
 import me.yeonjae.ovlo.application.port.in.post.UpdatePostUseCase;
+import me.yeonjae.ovlo.application.port.in.verification.GetMyVerificationStatusQuery;
+import me.yeonjae.ovlo.application.port.out.board.LoadBoardPort;
 import me.yeonjae.ovlo.application.port.out.post.LoadPostPort;
 import me.yeonjae.ovlo.application.port.out.post.SavePostPort;
 import me.yeonjae.ovlo.domain.board.model.BoardId;
 import me.yeonjae.ovlo.domain.member.model.MemberId;
 import me.yeonjae.ovlo.domain.post.exception.PostException;
+import me.yeonjae.ovlo.domain.verification.model.TrustLevel;
 import me.yeonjae.ovlo.domain.post.model.CommentId;
 import me.yeonjae.ovlo.domain.post.model.Post;
 import me.yeonjae.ovlo.domain.post.model.PostId;
@@ -35,21 +38,49 @@ public class PostCommandService
 
     private final LoadPostPort loadPostPort;
     private final SavePostPort savePostPort;
+    private final LoadBoardPort loadBoardPort;
+    private final GetMyVerificationStatusQuery getMyVerificationStatusQuery;
 
-    public PostCommandService(LoadPostPort loadPostPort, SavePostPort savePostPort) {
+    public PostCommandService(LoadPostPort loadPostPort, SavePostPort savePostPort,
+                              LoadBoardPort loadBoardPort,
+                              GetMyVerificationStatusQuery getMyVerificationStatusQuery) {
         this.loadPostPort = loadPostPort;
         this.savePostPort = savePostPort;
+        this.loadBoardPort = loadBoardPort;
+        this.getMyVerificationStatusQuery = getMyVerificationStatusQuery;
     }
 
     @Override
     public PostResult create(CreatePostCommand command) {
+        BoardId boardId = new BoardId(command.boardId());
+        enforceTrustGate(boardId, command.authorId());
         Post post = Post.create(
-                new BoardId(command.boardId()),
+                boardId,
                 new MemberId(command.authorId()),
                 command.title(),
                 command.content()
         );
         return PostResult.from(savePostPort.save(post));
+    }
+
+    /**
+     * 게시판이 작성 최소 신뢰 등급을 요구하면 작성자의 TrustLevel을 검사한다.
+     * 게시판이 없거나(검증은 Post 생성에 위임) 요구 등급이 UNVERIFIED면 게이트 없음.
+     */
+    private void enforceTrustGate(BoardId boardId, Long authorId) {
+        loadBoardPort.findById(boardId).ifPresent(board -> {
+            TrustLevel required = TrustLevel.parseOrUnverified(board.getMinTrustLevel());
+            if (required == TrustLevel.UNVERIFIED) {
+                return;
+            }
+            TrustLevel authorTrust = TrustLevel.parseOrUnverified(
+                    getMyVerificationStatusQuery.getByMemberId(authorId).trustLevel());
+            if (!authorTrust.atLeast(required)) {
+                throw new PostException(
+                        "이 게시판에 글을 쓰려면 " + required.name() + " 이상의 인증이 필요합니다",
+                        PostException.ErrorType.FORBIDDEN);
+            }
+        });
     }
 
     @Override

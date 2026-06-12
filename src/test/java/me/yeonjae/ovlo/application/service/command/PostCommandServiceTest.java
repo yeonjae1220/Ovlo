@@ -7,9 +7,15 @@ import me.yeonjae.ovlo.application.dto.command.ReactToPostCommand;
 import me.yeonjae.ovlo.application.dto.command.UnreactToPostCommand;
 import me.yeonjae.ovlo.application.dto.result.CommentResult;
 import me.yeonjae.ovlo.application.dto.result.PostResult;
+import me.yeonjae.ovlo.application.dto.result.VerificationStatusResult;
+import me.yeonjae.ovlo.application.port.in.verification.GetMyVerificationStatusQuery;
+import me.yeonjae.ovlo.application.port.out.board.LoadBoardPort;
 import me.yeonjae.ovlo.application.port.out.post.LoadPostPort;
 import me.yeonjae.ovlo.application.port.out.post.SavePostPort;
+import me.yeonjae.ovlo.domain.board.model.Board;
+import me.yeonjae.ovlo.domain.board.model.BoardCategory;
 import me.yeonjae.ovlo.domain.board.model.BoardId;
+import me.yeonjae.ovlo.domain.board.model.LocationScope;
 import me.yeonjae.ovlo.domain.member.model.MemberId;
 import me.yeonjae.ovlo.domain.post.exception.PostException;
 import me.yeonjae.ovlo.domain.post.model.*;
@@ -37,6 +43,8 @@ class PostCommandServiceTest {
 
     @Mock LoadPostPort loadPostPort;
     @Mock SavePostPort savePostPort;
+    @Mock LoadBoardPort loadBoardPort;
+    @Mock GetMyVerificationStatusQuery getMyVerificationStatusQuery;
 
     @InjectMocks
     PostCommandService service;
@@ -59,6 +67,39 @@ class PostCommandServiceTest {
             assertThat(result.id()).isEqualTo(10L);
             assertThat(result.title()).isEqualTo("제목");
             assertThat(result.deleted()).isFalse();
+        }
+
+        private Board boardRequiring(String minTrustLevel) {
+            Board board = Board.create("교환생 게시판", "설명", BoardCategory.GENERAL,
+                    LocationScope.GLOBAL, new MemberId(99L), null);
+            board.applyMinTrustLevel(minTrustLevel);
+            return board;
+        }
+
+        @Test
+        @DisplayName("게시판이 STUDENT 인증을 요구하는데 작성자가 미인증이면 FORBIDDEN")
+        void blocksWhenTrustInsufficient() {
+            given(loadBoardPort.findById(new BoardId(1L))).willReturn(Optional.of(boardRequiring("STUDENT")));
+            given(getMyVerificationStatusQuery.getByMemberId(1L))
+                    .willReturn(new VerificationStatusResult("UNVERIFIED", List.of()));
+
+            assertThatThrownBy(() -> service.create(new CreatePostCommand(1L, 1L, "제목", "내용")))
+                    .isInstanceOf(PostException.class)
+                    .extracting("errorType").isEqualTo(PostException.ErrorType.FORBIDDEN);
+            verify(savePostPort, org.mockito.Mockito.never()).save(any());
+        }
+
+        @Test
+        @DisplayName("작성자 등급이 요구 등급 이상이면 작성 허용")
+        void allowsWhenTrustSufficient() {
+            given(loadBoardPort.findById(new BoardId(1L))).willReturn(Optional.of(boardRequiring("STUDENT")));
+            given(getMyVerificationStatusQuery.getByMemberId(1L))
+                    .willReturn(new VerificationStatusResult("EXCHANGE_VERIFIED", List.of()));
+            Post saved = Post.restore(new PostId(11L), new BoardId(1L), new MemberId(1L),
+                    "제목", "내용", false, List.of(), List.of(), Instant.now());
+            given(savePostPort.save(any())).willReturn(saved);
+
+            assertThat(service.create(new CreatePostCommand(1L, 1L, "제목", "내용")).id()).isEqualTo(11L);
         }
     }
 

@@ -104,6 +104,8 @@ export interface CreateBoardRequest {
   category: BoardCategory
   scope: LocationScope
   universityId?: number
+  /** 작성 최소 신뢰 등급(없으면 게이트 없음). */
+  minTrustLevel?: 'UNVERIFIED' | 'STUDENT' | 'EXCHANGE_VERIFIED'
 }
 
 // ─── Post ───────────────────────────────────────────────────────────────────

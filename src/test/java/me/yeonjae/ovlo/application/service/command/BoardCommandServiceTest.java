@@ -41,7 +41,7 @@ class BoardCommandServiceTest {
         @DisplayName("게시판을 생성하면 저장된 결과를 반환한다")
         void shouldCreate_board() {
             CreateBoardCommand command = new CreateBoardCommand(
-                    "자유게시판", "아무 얘기나", "GENERAL", "GLOBAL", 1L, null);
+                    "자유게시판", "아무 얘기나", "GENERAL", "GLOBAL", 1L, null, null);
 
             Board saved = Board.restore(new BoardId(10L), "자유게시판", "아무 얘기나",
                     BoardCategory.GENERAL, LocationScope.GLOBAL, new MemberId(1L), null, true);
@@ -59,7 +59,7 @@ class BoardCommandServiceTest {
         @DisplayName("UNIVERSITY 범위 게시판을 생성할 수 있다")
         void shouldCreate_universityBoard() {
             CreateBoardCommand command = new CreateBoardCommand(
-                    "서울대 게시판", null, "GENERAL", "UNIVERSITY", 1L, 10L);
+                    "서울대 게시판", null, "GENERAL", "UNIVERSITY", 1L, 10L, null);
 
             Board saved = Board.restore(new BoardId(11L), "서울대 게시판", null,
                     BoardCategory.GENERAL, LocationScope.UNIVERSITY,

@@ -18,6 +18,7 @@ public class BoardJpaEntity {
     @Column(name = "creator_id", nullable = false) private Long creatorId;
     @Column(name = "university_id") private Long universityId;
     @Column(nullable = false) private boolean active;
+    @Column(name = "min_trust_level", nullable = false) private String minTrustLevel = "UNVERIFIED";
     @CreationTimestamp @Column(name = "created_at", nullable = false, updatable = false) private Instant createdAt;
     @UpdateTimestamp @Column(name = "updated_at", nullable = false) private Instant updatedAt;
     public BoardJpaEntity() {}
@@ -29,4 +30,5 @@ public class BoardJpaEntity {
     public Long getCreatorId() { return creatorId; } public void setCreatorId(Long creatorId) { this.creatorId = creatorId; }
     public Long getUniversityId() { return universityId; } public void setUniversityId(Long universityId) { this.universityId = universityId; }
     public boolean isActive() { return active; } public void setActive(boolean active) { this.active = active; }
+    public String getMinTrustLevel() { return minTrustLevel; } public void setMinTrustLevel(String minTrustLevel) { this.minTrustLevel = minTrustLevel; }
 }

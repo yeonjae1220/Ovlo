@@ -50,6 +50,8 @@ const en: Messages = {
   'board.form.name': 'Board name',
   'board.form.desc': 'Description (optional)',
   'board.form.create': 'Create',
+  'board.form.minTrust': 'Minimum trust level to post',
+  'board.form.minTrust.none': 'No restriction',
   'board.form.cancel': 'Cancel',
 
   // Onboarding
@@ -457,6 +459,8 @@ const ko: Messages = {
   'board.form.name': '게시판 이름',
   'board.form.desc': '설명 (선택)',
   'board.form.create': '생성',
+  'board.form.minTrust': '작성에 필요한 최소 인증 등급',
+  'board.form.minTrust.none': '제한 없음',
   'board.form.cancel': '취소',
   'onboarding.almost': '거의 다 됐어요!',
   'onboarding.title': '프로필을 완성해주세요',
