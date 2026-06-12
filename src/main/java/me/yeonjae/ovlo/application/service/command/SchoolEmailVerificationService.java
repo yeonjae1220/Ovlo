@@ -10,6 +10,7 @@ import me.yeonjae.ovlo.application.port.in.verification.GetMyVerificationStatusQ
 import me.yeonjae.ovlo.application.port.in.verification.RequestSchoolEmailVerificationUseCase;
 import me.yeonjae.ovlo.application.port.in.university.ResolveUniversityByEmailQuery;
 import me.yeonjae.ovlo.application.port.out.verification.ChallengeStorePort;
+import me.yeonjae.ovlo.application.port.out.verification.LoadMemberHomeUniversityPort;
 import me.yeonjae.ovlo.application.port.out.verification.EmailSenderPort;
 import me.yeonjae.ovlo.application.port.out.verification.LoadVerificationCredentialPort;
 import me.yeonjae.ovlo.application.port.out.verification.SaveVerificationCredentialPort;
@@ -46,6 +47,7 @@ public class SchoolEmailVerificationService implements
     static final int MAX_ATTEMPTS = 5;
 
     private final ResolveUniversityByEmailQuery resolveUniversityByEmail;
+    private final LoadMemberHomeUniversityPort loadMemberHomeUniversityPort;
     private final LoadVerificationCredentialPort loadCredentialPort;
     private final SaveVerificationCredentialPort saveCredentialPort;
     private final ChallengeStorePort challengeStore;
@@ -54,6 +56,7 @@ public class SchoolEmailVerificationService implements
     private final Clock clock;
 
     public SchoolEmailVerificationService(ResolveUniversityByEmailQuery resolveUniversityByEmail,
+                                          LoadMemberHomeUniversityPort loadMemberHomeUniversityPort,
                                           LoadVerificationCredentialPort loadCredentialPort,
                                           SaveVerificationCredentialPort saveCredentialPort,
                                           ChallengeStorePort challengeStore,
@@ -61,6 +64,7 @@ public class SchoolEmailVerificationService implements
                                           VerificationCodeGenerator codeGenerator,
                                           Clock clock) {
         this.resolveUniversityByEmail = resolveUniversityByEmail;
+        this.loadMemberHomeUniversityPort = loadMemberHomeUniversityPort;
         this.loadCredentialPort = loadCredentialPort;
         this.saveCredentialPort = saveCredentialPort;
         this.challengeStore = challengeStore;
@@ -144,7 +148,8 @@ public class SchoolEmailVerificationService implements
     @Transactional(readOnly = true)
     public VerificationStatusResult getByMemberId(Long memberId) {
         List<VerificationCredential> credentials = loadCredentialPort.findByMemberId(memberId);
-        TrustLevel trustLevel = TrustLevel.from(credentials);
+        Long homeUniversityId = loadMemberHomeUniversityPort.findHomeUniversityId(memberId).orElse(null);
+        TrustLevel trustLevel = TrustLevel.from(credentials, homeUniversityId);
         List<VerificationStatusResult.VerifiedUniversity> verified = credentials.stream()
                 .filter(VerificationCredential::isActive)
                 .map(c -> new VerificationStatusResult.VerifiedUniversity(

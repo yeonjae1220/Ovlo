@@ -9,6 +9,7 @@ import me.yeonjae.ovlo.application.dto.result.VerificationStatusResult;
 import me.yeonjae.ovlo.application.port.in.university.ResolveUniversityByEmailQuery;
 import me.yeonjae.ovlo.application.port.out.verification.ChallengeStorePort;
 import me.yeonjae.ovlo.application.port.out.verification.EmailSenderPort;
+import me.yeonjae.ovlo.application.port.out.verification.LoadMemberHomeUniversityPort;
 import me.yeonjae.ovlo.application.port.out.verification.LoadVerificationCredentialPort;
 import me.yeonjae.ovlo.application.port.out.verification.SaveVerificationCredentialPort;
 import me.yeonjae.ovlo.application.port.out.verification.VerificationCodeGenerator;
@@ -46,6 +47,7 @@ import static org.mockito.Mockito.verify;
 class SchoolEmailVerificationServiceTest {
 
     @Mock private ResolveUniversityByEmailQuery resolveUniversityByEmail;
+    @Mock private LoadMemberHomeUniversityPort loadMemberHomeUniversityPort;
     @Mock private LoadVerificationCredentialPort loadCredentialPort;
     @Mock private SaveVerificationCredentialPort saveCredentialPort;
     @Mock private ChallengeStorePort challengeStore;
@@ -61,7 +63,7 @@ class SchoolEmailVerificationServiceTest {
     @BeforeEach
     void setUp() {
         service = new SchoolEmailVerificationService(
-                resolveUniversityByEmail, loadCredentialPort, saveCredentialPort,
+                resolveUniversityByEmail, loadMemberHomeUniversityPort, loadCredentialPort, saveCredentialPort,
                 challengeStore, emailSender, codeGenerator, clock);
     }
 
@@ -144,6 +146,7 @@ class SchoolEmailVerificationServiceTest {
                     MEMBER, VerificationType.SCHOOL_EMAIL, UNIV, "alice@snu.ac.kr", clock.instant());
             given(saveCredentialPort.save(any())).willReturn(issued);
             given(loadCredentialPort.findByMemberId(MEMBER)).willReturn(List.of(issued));
+            given(loadMemberHomeUniversityPort.findHomeUniversityId(MEMBER)).willReturn(Optional.empty());
 
             VerificationStatusResult result = service.confirm(new ConfirmSchoolEmailVerificationCommand(MEMBER, "123456"));
 
@@ -184,7 +187,19 @@ class SchoolEmailVerificationServiceTest {
         @DisplayName("자격 없으면 UNVERIFIED")
         void unverified() {
             given(loadCredentialPort.findByMemberId(MEMBER)).willReturn(List.of());
+            given(loadMemberHomeUniversityPort.findHomeUniversityId(MEMBER)).willReturn(Optional.empty());
             assertThat(service.getByMemberId(MEMBER).trustLevel()).isEqualTo("UNVERIFIED");
+        }
+
+        @Test
+        @DisplayName("본교(200)와 다른 대학(100) 인증 보유 → EXCHANGE_VERIFIED")
+        void exchangeVerified() {
+            VerificationCredential atNonHome = VerificationCredential.issue(
+                    MEMBER, VerificationType.SCHOOL_EMAIL, 100L, "alice@snu.ac.kr", clock.instant());
+            given(loadCredentialPort.findByMemberId(MEMBER)).willReturn(List.of(atNonHome));
+            given(loadMemberHomeUniversityPort.findHomeUniversityId(MEMBER)).willReturn(Optional.of(200L));
+
+            assertThat(service.getByMemberId(MEMBER).trustLevel()).isEqualTo("EXCHANGE_VERIFIED");
         }
     }
 }
