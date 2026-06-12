@@ -8,6 +8,7 @@ import me.yeonjae.ovlo.domain.media.exception.MediaException;
 import me.yeonjae.ovlo.domain.member.exception.MemberException;
 import me.yeonjae.ovlo.domain.post.exception.PostException;
 import me.yeonjae.ovlo.domain.university.exception.UniversityException;
+import me.yeonjae.ovlo.domain.verification.exception.VerificationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.dao.OptimisticLockingFailureException;
@@ -74,6 +75,20 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ErrorResponse> handleChatException(ChatException ex) {
         return ResponseEntity.status(resolveStatus(ex.getErrorType()))
                 .body(ErrorResponse.of(resolveCode(ChatException.class, ex.getErrorType()), ex.getMessage()));
+    }
+
+    @ExceptionHandler(VerificationException.class)
+    public ResponseEntity<ErrorResponse> handleVerificationException(VerificationException ex) {
+        HttpStatus status = switch (ex.getErrorType()) {
+            case CHALLENGE_NOT_FOUND -> HttpStatus.NOT_FOUND;
+            case EMAIL_ALREADY_USED -> HttpStatus.CONFLICT;
+            case TOO_MANY_ATTEMPTS, RATE_LIMITED -> HttpStatus.TOO_MANY_REQUESTS;
+            case CODE_EXPIRED -> HttpStatus.GONE;
+            // DOMAIN_MISMATCH, UNIVERSITY_NOT_RESOLVED, PUBLIC_PROVIDER, CODE_MISMATCH
+            default -> HttpStatus.BAD_REQUEST;
+        };
+        return ResponseEntity.status(status)
+                .body(ErrorResponse.of("VERIFICATION_" + ex.getErrorType().name(), ex.getMessage()));
     }
 
     /**

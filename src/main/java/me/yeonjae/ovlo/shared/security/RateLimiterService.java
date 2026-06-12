@@ -58,6 +58,11 @@ public class RateLimiterService {
         check("rl:signup:ip:" + clientIp, signupLimit);
     }
 
+    /** 학교 이메일 인증 코드 발송 — 인증된 멤버 기준(발송 남용/스팸 차단). */
+    public void checkEmailVerificationRate(Long memberId) {
+        check("rl:verify-email:member:" + memberId, signupLimit);
+    }
+
     private void check(String key, int limit) {
         Long count = redisTemplate.execute(INCREMENT_SCRIPT, List.of(key), String.valueOf(windowSeconds));
         if (count != null && count > limit) {
