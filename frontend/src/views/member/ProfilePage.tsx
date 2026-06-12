@@ -16,6 +16,9 @@ import { usePostsByAuthor } from '../../hooks/usePost'
 import { useI18n } from '../../i18n/I18nProvider'
 import { SUPPORTED_UI_LANGUAGES, LANGUAGE_LABELS } from '../../i18n/messages'
 import { useTheme, type ThemeMode } from '../../theme/themeContext'
+import { useMyVerification } from '../../hooks/useVerification'
+import { TrustBadge } from '../verification/TrustBadge'
+import { VerificationSection } from '../verification/VerificationSection'
 
 const C = {
   card:        'var(--color-surface)',
@@ -59,6 +62,7 @@ export default function ProfilePage() {
   const queryClient = useQueryClient()
   const isOwner = String(currentUser?.id) === id
   const isFollowing = followers?.some((f) => String(f.id) === String(currentUser?.id))
+  const { data: myVerification } = useMyVerification(isOwner)
 
   const { getRootProps, getInputProps } = useDropzone({
     accept: { 'image/*': [] },
@@ -126,7 +130,10 @@ export default function ProfilePage() {
             </>
           ) : (
             <>
-              <h2 style={{ color: C.textPrimary }}>{member.nickname}</h2>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+                <h2 style={{ color: C.textPrimary, margin: 0 }}>{member.nickname}</h2>
+                {isOwner && myVerification && <TrustBadge level={myVerification.trustLevel} />}
+              </div>
               <p style={{ color: C.textMuted }}>{member.name} · {member.email}</p>
               {member.bio && <p style={{ color: C.textSec }}>{member.bio}</p>}
               <p style={{ color: C.textMuted }}>{t('profile.followers')} {followers?.length ?? 0} · {t('profile.following')} {followings?.length ?? 0}</p>
@@ -191,6 +198,15 @@ export default function ProfilePage() {
 
       {isOwner && (
         <>
+          {/* 학생 인증 */}
+          <div style={{ marginTop: 32, paddingTop: 24, borderTop: `1px solid ${C.border}` }}>
+            <h3 style={{ margin: '0 0 4px', fontSize: 16, fontWeight: 700, color: C.textPrimary }}>
+              {t('verification.section.title')}
+            </h3>
+            <p style={{ margin: '0 0 16px', fontSize: 12, color: C.textDim }}>{t('verification.section.hint')}</p>
+            <VerificationSection />
+          </div>
+
           {/* UI 언어 설정 */}
           <div style={{ marginTop: 32, paddingTop: 24, borderTop: `1px solid ${C.border}` }}>
             <h3 style={{ margin: '0 0 12px', fontSize: 16, fontWeight: 700, color: C.textPrimary }}>
