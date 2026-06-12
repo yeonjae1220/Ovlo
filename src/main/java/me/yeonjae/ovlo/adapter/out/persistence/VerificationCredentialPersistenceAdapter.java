@@ -2,6 +2,7 @@ package me.yeonjae.ovlo.adapter.out.persistence;
 
 import me.yeonjae.ovlo.adapter.out.persistence.entity.VerificationCredentialJpaEntity;
 import me.yeonjae.ovlo.adapter.out.persistence.repository.VerificationCredentialJpaRepository;
+import me.yeonjae.ovlo.application.port.out.verification.ExpireVerificationCredentialPort;
 import me.yeonjae.ovlo.application.port.out.verification.LoadVerificationCredentialPort;
 import me.yeonjae.ovlo.application.port.out.verification.SaveVerificationCredentialPort;
 import me.yeonjae.ovlo.domain.verification.model.VerificationCredential;
@@ -11,16 +12,23 @@ import me.yeonjae.ovlo.domain.verification.model.VerificationType;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Instant;
 import java.util.List;
 
 @Component
 public class VerificationCredentialPersistenceAdapter
-        implements LoadVerificationCredentialPort, SaveVerificationCredentialPort {
+        implements LoadVerificationCredentialPort, SaveVerificationCredentialPort, ExpireVerificationCredentialPort {
 
     private final VerificationCredentialJpaRepository repository;
 
     public VerificationCredentialPersistenceAdapter(VerificationCredentialJpaRepository repository) {
         this.repository = repository;
+    }
+
+    @Override
+    @Transactional
+    public int expireVerifiedOlderThan(Instant cutoff) {
+        return repository.expireVerifiedOlderThan(cutoff);
     }
 
     @Override
