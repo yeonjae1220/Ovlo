@@ -22,11 +22,12 @@ public class BoardMapper {
         entity.setCreatorId(board.getCreatorId().value());
         entity.setUniversityId(board.getUniversityId() != null ? board.getUniversityId().value() : null);
         entity.setActive(board.isActive());
+        entity.setMinTrustLevel(board.getMinTrustLevel());
         return entity;
     }
 
     public Board toDomain(BoardJpaEntity entity) {
-        return Board.restore(
+        Board board = Board.restore(
                 new BoardId(entity.getId()),
                 entity.getName(),
                 entity.getDescription(),
@@ -36,6 +37,8 @@ public class BoardMapper {
                 entity.getUniversityId() != null ? new UniversityId(entity.getUniversityId()) : null,
                 entity.isActive()
         );
+        board.applyMinTrustLevel(entity.getMinTrustLevel());
+        return board;
     }
 
     public BoardSubscriptionJpaEntity toSubscriptionJpaEntity(BoardSubscription subscription) {

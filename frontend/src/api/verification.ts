@@ -1,7 +1,7 @@
 import apiClient from '../utils/axios'
 
-/** 신뢰 등급 — 백엔드 TrustLevel enum과 1:1. EXCHANGE_VERIFIED는 차기. */
-export type TrustLevel = 'UNVERIFIED' | 'STUDENT'
+/** 신뢰 등급 — 백엔드 TrustLevel enum과 1:1. UNVERIFIED < STUDENT < EXCHANGE_VERIFIED. */
+export type TrustLevel = 'UNVERIFIED' | 'STUDENT' | 'EXCHANGE_VERIFIED'
 
 /** 백엔드 VerificationException.ErrorType + "VERIFICATION_" 접두 코드. */
 export type VerificationErrorCode =

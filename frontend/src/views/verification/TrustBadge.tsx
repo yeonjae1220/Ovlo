@@ -16,6 +16,14 @@ export function TrustBadge({
 
   if (level === 'UNVERIFIED' && !showUnverified) return null
 
+  if (level === 'EXCHANGE_VERIFIED') {
+    return (
+      <Badge tone="accent" title={t('verification.badge.exchange.hint')}>
+        ✈ {t('verification.badge.exchange')}
+      </Badge>
+    )
+  }
+
   if (level === 'STUDENT') {
     return (
       <Badge tone="success" title={t('verification.badge.student.hint')}>

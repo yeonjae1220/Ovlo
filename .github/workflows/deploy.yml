@@ -145,6 +145,14 @@ jobs:
     if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
 
     steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # NetworkPolicy는 이미지와 무관하므로 매 배포 시 최신 상태로 적용
+      # (egress 587=SMTP 등 정책 변경이 자동 반영되도록 — 과거 수동 적용 누락 방지)
+      - name: Apply network policies
+        run: sudo kubectl apply -f k8s/network-policy.yaml -n ovlo
+
       - name: Apply k8s secrets
         env:
           POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}

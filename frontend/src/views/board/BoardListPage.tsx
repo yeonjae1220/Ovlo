@@ -116,7 +116,7 @@ export default function BoardListPage() {
               value={form.description ?? ''}
               onChange={(event) => setForm((f) => ({ ...f, description: event.target.value }))}
             />
-            <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr auto auto', gap: 8 }}>
+            <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr 1fr auto auto', gap: 8 }}>
               <SelectField
                 value={form.category}
                 onChange={(event) => setForm((f) => ({ ...f, category: event.target.value as BoardCategory }))}
@@ -132,6 +132,15 @@ export default function BoardListPage() {
                 {(['GLOBAL','COUNTRY','REGION','UNIVERSITY'] as LocationScope[]).map(
                   (s) => <option key={s} value={s}>{s}</option>
                 )}
+              </SelectField>
+              <SelectField
+                value={form.minTrustLevel ?? 'UNVERIFIED'}
+                title={t('board.form.minTrust')}
+                onChange={(event) => setForm((f) => ({ ...f, minTrustLevel: event.target.value as CreateBoardRequest['minTrustLevel'] }))}
+              >
+                <option value="UNVERIFIED">{t('board.form.minTrust.none')}</option>
+                <option value="STUDENT">{t('verification.badge.student')}</option>
+                <option value="EXCHANGE_VERIFIED">{t('verification.badge.exchange')}</option>
               </SelectField>
               <Button onClick={handleCreate} disabled={createBoard.isPending || !form.name.trim()} variant="primary">
                 {t('board.form.create')}

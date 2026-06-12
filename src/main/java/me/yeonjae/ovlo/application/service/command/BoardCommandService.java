@@ -43,6 +43,7 @@ public class BoardCommandService implements
                 scope,
                 new MemberId(command.creatorId()),
                 universityId);
+        board.applyMinTrustLevel(command.minTrustLevel());
 
         Board saved = saveBoardPort.save(board);
         return BoardResult.from(saved);

@@ -15,6 +15,9 @@ public class Board {
     private MemberId creatorId;
     private UniversityId universityId; // scope == UNIVERSITY일 때만 값 존재
     private boolean active;
+    // 작성에 필요한 최소 신뢰 등급(TrustLevel name). 기본 "UNVERIFIED" = 게이트 없음.
+    // 트러스트 비교는 application 레이어가 수행하므로 도메인은 값만 보관(verification 도메인 비참조).
+    private String minTrustLevel = "UNVERIFIED";
 
     private Board() {}
 
@@ -85,4 +88,10 @@ public class Board {
     public MemberId getCreatorId() { return creatorId; }
     public UniversityId getUniversityId() { return universityId; }
     public boolean isActive() { return active; }
+    public String getMinTrustLevel() { return minTrustLevel; }
+
+    /** 작성 최소 신뢰 등급 설정(생성/복원 직후). null/blank면 게이트 없음(UNVERIFIED). */
+    public void applyMinTrustLevel(String level) {
+        this.minTrustLevel = (level == null || level.isBlank()) ? "UNVERIFIED" : level.trim().toUpperCase();
+    }
 }

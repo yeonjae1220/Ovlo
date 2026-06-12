@@ -75,7 +75,8 @@ public class BoardApiController {
                         request.category(),
                         request.scope(),
                         memberId,
-                        request.universityId()
+                        request.universityId(),
+                        request.minTrustLevel()
                 )
         );
         return ResponseEntity.status(HttpStatus.CREATED).body(result);
