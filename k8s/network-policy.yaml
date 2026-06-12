@@ -58,9 +58,11 @@ spec:
               app: redis
       ports:
         - port: 6379
-    # 외부 API (Google OAuth 등) + DNS
+    # 외부 API (Google OAuth 등) + SMTP(학생 인증 메일 발송) + DNS
     - ports:
         - port: 443
+          protocol: TCP
+        - port: 587  # SMTP STARTTLS — Gmail 등 인증 코드 메일 발송
           protocol: TCP
         - port: 53
           protocol: UDP
