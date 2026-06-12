@@ -8,8 +8,10 @@ import me.yeonjae.ovlo.domain.media.exception.MediaException;
 import me.yeonjae.ovlo.domain.member.exception.MemberException;
 import me.yeonjae.ovlo.domain.post.exception.PostException;
 import me.yeonjae.ovlo.domain.university.exception.UniversityException;
+import me.yeonjae.ovlo.domain.verification.exception.VerificationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -76,6 +78,20 @@ public class GlobalExceptionHandler {
                 .body(ErrorResponse.of(resolveCode(ChatException.class, ex.getErrorType()), ex.getMessage()));
     }
 
+    @ExceptionHandler(VerificationException.class)
+    public ResponseEntity<ErrorResponse> handleVerificationException(VerificationException ex) {
+        HttpStatus status = switch (ex.getErrorType()) {
+            case CHALLENGE_NOT_FOUND -> HttpStatus.NOT_FOUND;
+            case EMAIL_ALREADY_USED -> HttpStatus.CONFLICT;
+            case TOO_MANY_ATTEMPTS, RATE_LIMITED -> HttpStatus.TOO_MANY_REQUESTS;
+            case CODE_EXPIRED -> HttpStatus.GONE;
+            // DOMAIN_MISMATCH, UNIVERSITY_NOT_RESOLVED, PUBLIC_PROVIDER, CODE_MISMATCH
+            default -> HttpStatus.BAD_REQUEST;
+        };
+        return ResponseEntity.status(status)
+                .body(ErrorResponse.of("VERIFICATION_" + ex.getErrorType().name(), ex.getMessage()));
+    }
+
     /**
      * 도메인 예외의 ErrorType enum name을 HTTP 상태로 변환.
      * 각 도메인이 독립 enum을 갖지만 이름이 HTTP 시맨틱을 따르므로 name() 기반 매핑 사용.
@@ -116,6 +132,17 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ErrorResponse> handleOptimisticLock(OptimisticLockingFailureException ex) {
         return ResponseEntity.status(HttpStatus.CONFLICT)
                 .body(ErrorResponse.of("OPTIMISTIC_LOCK_CONFLICT", "동시 수정이 발생했습니다. 다시 시도해주세요"));
+    }
+
+    /**
+     * DB 제약(유니크 등) 위반 → 409. 대표 사례: 학교 이메일 동시 confirm 경합 시
+     * 활성 이메일 부분 유니크 인덱스 위반(VerificationCredential). 내부 SQL/제약명은 노출하지 않는다.
+     */
+    @ExceptionHandler(DataIntegrityViolationException.class)
+    public ResponseEntity<ErrorResponse> handleDataIntegrityViolation(DataIntegrityViolationException ex) {
+        log.warn("Data integrity violation: {}", ex.getMostSpecificCause().getMessage());
+        return ResponseEntity.status(HttpStatus.CONFLICT)
+                .body(ErrorResponse.of("DATA_CONFLICT", "이미 존재하는 데이터와 충돌했습니다. 다시 확인해주세요"));
     }
 
     @ExceptionHandler(IllegalArgumentException.class)

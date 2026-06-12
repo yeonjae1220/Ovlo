@@ -56,6 +56,9 @@ dependencies {
     // ── Redis ─────────────────────────────────────────────────────────────────
     implementation 'org.springframework.boot:spring-boot-starter-data-redis'
 
+    // ── Mail (학교 이메일 인증; spring.mail.host 설정 시에만 SMTP 발송 활성화) ──────
+    implementation 'org.springframework.boot:spring-boot-starter-mail'
+
     // ── Storage ───────────────────────────────────────────────────────────────
     implementation 'software.amazon.awssdk:s3:2.25.0'                         // Phase 2 (S3)
 

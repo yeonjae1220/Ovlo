@@ -91,6 +91,32 @@ spec:
                 secretKeyRef:
                   name: ovlo-secret
                   key: ADMIN_PASSWORD_BCRYPT
+            # 이메일(SMTP) — optional:true. 시크릿에 키가 없으면 env 미설정 → spring.mail.host 부재 →
+            # LogEmailSenderAdapter 폴백. 4개 키가 모두 채워지면 SmtpEmailSenderAdapter(Gmail) 활성화.
+            - name: SPRING_MAIL_HOST
+              valueFrom:
+                secretKeyRef:
+                  name: ovlo-secret
+                  key: SPRING_MAIL_HOST
+                  optional: true
+            - name: MAIL_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: ovlo-secret
+                  key: MAIL_USERNAME
+                  optional: true
+            - name: MAIL_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: ovlo-secret
+                  key: MAIL_PASSWORD
+                  optional: true
+            - name: MAIL_FROM
+              valueFrom:
+                secretKeyRef:
+                  name: ovlo-secret
+                  key: MAIL_FROM
+                  optional: true
             # nginx-ingress 파드의 IP에서 온 요청만 X-Real-IP를 신뢰 (스푸핑 방지).
             # k3s/flannel 기본 파드 CIDR — 운영 환경에서 `kubectl get pods -n kube-system -o wide`로
             # 실제 ingress-nginx 파드 대역을 확인해 필요 시 갱신할 것 (CIDR 표기 지원).

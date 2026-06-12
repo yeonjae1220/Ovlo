@@ -144,6 +144,30 @@ spring:
     console:
       enabled: false
 
+  # 이메일(SMTP) — host는 의도적으로 yaml에 두지 않는다.
+  # SPRING_MAIL_HOST(예: smtp.gmail.com)가 주입될 때만 SmtpEmailSenderAdapter가 활성화되고,
+  # 미설정이면 spring.mail.host 부재 → LogEmailSenderAdapter(폴백)가 동작한다.
+  # (빈 문자열 기본값을 주면 ConditionalOnProperty가 "설정됨"으로 오판하므로 금지)
+  mail:
+    port: ${MAIL_PORT:587}
+    username: ${MAIL_USERNAME:}
+    password: ${MAIL_PASSWORD:}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+            required: true
+          connectiontimeout: 5000
+          timeout: 5000
+          writetimeout: 5000
+
+# Gmail은 From을 인증 계정으로 강제하므로 MAIL_FROM은 Gmail 주소(또는 'Send mail as' 별칭)로 설정
+ovlo:
+  mail:
+    from: ${MAIL_FROM:no-reply@ovlo.app}
+
 management:
   health:
     probes:
