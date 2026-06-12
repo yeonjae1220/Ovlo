@@ -11,6 +11,7 @@ import me.yeonjae.ovlo.domain.university.exception.UniversityException;
 import me.yeonjae.ovlo.domain.verification.exception.VerificationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -131,6 +132,17 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ErrorResponse> handleOptimisticLock(OptimisticLockingFailureException ex) {
         return ResponseEntity.status(HttpStatus.CONFLICT)
                 .body(ErrorResponse.of("OPTIMISTIC_LOCK_CONFLICT", "동시 수정이 발생했습니다. 다시 시도해주세요"));
+    }
+
+    /**
+     * DB 제약(유니크 등) 위반 → 409. 대표 사례: 학교 이메일 동시 confirm 경합 시
+     * 활성 이메일 부분 유니크 인덱스 위반(VerificationCredential). 내부 SQL/제약명은 노출하지 않는다.
+     */
+    @ExceptionHandler(DataIntegrityViolationException.class)
+    public ResponseEntity<ErrorResponse> handleDataIntegrityViolation(DataIntegrityViolationException ex) {
+        log.warn("Data integrity violation: {}", ex.getMostSpecificCause().getMessage());
+        return ResponseEntity.status(HttpStatus.CONFLICT)
+                .body(ErrorResponse.of("DATA_CONFLICT", "이미 존재하는 데이터와 충돌했습니다. 다시 확인해주세요"));
     }
 
     @ExceptionHandler(IllegalArgumentException.class)
