@@ -155,7 +155,20 @@ jobs:
           CORS_ALLOWED_ORIGINS: ${{ secrets.CORS_ALLOWED_ORIGINS }}
           ADMIN_EMAIL: ${{ secrets.ADMIN_EMAIL }}
           ADMIN_PASSWORD_BCRYPT: ${{ secrets.ADMIN_PASSWORD_BCRYPT }}
+          # 이메일(SMTP) — 미설정 시 빈 문자열. 아래에서 비어있지 않을 때만 시크릿에 추가한다.
+          SPRING_MAIL_HOST: ${{ secrets.SPRING_MAIL_HOST }}
+          MAIL_USERNAME: ${{ secrets.MAIL_USERNAME }}
+          MAIL_PASSWORD: ${{ secrets.MAIL_PASSWORD }}
+          MAIL_FROM: ${{ secrets.MAIL_FROM }}
         run: |
+          # 메일 키는 값이 있을 때만 추가 — 빈 문자열 키를 만들면 spring.mail.host="" 가
+          # "설정됨"으로 오판되어 SMTP 어댑터가 빈 호스트로 활성화되는 함정을 막는다.
+          MAIL_ARGS=()
+          [ -n "${SPRING_MAIL_HOST}" ] && MAIL_ARGS+=(--from-literal=SPRING_MAIL_HOST="${SPRING_MAIL_HOST}")
+          [ -n "${MAIL_USERNAME}" ]    && MAIL_ARGS+=(--from-literal=MAIL_USERNAME="${MAIL_USERNAME}")
+          [ -n "${MAIL_PASSWORD}" ]    && MAIL_ARGS+=(--from-literal=MAIL_PASSWORD="${MAIL_PASSWORD}")
+          [ -n "${MAIL_FROM}" ]        && MAIL_ARGS+=(--from-literal=MAIL_FROM="${MAIL_FROM}")
+
           sudo kubectl create secret generic ovlo-secret \
             --from-literal=POSTGRES_PASSWORD="${POSTGRES_PASSWORD}" \
             --from-literal=REDIS_PASSWORD="${REDIS_PASSWORD}" \
@@ -165,6 +178,7 @@ jobs:
             --from-literal=CORS_ALLOWED_ORIGINS="${CORS_ALLOWED_ORIGINS}" \
             --from-literal=ADMIN_EMAIL="${ADMIN_EMAIL}" \
             --from-literal=ADMIN_PASSWORD_BCRYPT="${ADMIN_PASSWORD_BCRYPT}" \
+            "${MAIL_ARGS[@]}" \
             -n ovlo --dry-run=client -o yaml | sudo kubectl apply -f -
 
       - name: Pull and deploy images
