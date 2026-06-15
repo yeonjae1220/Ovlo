@@ -52,6 +52,8 @@
                   th:text="${m.role().name()}"></span>
           </td>
           <td style="display:flex; gap:5px; flex-wrap:wrap;">
+            <!-- 학생 인증 관리 -->
+            <a class="btn btn-ghost btn-sm" th:href="@{/admin/verifications(memberId=${m.id()})}">✓ 인증</a>
             <!-- 역할 변경 -->
             <form class="inline-form" th:action="@{/admin/members/{id}/role(id=${m.id()})}" method="post">
               <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>

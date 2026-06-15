@@ -4,66 +4,133 @@
       lang="ko">
 <body>
 
-<!-- 회원 조회 -->
-<div class="card mb-3" style="margin-bottom:18px;">
-  <div class="card-title">회원 조회</div>
-  <form th:action="@{/admin/verifications}" method="get" style="display:flex; gap:8px; align-items:center;">
-    <input type="number" name="memberId" th:value="${memberId}" placeholder="회원 ID"
-           required min="1"
-           style="padding:7px 10px; background:var(--surface-2); border:1px solid var(--border); border-radius:5px; color:var(--text); width:160px;"/>
-    <button type="submit" class="btn btn-ghost btn-sm">조회</button>
-    <span class="text-muted">멤버 관리 페이지에서 회원 ID를 확인하세요.</span>
+<style>
+  /* 신뢰 등급 뱃지 */
+  .trust { font-size: 12px; padding: 3px 10px; border-radius: 999px; font-weight: 600; letter-spacing: 0.3px; }
+  .trust-UNVERIFIED       { background: rgba(139,148,158,0.15); color: var(--text-muted); }
+  .trust-STUDENT          { background: rgba(88,166,255,0.15);  color: var(--accent); }
+  .trust-EXCHANGE_VERIFIED{ background: rgba(63,185,80,0.15);   color: var(--success); }
+
+  /* 회원 검색 결과 */
+  .member-hit { display:flex; align-items:center; justify-content:space-between; gap:12px;
+                padding:11px 14px; border-bottom:1px solid var(--border); }
+  .member-hit:last-child { border-bottom:none; }
+  .member-hit:hover { background: rgba(255,255,255,0.02); }
+  .member-hit .meta { display:flex; flex-direction:column; gap:2px; min-width:0; }
+  .member-hit .nick { font-weight:600; }
+
+  /* 회원 컨텍스트 헤더 */
+  .ctx { display:flex; align-items:center; gap:14px; flex-wrap:wrap; }
+  .ctx .avatar { width:42px; height:42px; border-radius:50%; background:var(--surface-2);
+                 display:flex; align-items:center; justify-content:center; font-size:18px; font-weight:700;
+                 color:var(--accent); flex-shrink:0; }
+  .ctx .who { display:flex; flex-direction:column; gap:3px; }
+  .ctx .who .name { font-size:16px; font-weight:600; }
+  .ctx .who .sub  { font-size:12px; color:var(--text-muted); }
+
+  /* 대학 자동완성 */
+  .ac-wrap { position:relative; }
+  .ac-results { position:absolute; top:100%; left:0; right:0; z-index:20; margin-top:4px;
+                background:var(--surface-2); border:1px solid var(--border); border-radius:6px;
+                max-height:260px; overflow-y:auto; display:none; list-style:none;
+                box-shadow:0 8px 24px rgba(0,0,0,0.4); }
+  .ac-item { padding:9px 12px; cursor:pointer; font-size:13px; border-bottom:1px solid var(--border); }
+  .ac-item:last-child { border-bottom:none; }
+  .ac-item:hover, .ac-item:focus { background:rgba(88,166,255,0.12); color:var(--accent); outline:none; }
+  .ac-empty { padding:9px 12px; font-size:12px; color:var(--text-muted); }
+  .field { display:flex; flex-direction:column; gap:5px; font-size:12px; color:var(--text-muted); }
+  .field input { padding:8px 11px; background:var(--surface-2); border:1px solid var(--border);
+                 border-radius:5px; color:var(--text); width:100%; }
+  .field input[aria-invalid="true"] { border-color:var(--danger); }
+  .hint { font-size:12px; color:var(--text-muted); }
+  .selected-uni { font-size:12px; color:var(--success); min-height:16px; }
+</style>
+
+<!-- ① 회원 검색 -->
+<div class="card" style="margin-bottom:18px;">
+  <div class="card-title">회원 검색</div>
+  <form th:action="@{/admin/verifications}" method="get" role="search"
+        style="display:flex; gap:8px; align-items:center;">
+    <label for="q" class="visually-hidden" style="position:absolute; left:-9999px;">이메일 또는 닉네임</label>
+    <input id="q" type="text" name="q" th:value="${q}" placeholder="이메일 또는 닉네임으로 검색"
+           autocomplete="off"
+           style="padding:8px 11px; background:var(--surface-2); border:1px solid var(--border); border-radius:5px; color:var(--text); width:320px;"/>
+    <button type="submit" class="btn btn-primary btn-sm">검색</button>
+    <span class="hint">또는 멤버 관리 페이지에서 “✓ 인증” 버튼으로 바로 이동</span>
   </form>
+
+  <!-- 검색 결과 -->
+  <div th:if="${memberResults != null}" style="margin-top:14px; border:1px solid var(--border); border-radius:6px; overflow:hidden;">
+    <div th:if="${memberResults.isEmpty()}" style="padding:20px; text-align:center; color:var(--text-muted); font-size:13px;">
+      “<span th:text="${q}"></span>” 와 일치하는 회원이 없습니다.
+    </div>
+    <div th:each="r : ${memberResults}" class="member-hit">
+      <div class="meta">
+        <span class="nick" th:text="${r.nickname()}"></span>
+        <span class="hint" th:text="${r.email()} + '  ·  #' + ${r.id()}"></span>
+      </div>
+      <a class="btn btn-ghost btn-sm" th:href="@{/admin/verifications(memberId=${r.id()})}">선택 →</a>
+    </div>
+  </div>
 </div>
 
-<!-- 현재 인증 현황 -->
-<div th:if="${verification != null}">
-  <div class="section-header">
-    <span class="section-title">
-      회원 #<span th:text="${memberId}"></span> 인증 현황
-      <span class="badge"
-            th:classappend="${verification.trustLevel() == 'UNVERIFIED'} ? ' badge-member' : ' badge-active'"
-            th:text="${verification.trustLevel()}"
-            style="margin-left:8px;"></span>
-    </span>
+<!-- ② 회원 미발견 -->
+<div th:if="${memberId != null and member == null}" class="card flash-error" style="margin-bottom:18px;">
+  회원 #<span th:text="${memberId}"></span> 을(를) 찾을 수 없습니다.
+</div>
+
+<!-- ③ 회원 컨텍스트 (선택된 회원) -->
+<div th:if="${member != null}">
+  <div class="card" style="margin-bottom:18px;">
+    <div class="ctx">
+      <div class="avatar" th:text="${#strings.isEmpty(member.nickname())} ? '?' : ${#strings.toUpperCase(#strings.substring(member.nickname(),0,1))}"></div>
+      <div class="who">
+        <span class="name" th:text="${member.nickname()}"></span>
+        <span class="sub" th:text="${member.email()} + '  ·  회원 #' + ${member.id()}"></span>
+      </div>
+      <div style="margin-left:auto; text-align:right;">
+        <div class="hint" style="margin-bottom:4px;">현재 신뢰 등급</div>
+        <span class="trust" th:classappend="'trust-' + ${verification.trustLevel()}"
+              th:text="${verification.trustLevel()}"></span>
+      </div>
+    </div>
   </div>
 
+  <!-- 보유 자격 -->
+  <div class="section-header">
+    <span class="section-title">보유 인증 자격
+      <span class="hint" th:text="'(' + ${verification.credentials().size()} + ')'"></span>
+    </span>
+  </div>
   <div class="card" style="padding:0; overflow:hidden; margin-bottom:24px;">
     <div class="table-wrap">
       <table>
         <thead>
           <tr>
-            <th>ID</th>
-            <th>대학</th>
-            <th>타입</th>
-            <th>상태</th>
-            <th>이메일</th>
-            <th>발급자</th>
-            <th>메모</th>
-            <th>인증일시</th>
-            <th>액션</th>
+            <th>ID</th><th>대학</th><th>타입</th><th>상태</th><th>이메일</th>
+            <th>발급자</th><th>메모</th><th>인증일시</th><th>액션</th>
           </tr>
         </thead>
         <tbody>
           <tr th:if="${verification.credentials().isEmpty()}">
-            <td colspan="9" style="text-align:center; padding:32px; color:var(--text-muted);">보유 자격이 없습니다.</td>
+            <td colspan="9" style="text-align:center; padding:28px; color:var(--text-muted);">
+              보유 자격이 없습니다. 아래에서 수동 인증을 발급할 수 있습니다.
+            </td>
           </tr>
           <tr th:each="c : ${verification.credentials()}">
             <td style="color:var(--text-muted);" th:text="${c.credentialId()}"></td>
             <td style="font-weight:500;">
               <span th:text="${c.universityName()}"></span>
-              <span class="text-muted" th:text="'(#' + ${c.universityId()} + ')'"></span>
+              <span class="hint" th:text="'(#' + ${c.universityId()} + ')'"></span>
             </td>
             <td>
-              <span class="badge"
-                    th:classappend="${c.type() == 'ADMIN_VERIFIED'} ? ' badge-admin' : ' badge-member'"
+              <span class="badge" th:classappend="${c.type() == 'ADMIN_VERIFIED'} ? ' badge-admin' : ' badge-member'"
                     th:text="${c.type()}"></span>
             </td>
             <td>
-              <span class="badge"
-                    th:classappend="${c.status() == 'VERIFIED'} ? ' badge-active' : ' badge-deleted'"
+              <span class="badge" th:classappend="${c.status() == 'VERIFIED'} ? ' badge-active' : ' badge-deleted'"
                     th:text="${c.status()}"></span>
-              <div th:if="${c.revokedBy() != null}" class="text-muted" style="margin-top:4px; font-size:11px;">
+              <div th:if="${c.revokedBy() != null}" class="hint" style="margin-top:4px;">
                 취소: <span th:text="${c.revokedBy()}"></span><br/>
                 <span th:text="${c.revokedAt()}"></span>
               </div>
@@ -71,7 +138,7 @@
             <td style="color:var(--text-muted);" th:text="${c.verifiedEmail() ?: '—'}"></td>
             <td style="color:var(--text-muted);" th:text="${c.verifiedBy() ?: '—'}"></td>
             <td style="color:var(--text-muted);" th:text="${c.note() ?: '—'}"></td>
-            <td style="color:var(--text-muted); font-size:12px;" th:text="${c.verifiedAt()}"></td>
+            <td class="hint" th:text="${c.verifiedAt()}"></td>
             <td>
               <form th:if="${c.status() == 'VERIFIED'}" class="inline-form"
                     th:action="@{/admin/verifications/{id}/revoke(id=${c.credentialId()})}" method="post"
@@ -86,49 +153,36 @@
       </table>
     </div>
   </div>
-</div>
 
-<!-- 수동 인증 발급 -->
-<div class="card">
-  <div class="card-title">수동 인증 발급 (ADMIN_VERIFIED)</div>
+  <!-- 수동 인증 발급 -->
+  <div class="card">
+    <div class="card-title">이 회원에게 수동 인증 발급 (ADMIN_VERIFIED)</div>
+    <form id="issueForm" th:action="@{/admin/verifications}" method="post"
+          style="display:grid; grid-template-columns:repeat(auto-fit, minmax(240px,1fr)); gap:14px; align-items:start;">
+      <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+      <input type="hidden" name="memberId" th:value="${memberId}"/>
+      <input type="hidden" id="universityId" name="universityId"/>
 
-  <!-- 대학 검색 (발급 폼의 select 채우기용) -->
-  <form th:action="@{/admin/verifications}" method="get" style="display:flex; gap:8px; align-items:center; margin-bottom:14px;">
-    <input type="hidden" name="memberId" th:value="${memberId}"/>
-    <input type="text" name="uniQuery" th:value="${uniQuery}" placeholder="대학명 검색 (예: Tokyo)"
-           style="padding:7px 10px; background:var(--surface-2); border:1px solid var(--border); border-radius:5px; color:var(--text); width:240px;"/>
-    <button type="submit" class="btn btn-ghost btn-sm">대학 검색</button>
-    <span class="text-muted">검색 후 아래 드롭다운에서 선택하세요 (최대 50건).</span>
-  </form>
+      <div class="field ac-wrap">
+        <label for="uniSearch">대학 (입력해 검색)</label>
+        <input id="uniSearch" type="text" placeholder="대학명 입력 (예: Tokyo)" autocomplete="off"
+               role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="uniResults"/>
+        <ul id="uniResults" class="ac-results" role="listbox" aria-label="대학 검색 결과"></ul>
+        <span id="uniSelected" class="selected-uni"></span>
+      </div>
 
-  <form th:action="@{/admin/verifications}" method="post"
-        style="display:grid; grid-template-columns:repeat(auto-fit, minmax(220px,1fr)); gap:12px; align-items:end;">
-    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+      <div class="field">
+        <label for="note">사유 메모 (선택)</label>
+        <input id="note" type="text" name="note" maxlength="500" placeholder="예: 교환 증빙서류 확인 (이메일은 여기에 기록)"/>
+      </div>
 
-    <label style="display:flex; flex-direction:column; gap:5px; font-size:12px; color:var(--text-muted);">
-      회원 ID
-      <input type="number" name="memberId" th:value="${memberId}" required min="1"
-             style="padding:7px 10px; background:var(--surface-2); border:1px solid var(--border); border-radius:5px; color:var(--text);"/>
-    </label>
+      <div style="align-self:end;">
+        <button type="submit" class="btn btn-primary">인증 발급</button>
+      </div>
+    </form>
+  </div>
 
-    <label style="display:flex; flex-direction:column; gap:5px; font-size:12px; color:var(--text-muted);">
-      대학
-      <select name="universityId" required
-              style="padding:7px 10px; background:var(--surface-2); border:1px solid var(--border); border-radius:5px; color:var(--text);">
-        <option value="" disabled selected>대학 선택…</option>
-        <option th:each="u : ${universities}" th:value="${u.id()}"
-                th:text="${u.name()} + ' (' + ${u.countryCode()} + ')'"></option>
-      </select>
-    </label>
-
-    <label style="display:flex; flex-direction:column; gap:5px; font-size:12px; color:var(--text-muted);">
-      사유 메모 (선택)
-      <input type="text" name="note" placeholder="예: 교환 증빙서류 확인 (이메일은 여기에 기록)"
-             style="padding:7px 10px; background:var(--surface-2); border:1px solid var(--border); border-radius:5px; color:var(--text);"/>
-    </label>
-
-    <button type="submit" class="btn btn-primary">인증 발급</button>
-  </form>
+  <script th:src="@{/admin/verification-autocomplete.js}"></script>
 </div>
 
 </body>
