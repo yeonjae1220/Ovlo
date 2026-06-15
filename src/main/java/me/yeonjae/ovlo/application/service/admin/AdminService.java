@@ -55,6 +55,26 @@ public class AdminService {
         return loadMemberPort.findAll(pageable).map(AdminMemberResponse::of);
     }
 
+    /** 단건 회원 조회(인증 관리 헤더용). */
+    public java.util.Optional<AdminMemberResponse> findMember(Long memberId) {
+        return loadMemberPort.findById(new MemberId(memberId)).map(AdminMemberResponse::of);
+    }
+
+    /** 닉네임 부분일치 + 이메일 완전일치로 회원 검색(인증 발급 대상 선택용). */
+    public List<AdminMemberResponse> searchMembers(String keyword, int limit) {
+        String kw = keyword == null ? "" : keyword.trim();
+        if (kw.isEmpty()) {
+            return List.of();
+        }
+        java.util.LinkedHashMap<Long, Member> byId = new java.util.LinkedHashMap<>();
+        loadMemberPort.findByEmail(kw.toLowerCase())
+                .ifPresent(m -> byId.put(m.getId().value(), m));
+        for (Member m : loadMemberPort.searchByNickname(kw)) {
+            byId.putIfAbsent(m.getId().value(), m);
+        }
+        return byId.values().stream().limit(limit).map(AdminMemberResponse::of).toList();
+    }
+
     @Transactional
     public AdminMemberResponse updateMemberRole(Long memberId, MemberRole role) {
         Member member = findMemberOrThrow(memberId);

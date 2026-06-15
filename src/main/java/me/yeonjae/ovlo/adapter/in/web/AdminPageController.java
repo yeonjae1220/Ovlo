@@ -2,6 +2,7 @@ package me.yeonjae.ovlo.adapter.in.web;
 
 import lombok.RequiredArgsConstructor;
 import me.yeonjae.ovlo.adapter.in.web.dto.response.AdminMemberResponse;
+import me.yeonjae.ovlo.adapter.in.web.dto.response.AdminUniversityResponse;
 import me.yeonjae.ovlo.application.dto.command.IssueManualVerificationCommand;
 import me.yeonjae.ovlo.application.service.admin.AdminService;
 import me.yeonjae.ovlo.application.service.admin.AdminVerificationService;
@@ -18,6 +19,8 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+
+import java.util.List;
 
 @Controller
 @RequestMapping("/admin")
@@ -114,15 +117,28 @@ public class AdminPageController {
 
     @GetMapping("/verifications")
     public String verifications(@RequestParam(required = false) Long memberId,
-                                @RequestParam(required = false, defaultValue = "") String uniQuery,
+                                @RequestParam(required = false, defaultValue = "") String q,
                                 Model model) {
+        model.addAttribute("q", q);
         if (memberId != null) {
             model.addAttribute("memberId", memberId);
+            model.addAttribute("member", adminService.findMember(memberId).orElse(null));
             model.addAttribute("verification", adminVerificationService.findByMember(memberId));
+        } else if (!q.isBlank()) {
+            model.addAttribute("memberResults", adminService.searchMembers(q, 20));
         }
-        model.addAttribute("uniQuery", uniQuery);
-        model.addAttribute("universities", adminService.searchUniversities(uniQuery, 50));
         return "admin/verifications";
+    }
+
+    /** 대학 자동완성용 JSON 검색(admin 세션 체인 하위 — 페이지에서 fetch). */
+    @GetMapping("/verifications/universities")
+    @ResponseBody
+    public List<AdminUniversityResponse> searchUniversities(
+            @RequestParam(required = false, defaultValue = "") String q) {
+        if (q.isBlank()) {
+            return List.of();
+        }
+        return adminService.searchUniversities(q, 20);
     }
 
     @PostMapping("/verifications")
