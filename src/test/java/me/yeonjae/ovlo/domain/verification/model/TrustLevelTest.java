@@ -80,4 +80,29 @@ class TrustLevelTest {
         assertThat(TrustLevel.from(List.of(schoolEmailAt(200L, VerificationStatus.EXPIRED)), 100L))
                 .isEqualTo(TrustLevel.UNVERIFIED);
     }
+
+    @Test
+    @DisplayName("관리자 수동 인증(ADMIN_VERIFIED) 활성 자격도 STUDENT를 부여한다")
+    void student_whenActiveAdminVerified() {
+        VerificationCredential manual = VerificationCredential.issueManual(
+                1L, 100L, null, "admin@ovlo.me", "서류", Instant.now());
+        assertThat(TrustLevel.from(List.of(manual))).isEqualTo(TrustLevel.STUDENT);
+    }
+
+    @Test
+    @DisplayName("비본교 대학의 ADMIN_VERIFIED 자격은 EXCHANGE_VERIFIED를 부여한다")
+    void exchangeVerified_whenAdminVerifiedAtNonHomeUniversity() {
+        VerificationCredential manual = VerificationCredential.issueManual(
+                1L, 100L, null, "admin@ovlo.me", "서류", Instant.now());
+        assertThat(TrustLevel.from(List.of(manual), 200L)).isEqualTo(TrustLevel.EXCHANGE_VERIFIED);
+    }
+
+    @Test
+    @DisplayName("취소된(만료) ADMIN_VERIFIED 자격은 등급을 부여하지 않는다")
+    void unverified_whenAdminVerifiedExpired() {
+        VerificationCredential manual = VerificationCredential.issueManual(
+                1L, 100L, null, "admin@ovlo.me", "서류", Instant.now());
+        manual.expire();
+        assertThat(TrustLevel.from(List.of(manual))).isEqualTo(TrustLevel.UNVERIFIED);
+    }
 }

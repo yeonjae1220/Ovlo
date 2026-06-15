@@ -22,7 +22,7 @@ public class VerificationCredentialJpaEntity {
     @Column(name = "university_id", nullable = false)
     private Long universityId;
 
-    @Column(name = "verified_email", nullable = false)
+    @Column(name = "verified_email")
     private String verifiedEmail;
 
     @Column(nullable = false, length = 20)
@@ -30,6 +30,18 @@ public class VerificationCredentialJpaEntity {
 
     @Column(name = "verified_at", nullable = false)
     private Instant verifiedAt;
+
+    @Column(name = "verified_by", length = 255)
+    private String verifiedBy;
+
+    @Column(name = "note", length = 500)
+    private String note;
+
+    @Column(name = "revoked_by", length = 255)
+    private String revokedBy;
+
+    @Column(name = "revoked_at")
+    private Instant revokedAt;
 
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)
@@ -51,4 +63,12 @@ public class VerificationCredentialJpaEntity {
     public void setStatus(String status) { this.status = status; }
     public Instant getVerifiedAt() { return verifiedAt; }
     public void setVerifiedAt(Instant verifiedAt) { this.verifiedAt = verifiedAt; }
+    public String getVerifiedBy() { return verifiedBy; }
+    public void setVerifiedBy(String verifiedBy) { this.verifiedBy = verifiedBy; }
+    public String getNote() { return note; }
+    public void setNote(String note) { this.note = note; }
+    public String getRevokedBy() { return revokedBy; }
+    public void setRevokedBy(String revokedBy) { this.revokedBy = revokedBy; }
+    public Instant getRevokedAt() { return revokedAt; }
+    public void setRevokedAt(Instant revokedAt) { this.revokedAt = revokedAt; }
 }

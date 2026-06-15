@@ -32,6 +32,12 @@ public class VerificationCredentialPersistenceAdapter
     }
 
     @Override
+    @Transactional
+    public int revokeByIdAndMemberId(Long credentialId, Long memberId, String revokedBy, Instant revokedAt) {
+        return repository.revokeByIdAndMemberId(credentialId, memberId, revokedBy, revokedAt);
+    }
+
+    @Override
     public List<VerificationCredential> findByMemberId(Long memberId) {
         return repository.findByMemberId(memberId).stream().map(this::toDomain).toList();
     }
@@ -59,6 +65,10 @@ public class VerificationCredentialPersistenceAdapter
         e.setVerifiedEmail(c.getVerifiedEmail());
         e.setStatus(c.getStatus().name());
         e.setVerifiedAt(c.getVerifiedAt());
+        e.setVerifiedBy(c.getVerifiedBy());
+        e.setNote(c.getNote());
+        e.setRevokedBy(c.getRevokedBy());
+        e.setRevokedAt(c.getRevokedAt());
         return e;
     }
 
@@ -70,6 +80,10 @@ public class VerificationCredentialPersistenceAdapter
                 e.getUniversityId(),
                 e.getVerifiedEmail(),
                 VerificationStatus.valueOf(e.getStatus()),
-                e.getVerifiedAt());
+                e.getVerifiedAt(),
+                e.getVerifiedBy(),
+                e.getNote(),
+                e.getRevokedBy(),
+                e.getRevokedAt());
     }
 }

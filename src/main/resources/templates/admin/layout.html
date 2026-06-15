@@ -179,6 +179,9 @@
     <a th:href="@{/admin/universities}" th:class="${activePage == 'universities'} ? 'active' : ''">
       <span class="nav-icon">◈</span> 대학 목록
     </a>
+    <a th:href="@{/admin/verifications}" th:class="${activePage == 'verifications'} ? 'active' : ''">
+      <span class="nav-icon">✓</span> 학생 인증
+    </a>
   </nav>
   <div class="sidebar-footer">
     <!-- MEDIUM-5 fix: GET 로그아웃 → POST form (CSRF 공격으로 강제 로그아웃 방지) -->
