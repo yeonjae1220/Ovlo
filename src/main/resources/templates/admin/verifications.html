@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{admin/layout :: layout(~{::body}, '학생 인증', 'verifications')}"
+      lang="ko">
+<body>
+
+<!-- 회원 조회 -->
+<div class="card mb-3" style="margin-bottom:18px;">
+  <div class="card-title">회원 조회</div>
+  <form th:action="@{/admin/verifications}" method="get" style="display:flex; gap:8px; align-items:center;">
+    <input type="number" name="memberId" th:value="${memberId}" placeholder="회원 ID"
+           required min="1"
+           style="padding:7px 10px; background:var(--surface-2); border:1px solid var(--border); border-radius:5px; color:var(--text); width:160px;"/>
+    <button type="submit" class="btn btn-ghost btn-sm">조회</button>
+    <span class="text-muted">멤버 관리 페이지에서 회원 ID를 확인하세요.</span>
+  </form>
+</div>
+
+<!-- 현재 인증 현황 -->
+<div th:if="${verification != null}">
+  <div class="section-header">
+    <span class="section-title">
+      회원 #<span th:text="${memberId}"></span> 인증 현황
+      <span class="badge"
+            th:classappend="${verification.trustLevel() == 'UNVERIFIED'} ? ' badge-member' : ' badge-active'"
+            th:text="${verification.trustLevel()}"
+            style="margin-left:8px;"></span>
+    </span>
+  </div>
+
+  <div class="card" style="padding:0; overflow:hidden; margin-bottom:24px;">
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>대학</th>
+            <th>타입</th>
+            <th>상태</th>
+            <th>이메일</th>
+            <th>발급자</th>
+            <th>메모</th>
+            <th>인증일시</th>
+            <th>액션</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr th:if="${verification.credentials().isEmpty()}">
+            <td colspan="9" style="text-align:center; padding:32px; color:var(--text-muted);">보유 자격이 없습니다.</td>
+          </tr>
+          <tr th:each="c : ${verification.credentials()}">
+            <td style="color:var(--text-muted);" th:text="${c.credentialId()}"></td>
+            <td style="font-weight:500;">
+              <span th:text="${c.universityName()}"></span>
+              <span class="text-muted" th:text="'(#' + ${c.universityId()} + ')'"></span>
+            </td>
+            <td>
+              <span class="badge"
+                    th:classappend="${c.type() == 'ADMIN_VERIFIED'} ? ' badge-admin' : ' badge-member'"
+                    th:text="${c.type()}"></span>
+            </td>
+            <td>
+              <span class="badge"
+                    th:classappend="${c.status() == 'VERIFIED'} ? ' badge-active' : ' badge-deleted'"
+                    th:text="${c.status()}"></span>
+              <div th:if="${c.revokedBy() != null}" class="text-muted" style="margin-top:4px; font-size:11px;">
+                취소: <span th:text="${c.revokedBy()}"></span><br/>
+                <span th:text="${c.revokedAt()}"></span>
+              </div>
+            </td>
+            <td style="color:var(--text-muted);" th:text="${c.verifiedEmail() ?: '—'}"></td>
+            <td style="color:var(--text-muted);" th:text="${c.verifiedBy() ?: '—'}"></td>
+            <td style="color:var(--text-muted);" th:text="${c.note() ?: '—'}"></td>
+            <td style="color:var(--text-muted); font-size:12px;" th:text="${c.verifiedAt()}"></td>
+            <td>
+              <form th:if="${c.status() == 'VERIFIED'}" class="inline-form"
+                    th:action="@{/admin/verifications/{id}/revoke(id=${c.credentialId()})}" method="post"
+                    onsubmit="return confirm('이 자격을 취소(만료)하시겠습니까?')">
+                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                <input type="hidden" name="memberId" th:value="${memberId}"/>
+                <button type="submit" class="btn btn-danger btn-sm">취소</button>
+              </form>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- 수동 인증 발급 -->
+<div class="card">
+  <div class="card-title">수동 인증 발급 (ADMIN_VERIFIED)</div>
+
+  <!-- 대학 검색 (발급 폼의 select 채우기용) -->
+  <form th:action="@{/admin/verifications}" method="get" style="display:flex; gap:8px; align-items:center; margin-bottom:14px;">
+    <input type="hidden" name="memberId" th:value="${memberId}"/>
+    <input type="text" name="uniQuery" th:value="${uniQuery}" placeholder="대학명 검색 (예: Tokyo)"
+           style="padding:7px 10px; background:var(--surface-2); border:1px solid var(--border); border-radius:5px; color:var(--text); width:240px;"/>
+    <button type="submit" class="btn btn-ghost btn-sm">대학 검색</button>
+    <span class="text-muted">검색 후 아래 드롭다운에서 선택하세요 (최대 50건).</span>
+  </form>
+
+  <form th:action="@{/admin/verifications}" method="post"
+        style="display:grid; grid-template-columns:repeat(auto-fit, minmax(220px,1fr)); gap:12px; align-items:end;">
+    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+
+    <label style="display:flex; flex-direction:column; gap:5px; font-size:12px; color:var(--text-muted);">
+      회원 ID
+      <input type="number" name="memberId" th:value="${memberId}" required min="1"
+             style="padding:7px 10px; background:var(--surface-2); border:1px solid var(--border); border-radius:5px; color:var(--text);"/>
+    </label>
+
+    <label style="display:flex; flex-direction:column; gap:5px; font-size:12px; color:var(--text-muted);">
+      대학
+      <select name="universityId" required
+              style="padding:7px 10px; background:var(--surface-2); border:1px solid var(--border); border-radius:5px; color:var(--text);">
+        <option value="" disabled selected>대학 선택…</option>
+        <option th:each="u : ${universities}" th:value="${u.id()}"
+                th:text="${u.name()} + ' (' + ${u.countryCode()} + ')'"></option>
+      </select>
+    </label>
+
+    <label style="display:flex; flex-direction:column; gap:5px; font-size:12px; color:var(--text-muted);">
+      사유 메모 (선택)
+      <input type="text" name="note" placeholder="예: 교환 증빙서류 확인 (이메일은 여기에 기록)"
+             style="padding:7px 10px; background:var(--surface-2); border:1px solid var(--border); border-radius:5px; color:var(--text);"/>
+    </label>
+
+    <button type="submit" class="btn btn-primary">인증 발급</button>
+  </form>
+</div>
+
+</body>
+</html>

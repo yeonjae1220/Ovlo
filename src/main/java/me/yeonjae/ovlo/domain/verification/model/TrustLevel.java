@@ -58,7 +58,7 @@ public enum TrustLevel {
         boolean hasActiveSchoolEmail = false;
         boolean hasNonHomeSchoolEmail = false;
         for (VerificationCredential c : credentials) {
-            if (c.isActive() && c.getType() == VerificationType.SCHOOL_EMAIL) {
+            if (c.isActive() && c.getType().grantsStudentTrust()) {
                 hasActiveSchoolEmail = true;
                 if (homeUniversityId != null && !homeUniversityId.equals(c.getUniversityId())) {
                     hasNonHomeSchoolEmail = true;

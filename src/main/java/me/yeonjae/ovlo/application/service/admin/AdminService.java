@@ -24,6 +24,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+
 @Service
 @Transactional(readOnly = true)
 public class AdminService {
@@ -98,6 +100,14 @@ public class AdminService {
         var posts = loadPostPort.findAll((int) Math.min(offset, Integer.MAX_VALUE), limit);
         long total = loadPostPort.count();
         return new PageImpl<>(posts.stream().map(AdminPostResponse::of).toList(), pageable, total);
+    }
+
+    /** 관리자 인증 발급 폼의 대학 선택용 — 키워드 검색(최대 limit건). */
+    public List<AdminUniversityResponse> searchUniversities(String keyword, int limit) {
+        String kw = keyword == null ? "" : keyword.trim();
+        return searchUniversityPort.search(kw, null, 0, limit).stream()
+                .map(AdminUniversityResponse::of)
+                .toList();
     }
 
     public Page<AdminUniversityResponse> getUniversities(Pageable pageable) {
