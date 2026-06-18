@@ -1,6 +1,7 @@
 package me.yeonjae.ovlo.adapter.out.persistence;
 
 import me.yeonjae.ovlo.adapter.out.persistence.repository.UniversityCatalogJpaRepository;
+import me.yeonjae.ovlo.application.dto.result.UniversityCatalogCountryResult;
 import me.yeonjae.ovlo.application.port.out.university.LoadUniversityCatalogPort;
 import org.springframework.stereotype.Component;
 
@@ -30,6 +31,16 @@ public class UniversityCatalogPersistenceAdapter implements LoadUniversityCatalo
     @Override
     public long count(String keyword, String countryCode) {
         return repository.countSearch(blankToNull(keyword), blankToNull(countryCode));
+    }
+
+    @Override
+    public List<UniversityCatalogCountryResult> findCountries() {
+        return repository.findCountries().stream()
+                .map(r -> new UniversityCatalogCountryResult(
+                        (String) r[0],
+                        (String) r[1],
+                        ((Number) r[2]).longValue()))
+                .toList();
     }
 
     /** 컬럼 순서: global_univ_id, exchange_univ_id, report_id, name_en, name_ko, country, country_code, city */

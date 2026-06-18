@@ -75,4 +75,13 @@ public interface UniversityCatalogJpaRepository extends JpaRepository<GlobalUniv
             nativeQuery = true)
     long countSearch(@Param("keyword") String keyword,
                      @Param("countryCode") String countryCode);
+
+    /** 콘텐츠 보유 대학을 국가별 집계 — 컬럼 순서: country, country_code, university_count */
+    @Query(value = "SELECT t.country, t.country_code, COUNT(*) AS university_count "
+            + "FROM (" + CONTENT_SET + ") t "
+            + "WHERE t.country IS NOT NULL AND t.country_code IS NOT NULL "
+            + "GROUP BY t.country, t.country_code "
+            + "ORDER BY t.country",
+            nativeQuery = true)
+    List<Object[]> findCountries();
 }

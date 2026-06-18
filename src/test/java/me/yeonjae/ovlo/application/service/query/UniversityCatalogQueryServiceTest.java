@@ -2,6 +2,7 @@ package me.yeonjae.ovlo.application.service.query;
 
 import me.yeonjae.ovlo.application.dto.command.SearchUniversityCatalogCommand;
 import me.yeonjae.ovlo.application.dto.result.PageResult;
+import me.yeonjae.ovlo.application.dto.result.UniversityCatalogCountryResult;
 import me.yeonjae.ovlo.application.dto.result.UniversityCatalogResult;
 import me.yeonjae.ovlo.application.port.out.university.LoadExchangeUniversityPort;
 import me.yeonjae.ovlo.application.port.out.university.LoadUniversityCatalogPort;
@@ -93,6 +94,20 @@ class UniversityCatalogQueryServiceTest {
         assertThat(r.hasReviews()).isTrue();
         assertThat(r.reportId()).isEqualTo(301L);
         assertThat(r.reviewCount()).isEqualTo(2L);
+    }
+
+    @Test
+    @DisplayName("getCountries는 포트의 국가 집계 결과를 그대로 전달한다")
+    void shouldDelegateCountries() {
+        given(loadCatalogPort.findCountries()).willReturn(List.of(
+                new UniversityCatalogCountryResult("대한민국", "KR", 3L),
+                new UniversityCatalogCountryResult("독일", "DE", 1L)));
+
+        List<UniversityCatalogCountryResult> countries = service.getCountries();
+
+        assertThat(countries).extracting(UniversityCatalogCountryResult::countryCode)
+                .containsExactly("KR", "DE");
+        assertThat(countries.get(0).universityCount()).isEqualTo(3L);
     }
 
     @Test

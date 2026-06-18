@@ -148,6 +148,16 @@ class UniversityCatalogPersistenceAdapterIntegrationTest {
         assertThat(jp.get(0).exchangeUnivId()).isEqualTo(orphanExchangeId);
     }
 
+    @Test
+    @DisplayName("국가 목록은 리포트만 있는 국가도 포함하고 콘텐츠 없는 국가는 제외한다")
+    void countryListIncludesReportOnly() {
+        var countries = catalogQuery.getCountries();
+
+        assertThat(countries).extracting(c -> c.countryCode())
+                .containsExactlyInAnyOrder("KR", "DE", "JP");  // KR=리포트만 포함, FR(빈대학) 제외
+        assertThat(countries).allSatisfy(c -> assertThat(c.universityCount()).isEqualTo(1L));
+    }
+
     // ── helpers ──────────────────────────────────────────────────────────────
 
     private List<UniversityCatalogResult> search(String keyword, String countryCode) {

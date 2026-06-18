@@ -1,5 +1,7 @@
 package me.yeonjae.ovlo.application.port.out.university;
 
+import me.yeonjae.ovlo.application.dto.result.UniversityCatalogCountryResult;
+
 import java.util.List;
 
 /**
@@ -14,6 +16,8 @@ public interface LoadUniversityCatalogPort {
     List<CatalogRow> search(String keyword, String countryCode, int offset, int limit);
 
     long count(String keyword, String countryCode);
+
+    List<UniversityCatalogCountryResult> findCountries();
 
     /**
      * 카탈로그 한 행. 리뷰 집계 전 상태(globalUnivId/exchangeUnivId/reportId + 표시 정보).

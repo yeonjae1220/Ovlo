@@ -8,6 +8,7 @@ import jakarta.validation.constraints.Size;
 import me.yeonjae.ovlo.application.dto.command.SearchUniversityCatalogCommand;
 import me.yeonjae.ovlo.application.dto.command.SearchUniversityCommand;
 import me.yeonjae.ovlo.application.dto.result.PageResult;
+import me.yeonjae.ovlo.application.dto.result.UniversityCatalogCountryResult;
 import me.yeonjae.ovlo.application.dto.result.UniversityCatalogResult;
 import me.yeonjae.ovlo.application.dto.result.UniversityResult;
 import me.yeonjae.ovlo.application.port.in.university.GetUniversityQuery;
@@ -21,6 +22,8 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.util.List;
 
 @Tag(name = "University", description = "대학 API")
 @Validated
@@ -56,6 +59,15 @@ public class UniversityApiController {
     ) {
         return ResponseEntity.ok(searchCatalogQuery.search(
                 new SearchUniversityCatalogCommand(keyword, countryCode, page, size)));
+    }
+
+    @Operation(
+            summary = "통합 카탈로그 국가 목록",
+            description = "콘텐츠(리포트/후기)를 보유한 대학을 국가별로 집계한 목록 (필터 드롭다운용)"
+    )
+    @GetMapping("/catalog/countries")
+    public ResponseEntity<List<UniversityCatalogCountryResult>> getCatalogCountries() {
+        return ResponseEntity.ok(searchCatalogQuery.getCountries());
     }
 
     @Operation(summary = "대학 검색")

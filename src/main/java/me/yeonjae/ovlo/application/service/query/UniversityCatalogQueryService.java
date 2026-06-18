@@ -2,6 +2,7 @@ package me.yeonjae.ovlo.application.service.query;
 
 import me.yeonjae.ovlo.application.dto.command.SearchUniversityCatalogCommand;
 import me.yeonjae.ovlo.application.dto.result.PageResult;
+import me.yeonjae.ovlo.application.dto.result.UniversityCatalogCountryResult;
 import me.yeonjae.ovlo.application.dto.result.UniversityCatalogResult;
 import me.yeonjae.ovlo.application.port.in.university.SearchUniversityCatalogQuery;
 import me.yeonjae.ovlo.application.port.out.university.LoadExchangeUniversityPort;
@@ -51,6 +52,11 @@ public class UniversityCatalogQueryService implements SearchUniversityCatalogQue
 
         long total = loadCatalogPort.count(command.keyword(), command.countryCode());
         return PageResult.of(content, total, command.page(), command.size());
+    }
+
+    @Override
+    public List<UniversityCatalogCountryResult> getCountries() {
+        return loadCatalogPort.findCountries();
     }
 
     private UniversityCatalogResult toResult(CatalogRow row,

@@ -95,21 +95,15 @@ export const universityCatalogApi = {
         },
       })
       .then((r) => r.data),
+
+  /** 콘텐츠 보유 대학을 국가별 집계 (리포트만 있는 국가도 포함) */
+  countries: () =>
+    apiClient
+      .get<ExchangeUniversityCountry[]>('/universities/catalog/countries')
+      .then((r) => r.data),
 }
 
 export const exchangeUniversityApi = {
-  countries: () =>
-    apiClient
-      .get<ExchangeUniversityCountry[]>('/exchange-universities/countries')
-      .then((r) => r.data),
-
-  search: (keyword?: string, countryCode?: string, page = 0, size = 20) =>
-    apiClient
-      .get<PageResult<ExchangeUniversity>>('/exchange-universities', {
-        params: { keyword, countryCode, page, size },
-      })
-      .then((r) => r.data),
-
   getById: (id: number) =>
     apiClient
       .get<ExchangeUniversity>(`/exchange-universities/${id}`)

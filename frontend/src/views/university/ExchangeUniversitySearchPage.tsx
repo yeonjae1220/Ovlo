@@ -4,7 +4,7 @@ import { useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import {
   useUniversityCatalogSearch,
-  useExchangeUniversityCountries,
+  useUniversityCatalogCountries,
 } from '../../hooks/useUniversity'
 import { useDebounce } from '../../hooks/useDebounce'
 import { useBreakpoint } from '../../hooks/useBreakpoint'
@@ -44,7 +44,7 @@ export default function ExchangeUniversitySearchPage() {
   const [page, setPage] = useState(0)
   const debouncedQuery = useDebounce(query.trim(), 300)
 
-  const { data: countries = [] } = useExchangeUniversityCountries()
+  const { data: countries = [] } = useUniversityCatalogCountries()
   const { data: pageData, isLoading } = useUniversityCatalogSearch(
     debouncedQuery,
     countryCode,
