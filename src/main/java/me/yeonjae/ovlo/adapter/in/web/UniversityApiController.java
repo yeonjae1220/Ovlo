@@ -15,6 +15,9 @@ import me.yeonjae.ovlo.application.port.in.university.GetUniversityQuery;
 import me.yeonjae.ovlo.application.port.in.university.SearchUniversityCatalogQuery;
 import me.yeonjae.ovlo.application.port.in.university.SearchUniversityQuery;
 import me.yeonjae.ovlo.domain.university.model.UniversityId;
+import me.yeonjae.ovlo.shared.security.ClientIpResolver;
+import me.yeonjae.ovlo.shared.security.RateLimiterService;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -34,15 +37,21 @@ public class UniversityApiController {
     private final SearchUniversityQuery searchUniversityQuery;
     private final GetUniversityQuery getUniversityQuery;
     private final SearchUniversityCatalogQuery searchCatalogQuery;
+    private final RateLimiterService rateLimiterService;
+    private final ClientIpResolver clientIpResolver;
 
     public UniversityApiController(
             SearchUniversityQuery searchUniversityQuery,
             GetUniversityQuery getUniversityQuery,
-            SearchUniversityCatalogQuery searchCatalogQuery
+            SearchUniversityCatalogQuery searchCatalogQuery,
+            RateLimiterService rateLimiterService,
+            ClientIpResolver clientIpResolver
     ) {
         this.searchUniversityQuery = searchUniversityQuery;
         this.getUniversityQuery = getUniversityQuery;
         this.searchCatalogQuery = searchCatalogQuery;
+        this.rateLimiterService = rateLimiterService;
+        this.clientIpResolver = clientIpResolver;
     }
 
     @Operation(
@@ -55,8 +64,10 @@ public class UniversityApiController {
             @RequestParam(required = false) @Size(max = 100) String keyword,
             @RequestParam(required = false) @Size(max = 2) String countryCode,
             @RequestParam(defaultValue = "0") @Min(0) int page,
-            @RequestParam(defaultValue = "20") @Min(1) @Max(100) int size
+            @RequestParam(defaultValue = "20") @Min(1) @Max(100) int size,
+            HttpServletRequest httpRequest
     ) {
+        rateLimiterService.checkSearchRate(clientIpResolver.resolve(httpRequest));
         return ResponseEntity.ok(searchCatalogQuery.search(
                 new SearchUniversityCatalogCommand(keyword, countryCode, page, size)));
     }

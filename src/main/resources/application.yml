@@ -81,6 +81,7 @@ ovlo:
     login-limit: ${RATE_LIMIT_LOGIN:10}
     refresh-limit: ${RATE_LIMIT_REFRESH:30}
     signup-limit: ${RATE_LIMIT_SIGNUP:5}
+    search-limit: ${RATE_LIMIT_SEARCH:100}
     window-seconds: ${RATE_LIMIT_WINDOW_SECONDS:600}
   # 신뢰 프록시 IP 목록 — 이 주소에서 온 요청만 X-Real-IP 헤더를 신뢰
   # Docker 내부 nginx: 172.x.x.x, 로컬 개발: 127.0.0.1/::1
