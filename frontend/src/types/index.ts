@@ -235,6 +235,22 @@ export interface ExchangeUniversity {
   avgRating?: number
 }
 
+// 통합 대학 카탈로그 (리포트 ∪ 후기). hasReport/hasReviews 로 상세 라우팅 결정
+export interface UniversityCatalogItem {
+  globalUnivId?: number | null
+  exchangeUnivId?: number | null
+  reportId?: number | null
+  nameEn: string
+  nameKo?: string | null
+  country?: string | null
+  countryCode?: string | null
+  city?: string | null
+  hasReport: boolean
+  hasReviews: boolean
+  reviewCount: number
+  avgRating?: number | null
+}
+
 export interface VideoReview {
   id: number
   youtubeUrl: string

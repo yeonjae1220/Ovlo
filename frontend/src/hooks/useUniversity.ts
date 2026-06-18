@@ -1,7 +1,7 @@
 'use client'
 
 import { useQuery } from '@tanstack/react-query'
-import { globalUniversityApi, exchangeUniversityApi, universityReportApi } from '../api/university'
+import { globalUniversityApi, exchangeUniversityApi, universityCatalogApi, universityReportApi } from '../api/university'
 
 export function useExchangeUniversityCountries() {
   return useQuery({
@@ -32,6 +32,14 @@ export function useExchangeUniversitySearch(keyword: string, countryCode?: strin
     queryKey: ['exchange-universities', 'search', keyword, countryCode, page, size],
     queryFn: () => exchangeUniversityApi.search(keyword || undefined, countryCode || undefined, page, size),
     enabled: keyword.length >= 1 || (!!countryCode && countryCode.length >= 1),
+  })
+}
+
+export function useUniversityCatalogSearch(keyword: string, countryCode?: string, page = 0, size = 20) {
+  return useQuery({
+    queryKey: ['university-catalog', 'search', keyword, countryCode, page, size],
+    queryFn: () => universityCatalogApi.search(keyword || undefined, countryCode || undefined, page, size),
+    enabled: keyword.trim().length >= 1 || (!!countryCode && countryCode.length >= 1),
   })
 }
 

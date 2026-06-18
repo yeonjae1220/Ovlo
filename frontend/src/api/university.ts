@@ -1,5 +1,5 @@
 import apiClient from '../utils/axios'
-import type { ExchangeUniversity, VideoReview, PageResult } from '../types'
+import type { ExchangeUniversity, UniversityCatalogItem, VideoReview, PageResult } from '../types'
 
 export interface UniversityReportSummary {
   id: number
@@ -79,6 +79,21 @@ export const universityReportApi = {
   getLanguages: (id: number) =>
     apiClient
       .get<string[]>(`/university-reports/${id}/languages`)
+      .then((r) => r.data),
+}
+
+/** 통합 대학 카탈로그 — 콘텐츠(리포트/후기) 보유 대학을 한/영/현지어·국가코드로 검색 */
+export const universityCatalogApi = {
+  search: (keyword?: string, countryCode?: string, page = 0, size = 20) =>
+    apiClient
+      .get<PageResult<UniversityCatalogItem>>('/universities/catalog', {
+        params: {
+          keyword: keyword || undefined,
+          countryCode: countryCode || undefined,
+          page,
+          size,
+        },
+      })
       .then((r) => r.data),
 }
 
