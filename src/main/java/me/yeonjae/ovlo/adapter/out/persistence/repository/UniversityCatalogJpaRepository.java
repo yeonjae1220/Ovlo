@@ -59,7 +59,9 @@ public interface UniversityCatalogJpaRepository extends JpaRepository<GlobalUniv
             + "  AND (:countryCode IS NULL OR t.country_code = :countryCode) "
             + "ORDER BY (t.report_id IS NOT NULL) DESC, "
             + "         (t.exchange_univ_id IS NOT NULL) DESC, "
-            + "         t.name_en NULLS LAST "
+            + "         t.name_en NULLS LAST, "
+            + "         t.global_univ_id NULLS LAST, "  // 동명(name_en 중복) 대학 페이징 안정성 보장
+            + "         t.exchange_univ_id NULLS LAST "
             + "LIMIT :limit OFFSET :offset",
             nativeQuery = true)
     List<Object[]> search(@Param("keyword") String keyword,
