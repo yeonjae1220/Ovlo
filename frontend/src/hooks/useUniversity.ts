@@ -1,12 +1,12 @@
 'use client'
 
 import { useQuery } from '@tanstack/react-query'
-import { globalUniversityApi, exchangeUniversityApi, universityReportApi } from '../api/university'
+import { globalUniversityApi, exchangeUniversityApi, universityCatalogApi, universityReportApi } from '../api/university'
 
-export function useExchangeUniversityCountries() {
+export function useUniversityCatalogCountries() {
   return useQuery({
-    queryKey: ['exchange-university-countries'],
-    queryFn: () => exchangeUniversityApi.countries(),
+    queryKey: ['university-catalog-countries'],
+    queryFn: () => universityCatalogApi.countries(),
     staleTime: 1000 * 60 * 10,
   })
 }
@@ -27,11 +27,11 @@ export function useGlobalUniversitySearch(keyword: string, countryCode?: string)
   })
 }
 
-export function useExchangeUniversitySearch(keyword: string, countryCode?: string, page = 0, size = 20) {
+export function useUniversityCatalogSearch(keyword: string, countryCode?: string, page = 0, size = 20) {
   return useQuery({
-    queryKey: ['exchange-universities', 'search', keyword, countryCode, page, size],
-    queryFn: () => exchangeUniversityApi.search(keyword || undefined, countryCode || undefined, page, size),
-    enabled: keyword.length >= 1 || (!!countryCode && countryCode.length >= 1),
+    queryKey: ['university-catalog', 'search', keyword, countryCode, page, size],
+    queryFn: () => universityCatalogApi.search(keyword || undefined, countryCode || undefined, page, size),
+    enabled: keyword.trim().length >= 1 || (!!countryCode && countryCode.length >= 1),
   })
 }
 

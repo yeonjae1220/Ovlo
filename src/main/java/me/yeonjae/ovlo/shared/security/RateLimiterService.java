@@ -29,6 +29,7 @@ public class RateLimiterService {
     private final int loginLimit;
     private final int refreshLimit;
     private final int signupLimit;
+    private final int searchLimit;
     private final int windowSeconds;
 
     public RateLimiterService(
@@ -36,12 +37,14 @@ public class RateLimiterService {
             @Value("${ovlo.rate-limit.login-limit:10}") int loginLimit,
             @Value("${ovlo.rate-limit.refresh-limit:30}") int refreshLimit,
             @Value("${ovlo.rate-limit.signup-limit:5}") int signupLimit,
+            @Value("${ovlo.rate-limit.search-limit:100}") int searchLimit,
             @Value("${ovlo.rate-limit.window-seconds:600}") int windowSeconds
     ) {
         this.redisTemplate = redisTemplate;
         this.loginLimit = loginLimit;
         this.refreshLimit = refreshLimit;
         this.signupLimit = signupLimit;
+        this.searchLimit = searchLimit;
         this.windowSeconds = windowSeconds;
     }
 
@@ -61,6 +64,11 @@ public class RateLimiterService {
     /** 학교 이메일 인증 코드 발송 — 인증된 멤버 기준(발송 남용/스팸 차단). */
     public void checkEmailVerificationRate(Long memberId) {
         check("rl:verify-email:member:" + memberId, signupLimit);
+    }
+
+    /** 공개 대학 카탈로그 검색 — 익명 엔드포인트라 IP 기준(ILIKE 스캔 남용/DoS 완화). */
+    public void checkSearchRate(String clientIp) {
+        check("rl:search:ip:" + clientIp, searchLimit);
     }
 
     private void check(String key, int limit) {

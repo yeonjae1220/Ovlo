@@ -23,7 +23,11 @@ class RateLimiterServiceTest {
     private RedisTemplate<String, String> redisTemplate;
 
     private final RateLimiterService rateLimiterService(int signupLimit) {
-        return new RateLimiterService(redisTemplate, 10, 30, signupLimit, 600);
+        return new RateLimiterService(redisTemplate, 10, 30, signupLimit, 100, 600);
+    }
+
+    private final RateLimiterService searchRateLimiter(int searchLimit) {
+        return new RateLimiterService(redisTemplate, 10, 30, 5, searchLimit, 600);
     }
 
     @Test
@@ -40,6 +44,23 @@ class RateLimiterServiceTest {
                 .willReturn(6L);
 
         assertThatThrownBy(() -> rateLimiterService(5).checkSignupRate("203.0.113.9"))
+                .isInstanceOf(TooManyRequestsException.class);
+    }
+
+    @Test
+    void checkSearchRate_belowLimit_doesNotThrow() {
+        given(redisTemplate.execute(any(RedisScript.class), eq(List.of("rl:search:ip:203.0.113.9")), any()))
+                .willReturn(50L);
+
+        assertThatNoException().isThrownBy(() -> searchRateLimiter(100).checkSearchRate("203.0.113.9"));
+    }
+
+    @Test
+    void checkSearchRate_exceedsLimit_throwsTooManyRequests() {
+        given(redisTemplate.execute(any(RedisScript.class), eq(List.of("rl:search:ip:203.0.113.9")), any()))
+                .willReturn(101L);
+
+        assertThatThrownBy(() -> searchRateLimiter(100).checkSearchRate("203.0.113.9"))
                 .isInstanceOf(TooManyRequestsException.class);
     }
 }
