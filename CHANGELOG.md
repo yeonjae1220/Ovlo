@@ -7,6 +7,14 @@ Versioning follows [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Security
+- Refresh token을 Redis 저장 전 **SHA-256 단방향 해시**로 변환 (GLOBAL-PIT-001) — Redis 유출 시 세션 탈취 방지
+  - 역인덱스 키 `auth:token:{token}` → `auth:token:{sha256(token)}`
+  - 세션 Hash의 `refreshToken` 필드도 평문 대신 해시 저장
+  - `findByRefreshToken`/`deleteByRefreshToken`은 입력 토큰을 동일하게 해시 후 조회
+  - `TokenHashUtil.sha256()` 유틸 추가 (`shared/security`)
+  - 기존 평문 세션은 마이그레이션 없이 TTL(7일) 자연 만료 — 배포 후 재로그인 시 해시 키로 전환
+
 ## [0.2.0] - 2026-03-26
 
 ### Added
