@@ -47,7 +47,10 @@ k8s/secret.yaml
 
 ### Claude Code ###
 CLAUDE.md
-.claude/
+.claude/*
+# Commit shared, project-local harness config; keep personal/local files ignored.
+!.claude/settings.json
+!.claude/hooks/
 
 # Next.js
 frontend/.next/

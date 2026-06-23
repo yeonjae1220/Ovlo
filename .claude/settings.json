@@ -1,0 +1,18 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-settings.json",
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Write|Edit|MultiEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node .claude/hooks/domain-purity-guard.js",
+            "description": "Block JPA/Spring imports & annotations from entering the hexagonal domain/ layer",
+            "timeout": 5
+          }
+        ]
+      }
+    ]
+  }
+}

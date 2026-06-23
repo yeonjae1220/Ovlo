@@ -1,0 +1,25 @@
+{
+  "id": "auth-flow",
+  "title": "회원가입 → 로그인 → JWT 보호 자원 → refresh 회전",
+  "related_adr": "0003",
+  "preconditions": [
+    "PostgreSQL, Redis 가동 (Testcontainers)",
+    "테스트 회원 미존재"
+  ],
+  "steps": [
+    { "action": "POST /api/v1/members", "body": "신규 회원 등록 요청", "expect_status": 201 },
+    { "action": "POST /api/v1/auth/login", "body": "올바른 자격증명", "expect_status": 200, "expect": "accessToken + refreshToken 발급" },
+    { "action": "GET /api/v1/members/{id}", "headers": "Authorization: Bearer {accessToken}", "expect_status": 200 },
+    { "action": "GET /api/v1/members/{id}", "headers": "토큰 없음", "expect_status": 401 },
+    { "action": "POST /api/v1/auth/refresh", "body": "유효한 refreshToken", "expect_status": 200, "expect": "신규 토큰 회전" }
+  ],
+  "pass_criteria": [
+    "보호 자원은 유효한 Access Token 없이는 401",
+    "Refresh Token은 Redis에 평문이 아닌 SHA-256 해시로만 존재 (GLOBAL-PIT-001)",
+    "refresh 회전 후 이전 refreshToken은 재사용 불가 (1인 1세션 역인덱스 갱신)"
+  ],
+  "fail_if": [
+    "Redis에서 평문 refresh 토큰 문자열이 조회됨",
+    "만료/위조 토큰으로 보호 자원 접근 성공"
+  ]
+}
