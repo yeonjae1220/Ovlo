@@ -1,0 +1,23 @@
+{
+  "id": "domain-purity",
+  "title": "도메인 레이어 순수성 — JPA/Spring 미유입",
+  "related_adr": "0001",
+  "preconditions": [
+    "소스 트리 빌드 가능"
+  ],
+  "steps": [
+    { "action": "grep -r 'jakarta.persistence' src/main/java/me/yeonjae/ovlo/domain/", "expect": "매칭 0건" },
+    { "action": "grep -r 'org.springframework' src/main/java/me/yeonjae/ovlo/domain/", "expect": "매칭 0건" },
+    { "action": "grep -r 'JpaRepository' src/main/java/me/yeonjae/ovlo/application/service/", "expect": "매칭 0건" },
+    { "action": ".claude/hooks/domain-purity-guard.js 에 domain/ + jakarta.persistence 페이로드 전달", "expect": "exit code 2 (차단)" }
+  ],
+  "pass_criteria": [
+    "domain/ 하위 어떤 .java 파일도 JPA/Spring import·어노테이션을 포함하지 않음",
+    "application/service 가 JpaRepository를 직접 주입하지 않음",
+    "PreToolUse 가드 훅이 도메인 위반 쓰기를 exit 2로 차단"
+  ],
+  "fail_if": [
+    "domain/ 에서 프레임워크 의존이 발견됨",
+    "가드 훅이 위반 페이로드를 통과시킴(exit 0)"
+  ]
+}

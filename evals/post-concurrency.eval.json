@@ -1,0 +1,24 @@
+{
+  "id": "post-concurrency",
+  "title": "게시글 좋아요/싫어요 동시성 — Optimistic Lock",
+  "related_adr": "0002",
+  "preconditions": [
+    "게시글 1건 존재",
+    "회원 2명 이상 존재"
+  ],
+  "steps": [
+    { "action": "동일 회원이 같은 게시글에 LIKE 2회", "expect": "두 번째는 중복 반응 예외" },
+    { "action": "LIKE 상태에서 DISLIKE 요청", "expect": "기존 LIKE 제거 후 DISLIKE 추가 (반응 1개 유지)" },
+    { "action": "서로 다른 N명이 동시에 LIKE", "expect": "모든 LIKE 반영, lost update 없음" },
+    { "action": "버전 충돌 유발(동시 수정)", "expect": "OptimisticLockException → 재시도 또는 409" }
+  ],
+  "pass_criteria": [
+    "한 회원-게시글 쌍의 반응은 항상 0 또는 1개",
+    "동시 LIKE N건이 정확히 N개로 집계 (덮어쓰기 손실 없음)",
+    "도메인 Post 모델에는 @Version이 없고 PostJpaEntity에만 존재 (영속성 격리)"
+  ],
+  "fail_if": [
+    "동시 반응 처리 후 카운트가 실제보다 작음",
+    "도메인 모델에 JPA 버전 필드가 노출됨"
+  ]
+}
