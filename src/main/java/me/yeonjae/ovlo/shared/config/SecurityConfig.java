@@ -5,6 +5,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
 import me.yeonjae.ovlo.shared.security.JwtAuthenticationFilter;
 import me.yeonjae.ovlo.shared.security.JwtTokenProvider;
+import me.yeonjae.ovlo.shared.security.ServiceTokenAuthFilter;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
@@ -55,6 +56,10 @@ public class SecurityConfig {
     /** BCrypt hash — k8s Secret ADMIN_PASSWORD_BCRYPT 에서 주입 */
     @Value("${admin.password.bcrypt}")
     private String adminPasswordBcrypt;
+
+    /** 콘솔 집계용 서비스 토큰 — 미설정 시 /api/internal/** 전부 차단(fail-closed) */
+    @Value("${console.internal-token:}")
+    private String consoleInternalToken;
 
     public SecurityConfig(JwtTokenProvider jwtTokenProvider,
                           Environment environment) {
@@ -122,6 +127,25 @@ public class SecurityConfig {
         DaoAuthenticationProvider provider = new DaoAuthenticationProvider(adminUserDetailsService());
         provider.setPasswordEncoder(passwordEncoder());
         return new ProviderManager(provider);
+    }
+
+    /**
+     * 콘솔 집계 전용 Security chain (서비스 토큰 기반, 읽기 전용).
+     * /api/internal/** 만 담당. ServiceTokenAuthFilter가 X-Internal-Token을
+     * 상수시간 비교로 검증 — 통과해야만 컨트롤러 도달. JWT/세션 필터 미적용.
+     */
+    @Bean
+    @Order(0)
+    public SecurityFilterChain internalConsoleFilterChain(HttpSecurity http) throws Exception {
+        return http
+                .securityMatcher("/api/internal/**")
+                .csrf(AbstractHttpConfigurer::disable)
+                .cors(AbstractHttpConfigurer::disable)
+                .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .authorizeHttpRequests(auth -> auth.anyRequest().permitAll())
+                .addFilterBefore(new ServiceTokenAuthFilter(consoleInternalToken),
+                        UsernamePasswordAuthenticationFilter.class)
+                .build();
     }
 
     /**
