@@ -91,6 +91,12 @@ spec:
                 secretKeyRef:
                   name: ovlo-secret
                   key: ADMIN_PASSWORD_BCRYPT
+            # lab.mungji 콘솔 집계용 서비스 토큰 — 미설정 시 /api/internal/** 차단
+            - name: CONSOLE_INTERNAL_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: ovlo-secret
+                  key: CONSOLE_INTERNAL_TOKEN
             # 이메일(SMTP) — optional:true. 시크릿에 키가 없으면 env 미설정 → spring.mail.host 부재 →
             # LogEmailSenderAdapter 폴백. 4개 키가 모두 채워지면 SmtpEmailSenderAdapter(Gmail) 활성화.
             - name: SPRING_MAIL_HOST
