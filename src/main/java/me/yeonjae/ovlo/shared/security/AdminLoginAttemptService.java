@@ -13,9 +13,14 @@ import java.util.concurrent.TimeUnit;
  * Admin formLogin(/admin/login) 무차별 대입 방지용 실패 카운터 + lockout 저장소.
  *
  * <p>IP와 admin username(이메일) 두 차원으로 로그인 실패를 센다. 한 차원에서
- * {@code maxAttempts}회 실패가 {@code failWindowSeconds} 안에 누적되면 그 차원에
- * {@code lockoutSeconds} 동안 락을 건다. 임계값 기본값은 lab-dashboard 콘솔
- * (5회/5분 → 15분 lockout, 429+Retry-After)과 동일하다.
+ * 임계값({@code ipMaxAttempts} / {@code accountMaxAttempts})회 실패가
+ * {@code failWindowSeconds} 안에 누적되면 그 차원에 {@code lockoutSeconds} 동안
+ * 락을 건다. IP 임계값(기본 5/5분 → 15분)은 lab-dashboard 콘솔과 동일하다.
+ *
+ * <p>계정 차원은 IP보다 <b>높은 임계값</b>(기본 20)을 쓴다. admin 계정이 단일
+ * 고정값이라, 공격자가 임의 IP에서 소수의 오답만으로 정상 관리자를 잠그는
+ * 가용성 DoS를 줄이기 위함이다. 분산 IP 무차별 대입(여러 IP에서 같은 계정 공략)은
+ * 여전히 계정 임계값에서 차단된다.
  *
  * <p>스프링 API 컨트롤러에만 수동 호출되는 {@code RateLimiterService}와 동일한
  * Redis 원자적 Lua 패턴을 사용해, 멀티 레플리카/크래시 상황에서도 카운트가
@@ -47,17 +52,20 @@ public class AdminLoginAttemptService {
     private static final String LOCK_ACC_PREFIX = "admin:login:lock:acc:";
 
     private final RedisTemplate<String, String> redisTemplate;
-    private final int maxAttempts;
+    private final int ipMaxAttempts;
+    private final int accountMaxAttempts;
     private final int failWindowSeconds;
     private final int lockoutSeconds;
 
     public AdminLoginAttemptService(
             RedisTemplate<String, String> redisTemplate,
-            @Value("${ovlo.admin-login.max-attempts:5}") int maxAttempts,
+            @Value("${ovlo.admin-login.ip-max-attempts:5}") int ipMaxAttempts,
+            @Value("${ovlo.admin-login.account-max-attempts:20}") int accountMaxAttempts,
             @Value("${ovlo.admin-login.window-seconds:300}") int failWindowSeconds,
             @Value("${ovlo.admin-login.lockout-seconds:900}") int lockoutSeconds) {
         this.redisTemplate = redisTemplate;
-        this.maxAttempts = maxAttempts;
+        this.ipMaxAttempts = ipMaxAttempts;
+        this.accountMaxAttempts = accountMaxAttempts;
         this.failWindowSeconds = failWindowSeconds;
         this.lockoutSeconds = lockoutSeconds;
     }
@@ -73,10 +81,10 @@ public class AdminLoginAttemptService {
 
     /** 로그인 실패 1회 기록 — IP 차원, (username이 있으면) 계정 차원 각각 카운트. */
     public void recordFailure(String clientIp, String username) {
-        record(FAIL_IP_PREFIX + clientIp, LOCK_IP_PREFIX + clientIp);
+        record(FAIL_IP_PREFIX + clientIp, LOCK_IP_PREFIX + clientIp, ipMaxAttempts);
         String account = normalize(username);
         if (account != null) {
-            record(FAIL_ACC_PREFIX + account, LOCK_ACC_PREFIX + account);
+            record(FAIL_ACC_PREFIX + account, LOCK_ACC_PREFIX + account, accountMaxAttempts);
         }
     }
 
@@ -92,7 +100,7 @@ public class AdminLoginAttemptService {
         }
     }
 
-    private void record(String failKey, String lockKey) {
+    private void record(String failKey, String lockKey, int maxAttempts) {
         redisTemplate.execute(RECORD_FAILURE_SCRIPT, List.of(failKey, lockKey),
                 String.valueOf(failWindowSeconds),
                 String.valueOf(maxAttempts),

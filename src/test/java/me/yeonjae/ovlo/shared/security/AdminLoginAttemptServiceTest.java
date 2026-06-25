@@ -27,22 +27,23 @@ class AdminLoginAttemptServiceTest {
     private RedisTemplate<String, String> redisTemplate;
 
     private AdminLoginAttemptService service() {
-        // maxAttempts=5, failWindow=300s, lockout=900s — lab-dashboard 임계값과 동일
-        return new AdminLoginAttemptService(redisTemplate, 5, 300, 900);
+        // ipMax=5, accountMax=20, failWindow=300s, lockout=900s
+        return new AdminLoginAttemptService(redisTemplate, 5, 20, 300, 900);
     }
 
     @Test
-    @DisplayName("recordFailure는 IP와 (정규화된)계정 두 차원 모두에 대해 카운터 스크립트를 실행한다")
+    @DisplayName("recordFailure는 IP(임계값 5)와 (정규화된)계정(임계값 20) 두 차원 각각에 카운터 스크립트를 실행한다")
     void recordFailure_incrementsBothIpAndAccountDimensions() {
         service().recordFailure("203.0.113.9", "Admin@Example.com");
 
+        // IP 차원은 임계값 5
         verify(redisTemplate).execute(any(RedisScript.class),
                 eq(List.of("admin:login:fail:ip:203.0.113.9", "admin:login:lock:ip:203.0.113.9")),
                 eq("300"), eq("5"), eq("900"));
-        // username은 소문자/trim 정규화되어 계정 차원 카운터에 사용
+        // username은 소문자/trim 정규화 + 계정 차원은 더 높은 임계값 20 (admin 락아웃 DoS 완화)
         verify(redisTemplate).execute(any(RedisScript.class),
                 eq(List.of("admin:login:fail:acc:admin@example.com", "admin:login:lock:acc:admin@example.com")),
-                eq("300"), eq("5"), eq("900"));
+                eq("300"), eq("20"), eq("900"));
     }
 
     @Test
