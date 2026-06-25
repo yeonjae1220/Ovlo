@@ -77,7 +77,9 @@ public class UniversityApiController {
             description = "콘텐츠(리포트/후기)를 보유한 대학을 국가별로 집계한 목록 (필터 드롭다운용)"
     )
     @GetMapping("/catalog/countries")
-    public ResponseEntity<List<UniversityCatalogCountryResult>> getCatalogCountries() {
+    public ResponseEntity<List<UniversityCatalogCountryResult>> getCatalogCountries(
+            HttpServletRequest httpRequest) {
+        rateLimiterService.checkSearchRate(clientIpResolver.resolve(httpRequest));
         return ResponseEntity.ok(searchCatalogQuery.getCountries());
     }
 
@@ -87,8 +89,10 @@ public class UniversityApiController {
             @RequestParam(required = false) @Size(max = 100) String keyword,
             @RequestParam(required = false) @Size(max = 10) String countryCode,
             @RequestParam(defaultValue = "0") @Min(0) int page,
-            @RequestParam(defaultValue = "20") @Min(1) @Max(100) int size
+            @RequestParam(defaultValue = "20") @Min(1) @Max(100) int size,
+            HttpServletRequest httpRequest
     ) {
+        rateLimiterService.checkSearchRate(clientIpResolver.resolve(httpRequest));
         PageResult<UniversityResult> result = searchUniversityQuery.search(
                 new SearchUniversityCommand(keyword, countryCode, page, size)
         );
@@ -97,7 +101,10 @@ public class UniversityApiController {
 
     @Operation(summary = "대학 단건 조회")
     @GetMapping("/{id}")
-    public ResponseEntity<UniversityResult> getById(@PathVariable Long id) {
+    public ResponseEntity<UniversityResult> getById(@PathVariable Long id,
+                                                    HttpServletRequest httpRequest) {
+        // id 순차 enumeration(1..N)으로 전체 대학 마스터를 긁어가는 것을 IP 기준으로 완화
+        rateLimiterService.checkSearchRate(clientIpResolver.resolve(httpRequest));
         UniversityResult result = getUniversityQuery.getById(new UniversityId(id));
         return ResponseEntity.ok(result);
     }
