@@ -3,6 +3,11 @@ package me.yeonjae.ovlo.shared.config;
 import jakarta.annotation.PostConstruct;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
+import me.yeonjae.ovlo.shared.security.AdminAuthenticationFailureHandler;
+import me.yeonjae.ovlo.shared.security.AdminAuthenticationSuccessHandler;
+import me.yeonjae.ovlo.shared.security.AdminLoginAttemptFilter;
+import me.yeonjae.ovlo.shared.security.AdminLoginAttemptService;
+import me.yeonjae.ovlo.shared.security.ClientIpResolver;
 import me.yeonjae.ovlo.shared.security.JwtAuthenticationFilter;
 import me.yeonjae.ovlo.shared.security.JwtTokenProvider;
 import me.yeonjae.ovlo.shared.security.ServiceTokenAuthFilter;
@@ -45,6 +50,8 @@ public class SecurityConfig {
     private final Environment environment;
     // CRITICAL-1 fix: 동일 인스턴스를 securityFilterChain과 FilterRegistrationBean이 공유
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
+    private final ClientIpResolver clientIpResolver;
+    private final AdminLoginAttemptService adminLoginAttemptService;
 
     // WARN fix: 기본값 http://localhost:3000 → 빈 문자열 (운영환경 CORS_ALLOWED_ORIGINS 필수 설정)
     @Value("${cors.allowed-origins:}")
@@ -62,9 +69,13 @@ public class SecurityConfig {
     private String consoleInternalToken;
 
     public SecurityConfig(JwtTokenProvider jwtTokenProvider,
-                          Environment environment) {
+                          Environment environment,
+                          ClientIpResolver clientIpResolver,
+                          AdminLoginAttemptService adminLoginAttemptService) {
         this.jwtTokenProvider = jwtTokenProvider;
         this.environment = environment;
+        this.clientIpResolver = clientIpResolver;
+        this.adminLoginAttemptService = adminLoginAttemptService;
         this.jwtAuthenticationFilter = new JwtAuthenticationFilter(jwtTokenProvider);
     }
 
@@ -166,10 +177,16 @@ public class SecurityConfig {
                 .formLogin(form -> form
                         .loginPage("/admin/login")
                         .loginProcessingUrl("/admin/login")
-                        .defaultSuccessUrl("/admin/dashboard", true)
-                        .failureUrl("/admin/login?error")
+                        // 무차별 대입 방지: 실패/성공을 IP·계정 차원으로 카운트
+                        .successHandler(new AdminAuthenticationSuccessHandler(
+                                adminLoginAttemptService, clientIpResolver))
+                        .failureHandler(new AdminAuthenticationFailureHandler(
+                                adminLoginAttemptService, clientIpResolver))
                         .permitAll()
                 )
+                // lockout 강제: 비밀번호 검증 전에 429 + Retry-After 로 차단
+                .addFilterBefore(new AdminLoginAttemptFilter(adminLoginAttemptService, clientIpResolver),
+                        UsernamePasswordAuthenticationFilter.class)
                 .logout(logout -> logout
                         .logoutUrl("/admin/logout")
                         .logoutSuccessUrl("/admin/login?logout")
