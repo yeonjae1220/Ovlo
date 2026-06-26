@@ -73,7 +73,7 @@ export default function OnboardingPage() {
     maxWidth: 460,
     margin: '60px auto',
     padding: '32px 28px',
-    border: '1px solid var(--color-border)',
+    border: '1px solid var(--color-border-strong)',
     borderRadius: 12,
     boxShadow: 'var(--shadow-soft)',
     fontFamily: 'system-ui, sans-serif',
@@ -96,7 +96,7 @@ export default function OnboardingPage() {
   const primaryBtn: React.CSSProperties  = {
     padding: '11px 0',
     background: 'var(--color-accent-strong)',
-    color: '#fff',
+    color: 'var(--color-on-accent)',
     border: 'none',
     borderRadius: 8,
     fontSize: 15,
@@ -108,11 +108,11 @@ export default function OnboardingPage() {
   return (
     <div style={containerStyle}>
       <div style={{ marginBottom: 28 }}>
-        <p style={{ fontSize: 12, color: '#7c3aed', fontWeight: 600, letterSpacing: '0.05em', textTransform: 'uppercase', marginBottom: 8 }}>
+        <p style={{ fontSize: 12, color: 'var(--color-accent)', fontWeight: 800, letterSpacing: '0.05em', textTransform: 'uppercase', marginBottom: 8 }}>
           {t('onboarding.almost')}
         </p>
-        <h2 style={{ margin: 0, fontSize: 22, fontWeight: 700, color: '#111827' }}>{t('onboarding.title')}</h2>
-        <p style={{ margin: '8px 0 0', fontSize: 13, color: '#6b7280' }}>{t('onboarding.subtitle')}</p>
+        <h2 style={{ margin: 0, fontSize: 22, fontWeight: 800, color: 'var(--color-text)' }}>{t('onboarding.title')}</h2>
+        <p style={{ margin: '8px 0 0', fontSize: 13, color: 'var(--color-text-muted)' }}>{t('onboarding.subtitle')}</p>
       </div>
 
       <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
@@ -146,10 +146,10 @@ export default function OnboardingPage() {
               onClick={() => { setSelectedUniId(null); setSelectedUniName(''); setUniQuery('') }}
               style={{
                 padding: '10px 12px',
-                border: '1px solid #86efac',
+                border: '1px solid color-mix(in srgb, var(--color-success) 48%, var(--color-border-strong))',
                 borderRadius: 8,
-                background: '#f0fdf4',
-                color: '#16a34a',
+                background: 'var(--color-success-soft)',
+                color: 'var(--color-success)',
                 fontWeight: 500,
                 fontSize: 14,
                 cursor: 'pointer',
@@ -158,7 +158,7 @@ export default function OnboardingPage() {
               }}
             >
               ✓ {selectedUniName}{' '}
-              <span style={{ color: '#9ca3af', fontSize: 12, fontWeight: 400 }}>
+              <span style={{ color: 'var(--color-text-dim)', fontSize: 12, fontWeight: 500 }}>
                 {t('onboarding.university.change')}
               </span>
             </button>
@@ -171,21 +171,21 @@ export default function OnboardingPage() {
                 onChange={(e) => { setUniQuery(e.target.value); setFormError('') }}
               />
               {uniQuery.length >= 1 && universities && universities.length > 0 && (
-                <ul style={{ listStyle: 'none', padding: 0, margin: 0, border: '1px solid #e5e7eb', borderRadius: 8, maxHeight: 180, overflowY: 'auto', boxShadow: '0 4px 12px rgba(0,0,0,0.08)' }}>
+                <ul style={{ listStyle: 'none', padding: 0, margin: 0, border: '1px solid var(--color-border-strong)', borderRadius: 8, maxHeight: 180, overflowY: 'auto', boxShadow: 'var(--shadow-soft)', background: 'var(--color-surface)' }}>
                   {universities.slice(0, 8).map((u) => (
                     <li
                       key={u.id}
                       onClick={() => { setSelectedUniId(Number(u.id)); setSelectedUniName(u.name); setUniQuery('') }}
-                      style={{ padding: '9px 12px', cursor: 'pointer', borderBottom: '1px solid #f3f4f6', fontSize: 14, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
+                      style={{ padding: '9px 12px', cursor: 'pointer', borderBottom: '1px solid var(--color-border)', fontSize: 14, display: 'flex', justifyContent: 'space-between', alignItems: 'center', color: 'var(--color-text)' }}
                     >
                       <span>{u.name}</span>
-                      <span style={{ color: '#9ca3af', fontSize: 12 }}>{u.countryCode} · {u.city}</span>
+                      <span style={{ color: 'var(--color-text-muted)', fontSize: 12 }}>{u.countryCode} · {u.city}</span>
                     </li>
                   ))}
                 </ul>
               )}
               {uniQuery.length >= 1 && universities?.length === 0 && (
-                <p style={{ margin: 0, fontSize: 13, color: '#9ca3af' }}>{t('onboarding.university.notFound')}</p>
+                <p style={{ margin: 0, fontSize: 13, color: 'var(--color-text-muted)' }}>{t('onboarding.university.notFound')}</p>
               )}
             </>
           )}
@@ -213,9 +213,9 @@ export default function OnboardingPage() {
           </div>
         </div>
 
-        {formError && <p style={{ color: '#dc2626', margin: 0, fontSize: 13 }}>{formError}</p>}
+        {formError && <p style={{ color: 'var(--color-danger)', margin: 0, fontSize: 13, fontWeight: 700 }}>{formError}</p>}
         {completeOnboarding.isError && (
-          <p style={{ color: '#dc2626', margin: 0, fontSize: 13 }}>{t('onboarding.error.save')}</p>
+          <p style={{ color: 'var(--color-danger)', margin: 0, fontSize: 13, fontWeight: 700 }}>{t('onboarding.error.save')}</p>
         )}
 
         <button type="submit" style={primaryBtn} disabled={completeOnboarding.isPending}>

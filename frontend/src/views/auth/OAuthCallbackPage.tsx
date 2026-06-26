@@ -45,15 +45,15 @@ export default function OAuthCallbackPage() {
       ?.response?.data?.message
     return (
       <div style={{ maxWidth: 400, margin: '100px auto', padding: 24, textAlign: 'center' }}>
-        <p style={{ color: '#dc2626', marginBottom: 20 }}>
+        <p style={{ color: 'var(--color-danger)', marginBottom: 20, fontWeight: 700 }}>
           {msg ?? t('oauth.error.default')}
         </p>
         <button
           onClick={() => router.replace('/login')}
           style={{
             padding: '10px 20px',
-            background: '#2563eb',
-            color: '#fff',
+            background: 'var(--color-accent-strong)',
+            color: 'var(--color-on-accent)',
             border: 'none',
             borderRadius: 8,
             cursor: 'pointer',
@@ -69,12 +69,12 @@ export default function OAuthCallbackPage() {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '100vh', gap: 16 }}>
       <div style={{
-        width: 36, height: 36, border: '3px solid #e5e7eb',
-        borderTopColor: '#2563eb', borderRadius: '50%',
+        width: 36, height: 36, border: '3px solid var(--color-surface-soft)',
+        borderTopColor: 'var(--color-accent)', borderRadius: '50%',
         animation: 'spin 0.8s linear infinite',
       }} />
       <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
-      <p style={{ color: '#6b7280', fontSize: 14 }}>{t('oauth.loading')}</p>
+      <p style={{ color: 'var(--color-text-muted)', fontSize: 14 }}>{t('oauth.loading')}</p>
     </div>
   )
 }
