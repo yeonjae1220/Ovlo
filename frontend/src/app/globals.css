@@ -53,22 +53,22 @@
 
 :root[data-theme='light'] {
   color-scheme: light;
-  --color-bg: #f7f5ef;
-  --color-bg-elevated: #ffffff;
-  --color-surface: #ffffff;
-  --color-surface-soft: #eef3ef;
-  --color-surface-hover: #e8f2ef;
-  --color-surface-disabled: #ece9df;
-  --color-border: #ddd8ca;
-  --color-border-strong: #c9c2b2;
-  --color-text: #1e2a29;
-  --color-text-secondary: #40504d;
-  --color-text-muted: #667570;
-  --color-text-dim: #96a19d;
-  --color-accent: #147d6f;
-  --color-accent-strong: #0d6b60;
-  --color-accent-soft: #dceee9;
-  --color-accent-subtle: #147d6f18;
+  --color-bg: #f2efe6;
+  --color-bg-elevated: #fffdf8;
+  --color-surface: #fffdf8;
+  --color-surface-soft: #e7eee9;
+  --color-surface-hover: #dce9e4;
+  --color-surface-disabled: #e5dfd2;
+  --color-border: #c9c0b0;
+  --color-border-strong: #9f9483;
+  --color-text: #172321;
+  --color-text-secondary: #344541;
+  --color-text-muted: #53625e;
+  --color-text-dim: #5f6f6a;
+  --color-accent: #0f6f63;
+  --color-accent-strong: #0a5f55;
+  --color-accent-soft: #d8eee8;
+  --color-accent-subtle: #d7eee7;
   --color-on-accent: #ffffff;
   --color-info: #2e67b8;
   --color-info-soft: #e1ecfb;

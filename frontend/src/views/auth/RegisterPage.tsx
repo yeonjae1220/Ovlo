@@ -55,10 +55,10 @@ function PasswordConditions({ password, t }: { password: string; t: TFn }) {
         const met = test(password)
         return (
           <li key={key} style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12 }}>
-            <span style={{ color: met ? '#16a34a' : '#9ca3af', fontSize: 13, lineHeight: 1 }}>
+            <span style={{ color: met ? 'var(--color-success)' : 'var(--color-text-dim)', fontSize: 13, lineHeight: 1 }}>
               {met ? '✓' : '○'}
             </span>
-            <span style={{ color: met ? '#16a34a' : '#6b7280' }}>{t(key)}</span>
+            <span style={{ color: met ? 'var(--color-success)' : 'var(--color-text-muted)' }}>{t(key)}</span>
           </li>
         )
       })}
@@ -80,21 +80,21 @@ function StepIndicator({ step, t }: { step: number; t: TFn }) {
             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}>
               <div style={{
                 width: 28, height: 28, borderRadius: '50%',
-                background: done ? '#2563eb' : active ? '#2563eb' : '#e5e7eb',
-                color: done || active ? '#fff' : '#9ca3af',
+                background: done || active ? 'var(--color-accent-strong)' : 'var(--color-surface-soft)',
+                color: done || active ? 'var(--color-on-accent)' : 'var(--color-text-muted)',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
                 fontSize: 13, fontWeight: 700,
                 transition: 'background 0.2s',
               }}>
                 {done ? '✓' : num}
               </div>
-              <span style={{ fontSize: 11, color: active ? '#2563eb' : '#9ca3af', fontWeight: active ? 600 : 400, whiteSpace: 'nowrap' }}>
+              <span style={{ fontSize: 11, color: active ? 'var(--color-accent)' : 'var(--color-text-muted)', fontWeight: active ? 700 : 500, whiteSpace: 'nowrap' }}>
                 {title}
               </span>
             </div>
             {num < TOTAL_STEPS && (
               <div style={{
-                flex: 1, height: 2, background: done ? '#2563eb' : '#e5e7eb',
+                flex: 1, height: 2, background: done ? 'var(--color-accent-strong)' : 'var(--color-surface-soft)',
                 margin: '0 6px', marginBottom: 18,
                 transition: 'background 0.2s',
               }} />
@@ -111,7 +111,7 @@ const containerStyle: React.CSSProperties = {
   maxWidth: 460,
   margin: '60px auto',
   padding: '32px 28px',
-  border: '1px solid var(--color-border)',
+  border: '1px solid var(--color-border-strong)',
   borderRadius: 12,
   boxShadow: 'var(--shadow-soft)',
   fontFamily: 'system-ui, sans-serif',
@@ -144,7 +144,7 @@ const inputStyle: React.CSSProperties = {
 const primaryBtn: React.CSSProperties = {
   padding: '11px 0',
   background: 'var(--color-accent-strong)',
-  color: '#fff',
+  color: 'var(--color-on-accent)',
   border: 'none',
   borderRadius: 8,
   fontSize: 15,
@@ -258,7 +258,7 @@ export default function RegisterPage() {
 
   return (
     <div style={containerStyle}>
-      <h2 style={{ margin: '0 0 24px', fontSize: 22, fontWeight: 700, color: '#111827' }}>{t('register.title')}</h2>
+      <h2 style={{ margin: '0 0 24px', fontSize: 22, fontWeight: 800, color: 'var(--color-text)' }}>{t('register.title')}</h2>
 
       <StepIndicator step={step} t={t} />
 
@@ -266,7 +266,7 @@ export default function RegisterPage() {
       {step === 1 && (
         <form onSubmit={handleNext} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
           <div style={fieldStyle}>
-            <label style={labelStyle}>{t('register.nickname')} <span style={{ color: '#9ca3af', fontWeight: 400 }}>{t('register.nickname.hint')}</span></label>
+            <label style={labelStyle}>{t('register.nickname')} <span style={{ color: 'var(--color-text-dim)', fontWeight: 500 }}>{t('register.nickname.hint')}</span></label>
             <div style={{ position: 'relative' }}>
               <input
                 style={{ ...inputStyle, width: '100%', boxSizing: 'border-box', paddingRight: 96 }}
@@ -278,7 +278,7 @@ export default function RegisterPage() {
               {form.nickname.length >= 2 && (
                 <span style={{
                   position: 'absolute', right: 10, top: '50%', transform: 'translateY(-50%)',
-                  fontSize: 12, color: nicknameAvailable ? '#16a34a' : '#dc2626', fontWeight: 600,
+                  fontSize: 12, color: nicknameAvailable ? 'var(--color-success)' : 'var(--color-danger)', fontWeight: 700,
                 }}>
                   {nicknameAvailable ? t('register.nickname.available') : t('register.nickname.taken')}
                 </span>
@@ -308,7 +308,7 @@ export default function RegisterPage() {
             )}
           </div>
 
-          {stepError && <p style={{ color: '#dc2626', margin: 0, fontSize: 13 }}>{stepError}</p>}
+          {stepError && <p style={{ color: 'var(--color-danger)', margin: 0, fontSize: 13, fontWeight: 700 }}>{stepError}</p>}
 
           <button type="submit" style={primaryBtn}>{t('register.next')}</button>
         </form>
@@ -327,7 +327,7 @@ export default function RegisterPage() {
             <input style={inputStyle} value={form.hometown} onChange={set('hometown')} placeholder={t('onboarding.hometown.placeholder')} required />
           </div>
 
-          {stepError && <p style={{ color: '#dc2626', margin: 0, fontSize: 13 }}>{stepError}</p>}
+          {stepError && <p style={{ color: 'var(--color-danger)', margin: 0, fontSize: 13, fontWeight: 700 }}>{stepError}</p>}
 
           <div style={{ display: 'flex', gap: 10 }}>
             <button type="button" onClick={handleBack} style={{ ...secondaryBtn, flex: 1 }}>{t('register.back')}</button>
@@ -347,15 +347,15 @@ export default function RegisterPage() {
                 onClick={() => { setSelectedUniId(null); setSelectedUniName(''); setUniQuery('') }}
                 style={{
                   ...inputStyle,
-                  background: '#f0fdf4',
-                  color: '#16a34a',
+                  background: 'var(--color-success-soft)',
+                  color: 'var(--color-success)',
                   fontWeight: 500,
                   cursor: 'pointer',
                   textAlign: 'left',
-                  border: '1px solid #86efac',
+                  border: '1px solid color-mix(in srgb, var(--color-success) 48%, var(--color-border-strong))',
                 }}
               >
-                ✓ {selectedUniName} <span style={{ color: '#9ca3af', fontSize: 12, fontWeight: 400 }}>{t('onboarding.university.change')}</span>
+                ✓ {selectedUniName} <span style={{ color: 'var(--color-text-dim)', fontSize: 12, fontWeight: 500 }}>{t('onboarding.university.change')}</span>
               </button>
             ) : (
               <>
@@ -366,19 +366,19 @@ export default function RegisterPage() {
                   onChange={(e) => { setUniQuery(e.target.value); setStepError('') }}
                 />
                 {uniQuery.length >= 1 && universities && universities.length > 0 && (
-                  <ul style={{ listStyle: 'none', padding: 0, margin: 0, border: '1px solid #e5e7eb', borderRadius: 8, maxHeight: 180, overflowY: 'auto', boxShadow: '0 4px 12px rgba(0,0,0,0.08)' }}>
+                  <ul style={{ listStyle: 'none', padding: 0, margin: 0, border: '1px solid var(--color-border-strong)', borderRadius: 8, maxHeight: 180, overflowY: 'auto', boxShadow: 'var(--shadow-soft)', background: 'var(--color-surface)' }}>
                     {universities.slice(0, 8).map((u) => (
                       <li key={u.id}
                         onClick={() => { setSelectedUniId(Number(u.id)); setSelectedUniName(u.name); setUniQuery('') }}
-                        style={{ padding: '9px 12px', cursor: 'pointer', borderBottom: '1px solid #f3f4f6', fontSize: 14, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        style={{ padding: '9px 12px', cursor: 'pointer', borderBottom: '1px solid var(--color-border)', fontSize: 14, display: 'flex', justifyContent: 'space-between', alignItems: 'center', color: 'var(--color-text)' }}>
                         <span>{u.name}</span>
-                        <span style={{ color: '#9ca3af', fontSize: 12 }}>{u.countryCode} · {u.city}</span>
+                        <span style={{ color: 'var(--color-text-muted)', fontSize: 12 }}>{u.countryCode} · {u.city}</span>
                       </li>
                     ))}
                   </ul>
                 )}
                 {uniQuery.length >= 1 && universities?.length === 0 && (
-                  <p style={{ margin: 0, fontSize: 13, color: '#9ca3af' }}>{t('onboarding.university.notFound')}</p>
+                  <p style={{ margin: 0, fontSize: 13, color: 'var(--color-text-muted)' }}>{t('onboarding.university.notFound')}</p>
                 )}
               </>
             )}
@@ -392,7 +392,7 @@ export default function RegisterPage() {
           <div style={fieldStyle}>
             <label style={labelStyle}>{t('register.uiLanguage')}</label>
             <select
-              style={{ ...inputStyle, background: '#f9fafb', color: '#374151' }}
+              style={inputStyle}
               value={language}
               onChange={(e) => setLanguage(e.target.value)}
             >
@@ -400,7 +400,7 @@ export default function RegisterPage() {
                 <option key={lang} value={lang}>{LANGUAGE_LABELS[lang]}</option>
               ))}
             </select>
-            <span style={{ fontSize: 11, color: '#9ca3af', marginTop: 2 }}>
+            <span style={{ fontSize: 11, color: 'var(--color-text-dim)', marginTop: 2 }}>
               {t('onboarding.uiLanguage.hint')}
             </span>
           </div>
@@ -408,7 +408,7 @@ export default function RegisterPage() {
           <div style={{ display: 'flex', gap: 12 }}>
             <div style={{ ...fieldStyle, flex: 1 }}>
               <label style={labelStyle}>{t('onboarding.degree')}</label>
-              <select style={{ ...inputStyle, background: '#f9fafb', color: '#374151' }} value={form.degreeType} onChange={set('degreeType')}>
+              <select style={inputStyle} value={form.degreeType} onChange={set('degreeType')}>
                 {DEGREE_VALUES.map((v) => (
                   <option key={v} value={v}>{t(`register.degree.${v.toLowerCase()}` as 'register.degree.bachelor')}</option>
                 ))}
@@ -416,15 +416,15 @@ export default function RegisterPage() {
             </div>
             <div style={{ ...fieldStyle, flex: 1 }}>
               <label style={labelStyle}>{t('onboarding.grade')}</label>
-              <select style={{ ...inputStyle, background: '#f9fafb', color: '#374151' }} value={form.gradeLevel} onChange={set('gradeLevel')}>
+              <select style={inputStyle} value={form.gradeLevel} onChange={set('gradeLevel')}>
                 {[1, 2, 3, 4, 5, 6].map((n) => <option key={n} value={String(n)}>{n}</option>)}
               </select>
             </div>
           </div>
 
-          {stepError && <p style={{ color: '#dc2626', margin: 0, fontSize: 13 }}>{stepError}</p>}
+          {stepError && <p style={{ color: 'var(--color-danger)', margin: 0, fontSize: 13, fontWeight: 700 }}>{stepError}</p>}
           {register.isError && (
-            <p style={{ color: '#dc2626', margin: 0, fontSize: 13 }}>
+            <p style={{ color: 'var(--color-danger)', margin: 0, fontSize: 13, fontWeight: 700 }}>
               {(register.error as { response?: { data?: { message?: string } } })?.response?.data?.message
                 || t('register.error.generic')}
             </p>
@@ -440,9 +440,9 @@ export default function RegisterPage() {
       )}
 
       <div style={{ display: 'flex', alignItems: 'center', gap: 10, margin: '20px 0 12px' }}>
-        <hr style={{ flex: 1, border: 'none', borderTop: '1px solid #e5e7eb' }} />
-        <span style={{ fontSize: 12, color: '#9ca3af' }}>{t('common.or')}</span>
-        <hr style={{ flex: 1, border: 'none', borderTop: '1px solid #e5e7eb' }} />
+        <hr style={{ flex: 1, border: 'none', borderTop: '1px solid var(--color-border)' }} />
+        <span style={{ fontSize: 12, color: 'var(--color-text-muted)' }}>{t('common.or')}</span>
+        <hr style={{ flex: 1, border: 'none', borderTop: '1px solid var(--color-border)' }} />
       </div>
 
       <button
@@ -455,12 +455,12 @@ export default function RegisterPage() {
           justifyContent: 'center',
           gap: 10,
           padding: '10px 0',
-          border: '1px solid #d1d5db',
+          border: '1px solid var(--color-border-strong)',
           borderRadius: 8,
-          background: '#fff',
+          background: 'var(--color-surface)',
           fontSize: 14,
           fontWeight: 500,
-          color: '#374151',
+          color: 'var(--color-text-secondary)',
           cursor: 'pointer',
         }}
       >
@@ -474,8 +474,8 @@ export default function RegisterPage() {
         {t('register.google.btn')}
       </button>
 
-      <p style={{ marginTop: 16, textAlign: 'center', fontSize: 13, color: '#6b7280' }}>
-        {t('register.hasAccount')} <Link href="/login" style={{ color: '#2563eb', fontWeight: 600 }}>{t('register.login')}</Link>
+      <p style={{ marginTop: 16, textAlign: 'center', fontSize: 13, color: 'var(--color-text-muted)' }}>
+        {t('register.hasAccount')} <Link href="/login" style={{ color: 'var(--color-accent)', fontWeight: 700 }}>{t('register.login')}</Link>
       </p>
     </div>
   )
