@@ -272,6 +272,7 @@ public class SecurityConfig {
                 )
                 // CRITICAL-1 fix: 동일 인스턴스 사용
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
+                .addFilterAfter(new me.yeonjae.ovlo.shared.security.AccessLogFilter(), JwtAuthenticationFilter.class)
                 .build();
     }
 
