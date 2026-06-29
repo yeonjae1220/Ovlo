@@ -6,6 +6,7 @@ import lombok.extern.slf4j.Slf4j;
 import me.yeonjae.ovlo.shared.security.AdminAuthenticationFailureHandler;
 import me.yeonjae.ovlo.shared.security.AdminAuthenticationSuccessHandler;
 import me.yeonjae.ovlo.shared.security.AdminLoginAttemptFilter;
+import me.yeonjae.ovlo.shared.security.AccessLogFilter;
 import me.yeonjae.ovlo.shared.security.AdminLoginAttemptService;
 import me.yeonjae.ovlo.shared.security.ClientIpResolver;
 import me.yeonjae.ovlo.shared.security.JwtAuthenticationFilter;
@@ -272,7 +273,7 @@ public class SecurityConfig {
                 )
                 // CRITICAL-1 fix: 동일 인스턴스 사용
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
-                .addFilterAfter(new me.yeonjae.ovlo.shared.security.AccessLogFilter(), JwtAuthenticationFilter.class)
+                .addFilterAfter(new AccessLogFilter(), JwtAuthenticationFilter.class)
                 .build();
     }
 
