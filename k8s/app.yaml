@@ -97,6 +97,11 @@ spec:
                 secretKeyRef:
                   name: ovlo-secret
                   key: CONSOLE_INTERNAL_TOKEN
+            - name: LAB_FEEDBACK_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: ovlo-secret
+                  key: LAB_FEEDBACK_TOKEN
             # 이메일(SMTP) — optional:true. 시크릿에 키가 없으면 env 미설정 → spring.mail.host 부재 →
             # LogEmailSenderAdapter 폴백. 4개 키가 모두 채워지면 SmtpEmailSenderAdapter(Gmail) 활성화.
             - name: SPRING_MAIL_HOST

@@ -164,6 +164,7 @@ jobs:
           ADMIN_EMAIL: ${{ secrets.ADMIN_EMAIL }}
           ADMIN_PASSWORD_BCRYPT: ${{ secrets.ADMIN_PASSWORD_BCRYPT }}
           CONSOLE_INTERNAL_TOKEN: ${{ secrets.CONSOLE_INTERNAL_TOKEN }}
+          LAB_FEEDBACK_TOKEN: ${{ secrets.LAB_FEEDBACK_TOKEN }}
           # 이메일(SMTP) — 미설정 시 빈 문자열. 아래에서 비어있지 않을 때만 시크릿에 추가한다.
           SPRING_MAIL_HOST: ${{ secrets.SPRING_MAIL_HOST }}
           MAIL_USERNAME: ${{ secrets.MAIL_USERNAME }}
@@ -188,6 +189,7 @@ jobs:
             --from-literal=ADMIN_EMAIL="${ADMIN_EMAIL}" \
             --from-literal=ADMIN_PASSWORD_BCRYPT="${ADMIN_PASSWORD_BCRYPT}" \
             --from-literal=CONSOLE_INTERNAL_TOKEN="${CONSOLE_INTERNAL_TOKEN}" \
+            --from-literal=LAB_FEEDBACK_TOKEN="${LAB_FEEDBACK_TOKEN}" \
             "${MAIL_ARGS[@]}" \
             -n ovlo --dry-run=client -o yaml | sudo kubectl apply -f -
 
