@@ -264,6 +264,7 @@ public class SecurityConfig {
                         .requestMatchers("/actuator/health").permitAll()
                         .requestMatchers("/actuator/**").hasAuthority("ADMIN") // WARN fix: 인증 → ADMIN 전용
                         .requestMatchers("/h2-console/**").hasAuthority("ADMIN") // WARN fix: ADMIN 전용으로 격상
+                        .requestMatchers(org.springframework.http.HttpMethod.POST, "/api/feedback").permitAll()
                         .requestMatchers("/api/v1/admin/**").hasAuthority("ADMIN")
                         .anyRequest().authenticated()
                 )
