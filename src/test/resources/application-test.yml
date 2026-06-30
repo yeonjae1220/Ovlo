@@ -31,6 +31,12 @@ admin:
   password:
     bcrypt: "$2a$10$fyyaqFdt1gBI6t40O6XTG.BWObN.OFn18IWulQMz7HWnSS6dGy1lW"
 
+lab:
+  feedback:
+    endpoint: http://lab-dashboard.lab.svc.cluster.local/api/internal/feedback
+    token: test-feedback-token-dummy
+    app-name: ovlo
+
 logging:
   level:
     me.yeonjae.ovlo: DEBUG
