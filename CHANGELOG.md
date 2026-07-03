@@ -5,15 +5,89 @@ All notable changes to Ovlo are documented in this file.
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 Versioning follows [Semantic Versioning](https://semver.org/).
 
+0.x 구간이므로 파괴적 변경도 MINOR 버전으로 흡수합니다.
+
 ## [Unreleased]
 
+## [0.5.0] - 2026-06-30
+
+교환학생 **학생 인증 시스템**과 통합 검색, 보안·관측성 강화에 집중한 릴리스.
+
+### Added
+- **학생 인증 시스템** — 학교 이메일 검증기(Gmail SMTP) + 프론트 UI + `EXCHANGE_VERIFIED` 상태
+- 인증 만료 스케줄러 + 게시판 게이팅 (인증 회원만 특정 게시판 접근) + SMTP egress NetworkPolicy
+- 관리자 페이지에서 수동 대학 인증 발급/취소/조회, 학생 인증 페이지 UX 개선(회원검색·대학 자동완성·연결)
+- 대학을 `global_universities`로 일원화
+- 교환대학 탭 통합 검색 — 리포트 ∪ 후기 카탈로그
+- `lab.mungji` 콘솔 집계용 내부 엔드포인트
+- JWT `userId` MDC + logstash JSON 구조화 로그, HTTP 요청당 1줄 access log
+- 개발자 피드백 수집 엔드포인트 (토큰 검증 + NetworkPolicy)
+
 ### Security
-- Refresh token을 Redis 저장 전 **SHA-256 단방향 해시**로 변환 (GLOBAL-PIT-001) — Redis 유출 시 세션 탈취 방지
-  - 역인덱스 키 `auth:token:{token}` → `auth:token:{sha256(token)}`
-  - 세션 Hash의 `refreshToken` 필드도 평문 대신 해시 저장
-  - `findByRefreshToken`/`deleteByRefreshToken`은 입력 토큰을 동일하게 해시 후 조회
-  - `TokenHashUtil.sha256()` 유틸 추가 (`shared/security`)
-  - 기존 평문 세션은 마이그레이션 없이 TTL(7일) 자연 만료 — 배포 후 재로그인 시 해시 키로 전환
+- Refresh token을 Redis 저장 전 SHA-256 단방향 해시로 변환 (GLOBAL-PIT-001) — Redis 유출 시 세션 탈취 방지
+- 관리자 formLogin 무차별 대입 lockout 추가 (GLOBAL-PIT-038)
+- 대학 공개 읽기 API에 IP 기반 search rate limit 및 enumeration 방지 적용
+
+### Changed
+- H2 datasource를 `local` 프로파일로 격리 — 공유 문서 datasource 제거 (GLOBAL-PIT-039)
+
+### Fixed
+- `EmailSenderPort` 빈 모호성 해결(`@Primary`) — 운영 SMTP 크래시 핫픽스
+- frontend-ingress NetworkPolicy 포트 80→3000 (Next.js containerPort 일치, 502 해결)
+- auth 라이트 모드 가독성 개선
+
+## [0.4.0] - 2026-06-08
+
+AI 대학 리포트와 **프론트엔드 Next.js 마이그레이션**, 다국어를 도입한 릴리스.
+
+### Added
+- **AI 대학 리포트** — 다국어 리포트 API + 페이지, 교환대학 상세에 임베드
+- 리포트에 ReactMarkdown 렌더링 + 7개 언어 리포트 스위처
+- **프론트엔드 마이그레이션** — Vite + React SPA → Next.js App Router
+- 7개 언어 i18n — 자동 언어 감지 + 전 UI 로컬라이즈
+- SSR 기반 관리자 패널 구축 및 보안 강화
+- 홈 피드/교환대학/채팅 탭 리디자인, 통합 홈 피드 + 프로필 게시글
+- NetworkPolicy(default-deny + 컴포넌트별 allowlist), PWA 설치 배너 + manifest
+- 다크/라이트 테마 시스템 + CSS 토큰 전환
+- k8s liveness/readiness probe 분리 + actuator health 그룹
+
+### Changed
+- httpOnly 쿠키 기반 로그인 지속 + 멀티세션 지원 (atomic Redis MULTI/EXEC)
+- 관리자 인증을 DB 기반 → InMemory(k8s Secret)로 이전
+
+### Security
+- nonce 기반 CSP 완성 — strict-dynamic, base-uri, layout nonce
+- Actuator 비-health 엔드포인트를 ADMIN 전용으로, 기본 프로파일에서 metrics/prometheus 노출 제거
+- Google OAuth 발급 JWT에서 ADMIN 권한 제외, 관리자 credential 검증 하드닝
+- IP 기반 rate limit 헤더 위조 우회 방지 및 회원가입 제한 추가
+
+### Fixed
+- Next.js 마이그레이션 정합성 및 App Router hydration CSP 이슈 해결
+- SSR 호환을 위한 `useBreakpoint` window 접근 가드
+- 채팅 타임존 불일치, sendMessage 최적화, 인가 공백 수정
+- PVC `storageClassName` 고정으로 immutable-field 배포 실패 방지
+
+## [0.3.0] - 2026-04-26
+
+글로벌 대학 검색과 관리자 기능, 반응형 UI를 도입한 릴리스.
+
+### Added
+- 글로벌 대학 검색 API + 웹 교환 프로그램 테이블
+- 관리자 페이지 + 역할 기반 JWT + 보안 하드닝
+- 게시판·게시글·대학 관리자 엔드포인트
+- 데스크톱/모바일 반응형 레이아웃
+- 교환대학 국가(country_code) 필터 + 국가 드롭다운
+- 교환대학 후기 수 기준 정렬 + 페이지네이션
+- 회원가입 시 비밀번호 조건 실시간 인디케이터
+- 로그인 시 사용자 프로필 표시, 인증 사용자에게 CTA 숨김
+
+### Changed
+- 탈퇴 회원의 콘텐츠를 모든 조회에서 숨김
+
+### Fixed
+- Google OAuth 로그인 리다이렉트 버그 및 회원가입 폼 리마운트 버그
+- 대학 검색을 `global_universities` 기준으로 전환, 드롭다운 값 바인딩 수정
+- 즉시 SW 업데이트를 위한 `skipWaiting`/`clientsClaim` 적용
 
 ## [0.2.0] - 2026-03-26
 
@@ -112,6 +186,9 @@ Versioning follows [Semantic Versioning](https://semver.org/).
 - 인증되지 않은 요청 401 응답 처리
 - V8 Flyway 마이그레이션 버전 충돌 → V9으로 재명명
 
-[Unreleased]: https://github.com/yeonjae1220/Ovlo/compare/v0.2.0...HEAD
+[Unreleased]: https://github.com/yeonjae1220/Ovlo/compare/v0.5.0...HEAD
+[0.5.0]: https://github.com/yeonjae1220/Ovlo/compare/v0.4.0...v0.5.0
+[0.4.0]: https://github.com/yeonjae1220/Ovlo/compare/v0.3.0...v0.4.0
+[0.3.0]: https://github.com/yeonjae1220/Ovlo/compare/v0.2.0...v0.3.0
 [0.2.0]: https://github.com/yeonjae1220/Ovlo/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/yeonjae1220/Ovlo/commits/v0.1.0
