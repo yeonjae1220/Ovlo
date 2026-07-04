@@ -148,12 +148,13 @@ class PostCommandServiceTest {
                     false, new ArrayList<>(), new ArrayList<>(), Instant.now());
 
             given(loadPostPort.findById(postId)).willReturn(Optional.of(post));
-            given(savePostPort.save(any())).willReturn(post);
 
             service.react(new ReactToPostCommand(1L, 1L, "LIKE"));
 
+            // 도메인 검증으로 in-memory 카운트는 오르지만, 영속화는 전체 저장이 아니라 회원 1행 upsert.
             assertThat(post.likeCount()).isEqualTo(1);
-            verify(savePostPort).save(post);
+            verify(savePostPort).upsertReaction(postId, memberId, ReactionType.LIKE);
+            verify(savePostPort, org.mockito.Mockito.never()).save(any());
         }
 
         @Test
@@ -182,12 +183,12 @@ class PostCommandServiceTest {
                     false, new ArrayList<>(), reactions, Instant.now());
 
             given(loadPostPort.findById(postId)).willReturn(Optional.of(post));
-            given(savePostPort.save(any())).willReturn(post);
 
             service.unreact(new UnreactToPostCommand(1L, 1L));
 
             assertThat(post.likeCount()).isEqualTo(0);
-            verify(savePostPort).save(post);
+            verify(savePostPort).removeReaction(postId, memberId);
+            verify(savePostPort, org.mockito.Mockito.never()).save(any());
         }
     }
 
