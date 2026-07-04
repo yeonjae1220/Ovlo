@@ -1,6 +1,7 @@
 package me.yeonjae.ovlo.adapter.out.redis;
 
 import me.yeonjae.ovlo.domain.auth.model.AuthSession;
+import me.yeonjae.ovlo.domain.auth.model.AuthSessionId;
 import me.yeonjae.ovlo.domain.member.model.MemberId;
 import me.yeonjae.ovlo.shared.security.TokenHashUtil;
 import org.junit.jupiter.api.BeforeEach;
@@ -22,6 +23,10 @@ import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.CyclicBarrier;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -157,5 +162,48 @@ class RedisTokenAdapterTest {
         assertThat(adapter.findByRefreshToken("old-token")).isEmpty();
         assertThat(adapter.findByRefreshToken("new-token")).isPresent();
         assertThat(redisTemplate.hasKey("auth:token:" + TokenHashUtil.sha256("old-token"))).isFalse();
+    }
+
+    @Test
+    @DisplayName("같은 세션에 대한 동시 rotation 뒤에도 유효 refresh 토큰은 정확히 하나만 남는다 (WATCH CAS)")
+    void shouldKeepExactlyOneToken_underConcurrentRotation() throws Exception {
+        // 기준 세션 저장 후, 매 라운드 같은 세션을 서로 다른 토큰으로 동시에 rotate 한다.
+        AuthSession base = AuthSession.create(memberId, "base-token", expiresAt);
+        adapter.save(base);
+        AuthSessionId sessionId = base.getId();
+        Instant exp = Instant.now().plus(7, ChronoUnit.DAYS);
+
+        ExecutorService pool = Executors.newFixedThreadPool(2);
+        try {
+            for (int round = 0; round < 25; round++) {
+                String tokenA = "tokA-" + round;
+                String tokenB = "tokB-" + round;
+                // rotate 이후 상태(동일 sessionId·memberId, 서로 다른 새 토큰)를 두 스레드가 동시 저장
+                AuthSession sa = AuthSession.restore(sessionId, memberId, tokenA, exp, false);
+                AuthSession sb = AuthSession.restore(sessionId, memberId, tokenB, exp, false);
+
+                CyclicBarrier barrier = new CyclicBarrier(2);
+                Future<?> fa = pool.submit(() -> { barrier.await(); adapter.save(sa); return null; });
+                Future<?> fb = pool.submit(() -> { barrier.await(); adapter.save(sb); return null; });
+                fa.get();
+                fb.get();
+
+                // 불변식: 매 라운드 후 세션당 유효 refresh 토큰 역인덱스는 정확히 1개여야 한다.
+                // (WATCH 없이 read-modify-write 하면 두 토큰이 모두 남아 orphan 이 누적된다)
+                Set<String> tokenKeys = redisTemplate.keys("auth:token:*");
+                assertThat(tokenKeys)
+                        .as("라운드 %d 후 유효 토큰 인덱스 수", round)
+                        .hasSize(1);
+            }
+        } finally {
+            pool.shutdownNow();
+        }
+
+        // 최종적으로 남은 단 하나의 토큰 인덱스는 세션 Hash의 refreshToken 필드와 일치해야 한다.
+        Set<String> sessionKeys = redisTemplate.keys("auth:session:*");
+        assertThat(sessionKeys).hasSize(1);
+        String storedHash = (String) redisTemplate.opsForHash()
+                .get(sessionKeys.iterator().next(), "refreshToken");
+        assertThat(redisTemplate.hasKey("auth:token:" + storedHash)).isTrue();
     }
 }
