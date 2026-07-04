@@ -46,10 +46,6 @@ public class PostMapper {
         return entity;
     }
 
-    public PostReactionJpaEntity toReactionJpaEntity(Long postId, Reaction reaction) {
-        return new PostReactionJpaEntity(postId, reaction.memberId().value(), reaction.type());
-    }
-
     public Post toDomain(PostJpaEntity entity, List<CommentJpaEntity> comments, List<PostReactionJpaEntity> reactions) {
         List<Comment> domainComments = comments.stream()
                 .map(c -> Comment.restore(

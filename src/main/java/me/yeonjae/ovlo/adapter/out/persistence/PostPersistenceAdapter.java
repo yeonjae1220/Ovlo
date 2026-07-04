@@ -9,10 +9,11 @@ import me.yeonjae.ovlo.adapter.out.persistence.repository.PostReactionJpaReposit
 import me.yeonjae.ovlo.application.port.out.post.LoadPostPort;
 import me.yeonjae.ovlo.application.port.out.post.SavePostPort;
 import me.yeonjae.ovlo.domain.board.model.BoardId;
+import me.yeonjae.ovlo.domain.member.model.MemberId;
 import me.yeonjae.ovlo.domain.post.model.Comment;
 import me.yeonjae.ovlo.domain.post.model.Post;
 import me.yeonjae.ovlo.domain.post.model.PostId;
-import me.yeonjae.ovlo.domain.post.model.Reaction;
+import me.yeonjae.ovlo.domain.post.model.ReactionType;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Component;
@@ -165,7 +166,9 @@ public class PostPersistenceAdapter implements LoadPostPort, SavePostPort {
         Long postId = saved.getId();
 
         saveAllComments(postId, post.getComments());
-        syncReactions(postId, post.getReactions());
+        // A안: 반응은 애그리거트 저장 경로가 아니라 upsertReaction/removeReaction 으로만 영속화한다.
+        // save() 가 반응을 delete-all/re-insert 하면 불필요한 오버헤드에 더해, 동시 react 가 삽입한 행을
+        // stale 스냅샷으로 덮어써 행-카운트 정합성이 깨진다. 그래서 여기서 반응은 건드리지 않는다.
 
         var comments = commentJpaRepository.findByPostIdAndHiddenByWithdrawalFalse(postId);
         var reactions = postReactionJpaRepository.findByIdPostId(postId);
@@ -177,11 +180,55 @@ public class PostPersistenceAdapter implements LoadPostPort, SavePostPort {
         comments.forEach(c -> commentJpaRepository.save(postMapper.toCommentJpaEntity(postId, c)));
     }
 
-    private void syncReactions(Long postId, List<Reaction> reactions) {
-        postReactionJpaRepository.deleteByIdPostId(postId);
-        List<PostReactionJpaEntity> entities = reactions.stream()
-                .map(r -> postMapper.toReactionJpaEntity(postId, r))
-                .toList();
-        postReactionJpaRepository.saveAll(entities);
+    /**
+     * A안: 회원 1행 idempotent upsert + 비정규화 카운트 원자 증감.
+     *
+     * <p>해당 회원의 기존 행만 조회해 (없으면) 삽입, (반대 반응이면) 전환한다. 전체 애그리거트를
+     * 다시 쓰지 않으므로 서로 다른 회원의 동시 반응은 서로 다른 행을 건드려 충돌하지 않는다. 카운트는
+     * {@code UPDATE post SET like_count = like_count + :delta} 원자 증감이라 @Version/재시도가 필요 없다.
+     */
+    @Override
+    @Transactional
+    public void upsertReaction(PostId postId, MemberId memberId, ReactionType type) {
+        Long pid = postId.value();
+        Long mid = memberId.value();
+        var id = new PostReactionJpaEntity.PostReactionId(pid, mid);
+
+        var existing = postReactionJpaRepository.findById(id);
+        if (existing.isEmpty()) {
+            postReactionJpaRepository.save(new PostReactionJpaEntity(pid, mid, type));
+            applyCountDelta(pid, type, +1);
+            return;
+        }
+
+        PostReactionJpaEntity row = existing.get();
+        ReactionType previous = row.getReactionType();
+        if (previous == type) {
+            return; // 완전 idempotent — 동일 반응 재요청은 무연산
+        }
+        row.setReactionType(type);
+        postReactionJpaRepository.save(row);
+        applyCountDelta(pid, previous, -1);
+        applyCountDelta(pid, type, +1);
+    }
+
+    /** A안: 회원 1행 삭제 + 카운트 원자 감소. 반응이 없으면 무연산. */
+    @Override
+    @Transactional
+    public void removeReaction(PostId postId, MemberId memberId) {
+        Long pid = postId.value();
+        var id = new PostReactionJpaEntity.PostReactionId(pid, memberId.value());
+        postReactionJpaRepository.findById(id).ifPresent(row -> {
+            postReactionJpaRepository.delete(row);
+            applyCountDelta(pid, row.getReactionType(), -1);
+        });
+    }
+
+    private void applyCountDelta(Long postId, ReactionType type, long delta) {
+        if (type == ReactionType.LIKE) {
+            postJpaRepository.addLikeCount(postId, delta);
+        } else {
+            postJpaRepository.addDislikeCount(postId, delta);
+        }
     }
 }

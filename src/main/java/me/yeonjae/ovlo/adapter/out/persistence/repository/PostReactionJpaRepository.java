@@ -8,5 +8,4 @@ import java.util.List;
 public interface PostReactionJpaRepository extends JpaRepository<PostReactionJpaEntity, PostReactionId> {
     List<PostReactionJpaEntity> findByIdPostId(Long postId);
     List<PostReactionJpaEntity> findByIdPostIdIn(java.util.Collection<Long> postIds);
-    void deleteByIdPostId(Long postId);
 }

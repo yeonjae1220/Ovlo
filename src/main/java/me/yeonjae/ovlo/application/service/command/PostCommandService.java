@@ -112,15 +112,20 @@ public class PostCommandService
     public void react(ReactToPostCommand command) {
         Post post = loadPostOrThrow(command.postId());
         ReactionType type = ReactionType.valueOf(command.reactionType());
-        post.react(new MemberId(command.memberId()), type);
-        savePostPort.save(post);
+        MemberId memberId = new MemberId(command.memberId());
+        // 도메인 불변식 검증(중복 CONFLICT · 좋아요↔싫어요 전환 · 삭제 게시글 차단).
+        post.react(memberId, type);
+        // A안: 전체 애그리거트 저장 대신 해당 회원 1행만 upsert(+ 카운트 원자 증감).
+        // 서로 다른 회원의 동시 반응은 서로 다른 행을 건드리므로 낙관적 락/재시도가 필요 없다.
+        savePostPort.upsertReaction(post.getId(), memberId, type);
     }
 
     @Override
     public void unreact(UnreactToPostCommand command) {
         Post post = loadPostOrThrow(command.postId());
-        post.unreact(new MemberId(command.memberId()));
-        savePostPort.save(post);
+        MemberId memberId = new MemberId(command.memberId());
+        post.unreact(memberId); // 미반응 상태면 NOT_FOUND
+        savePostPort.removeReaction(post.getId(), memberId);
     }
 
     @Override
