@@ -5,6 +5,7 @@ import me.yeonjae.ovlo.domain.auth.model.AuthSession;
 import me.yeonjae.ovlo.domain.auth.model.AuthSessionId;
 import me.yeonjae.ovlo.domain.member.model.MemberId;
 import me.yeonjae.ovlo.shared.security.TokenHashUtil;
+import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.data.redis.core.RedisOperations;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.SessionCallback;
@@ -13,6 +14,7 @@ import org.springframework.stereotype.Component;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -35,6 +37,9 @@ public class RedisTokenAdapter implements TokenStorePort {
     private static final String MEMBER_SESSIONS_PREFIX = "auth:member:sessions:";
     private static final String TOKEN_INDEX_PREFIX = "auth:token:";
 
+    /** WATCH/MULTI/EXEC CAS가 동시 rotation 경합으로 abort될 때 재시도하는 최대 횟수. */
+    private static final int MAX_SAVE_ATTEMPTS = 3;
+
     private final RedisTemplate<String, String> redisTemplate;
 
     public RedisTokenAdapter(RedisTemplate<String, String> redisTemplate) {
@@ -51,13 +56,6 @@ public class RedisTokenAdapter implements TokenStorePort {
         Duration ttl = Duration.between(Instant.now(), session.getExpiresAt());
         if (ttl.isNegative() || ttl.isZero()) return;
 
-        // 토큰 rotation 시 구 토큰 역인덱스 삭제 (MULTI 블록 이전에 읽어 둠)
-        // 세션 Hash에는 이미 해시값이 저장되어 있으므로 재해시 없이 그대로 비교/삭제한다.
-        Map<Object, Object> existing = redisTemplate.opsForHash().entries(sessionKey);
-        String oldHashedToken = existing.isEmpty() ? null : (String) existing.get("refreshToken");
-        final String oldTokenIndexKeyToDelete = (oldHashedToken != null && !oldHashedToken.equals(hashedToken))
-                ? tokenIndexKey(oldHashedToken) : null;
-
         Map<String, String> fields = new HashMap<>();
         fields.put("sessionId", session.getId().value());
         fields.put("memberId", String.valueOf(session.getMemberId().value()));
@@ -65,25 +63,50 @@ public class RedisTokenAdapter implements TokenStorePort {
         fields.put("expiresAt", String.valueOf(session.getExpiresAt().toEpochMilli()));
         fields.put("revoked", String.valueOf(session.isRevoked()));
 
-        // MULTI/EXEC: 구 토큰 삭제 + 세션 저장 + 멤버 세션 Set 등록 + 역인덱스 저장을 원자적으로 실행
-        redisTemplate.execute(new SessionCallback<Void>() {
-            @Override
-            @SuppressWarnings("unchecked")
-            public <K, V> Void execute(RedisOperations<K, V> ops) {
-                RedisOperations<String, String> operations = (RedisOperations<String, String>) ops;
-                operations.multi();
-                if (oldTokenIndexKeyToDelete != null) {
-                    operations.delete(oldTokenIndexKeyToDelete);
+        // WATCH/MULTI/EXEC 낙관적 락(CAS):
+        //   구 토큰 역인덱스 삭제 여부는 "현재 저장된 refreshToken"에 의존하는 read-modify-write다.
+        //   이 읽기를 MULTI 바깥에서 하면 동시 rotation 시 두 요청이 같은 구 토큰을 보고 각자
+        //   새 토큰을 저장해, 한 세션에 유효한 refresh 토큰이 둘 남는다(single-use rotation 붕괴).
+        //   따라서 sessionKey를 WATCH한 뒤 그 안에서 구 토큰을 읽고 트랜잭션을 실행한다. 다른
+        //   요청이 먼저 sessionKey를 바꾸면 exec()가 null(abort)을 반환하므로 최신 값 기준으로
+        //   재시도해, 경합 후에도 유효 토큰이 정확히 하나만 남도록 보장한다.
+        for (int attempt = 0; attempt < MAX_SAVE_ATTEMPTS; attempt++) {
+            Boolean committed = redisTemplate.execute(new SessionCallback<Boolean>() {
+                @Override
+                @SuppressWarnings("unchecked")
+                public <K, V> Boolean execute(RedisOperations<K, V> ops) {
+                    RedisOperations<String, String> operations = (RedisOperations<String, String>) ops;
+                    operations.watch(sessionKey);
+
+                    // 세션 Hash에는 이미 해시값이 저장돼 있으므로 재해시 없이 그대로 비교/삭제한다.
+                    Object current = operations.opsForHash().get(sessionKey, "refreshToken");
+                    String oldHashedToken = (current instanceof String s) ? s : null;
+                    String oldTokenIndexKeyToDelete =
+                            (oldHashedToken != null && !oldHashedToken.equals(hashedToken))
+                                    ? tokenIndexKey(oldHashedToken) : null;
+
+                    operations.multi();
+                    if (oldTokenIndexKeyToDelete != null) {
+                        operations.delete(oldTokenIndexKeyToDelete);
+                    }
+                    operations.opsForHash().putAll(sessionKey, fields);
+                    operations.expire(sessionKey, ttl);
+                    operations.opsForSet().add(memberSessionsKey, session.getId().value());
+                    operations.expire(memberSessionsKey, ttl.plusDays(1));
+                    operations.opsForValue().set(tokenIndexKey, session.getId().value(), ttl);
+
+                    // exec()가 null이면 WATCH한 sessionKey가 변경돼 트랜잭션이 취소된 것 → 재시도
+                    List<Object> results = operations.exec();
+                    return results != null;
                 }
-                operations.opsForHash().putAll(sessionKey, fields);
-                operations.expire(sessionKey, ttl);
-                operations.opsForSet().add(memberSessionsKey, session.getId().value());
-                operations.expire(memberSessionsKey, ttl.plusDays(1));
-                operations.opsForValue().set(tokenIndexKey, session.getId().value(), ttl);
-                operations.exec();
-                return null;
-            }
-        });
+            });
+
+            if (Boolean.TRUE.equals(committed)) return;
+        }
+        // WATCH CAS가 MAX_SAVE_ATTEMPTS 회 연속 abort — 동시 rotation 경합(낙관적 동시성 제어 실패).
+        // GlobalExceptionHandler가 409(다시 시도)로 매핑한다. 500 대신 재시도 가능 신호를 준다.
+        throw new OptimisticLockingFailureException(
+                "세션 저장이 동시 갱신 경합으로 실패했습니다: " + session.getId().value());
     }
 
     @Override
