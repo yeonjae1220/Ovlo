@@ -1,0 +1,729 @@
+id,name_en,qid,matched_label,match_flag,ko,ja,zh,de,fr,es,vi
+18,Sun Yat-Sen University,Q178972,Sun Yat-sen University,ok,중산 대학,中山大学,中山大学,Sun-Yat-sen-Universität,université Sun Yat-sen,Universidad Sun Yat-sen,Đại học Trung Sơn
+20,Hunan University,Q649868,Hunan University,ok,후난 대학,湖南大学,湖南大学,Hunan-Universität,université du Hunan,,
+21,University of Portsmouth,Q2744209,University of Portsmouth,ok,,ポーツマス大学,樸茨茅斯大學,University of Portsmouth,Université de Portsmouth,,Đại học Portsmouth
+76,University of Massachusetts Boston,Q15144,University of Massachusetts Boston,ok,매사추세츠 대학교 보스턴,マサチューセッツ大学ボストン校,麻州大學波士頓分校,University of Massachusetts Boston,Université du Massachusetts à Boston,Universidad de Massachusetts Boston,Đại học Massachusetts tại Boston
+174,American University,Q168000,American University,ok,아메리칸 대학교,アメリカン大学,美利坚大学,American University,American University,Universidad Americana,
+186,Arizona State University,Q670897,Arizona State University,ok,애리조나 주립 대학교,アリゾナ州立大学,亞利桑那州立大學,Arizona State University,Université d'État de l'Arizona,Universidad Estatal de Arizona,Đại học Tiểu bang Arizona
+193,Auburn University,Q540672,Auburn University,ok,오번 대학교,オーバーン大学,歐本大學,Auburn University,Université d'Auburn,Universidad de Auburn,Đại học Auburn
+215,Baylor University,Q812573,Baylor University,ok,베일러 대학교,ベイラー大学,貝勒大學,Baylor University,Université Baylor,Universidad Baylor,
+235,Boston College,Q49118,Boston College,ok,보스턴 대학교,ボストンカレッジ,波士顿学院,Boston College,Boston College,Boston College,Cao đẳng Boston
+237,Boston University,Q49110,Boston University,ok,보스턴 대학교,ボストン大学,波士頓大學,Boston University,Université de Boston,Universidad de Boston,Đại học Boston
+242,Brandeis University,Q49119,Brandeis University,ok,브랜다이스 대학교,ブランダイス大学,布兰戴斯大学,Brandeis University,Université Brandeis,Universidad Brandeis,Đại học Brandeis
+246,Brigham Young University,Q332498,Brigham Young University,ok,브리검영 대학교,ブリガム・ヤング大学,楊百翰大學,Brigham Young University,Université Brigham-Young,Universidad Brigham Young,Đại học Brigham Young
+250,Brown University,Q49114,Brown University,ok,브라운 대학교,ブラウン大学,布朗大学,Brown University,Université Brown,Universidad Brown,Đại học Brown
+287,Carnegie Mellon University,Q190080,Carnegie Mellon University,ok,카네기 멜론 대학교,カーネギーメロン大学,卡内基梅隆大学,Carnegie Mellon University,Université Carnegie-Mellon,Universidad Carnegie Mellon,Carnegie Mellon University
+292,Case Western Reserve University,Q1047060,Case Western Reserve University,ok,케이스 웨스턴 리저브 대학교,ケース・ウェスタン・リザーブ大学,凱斯西儲大學,Case Western Reserve University,Université Case Western Reserve,Universidad Case de la Reserva Occidental,
+314,City University of New York,Q762266,City University of New York,ok,뉴욕 시립 대학교,ニューヨーク市立大学,纽约市立大学,City University of New York,Université de la Ville de New York,Universidad de la Ciudad de Nueva York,Đại học Thành phố New York
+319,Clarkson University,Q931865,Clarkson University,ok,,クラークソン大学,克拉克森大學,Clarkson University,Université Clarkson,,
+320,Clark University,Q1095773,Clark University,ok,클라크 대학교,クラーク大学,克拉克大學,Clark University,Université Clark,Universidad Clark,
+322,Clemson University,Q631066,Clemson University,ok,클렘슨 대학교,クレムソン大学,克莱门森大学,Clemson University,Université de Clemson,Universidad Clemson,
+341,College of William and Mary,Q875637,College of William & Mary,ok,윌리엄 앤 메리 대학교,ウィリアム・アンド・メアリー大学,威廉與瑪麗學院,College of William & Mary,collège de William et Mary,The College of William and Mary,Đại học William và Mary
+346,Colorado School of Mines,Q1111367,Colorado School of Mines,ok,콜로라도 광업대학,コロラド鉱山学校,科羅拉多礦業學院,Colorado School of Mines,Colorado School of Mines,Escuela de Minas de Colorado,
+347,Colorado State University,Q1111640,Colorado State University,ok,콜로라도 주립 랜드 그랜트 대학교,コロラド州立大学,科羅拉多州立大學,,Université d'État du Colorado,Universidad Estatal de Colorado,Đại học Tiểu bang Colorado
+353,Columbia University,Q49088,Columbia University,ok,컬럼비아 대학교,コロンビア大学,哥倫比亞大學,Columbia University,Université Columbia,Universidad de Columbia,Đại học Columbia
+365,Cornell University,Q49115,Cornell University,ok,코넬 대학교,コーネル大学,康奈尔大学,Cornell University,Université Cornell,Universidad Cornell,Đại học Cornell
+376,Dartmouth College,Q49116,Dartmouth College,ok,다트머스 대학교,ダートマス大学,达特茅斯学院,Dartmouth College,Dartmouth College,Dartmouth College,Đại học Dartmouth
+396,Drexel University,Q603034,Drexel University,ok,드렉셀 대학교,ドレクセル大学,德雷塞尔大学,Drexel University,Université Drexel,Universidad Drexel,Đại học Drexel
+421,Emory University,Q621043,Emory University,ok,에머리 대학교,エモリー大学,艾默理大學,Emory University,Université Emory,Universidad Emory,Đại học Emory
+439,Florida International University,Q1065809,Florida International University,ok,플로리다 국제 대학교,フロリダ国際大学,佛羅里達國際大學,Florida International University,université internationale de Floride,Universidad Internacional de Florida,Đại học Quốc tế Florida
+440,Florida State University,Q861548,Florida State University,ok,플로리다 주립 대학교,フロリダ州立大学,佛罗里达州立大学,Florida State University,Université d'État de Floride,Universidad Estatal de Florida,Đại học Tiểu bang Florida
+442,Fordham University,Q130965,Fordham University,ok,포드햄 대학교,フォーダム大学,福坦莫大学,Fordham University,Université Fordham,Universidad de Fordham,
+460,George Mason University,Q1411222,George Mason University,ok,조지 매이슨 대학교,ジョージ・メイソン大学,喬治梅森大學,George Mason University,Université George-Mason,Universidad George Mason,Đại học George Mason
+461,Georgetown University,Q333886,Georgetown University,ok,조지타운 대학교,ジョージタウン大学,喬治城大學,Georgetown University,Université de Georgetown,Universidad de Georgetown,Đại học Georgetown
+464,Georgia Institute of Technology,Q864855,Georgia Tech,ok,조지아 공과대학교,ジョージア工科大学,佐治亚理工学院,Georgia Institute of Technology,Institut de technologie de Géorgie,Instituto de Tecnología de Georgia,Học viện Công nghệ Georgia
+468,Georgia State University,Q1509333,Georgia State University,ok,조지아 주립 대학교,ジョージア州立大学,喬治亞州立大學,Georgia State University,Université d'État de Géorgie,Universidad Estatal de Georgia,Đại học Tiểu bang Georgia
+494,Harvard University,Q13371,Harvard University,ok,하버드 대학교,ハーバード大学,哈佛大學,Harvard University,Université Harvard,Universidad Harvard,Đại học Harvard
+512,Howard University,Q1068752,Howard University,ok,하워드 대학교,ハワード大学,霍华德大学,Howard University,Université Howard,Universidad Howard,Đại học Howard
+519,Illinois Institute of Technology,Q659706,Illinois Institute of Technology,ok,일리노이 공과대학교,イリノイ工科大学,伊利諾理工學院,Illinois Institute of Technology,Institut de technologie de l'Illinois,Instituto de Tecnología de Illinois,
+522,Indiana State University,Q666128,Indiana State University,ok,인디애나 주립 대학교,インディアナ州立大学,印第安那州立大學,Indiana State University,Université d'État d'Indiana,Universidad Estatal de Indiana,Đại học Tiểu bang Indiana
+535,Iowa State University,Q1136919,Iowa State University,ok,아이오와 주립 대학교,アイオワ州立大学,爱荷华州立大学,Iowa State University,Université d'État de l'Iowa,Universidad Estatal de Iowa,Đại học Tiểu bang Iowa
+544,Johns Hopkins University,Q193727,Johns Hopkins University,ok,존스 홉킨스 대학교,ジョンズ・ホプキンズ大学,约翰斯·霍普金斯大学,Johns Hopkins University,Université Johns-Hopkins,Universidad Johns Hopkins,Đại học Johns Hopkins
+553,Kansas State University,Q31249,Kansas State University,ok,캔자스 주립 대학교,カンザス州立大学,堪萨斯州立大学,Kansas State University,Université d'État du Kansas,Universidad Estatal de Kansas,Đại học Tiểu bang Kansas
+559,Kent State University,Q1473615,Kent State University,ok,켄트 주립 대학교,ケント州立大学,肯特州立大學,Kent State University,Université d'État de Kent,Kent State University,Đại học Tiểu bang Kent
+579,Lehigh University,Q622137,Lehigh University,ok,리하이 대학교,リーハイ大学,理海大學,Lehigh University,Université Lehigh,Universidad de Lehigh,Đại học Lehigh
+588,Lincoln University,Q1048626,Lincoln University,ok,링컨 대학교,リンカーン大学,林肯大学,Lincoln University,Université de Lincoln,Universidad de Lincoln,
+597,Louisiana State University,Q1521725,Louisiana State University,ok,루이지애나 주립 대학교,ルイジアナ州立大学,路易斯安那州立大學,Louisiana State University,Université d'État de Louisiane,Universidad Estatal de Luisiana,Đại học Tiểu bang Louisiana
+602,Loyola University Chicago,Q1537759,Loyola University Chicago,ok,시카고 로욜라 대학교,ロヨラ大学,芝加哥洛約拉大學,Loyola University Chicago,Université Loyola de Chicago,Universidad Loyola Chicago,
+617,Marquette University,Q188370,Marquette University,ok,,マーケット大学,马凯特大学,Marquette University,Université Marquette,Universidad Marquette,
+623,Massachusetts Institute of Technology,Q49108,Massachusetts Institute of Technology,ok,매사추세츠 공과대학교,マサチューセッツ工科大学,麻省理工學院,Massachusetts Institute of Technology,Institut de technologie du Massachusetts,Instituto Tecnológico de Massachusetts,Học viện Công nghệ Massachusetts
+641,Michigan State University,Q270222,Michigan State University,ok,미시간 주립 대학교,ミシガン州立大学,密西根州立大學,Michigan State University,Université d'État du Michigan,Universidad Estatal de Míchigan,Đại học Tiểu bang Michigan
+642,Michigan Technological University,Q12432,Michigan Technological University,ok,미시간 공과대학교,ミシガン工科大学,密西根理工大學,Michigan Technological University,Michigan Technological University,Michigan Technological University,
+658,Mississippi State University,Q1939211,Mississippi State University,ok,미시시피 주립 대학교,ミシシッピ州立大学,密西西比州立大学,Mississippi State University,Université d'État du Mississippi,Universidad del Estado de Misisipi,Đại học Tiểu bang Mississippi
+661,Missouri University of Science and Technology,Q4380853,Missouri University of Science and Technology,ok,미주리 과학기술 대학교,ミズーリ工科大学,密蘇里科技大學,Missouri University of Science and Technology,Université du Missouri-Columbia de science et technologie,,
+700,New York University,Q49210,New York University,ok,뉴욕 대학교,ニューヨーク大学,纽约大学,New York University,Université de New York,Universidad de Nueva York,Đại học New York
+708,North Carolina State University,Q1132346,North Carolina State University,ok,노스캐롤라이나 주립 대학교,ノースカロライナ州立大学,北卡罗来纳州立大学,North Carolina State University,Université d'État de la Caroline du Nord,Universidad Estatal de Carolina del Norte,Đại học Tiểu bang Bắc Carolina
+715,Northern Arizona University,Q139901,Northern Arizona University,ok,,北アリゾナ大学,北亞利桑那大學,Northern Arizona University,Université du Nord de l'Arizona,Universidad del Norte de Arizona,
+724,Northwestern University,Q309350,Northwestern University,ok,노스웨스턴 대학교,ノースウェスタン大学,西北大學,Northwestern University,Université Northwestern,Universidad del Noroeste,Đại học Northwestern
+736,Ohio University,Q1075339,Ohio University,ok,오하이오 대학교,オハイオ大学,俄亥俄大学,Ohio University,Université de l'Ohio,Universidad de Ohio,Đại học Ohio
+740,Oklahoma State University,Q749718,Oklahoma State University,ok,오클라호마 주립 대학교,オクラホマ州立大学,奧克拉荷馬州立大學,Oklahoma State University – Stillwater,Université d'État de l'Oklahoma,,Đại học Tiểu bang Oklahoma
+747,Oregon State University,Q861888,Oregon State University,ok,오리건 주립 대학교,オレゴン州立大学,俄勒岡州立大學,,Université d'État de l'Oregon,Universidad Estatal de Oregón,Đại học Tiểu bang Oregon
+760,Pennsylvania State University,Q739627,Pennsylvania State University,ok,펜실베이니아 주립 대학교,ペンシルベニア州立大学,宾夕法尼亚州立大学,Pennsylvania State University,Université d'État de Pennsylvanie,Universidad Estatal de Pensilvania,Đại học Tiểu bang Pennsylvania
+777,Portland State University,Q1771717,Portland State University,ok,포틀랜드 주립 대학교,ポートランド州立大学,波特蘭州立大學,Portland State University,Université d'État de Portland,Universidad Estatal de Portland,
+782,Princeton University,Q21578,Princeton University,ok,프린스턴 대학교,プリンストン大学,普林斯顿大学,Princeton University,Université de Princeton,Universidad de Princeton,Đại học Princeton
+786,Purdue University,Q217741,Purdue University,ok,퍼듀 대학교,パデュー大学,普渡大學,Purdue University,Université Purdue,Universidad Purdue,Đại học Purdue
+798,Rensselaer Polytechnic Institute,Q49211,Rensselaer Polytechnic Institute,ok,렌셀러 폴리테크닉 대학교,レンセラー工科大学,伦斯勒理工学院,Rensselaer Polytechnic Institute,Institut polytechnique Rensselaer,Instituto Politécnico Rensselaer,học viện Bách khoa Rensselaer
+801,Rice University,Q842909,Rice University,ok,라이스 대학교,ライス大学,萊斯大學,Rice University,Université Rice,Universidad Rice,Đại học Rice
+808,Rochester Institute of Technology,Q2140778,Rochester Institute of Technology,ok,로체스터 공과대학교,ロチェスター工科大学,罗切斯特理工学院,Rochester Institute of Technology,Institut de technologie de Rochester,Instituto de Tecnología de Rochester,Học viện Công nghệ Rochester
+843,San Diego State University,Q913861,San Diego State University,ok,샌디에이고 주립 대학교,サン・ディエゴ州立大学,圣地亚哥州立大学,San Diego State University,université d'État de San Diego,Universidad Estatal de San Diego,Đại học Tiểu bang San Diego
+851,Seattle University,Q615873,Seattle University,ok,시애틀 대학교,シアトル大学,西雅图大学,Seattle University,Université de Seattle,Universidad de Seattle,
+864,Smith College,Q49204,Smith College,ok,스미스 대학교,スミス大学,史密斯學院,Smith College,Smith College,Smith College,Học viện Smith
+875,Southern Methodist University,Q1536258,Southern Methodist University,ok,서던메소디스트 대학교,南メソジスト大学,南美以美大學,Southern Methodist University,Université méthodiste du Sud,Universidad Metodista del Sur,
+894,Stanford University,Q41506,Stanford University,ok,스탠퍼드 대학교,スタンフォード大学,史丹佛大學,Stanford University,Université Stanford,Universidad Stanford,Đại học Stanford
+919,Stevens Institute of Technology,Q657222,Stevens Institute of Technology,ok,스티븐스 공과대학교,スティーブンス工科大学,斯蒂文斯理工学院,Stevens Institute of Technology,Institut de technologie Stevens,Instituto de Tecnología Stevens,
+936,Syracuse University,Q617433,Syracuse University,ok,시러큐스 대학교,シラキュース大学,雪城大學,Syracuse University,Université de Syracuse,Universidad de Siracusa,Đại học Syracuse
+940,Temple University,Q1420239,Temple University,ok,템플 대학교,テンプル大学,天普大學,Temple University,Université Temple,Universidad de Temple,
+952,Texas Tech University,Q1423756,Texas Tech University,ok,텍사스 공과대학교,テキサス工科大学,德克薩斯理工大學,Texas Tech University,Université Texas Tech,Universidad Tecnológica de Texas,
+972,Tufts University,Q49120,Tufts University,ok,터프츠 대학교,タフツ大学,塔夫茨大學,Tufts University,Université Tufts,Universidad Tufts,Đại học Tufts
+973,Tulane University,Q1193547,Tulane University,ok,툴레인 대학교,チュレーン大学,路易斯安那州杜兰大学,Tulane University,Université Tulane,Universidad Tulane de Luisiana,Đại học Tulane
+1000,"University of California, Berkeley",Q168756,"University of California, Berkeley",ok,캘리포니아 대학교 버클리,カリフォルニア大学バークレー校,加州大學柏克萊分校,"University of California, Berkeley",Université de Californie à Berkeley,Universidad de California en Berkeley,Đại học California tại Berkeley
+1001,"University of California, Davis",Q129421,"University of California, Davis",ok,캘리포니아 대학교 데이비스,カリフォルニア大学デービス校,戴維斯加利福尼亞大學,University of California in Davis,Université de Californie à Davis,Universidad de California en Davis,Đại học California tại Davis
+1002,"University of California, Irvine",Q868421,"University of California, Irvine",ok,캘리포니아 대학교 어바인,カリフォルニア大学アーバイン校,爾灣加州大學,"University of California, Irvine",Université de Californie à Irvine,Universidad de California en Irvine,Đại học California tại Irvine
+1003,"University of California, Los Angeles",Q174710,"University of California, Los Angeles",ok,캘리포니아 대학교 로스앤젤레스 캠퍼스,カリフォルニア大学ロサンゼルス校,加州大学洛杉矶分校,"University of California, Los Angeles",Université de Californie à Los Angeles,Universidad de California en Los Ángeles,Đại học California tại Los Angeles
+1006,"University of California, Riverside",Q1075148,"University of California, Riverside",ok,캘리포니아 대학교 리버사이드,カリフォルニア大学リバーサイド校,加州大學河濱分校,"University of California, Riverside",Université de Californie à Riverside,Universidad de California en Riverside,Đại học California tại Riverside
+1012,University of Central Florida,Q143451,University of Central Florida,ok,센트럴 플로리다 대학교,セントラルフロリダ大学,中佛罗里达大学,University of Central Florida,Université du Centre de la Floride,Universidad de Florida Central,Đại học Trung Florida
+1016,University of Chicago,Q131252,University of Chicago,ok,시카고 대학교,シカゴ大学,芝加哥大学,University of Chicago,Université de Chicago,Universidad de Chicago,Đại học Chicago
+1017,University of Cincinnati,Q153265,University of Cincinnati,ok,신시내티 대학교,シンシナティ大学,辛辛纳提大學,University of Cincinnati,Université de Cincinnati,Universidad de Cincinnati,Đại học Cincinnati
+1022,University of Connecticut,Q49206,University of Connecticut,ok,코네티컷 대학교,コネチカット大学,康涅狄格大学,University of Connecticut,Université du Connecticut,Universidad de Connecticut,Đại học Connecticut
+1025,University of Delaware,Q1068072,University of Delaware,ok,델라웨어 대학교,デラウェア大学,特拉华大学,University of Delaware,Université du Delaware,Universidad de Delaware,Đại học Delaware
+1026,University of Denver,Q519427,University of Denver,ok,덴버 대학교,デンバー大学,丹佛大學,University of Denver,Université de Denver,Universidad de Denver,Đại học Denver
+1030,University of Florida,Q501758,University of Florida,ok,플로리다 대학교,フロリダ大学,佛罗里达大学,University of Florida,Université de Floride,Universidad de la Florida,Đại học Florida
+1033,University of Hartford,Q747053,University of Hartford,ok,하트퍼드 대학교,ハートフォード大学,哈特福德大學,University of Hartford,université de Hartford,Universidad de Hartford,
+1037,University of Houston,Q1472358,University of Houston,ok,휴스턴 대학교,ヒューストン大学,休士頓大學,University of Houston,Université de Houston,Universidad de Houston,Đại học Houston
+1041,University of Illinois Urbana-Champaign,Q457281,University of Illinois Urbana-Champaign,ok,일리노이 대학교 어배너-섐페인,イリノイ大学アーバナ・シャンペーン校,伊利诺伊大学厄巴纳-香槟分校,University of Illinois at Urbana-Champaign,Université de l'Illinois Urbana-Champaign,Universidad de Illinois en Urbana-Champaign,Đại học Illinois tại Urbana-Champaign
+1043,University of Iowa,Q182973,University of Iowa,ok,아이오와 대학교,アイオワ大学,艾奥瓦大学,University of Iowa,Université de l'Iowa,Universidad de Iowa,Đại học Iowa
+1045,University of Kansas,Q52413,University of Kansas,ok,캔자스 대학교,カンザス大学,堪萨斯大学,University of Kansas,Université du Kansas,Universidad de Kansas,Đại học Kansas
+1047,University of Kentucky,Q1360303,University of Kentucky,ok,켄터키 대학교,ケンタッキー大学,肯塔基大学,University of Kentucky,Université du Kentucky,Universidad de Kentucky,Đại học Kentucky
+1059,"University of Maryland, Baltimore County",Q735049,"University of Maryland, Baltimore County",ok,,メリーランド大学ボルティモア郡校,马里兰大学巴尔的摩县分校,"University of Maryland, Baltimore County","Université du Maryland, Comté de Baltimore","Universidad de Maryland, condado de Baltimore",Đại học Maryland tại Quận Baltimore
+1060,"University of Maryland, College Park",Q503415,University of Maryland,ok,메릴랜드 대학교,メリーランド大学カレッジパーク校,马里兰大学科利奇帕克分校,"University of Maryland, College Park",Université du Maryland,Universidad de Maryland,Đại học Maryland
+1067,University of Miami,Q738258,University of Miami,ok,마이애미 대학교,マイアミ大学,邁阿密大學,University of Miami,Université de Miami,Universidad de Miami,Đại học Miami
+1074,University of Mississippi,Q1138384,University of Mississippi,ok,미시시피 대학교,ミシシッピ大学,密西西比大学,University of Mississippi,Université du Mississippi,Universidad de Misisipi,Đại học Mississippi
+1086,University of New Hampshire,Q49207,University of New Hampshire,ok,뉴햄프셔 대학교,ニューハンプシャー大学,新罕布什尔大学,University of New Hampshire,Université du New Hampshire,Universidad de Nuevo Hampshire,Đại học New Hampshire
+1088,University of New Mexico,Q1190812,University of New Mexico,ok,뉴멕시코 대학교,ニューメキシコ大学,新墨西哥大學,University of New Mexico,Université du Nouveau-Mexique,Universidad de Nuevo México,Đại học New Mexico
+1091,University of North Carolina at Chapel Hill,Q192334,University of North Carolina at Chapel Hill,ok,노스캐롤라이나 대학교 채플힐,ノース・カロライナ大学チャペル・ヒル校,北卡羅來納大學教堂山校區,University of North Carolina at Chapel Hill,Université de Caroline du Nord à Chapel Hill,Universidad de Carolina del Norte en Chapel Hill,Đại học Bắc Carolina tại Chapel Hill
+1092,University of North Carolina at Charlotte,Q1783178,University of North Carolina at Charlotte,ok,,ノースカロライナ大学シャーロット校,北卡羅來納大學夏洛特分校,University of North Carolina at Charlotte,université de Caroline du Nord à Charlotte,Universidad de Carolina del Norte en Charlotte,Đại học Bắc Carolina tại Charlotte
+1099,University of North Texas,Q860527,University of North Texas,ok,노스 텍사스 대학교,北テキサス大学,北德克薩斯大學,University of North Texas,Université du Nord du Texas,Universidad del Norte de Texas,Đại học Bắc Texas
+1101,University of Notre Dame,Q178848,University of Notre Dame,ok,노터데임 대학교,ノーター・デイム大学,聖母大學,University of Notre Dame,Université de Notre-Dame-du-Lac,Universidad de Notre Dame,Đại học Notre Dame
+1102,University of Oklahoma,Q640652,University of Oklahoma,ok,오클라호마 대학교,オクラホマ大学,奧克拉荷馬大學,University of Oklahoma,Université de l'Oklahoma,Universidad de Oklahoma,Đại học Oklahoma
+1103,University of Oregon,Q766145,University of Oregon,ok,오리건 대학교,オレゴン大学,俄勒岡大學,University of Oregon,Université de l'Oregon,Universidad de Oregón,Đại học Oregon
+1104,University of Pennsylvania,Q49117,University of Pennsylvania,ok,펜실베이니아 대학교,ペンシルベニア大学,宾夕法尼亚大学,Universität von Pennsylvania,Université de Pennsylvanie,Universidad de Pensilvania,Đại học Pennsylvania
+1106,University of Pittsburgh,Q235034,University of Pittsburgh,ok,피츠버그 대학교,ピッツバーグ大学,匹茲堡大學,University of Pittsburgh,Université de Pittsburgh,Universidad de Pittsburgh,Đại học Pittsburgh
+1113,University of Rhode Island,Q1641788,University of Rhode Island,ok,로드아일랜드 대학교,ロードアイランド大学,羅德島大學,University of Rhode Island,Université de Rhode Island,Universidad de Rhode Island,Đại học Rhode Island
+1115,University of Rochester,Q149990,University of Rochester,ok,로체스터 대학교,ロチェスター大学,羅徹斯特大學,Universität Rochester,Université de Rochester,Universidad de Rochester,Đại học Rochester
+1118,University of San Diego,Q262663,University of San Diego,ok,샌디에이고 대학교,サンディエゴ大学,聖迭戈大學,University of San Diego,Université de San Diego,Universidad de San Diego,
+1119,University of San Francisco,Q1887879,University of San Francisco,ok,샌프란시스코 대학교,サンフランシスコ大学,旧金山大学,University of San Francisco,Université de San Francisco,Universidad de San Francisco,
+1124,University of South Carolina,Q1024426,University of South Carolina,ok,사우스캐롤라이나 대학교,サウスカロライナ大学,南卡羅來納大學,University of South Carolina,Université de Caroline du Sud,Universidad de Carolina del Sur,Đại học Nam Carolina
+1128,University of Southern California,Q4614,University of Southern California,ok,서던캘리포니아 대학교,南カリフォルニア大学,南加州大学,University of Southern California,Université de Californie du Sud,Universidad del Sur de California,Đại học Nam California
+1132,University of South Florida,Q500606,University of South Florida,ok,사우스플로리다 대학교,南フロリダ大学,南佛罗里达大学,University of South Florida,Université de Floride du Sud,Universidad del Sur de Florida,Đại học Nam Florida
+1139,The University of Texas at Austin,Q49213,University of Texas at Austin,ok,텍사스 대학교 오스틴,テキサス大学オースティン校,德克薩斯州大學奧斯汀分校,University of Texas at Austin,Université du Texas à Austin,Universidad de Texas en Austin,Đại học Texas tại Austin
+1153,University of the Pacific,Q630226,University of the Pacific,ok,퍼시픽 대학교,パシフィック大学,太平洋大学,University of the Pacific,Université du Pacifique,Universidad del Pacífico,"Đại học Thái Bình Dương, California"
+1155,University of Tulsa,Q1848657,University of Tulsa,ok,,タルサ大学,陶沙大學,University of Tulsa,Université de Tulsa,Universidad de Tulsa,
+1156,University of Utah,Q168515,University of Utah,ok,유타 대학교,ユタ大学,犹他大学,University of Utah,Université de l'Utah,Universidad de Utah,Đại học Utah
+1157,University of Vermont,Q1048898,University of Vermont,ok,버몬트 대학교,バーモント大学,佛蒙特大學,University of Vermont,Université du Vermont,Universidad de Vermont,Đại học Vermont
+1159,University of Washington,Q219563,University of Washington,ok,워싱턴 대학교,ワシントン大学,華盛頓大學,University of Washington,Université de Washington,Universidad de Washington,Đại học Washington
+1176,University of Wyoming,Q1326975,University of Wyoming,ok,와이오밍 대학교,ワイオミング大学,怀俄明大学,University of Wyoming,Université du Wyoming,Universidad de Wyoming,Đại học Wyoming
+1179,Utah State University,Q1052614,Utah State University,ok,유타 주립 대학교,ユタ州立大学,猶他州立大學,Utah State University,Université d'État de l'Utah,Universidad Estatal de Utah,Đại học Tiểu bang Utah
+1185,Vanderbilt University,Q29052,Vanderbilt University,ok,밴더빌트 대학교,ヴァンダービルト大学,范德比尔特大学,Universität Vanderbilt,Université Vanderbilt,Universidad Vanderbilt,Đại học Vanderbilt
+1190,Virginia Commonwealth University,Q2303536,Virginia Commonwealth University,ok,버지니아 커먼웰스 대학교,バージニア・コモンウェルス大学,維吉尼亞聯邦大學,Virginia Commonwealth University,Université du Commonwealth de Virginie,Universidad de la Mancomunidad de Virginia,Đại học Thịnh vượng chung Virginia
+1198,Wake Forest University,Q392667,Wake Forest University,ok,웨이크포레스트 대학교,ウェイクフォレスト大学,威克森林大学,Wake Forest University,Université Wake Forest,Universidad de Wake Forest,
+1199,Walden University,Q7961486,Walden University,ok,,ウォルデン大学,,,Walden University,,
+1208,Washington State University,Q597236,Washington State University,ok,워싱턴 주립 대학교,ワシントン州立大学,華盛頓州立大學,Washington State University,Université d'État de Washington,Universidad Estatal de Washington,Đại học Tiểu bang Washington
+1213,Wayne State University,Q349055,Wayne State University,ok,웨인 주립 대학교,ウェイン州立大学,韋恩州立大學,Wayne State University,Université de Wayne State,Universidad Estatal Wayne,
+1228,Western Michigan University,Q1546191,Western Michigan University,ok,웨스턴 미시간 대학교,西ミシガン大学,西密歇根大学,Western Michigan University,Université de Western Michigan,Western Michigan University,
+1243,West Virginia University,Q115376,West Virginia University,ok,웨스트버지니아 대학교,ウェストバージニア大学,西弗吉尼亞大學,West Virginia University,Université de Virginie-Occidentale,Universidad de Virginia Occidental,Đại học Tây Virginia
+1252,Widener University,Q3443325,Widener University,ok,,ワイドナー大学,韋得納大學,Widener University,Université Widener,,
+1269,Worcester Polytechnic Institute,Q195046,Worcester Polytechnic Institute,ok,우스터 폴리테크닉 대학,ウースター工科大学,伍斯特理工学院,Worcester Polytechnic Institute,Institut polytechnique de Worcester,Instituto Politécnico de Worcester,
+1272,Yale University,Q49112,Yale University,ok,예일 대학교,イェール大学,耶魯大學,Yale University,Université Yale,Universidad Yale,Đại học Yale
+1273,Yeshiva University,Q1048851,Yeshiva University,ok,예시바 대학교,イェシーバー大学,叶史瓦大学,Yeshiva University,Université Yeshiva,Universidad Yeshiva,
+1384,Universidad Nacional de Mar del Plata,Q6979260,National University of Mar del Plata,ok,,,国立马德普拉塔大学,,,Universidad Nacional de Mar del Plata,
+1386,Universidad del Salvador,Q3115667,University of the Salvador,ok,,サルバドール大学,萨尔瓦多大学,,Université del Salvador,Universidad del Salvador,
+1391,Universidad de Belgrano,Q1789101,University of Belgrano,ok,벨그라노 대학교,ベルグラーノ大学,贝尔格拉诺大学,Universität Belgrano,Université de Belgrano,Universidad de Belgrano,Đại học Belgrano
+1420,Universidad Nacional de Cuyo,Q1076209,Universidad Nacional de Cuyo,ok,쿠요 국립 대학교,クージョ国立大学,国立库约大学,Universidad Nacional de Cuyo,Université nationale de Cuyo,Universidad Nacional de Cuyo,
+1433,Universidad Nacional del Litoral,Q265866,National University of the Littoral,check,,,聖菲濱海國立大學,Universidad Nacional del Litoral,Université nationale du Littoral,Universidad Nacional del Litoral,
+1442,Universidad Nacional de Quilmes,Q6317522,National University of Quilmes,ok,,ナシオナル・デ・キルメス大学,基爾梅斯大學,,UNQ,Universidad Nacional de Quilmes,
+1447,Universidad Nacional del Sur,Q5484518,Universidad Nacional del Sur,ok,,スール大学,,Universidad Nacional del Sur,,Universidad Nacional del Sur,
+1450,Universidad Nacional de San Luis,Q9290218,National University of San Luis,ok,,,国立圣路易斯大学,,,Universidad Nacional de San Luis,
+1454,Universidad Torcuato di Tella,Q1333933,Torcuato di Tella University,ok,토르쿠아토 디텔라 대학교,トルクァト・ディ・テラ大学,托尔夸托·迪泰拉大学,Universidad Torcuato Di Tella,université Torcuato Di Tella,Universidad Torcuato Di Tella,
+1506,Australian Catholic University,Q781371,Australian Catholic University,ok,,オーストラリアカトリック大学,澳洲天主教大學,Australian Catholic University,Université catholique australienne,,
+1511,Australian National University,Q127990,Australian National University,ok,오스트레일리아 국립 대학교,オーストラリア国立大学,澳大利亞國立大學,Australian National University,Université nationale australienne,Universidad Nacional Australiana,Đại học Quốc gia Úc
+1514,Bond University,Q892188,Bond University,ok,본드 대학교,ボンド大学,邦德大學,Bond University,Université Bond,Universidad Bond,
+1515,University of Canberra,Q1640648,University of Canberra,ok,캔버라 대학교,キャンベラ大学,堪培拉大学,University of Canberra,Université de Canberra,Universidad de Canberra,
+1516,Charles Darwin University,Q1064071,Charles Darwin University,ok,,チャールズ・ダーウィン大学,查爾斯·達爾文大學,Charles Darwin University,Université Charles-Darwin,Universidad Charles Darwin,
+1518,Charles Sturt University,Q1066188,Charles Sturt University,ok,찰스 스터트 대학교,チャールズ・スタート大学,查爾斯史都華大學,Charles Sturt University,Université Charles-Sturt,,
+1519,Curtin University,Q1145497,Curtin University,ok,,カーティン大学,科廷大學,Curtin University,Université Curtin,Universidad John Curtin,Đại học Curtin
+1520,Deakin University,Q1180978,Deakin University,ok,디킨 대학교,ディーキン大学,迪肯大學,Deakin University,Université Deakin,Universidad de Deakin,Đại học Deakin
+1521,Edith Cowan University,Q1284960,Edith Cowan University,ok,,エディスコーワン大学,伊迪斯科文大学,Edith Cowan University,Université Edith-Cowan,Universidad Edith Cowan,
+1523,Griffith University,Q1202292,Griffith University,ok,그리피스 대학교,グリフィス大学,格里菲斯大学,Griffith University,Université Griffith,Universidad Griffith,Đại học Griffith
+1529,La Trobe University,Q1478723,La Trobe University,ok,,ラ・トローブ大学,乐卓博大学,La Trobe University,Université La Trobe,Universidad La Trobe,Đại học La Trobe
+1531,Monash University,Q598841,Monash University,ok,모나시 대학교,モナシュ大学,蒙纳士大学,Monash University,Université Monash,Universidad de Monash,Đại học Monash
+1532,Macquarie University,Q741082,Macquarie University,ok,맥쿼리 대학교,マッコーリー大学,麥覺理大學,Macquarie University,Université Macquarie,Universidad de Macquarie,Đại học Macquarie
+1533,Murdoch University,Q1375146,Murdoch University,ok,머독 대학교,マードック大学,莫道克大學,Murdoch University,université Murdoch,,
+1540,Southern Cross University,Q1278780,Southern Cross University,ok,,サザンクロス大学,南十字星大學,Southern Cross University,Université Southern Cross,,
+1541,Swinburne University of Technology,Q787234,Swinburne University of Technology,ok,스윈번 공과대학교,スウィンバーン工科大学,斯威本科技大學,Swinburne University of Technology,Swinburne University of Technology,,Đại học Kỹ thuật Swinburne
+1542,University of Melbourne,Q319078,University of Melbourne,ok,멜버른 대학교,メルボルン大学,墨尔本大学,Universität Melbourne,Université de Melbourne,Universidad de Melbourne,Đại học Melbourne
+1543,University of South Australia,Q15576,University of South Australia,ok,사우스오스트레일리아 대학교,南オーストラリア大学,南澳大学,University of South Australia,Université d'Australie-Méridionale,University of South Australia,
+1544,University of New South Wales,Q734764,University of New South Wales,ok,뉴사우스웨일스 대학교,ニューサウスウェールズ大学,新南威尔士大学,University of New South Wales,Université de Nouvelle-Galles du Sud,Universidad de Nueva Gales del Sur,Đại học New South Wales
+1545,University of Wollongong,Q1350021,University of Wollongong,ok,울런공 대학교,ウーロンゴン大学,伍伦贡大学,University of Wollongong,Université de Wollongong,Universidad de Wollongong,Đại học Wollongong
+1546,University of Queensland,Q866012,University of Queensland,ok,퀸즐랜드 대학교,クイーンズランド大学,昆士兰大学,University of Queensland,Université du Queensland,Universidad de Queensland,Đại học Queensland
+1547,University of the Sunshine Coast,Q1423677,University of the Sunshine Coast,ok,,サンシャインコースト大学,陽光海岸大學,University of the Sunshine Coast,,,
+1548,University of Southern Queensland,Q978124,University of Southern Queensland,ok,,サザンクイーンズランド大学,南昆士蘭大學,University of Southern Queensland,,,
+1549,University of Sydney,Q487556,University of Sydney,ok,시드니 대학교,シドニー大学,雪梨大學,Universität Sydney,Université de Sydney,Universidad de Sídney,Đại học Sydney
+1550,University of Tasmania,Q962011,University of Tasmania,ok,태즈메이니아 대학교,タスマニア大学,塔斯馬尼亞大學,University of Tasmania,Université de Tasmanie,Universidad de Tasmania,
+1551,University of Technology Sydney,Q1145731,University of Technology Sydney,ok,시드니 과학기술대학교,シドニー工科大学,悉尼科技大学,"University of Technology, Sydney",Université technologique de Sydney,Universidad Tecnológica de Sídney,
+1554,Victoria University,Q180514,Victoria University,ok,,ビクトリア大学,維多利亞大學,Victoria University,Université de Victoria,,
+1588,Technische Universität Wien,Q689400,TU Wien,ok,빈 공과대학교,ウィーン工科大学,维也纳科技大学,Technische Universität Wien,université technique de Vienne,Universidad Técnica de Viena,Đại học Kỹ thuật Viên
+1594,Universität Vienna,,not_found,,,,,,,,
+1629,Western University,Q1144262,University of Western Ontario,ok,웨스턴온타리오 대학교,ウェスタンオンタリオ大学,西安大略大学,University of Western Ontario,Université Western Ontario,Universidad de Ontario Occidental,
+1657,Bangladesh University of Engineering and Technology,Q506330,Bangladesh University of Engineering and Technology,ok,,バングラデシュ工科大学,孟加拉工程技术大学,Bangladesh University of Engineering and Technology,université d'ingénierie et de technologie du Bangladesh,,
+1691,North South University,Q7056796,North South University,ok,,北南大学,,,,,
+1692,Noakhali University of Science and Technology,,not_found,,,,,,,,
+1704,Southeast University,Q3551770,Southeast University,ok,둥난대학,東南大学,东南大学,Universität Südostchinas,université du Sud-Est,,Đại học Đông Nam
+1730,Belarusian State University,Q2418908,Belarusian State University,ok,,ベラルーシ国立大学,白俄罗斯国立大学,Belarussische Staatliche Universität,université d'État de Biélorussie,Universidad Estatal Bielorrusa,
+1785,Hasselt University,Q1781858,Hasselt University,ok,,ハッセルト大学,哈瑟尔特大学,Universität Hasselt,Université de Hasselt,Universidad de Hasselt,
+1846,University of Sarajevo,Q572286,University of Sarajevo,ok,사라예보 대학교,サラエヴォ大学,萨拉热窝大学,Universität Sarajevo,université de Sarajevo,Universidad de Sarajevo,
+1866,Universidade Federal de São Paulo,Q4384447,Universidade Federal de São Paulo,ok,,サンパウロ連邦大学,,Universidade Federal de São Paulo,Université fédérale de São Paulo,Universidad Federal de São Paulo,
+1888,Pontifícia Universidade Católica do Rio de Janeiro,Q1857293,Pontifical Catholic University of Rio de Janeiro,ok,리우데자네이루 가톨릭 대학교,リオデジャネイロ・カトリック大学,里约热内卢天主教大学,Päpstliche Katholische Universität von Rio de Janeiro,Université pontificale catholique de Rio de Janeiro,Pontificia Universidad Católica de Río de Janeiro,
+1890,Pontifícia Universidade Católica de São Paulo,Q1815994,Pontifícia Universidade Católica de São Paulo,ok,상파울루 가톨릭 대학교,サンパウロ・カトリック大学,聖保羅天主教大學,Päpstliche Katholische Universität von São Paulo,Université pontificale catholique de São Paulo,Pontificia Universidad Católica de São Paulo,
+1906,Universidade Estadual de Londrina,Q7894364,State University of Londrina,ok,,ロンドリーナ州立大学,,,,Universidad de Londrina,
+1925,Universidade Federal de Goiás,Q7894375,Universidade Federal de Goiás,ok,고이아스주 연방대학교,ゴイアス連邦大学,戈亚斯州邦大学,Universidade Federal de Goiás,Université fédérale de Goiás,Universidad Federal de Goiás,
+1930,Universidade Federal de Minas Gerais,Q132140,Federal University of Minas Gerais,ok,미나스제라이스 연방대학교,ミナス・ジェライス連邦大学,米纳斯吉拉斯联邦大学,Universidade Federal de Minas Gerais,Université fédérale du Minas Gerais,Universidad Federal de Minas Gerais,Universidade Federal de Minas Gerais
+1939,Universidade Federal da Paraíba,Q5440479,,check,,,,,,,
+1944,Universidade Federal do Rio Grande do Sul,Q766447,Federal University of Rio Grande do Sul,ok,,リオグランデ・ド・スル大学,南大河聯邦大學,Universidade Federal do Rio Grande do Sul,Université fédérale du Rio Grande do Sul,Universidad Federal de Río Grande del Sur,
+1945,Universidade Federal do Rio de Janeiro,Q586904,Federal University of Rio de Janeiro,ok,리우데자네이루 연방 대학교,リオデジャネイロ連邦大学,里约热内卢联邦大学,Universidade Federal do Rio de Janeiro,Université fédérale de Rio de Janeiro,Universidad Federal de Río de Janeiro,Đại học Liên bang Rio de Janeiro
+1951,Universidade Federal de Santa Catarina,Q1851075,Universidade Federal de Santa Catarina,ok,산타카타리나 연방대학교,サンタカタリーナ連邦大学,圣卡塔琳娜联邦大学,Universidade Federal de Santa Catarina,Université fédérale de Santa Catarina,Universidad Federal de Santa Catarina,
+1952,Universidade Federal de Santa Maria,Q3790133,Universidade Federal de Santa Maria,ok,,,圣马利亚联邦大学,Universidade Federal de Santa Maria,,Universidad Federal de Santa María,
+2021,Universidade de São Paulo,Q835960,University of São Paulo,ok,상파울루 대학교,サンパウロ大学,圣保罗大学,Universidade de São Paulo,Université de São Paulo,Universidad de São Paulo,Đại học São Paulo
+2058,"Sofia University ""St. Kliment Ohridski""",Q841581,Sofia University,ok,소피아 대학교,ソフィア大学,索非亚大学,Universität Sofia,université Saint-Clément-d'Ohrid de Sofia,Universidad de Sofía,
+2117,Brock University,Q923624,Brock University,ok,브록 대학교,ブロック大学,布洛克大學,Brock University,Université Brock,,
+2121,Carleton University,Q1041737,Carleton University,ok,칼턴 대학교,カールトン大学,卡爾頓大學,Carleton University,Université Carleton,Universidad de Carleton,Đại học Carleton
+2128,Concordia University,Q326342,Concordia University,ok,콘코디아 대학교,コンコルディア大学,协和大学,Concordia University,Université Concordia,Universidad Concordia,
+2133,Dalhousie University,Q579321,Dalhousie University,ok,달하우지 대학교,ダルハウジー大学,戴尔豪斯大学,Dalhousie University,Université Dalhousie,Universidad de Dalhousie,
+2155,McGill University,Q201492,McGill University,ok,맥길 대학교,マギル大学,麦吉尔大学,McGill University,Université McGill,Universidad McGill,Đại học McGill
+2156,McMaster University,Q632891,McMaster University,ok,맥마스터 대학교,マックマスター大学,麥馬士達大學,McMaster University,Université McMaster,Universidad McMaster,Đại học McMaster
+2184,Simon Fraser University,Q201603,Simon Fraser University,ok,사이먼 프레이저 대학교,サイモン・フレーザー大学,西蒙·弗雷泽大学,Simon Fraser University,Université Simon Fraser,universidad Simon Fraser,Đại học Simon Fraser
+2196,University of Alberta,Q640694,University of Alberta,ok,앨버타 대학교,アルバータ大学,阿尔伯塔大学,University of Alberta,Université de l'Alberta,universidad de Alberta,Đại học Alberta
+2197,University of British Columbia,Q391028,University of British Columbia,ok,브리티시컬럼비아 대학교,ブリティッシュコロンビア大学,不列顛哥倫比亞大學,Universität von British Columbia,Université de la Colombie-Britannique,Universidad de Columbia Británica,Đại học British Columbia
+2199,University of Calgary,Q1067471,University of Calgary,ok,캘거리 대학교,カルガリー大学,卡尔加里大学,University of Calgary,Université de Calgary,Universidad de Calgary,Đại học Calgary
+2202,Memorial University of Newfoundland,Q1895354,Memorial University of Newfoundland,ok,뉴펀들랜드 메모리알 대학교,ニューファンドランドメモリアル大学,纽芬兰纪念大学,Memorial University of Newfoundland,université Memorial de Terre-Neuve,Memorial University of Newfoundland,
+2204,Université Laval,Q1067935,Laval University,ok,라발 대학교,ラヴァル大学,拉瓦尔大学,Universität Laval,Université Laval,Universidad Laval de Quebec,Đại học Laval
+2206,University of Manitoba,Q1191833,University of Manitoba,ok,매니토바 대학교,マニトバ大学,曼尼托巴大学,University of Manitoba,Université du Manitoba,Universidad de Manitoba,
+2208,Université de Montréal,Q392189,Université de Montréal,ok,몬트리올 대학교,モントリオール大学,蒙特利尔大学,Universität Montreal,Université de Montréal,Universidad de Montreal,Đại học Montréal
+2209,University of New Brunswick,Q1112515,University of New Brunswick,ok,뉴브런즈윅 대학교,ニュー・ブランズウィック大学,新不伦瑞克大学,University of New Brunswick,Université du Nouveau-Brunswick,Universidad de Nuevo Brunswick,
+2213,University of Guelph,Q795988,University of Guelph,ok,궬프 대학교,ゲルフ大学,貴湖大學,University of Guelph,Université de Guelph,Universidad de Guelph,
+2215,University of Ottawa,Q627969,University of Ottawa,ok,오타와 대학교,オタワ大学,渥太華大學,Universität Ottawa,Université d'Ottawa,Universidad de Ottawa,
+2225,University of Saskatchewan,Q1514848,University of Saskatchewan,ok,서스캐처원 대학교,サスカチュワン大学,萨斯喀彻温大学,University of Saskatchewan,Université de la Saskatchewan,Universidad de Saskatchewan,
+2226,Université de Sherbrooke,Q2579532,University of Sherbrooke,ok,,シャーブルック大学,雪布克大學,Université de Sherbrooke,Université de Sherbrooke,Université de Sherbrooke,
+2233,University of Toronto,Q180865,University of Toronto,ok,토론토 대학교,トロント大学,多倫多大學,University of Toronto,Université de Toronto,Universidad de Toronto,Đại học Toronto
+2235,University of Waterloo,Q1049470,University of Waterloo,ok,워털루 대학교,ウォータールー大学,滑鐵盧大學,University of Waterloo,Université de Waterloo,Universidad de Waterloo,Đại học Waterloo
+2236,University of Windsor,Q2065769,University of Windsor,ok,윈저 대학교,ウィンザー大学,溫莎大學,University of Windsor,Université de Windsor,Universidad de Windsor,
+2242,York University,Q967165,University of York,ok,요크 대학교,ヨーク大学,約克大學,University of York,Université d'York,Universidad de York,
+2251,Pontificia Universidad Catolica de Chile,Q1129925,Pontifical Catholic University of Chile,ok,,チリ・カトリック大学,智利天主教大学,Päpstliche Katholische Universität von Chile,université pontificale catholique du Chili,Pontificia Universidad Católica de Chile,Đại học Công giáo Chile
+2252,Universidad Austral de Chile,Q961982,Austral University of Chile,ok,,アウストラル・デ・チレ大学,智利奥斯特拉尔大学,Universidad Austral de Chile,Université australe du Chili,Universidad Austral de Chile,
+2255,Universidad Adolfo Ibáñez,Q611995,Adolfo Ibáñez University,ok,,,,,Université Adolfo-Ibáñez,Universidad Adolfo Ibáñez,
+2257,Universidad de Los Andes,Q1569421,University of the Andes,ok,,ロス・アンデス大学,安第斯大学,Universidad de los Andes,Université des Andes,Universidad de los Andes,
+2260,Universidad del Bío-Bío,Q38779,University of the Bío-Bío,ok,비오비오 대학교,ビオ＝ビオ大学,比奥比奥大学,Universität Bío-Bío,Université du Bío-Bío,Universidad del Bío-Bío,Đại học Biobío
+2261,Universidad Bernardo O'Higgins,Q6156370,Bernardo O'Higgins University,ok,,,,,Universidad Bernardo O'Higgins,Universidad Bernardo O'Higgins,
+2265,Universidad de Chile,Q232141,University of Chile,ok,칠레 대학교,チリ大学,智利大学,Universidad de Chile,Université du Chili,Universidad de Chile,Đại học Chile
+2301,Universidad de La Serena,Q3551327,University of La Serena,ok,,,拉塞雷纳大学,,Universidad de La Serena,Universidad de La Serena,
+2305,Universidad de Talca,Q3551328,University of Talca,ok,,タルカ大学,,,Université de Talca,Universidad de Talca,
+2318,Beijing Foreign Studies University,Q1144682,Beijing Foreign Studies University,ok,베이징 외국어대학,北京外国語大学,北京外国语大学,Pekinger Fremdsprachenuniversität,université des langues étrangères de Pékin,Universidad de Estudios Extranjeros de Pekín,Đại học Ngoại ngữ Bắc Kinh
+2321,Beijing Institute of Technology,Q23101,Beijing Institute of Technology,ok,베이징 이공대학,北京理工大学,北京理工大学,Technische Universität Peking,Institut de technologie de Pékin,Instituto de Tecnología de Beijing,Học viện Công nghệ Bắc Kinh
+2323,Beijing Jiaotong University,Q4587760,Beijing Jiaotong University,ok,,北京交通大学,北京交通大学,Beijing Jiaotong University,université Jiao Tong de Pékin,,
+2331,Beijing Normal University,Q1604022,Beijing Normal University,ok,베이징 사범대학,北京師範大学,北京师范大学,Pädagogische Universität Peking,université normale de Pékin,Universidad Normal de Pekín,Đại học Sư phạm Bắc Kinh
+2335,Beijing University of Posts and Telecommunications,Q4881210,Beijing University of Posts and Telecommunications,ok,,北京郵電大学,北京邮电大学,,,,
+2338,China Agricultural University,Q257655,China Agricultural University,ok,,中国農業大学,中国农业大学,Landwirtschaftliche Universität Chinas,université agronomique de Chine,Universidad de Agricultura de China,
+2359,Chongqing University,Q834857,Chongqing University,ok,충칭 대학,重慶大学,重庆大学,Chongqing-Universität,université de Chongqing,Universidad de Chongqing,
+2367,Central South University,Q5061828,Central South University,ok,중난 대학,中南大学,中南大学,Central South University,,,
+2380,China University of Political Science and Law,Q833961,China University of Political Science and Law,ok,중국정법대학,中国政法大学,中国政法大学,Chinesische Universität für Politikwissenschaft und Recht,université de Chine de sciences politiques et droit,,Đại học Khoa học Chính trị và Luật Trung Quốc
+2387,Dalian University of Technology,Q1477368,Dalian University of Technology,ok,다롄 이공대학,大連理工大学,大连理工大学,Technische Universität Dalian,université de technologie de Dalian,Universidad Tecnológica de Dalian,
+2390,East China Normal University,Q2034790,East China Normal University,ok,화동사범대학교,華東師範大学,华东师范大学,Pädagogische Universität Ostchinas,université normale de la Chine de l'Est,Universidad Normal del Este de China,Đại học Sư phạm Hoa Đông
+2391,East China University of Science and Technology,Q2655352,East China University of Science and Technology,ok,,華東理工大学,华东理工大学,Technische Universität Ostchinas,université des sciences et technologies de la Chine de l'Est,,
+2401,Fudan University,Q495015,Fudan University,ok,푸단 대학,復旦大学,复旦大学,Fudan-Universität,université Fudan,Universidad Fudan,Đại học Phục Đán
+2443,Harbin Institute of Technology,Q632558,Harbin Institute of Technology,ok,하얼빈 공업대학,ハルビン工業大学,哈尔滨工业大学,Polytechnische Universität Harbin,Institut de technologie de Harbin,Instituto de Tecnología de Harbin,Đại học Công nghiệp Cáp Nhĩ Tân
+2450,Harbin Engineering University,Q23102,Harbin Engineering University,ok,,ハルビン工程大学,哈尔滨工程大学,Harbin Engineering University,université d'Ingénierie d'Harbin,Universidad de Ingeniería de Harbin,Trường Đại học Kỹ thuật Cáp Nhĩ Tân
+2458,Huazhong University of Science and Technology,Q1711196,Huazhong University of Science and Technology,ok,,華中科技大学,华中科技大学,Universität für Wissenschaft und Technik Zentralchina,université de science et de technologie de Huazhong,Universidad de Ciencia y Tecnología de Huazhong,Đại học Khoa học và Kỹ thuật Hoa Trung
+2469,Jilin University,Q1432030,Jilin University,ok,지린 대학,吉林大学,吉林大学,Jilin-Universität,université de Jilin,Universidad Jilin,Đại học Cát Lâm
+2489,Lanzhou University,Q4475799,Lanzhou University,ok,,蘭州大学,兰州大学,Lanzhou-Universität,université de Lanzhou,Universidad de Lanzhou,Đại học Lan Châu
+2508,Nanjing University,Q683580,Nanjing University,ok,난징 대학,南京大学,南京大学,Universität Nanjing,université de Nankin,Universidad de Nankín,Đại học Nam Kinh
+2511,Nanjing University of Science and Technology,Q3953805,Nanjing University of Science and Technology,ok,,南京理工大学,南京理工大学,,université de science et technologie de Nankin,,Đại học Khoa học và Công nghệ Nam Kinh
+2517,Nanjing University of Aeronautics and Astronautics,Q23110,Nanjing University of Aeronautics and Astronautics,ok,,南京航空航天大学,南京航空航天大学,Universität für Aeronautik und Astronautik Nanjing,université d'aéronautique et d'astronautique de Nankin,Universidad de Aeronáutica y Astronáutica de Nankín,Đại học hàng không và du hành vũ trụ Nam Kinh
+2527,Peking University,Q16952,Peking University,ok,베이징 대학,北京大学,北京大学,Universität Peking,université de Pékin,Universidad de Pekín,Đại học Bắc Kinh
+2536,Renmin University of China,Q1074117,Renmin University of China,ok,중국인민대학,中国人民大学,中国人民大学,Renmin-Universität China,université Renmin de Chine,Universidad Renmin de China,Đại học Nhân dân Trung Quốc
+2543,Sichuan University,Q2281517,Sichuan University,ok,쓰촨 대학,四川大学,四川大学,Sichuan-Universität,université du Sichuan,Universidad de Sichuan,Đại học Tứ Xuyên
+2544,South China University of Technology,Q835366,South China University of Technology,ok,,華南理工大学,华南理工大学,,université de technologie du Sud de la Chine,,
+2551,Shandong University,Q604470,Shandong University,ok,산둥 대학,山東大学,山东大学,Shandong-Universität,université du Shandong,Universidad de Shandong,
+2560,Shanghai International Studies University,Q1455176,Shanghai International Studies University,ok,상하이 외국어대학,上海外国語大学,上海外国语大学,Fremdsprachenuniversität Shanghai,université des études internationales de Shanghai,Universidad de Estudios Internacionales de Shanghai (SISU),Đại học Ngoại ngữ Thượng Hải
+2570,Shanghai University,Q1343386,Shanghai University,ok,상하이 대학,上海大学,上海大学,Shanghai-Universität,université de Shanghai,Universidad de Shanghái,
+2572,Shanghai University of Finance and Economics,Q6129947,Shanghai University of Finance and Economics,ok,상하이 재경대학,上海財経大学,上海财经大学,,université de finance et d'économie de Shanghai,,Đại học Tài chính và Kinh tế Thượng Hải
+2589,Southwest University,Q840443,Southwest University,ok,,西南大学,西南大学,Universität Südwestchinas,université du Sud-Ouest,Universidad Suroeste,Đại học Tây Nam
+2604,Shenzhen University,Q1945756,Shenzhen University,ok,선전 대학교,深圳大学,深圳大学,Universität Shenzhen,université de Shenzhen,Universidad de Shenzhen,Đại học Thâm Quyến
+2616,Tongji University,Q16947,Tongji University,ok,통지 대학,同済大学,同济大学,Tongji-Universität,université Tongji,Universidad de Tongji,Đại học Đồng Tế
+2617,Tsinghua University,Q16955,Tsinghua University,ok,칭화 대학,清華大学,清华大学,Tsinghua-Universität,université Tsinghua,Universidad Tsinghua,Đại học Thanh Hoa
+2621,University of Electronic Science and Technology of China,Q5971900,University of Electronic Science and Technology of China,ok,,電子科技大学,电子科技大学,,,,Đại học Khoa học và Công nghệ Điện tử Trung Quốc
+2623,University of International Business and Economics,Q835779,University of International Business and Economics,ok,대외경제무역대학교,対外経済貿易大学,对外经济贸易大学,Universität für Außenwirtschaft und Handel,université de commerce international et d'économie,,
+2628,University of Science and Technology Beijing,Q1510516,University of Science and Technology Beijing,ok,,北京科技大学,北京科技大学,Universität für Wissenschaft und Technik Peking,,,
+2629,University of Science and Technology of China,Q1074103,University of Science and Technology of China,ok,중국과학기술대학,中国科学技術大学,中国科学技术大学,Chinesische Universität für Wissenschaft und Technik,université de sciences et technologie de Chine,Universidad de Ciencia y Tecnología de China,Đại học Khoa học và Công nghệ Trung Quốc
+2636,Wuhan University,Q1108197,Wuhan University,ok,우한 대학,武漢大学,武汉大学,Wuhan-Universität,université de Wuhan,Universidad de Wuhan,Đại học Vũ Hán
+2637,Wuhan University of Technology,Q832355,Wuhan University of Technology,ok,,武漢理工大学,武汉理工大学,,université de Technologie de Wuhan,,Đại học Công nghệ Vũ Hán
+2660,Xiamen University,Q1153539,Xiamen University,ok,샤먼 대학,厦門大学,厦门大学,Xiamen-Universität,université de Xiamen,Universidad de Xiamen,
+2687,Zhejiang University,Q197543,Zhejiang University,ok,저장 대학,浙江大学,浙江大学,Zhejiang-Universität,université du Zhejiang,Universidad Zhejiang,Đại học Chiết Giang
+2705,Universidad EAFIT,Q3997314,EAFIT University,ok,,EAFIT大学,,,,Universidad EAFIT,
+2718,Universidad ICESI,Q5969511,Universidad Icesi,ok,,,,,,Universidad Icesi,
+2721,Pontificia Universidad Javeriana,Q1517478,Pontifical Xavierian University,check,,ハベリアナ大学,哈韋里亞納宗座大學,Päpstliche Universität Xaveriana,Université pontificale Javeriana,Pontificia Universidad Javeriana,
+2722,Universidad de La Salle,Q3106542,La Salle University,ok,,ラサール大学,拉塞爾大學,La Salle University,Université La Salle,Universidad de La Salle,
+2732,Universidad Católica de Colombia,Q4005879,Catholic University of Colombia,ok,,,,,,Universidad Católica de Colombia,
+2737,Universidad Católica del Norte,Q3244385,Catholic University of the North,check,,北部カトリック大学,,Katholische Universität Nordchile,université catholique du Nord,Universidad Católica del Norte,
+2742,Universidad de Medellín,Q6156785,University of Medellín,ok,,,,Universidad de Medellín,Université de Medellín,Universidad de Medellín,
+2746,Universidad Externado de Colombia,Q7894273,Universidad Externado de Colombia,ok,,コロンビア・エクステルナド大学,,Universidad Externado de Colombia,Université externado de Colombie,Universidad Externado de Colombia,
+2757,Universidad Nacional de Colombia,Q1150419,National University of Colombia,ok,콜롬비아 국립 대학교,コロンビア国立大学,哥倫比亞國立大學,Universidad Nacional de Colombia,Université nationale de Colombie,Universidad Nacional de Colombia,
+2770,Universidad Metropolitana,Q7894286,Universidad Metropolitana,ok,,,,,université métropolitaine de Caracas,Universidad Metropolitana,
+2772,Universidad del Norte,Q62163467,Universidad del Norte,ok,,,,,,Universidad del Norte,
+2777,Universidad de La Sabana,Q7895617,University of La Sabana,ok,,ラサバナ大学,,,,Universidad de La Sabana,
+2782,Universidad Pontificia Bolivariana,Q2038878,Pontifical Bolivarian University,check,,教皇ボリバル大学,玻利瓦爾宗座大學,Päpstliche Universität Bolivariana,Université pontificale bolivarienne,Universidad Pontificia Bolivariana,
+2784,Universidad del Rosario,Q3997334,Our Lady of the Rosary University,check,,ロザリオ大学,罗萨里奥大学,,Université du Rosaire,Universidad del Rosario,
+2793,Universidad Tecnológica de Pereira,Q2441962,Technological University of Pereira,ok,,ぺレイラ技術大学,,,université technologique de Pereira,Universidad Tecnológica de Pereira,
+2842,University of Pula,Q633782,University of Pula,ok,풀라 유라이 도브리라 대학교,ユライ・ドブリラ大学プーラ,普拉大学,Juraj Dobrila Universität Pula,université Juraj Dobrila de Pula,Universidad Juraj Dobrila de Pula,Đại học Pula
+2844,University of Split,Q609301,University of Split,ok,,スプリト大学,斯普利特大學,Universität Split,université de Split,University of Split,
+2846,University of Zagreb,Q675848,University of Zagreb,ok,자그레브 대학교,ザグレブ大学,萨格勒布大学,Universität Zagreb,Université de Zagreb,Universidad de Zagreb,Đại học Zagreb
+2859,Universidad de La Habana,Q837320,University of Havana,check,아바나 대학교,ハバナ大学,哈瓦那大学,Universität von Havanna,Université de La Havane,Universidad de La Habana,Đại học Havana
+2883,Charles University Prague,,not_found,,,,,,,,
+2890,Masaryk University,Q763586,Masaryk University,ok,마사리크 대학교,マサリク大学,马萨里克大学,Masaryk-Universität,université Masaryk,Universidad Masaryk,Đại học Masaryk
+2891,University of Ostrava,Q1783294,University of Ostrava,ok,,オストラヴァ大学,奧斯特拉瓦大學,Universität Ostrava,université d'Ostrava,,
+2898,University of Pardubice,Q728840,University of Pardubice,ok,,パルドゥビツェ大学,帕尔杜比采大学,Universität Pardubice,Université de Pardubice,,
+2899,Palacký University Olomouc,Q1637611,Palacký University Olomouc,ok,,パラツキー大学オロモウツ,帕拉茨基大学,Palacký-Universität Olmütz,université Palacký,Universidad Palacký,
+2900,Tomas Bata University in Zlin,Q1267725,Tomas Baťa University in Zlín,ok,,トーマスバタ大学,湯瑪斯巴塔大學,Tomáš-Baťa-Universität in Zlín,,,
+2906,Technical University of Liberec,Q1291752,Technical University of Liberec,ok,,,利贝雷茨技术大学,Technische Universität Liberec,université technique de Liberec,,
+2908,Brno University of Technology,Q1122171,Brno University of Technology,ok,브르노 공과대학교,ブルノ工科大学,布尔诺理工大学,Technische Universität Brünn,Université de technologie de Brno,Universidad Técnica de Brno,
+2909,University of West Bohemia,Q1973888,University of West Bohemia,ok,,西ボヘミア大学,西波希米亚大学,Westböhmische Universität,université de Bohème de l'Ouest,Universidad de Bohemia Occidental,
+2914,Aarhus University,Q924265,Aarhus University,ok,오르후스 대학교,オーフス大学,奥胡斯大学,Universität Aarhus,Université d'Aarhus,Universidad de Aarhus,Đại học Aarhus
+2922,Technical University of Denmark,Q1269766,Technical University of Denmark,ok,덴마크 공과 대학,デンマーク工科大学,丹麦技术大学,Dänemarks Technische Universität,Université technique du Danemark,Universidad Técnica de Dinamarca,Đại học Kỹ thuật Đan Mạch
+2932,University of Copenhagen,Q186285,University of Copenhagen,ok,코펜하겐 대학교,コペンハーゲン大学,哥本哈根大学,Universität Kopenhagen,Université de Copenhague,Universidad de Copenhague,Đại học Copenhagen
+2989,Universidad Central del Ecuador,Q1643758,Central University of Ecuador,ok,,エクアドル中央大学,厄瓜多爾中央大學,Universidad Central del Ecuador,Université centrale de l'Équateur,Universidad Central del Ecuador,
+2990,Universidad Católica de Santiago de Guayaquil,Q661971,Universidad Católica de Santiago de Guayaquil,ok,,サンティアーゴ・デ・グアヤキル・カトリック大学,,Universidad Católica Santiago de Guayaquil,Université catholique de Santiago de Guayaquil,Universidad Católica de Santiago de Guayaquil,
+3025,Cairo University,Q194445,Cairo University,ok,카이로 대학교,カイロ大学,开罗大学,Universität Kairo,université du Caire,Universidad de El Cairo,Đại học Cairo
+3031,German University in Cairo,Q691097,German University in Cairo,ok,,,开罗德语大学,German University in Cairo,université allemande du Caire,Universidad Alemana en El Cairo,
+3032,Helwan University,Q10276202,Helwan University metro station,ok,,,,Helwan University,Université de Helwan,,
+3035,Mansoura University,Q4116236,Mansoura University,ok,,マンスーラ大学,曼蘇拉大學,,université de Mansourah,,Đại học Mansoura
+3051,Suez Canal University,Q1161619,Suez Canal University,ok,,スエズ運河大学,苏伊士运河大学,Sueskanal-Universität,université du canal de Suez,,
+3053,Tanta University,Q2917699,Tanta University,ok,,,坦塔大学,,université de Tanta,,
+3056,Zagazig University,Q1078474,Zagazig University,ok,자가지그 대학교,ザガジグ大学,扎加齐克大学,Universität Zagazig,université de Zagazig,Universidad de Zagazig,
+3089,Tallinn University,Q1257946,Tallinn University,ok,탈린 대학,タリン大学,塔林大学,Universität Tallinn,Université de Tallinn,Universidad de Tallin,Đại học Tallinn
+3091,University of Tartu,Q204181,University of Tartu,ok,타르투 대학교,タルトゥ大学,塔尔图大学,Universität Tartu,Université de Tartu,Universidad de Tartu,Đại học Tartu
+3127,Abo Akademi University,Q917874,Åbo Akademi University,ok,오보 아카데미 대학교,オーボ・アカデミー大学,奥布学术大学,Åbo Akademi,Académie d'Åbo,Universidad Åbo Akademi,
+3131,University of Helsinki,Q28695,University of Helsinki,ok,헬싱키 대학교,ヘルシンキ大学,赫尔辛基大学,Universität Helsinki,université d'Helsinki,Universidad de Helsinki,Đại học Helsinki
+3159,Aalto University,Q300980,Aalto University,ok,알토 대학교,アールト大学,阿尔托大学,Aalto-Universität,université Aalto,Universidad Aalto,Đại học Aalto
+3313,Université Paris-Sorbonne (Paris IV),,not_found,,,,,,,,
+3317,École Polytechnique,Q273626,École polytechnique,ok,에콜 폴리테크니크,エコール・ポリテクニーク,巴黎综合理工学院,École polytechnique,École polytechnique,Escuela Politécnica,Trường Bách khoa Paris
+3333,Université Grenoble Alpes,Q945876,Grenoble Alpes University,ok,그레노블대학교,グルノーブル大学,格勒諾布爾大學,Universität Grenoble,université Grenoble-Alpes,Universidad Grenoble Alpes,
+3354,Université de Lorraine,Q4173330,University of Lorraine,ok,,ロレーヌ大学,洛林大学,Universität Lothringen,Université de Lorraine,Universidad de Lorena,Đại học Lorraine
+3362,Université de Montpellier,Q776223,University of Montpellier,ok,몽펠리에 대학교,モンペリエ大学,蒙彼利埃大學,Universität Montpellier,université de Montpellier,Universidad de Montpellier,Fac Medecine
+3376,Université de Poitiers,Q661056,University of Poitiers,ok,푸아티에 대학교,ポワティエ大学,普瓦捷大学,Universität Poitiers,université de Poitiers,Universidad de Poitiers,Đại học Poitiers
+3412,Université de Strasbourg,Q157575,University of Strasbourg,ok,스트라스부르 대학교,ストラスブール大学,斯特拉斯堡大学,Universität Straßburg,université de Strasbourg,Universidad de Estrasburgo,Đại học Strasbourg
+3562,Freie Universität Berlin,Q153006,Freie Universität Berlin,ok,베를린 자유 대학교,ベルリン自由大学,柏林自由大学,Freie Universität Berlin,université libre de Berlin,Universidad Libre de Berlín,Đại học Tự do Berlin
+3590,Humboldt Universität Berlin,Q152087,Humboldt-Universität zu Berlin,ok,베를린 훔볼트 대학교,フンボルト大学ベルリン,柏林洪堡大學,Humboldt-Universität zu Berlin,université Humboldt de Berlin,Universidad Humboldt de Berlín,Đại học Humboldt Berlin
+3634,Ruhr-Universität Bochum,Q309948,Ruhr University Bochum,ok,보훔 루르 대학교,ルール大学ボーフム,波鸿大学,Ruhr-Universität Bochum,université de la Ruhr à Bochum,Universidad del Ruhr de Bochum,
+3653,Technische Universität Dresden,Q158158,TU Dresden,ok,드레스덴 공과대학교,ドレスデン工科大学,德累斯顿工业大学,Technische Universität Dresden,université de technologie de Dresde,Universidad Técnica de Dresde,Đại học Kỹ thuật Dresden
+3657,Technische Universität München,Q157808,Technical University of Munich,check,뮌헨 공과대학교,ミュンヘン工科大学,慕尼黑工业大学,Technische Universität München,université de technologie de Munich,Universidad Técnica de Múnich,Đại học Kỹ thuật München
+3663,Universität Bremen,Q500692,University of Bremen,ok,브레멘 대학교,ブレーメン大学,不来梅大学,Universität Bremen,université de Brême,Universidad de Bremen,
+3668,Universität Duisburg-Essen,Q696757,University of Duisburg-Essen,ok,뒤스부르크-에센 대학교,デュースブルク＝エッセン大学,杜伊斯堡-埃森大学,Universität Duisburg-Essen,université de Duisbourg et Essen,Universidad de Duisburg-Essen,
+3678,Universität Hamburg,Q156725,University of Hamburg,ok,함부르크 대학교,ハンブルク大学,汉堡大学,Universität Hamburg,université de Hambourg,Universidad de Hamburgo,Đại học Hamburg
+3690,Universität Konstanz,Q835440,University of Konstanz,ok,콘스탄츠 대학교,コンスタンツ大学,康斯坦茨大学,Universität Konstanz,université de Constance,universidad de Constanza,
+3695,Universität Mannheim,Q317070,University of Mannheim,ok,만하임 대학교,マンハイム大学,曼海姆大学,Universität Mannheim,université de Mannheim,Universidad de Mannheim,Đại học Tổng hợp Mannheim
+3697,Ludwig-Maximilians-Universität München,Q55044,Ludwig-Maximilians-Universität München,ok,뮌헨 루트비히 막시밀리안 대학교,ルートヴィヒ・マクシミリアン大学ミュンヘン,慕尼黑大学,Ludwig-Maximilians-Universität München,Université Louis-et-Maximilien de Munich,Universidad de Múnich,Đại học Ludwig Maximilian München
+3703,Universität Potsdam,Q153012,University of Potsdam,ok,포츠담 대학교,ポツダム大学,波茨坦大学,Universität Potsdam,université de Potsdam,Universidad de Potsdam,Đại học Potsdam
+3704,Universität Regensburg,Q574571,University of Regensburg,ok,레겐스부르크 대학교,レーゲンスブルク大学,雷根斯堡大学,Universität Regensburg,université de Ratisbonne,Universidad de Ratisbona,
+3705,Universität Rostock,Q159895,University of Rostock,ok,로스토크 대학교,ロストック大学,罗斯托克大学,Universität Rostock,université de Rostock,Universidad de Rostock,Đại học Rostock
+3707,Universität Siegen,Q504723,University of Siegen,ok,,ジーゲン大学,锡根大学,Universität Siegen,université de Siegen,Universidad de Siegen,
+3735,Lancaster University,Q262854,University of Lancaster,ok,랭커스터 대학,ランカスター大学,兰卡斯特大学,Lancaster University,Université de Lancastre,Universidad de Lancaster,
+3756,Aristotle University of Thessaloniki,Q667568,Aristotle University of Thessaloniki,ok,테살로니키 아리스토텔레스 대학교,テッサロニキ・アリストテレス大学,塞薩洛尼基亞里士多德大學,Aristoteles-Universität Thessaloniki,Université Aristote de Thessalonique,Universidad Aristóteles de Salónica,
+3763,National Technical University of Athens,Q1640726,National Technical University of Athens,ok,아테네 국립 공과대학교,アテネ工科大学,雅典国家技术大学,Nationale Technische Universität Athen,Université polytechnique nationale d'Athènes,Universidad Politécnica Nacional de Atenas,
+3772,University of Crete,Q2302473,University of Crete,ok,크레타 대학교,クレタ大学,克里特大学,Universität Kreta,Université de Crète,Universidad de Creta,
+3823,City University of Hong Kong,Q787360,City University of Hong Kong,ok,홍콩 시립 대학,香港城市大学,香港城市大學,City University of Hong Kong,université municipale de Hong Kong,Universidad de la ciudad de Hong Kong,Đại học Thành phố Hồng Kông
+3824,The Chinese University of Hong Kong,Q15570,The Chinese University of Hong Kong,ok,홍콩 중문 대학,香港中文大学,香港中文大學,Chinesische Universität Hongkong,université chinoise de Hong Kong,Universidad China de Hong Kong,Đại học Trung văn Hồng Kông
+3826,Hong Kong Baptist University,Q603686,Hong Kong Baptist University,ok,홍콩 침례 대학,香港浸会大学,香港浸會大學,Hong Kong Baptist University,université baptiste de Hong Kong,Hong Kong Baptist University,Đại học Baptist Hồng Kông
+3828,The University of Hong Kong,Q15568,University of Hong Kong,ok,홍콩 대학,香港大学,香港大學,Universität Hongkong,université de Hong Kong,Universidad de Hong Kong,Đại học Hồng Kông
+3831,The Hong Kong Polytechnic University,Q1187271,Hong Kong Polytechnic University,ok,홍콩 폴리테크닉 대학교,香港理工大学,香港理工大學,Polytechnische Universität Hongkong,université polytechnique de Hong Kong,Universidad Politécnica de Hong Kong,Đại học Bách khoa Hồng Kông
+3832,The Hong Kong University of Science and Technology,Q1333303,Hong Kong University of Science and Technology,ok,홍콩 과학 기술 대학,香港科技大学,香港科技大學,Hong Kong University of Science and Technology,université des sciences et technologies de Hong Kong,Universidad de Ciencia y Tecnología de Hong Kong,
+3840,Budapest University of Technology and Economics,Q1186843,Budapest University of Technology and Economics,ok,부다페스트 기술경제대학교,ブダペスト工科経済大学,布達佩斯科技經濟大學,Technische und Wirtschaftswissenschaftliche Universität Budapest,Université polytechnique et économique de Budapest,Universidad de Tecnología y Economía de Budapest,
+3861,University of Pecs,Q1187444,University of Pécs,check,페치 대학교,ペーチ大学,佩奇大学,Universität Pécs,Université de Pécs,Universidad de Pécs,
+3866,University of Debrecen,Q903092,University of Debrecen,ok,데브레첸 대학교,デブレツェン大学,德布勒森大学,Universität Debrecen,université de Debrecen,Universidad de Debrecen,
+3870,University of Szeged,Q369839,University of Szeged,ok,,セゲド大学,匈牙利塞格德大學,Universität der Wissenschaften Szeged,université de Szeged,Universidad de Szeged,Đại học Szeged
+3899,Anna University,Q165053,Anna University,ok,,アンナー大学,,Anna University,Anna University,Universidad Anna,
+4014,Indian Institute of Science,Q948720,"Indian Institute of Science, Bengaluru",ok,인도 과학원,インド理科大学院,印度科學理工學院,Indian Institute of Science,Indian Institute of Science,Indian Institute of Science,
+4015,"Indian Institute of Technology, Bombay",Q1661242,Indian Institute of Technology Bombay,ok,인도 공과대학교 봄베이,インド工科大学ボンベイ校,印度理工學院孟買校區,Indian Institute of Technology Bombay,Institut indien de technologie de Bombay,IIT Bombay,
+4016,"Indian Institute of Technology, Delhi",Q1194650,Indian Institute of Technology Delhi,ok,인도 공과대학교 델리,インド工科大学デリー校,德里印度理工学院,,Institut indien de technologie de Delhi,,
+4040,Jadavpur University,Q2579702,Jadavpur University,ok,,ヤーダヴプル大学,贾达珀大学,,université Jadavpur,Universidad de Jadavpur,
+4050,Jawaharlal Nehru University,Q1147063,Jawaharlal Nehru University,ok,자와할랄 네루 대학교,ジャワハルラール・ネルー大学,賈瓦哈拉爾·尼赫魯大學,Jawaharlal-Nehru-Universität,université Jawaharlal-Nehru,Universidad Jawaharlal Nehru,
+4149,Osmania University,Q2092358,Osmania University,ok,,オスマニア大学,奥斯马尼亚大学,Osmania Universität,Université Osmania,,Osmania University
+4158,Pondicherry University,Q283032,Pondicherry University,ok,,ポンディシェリ大学,,Pondicherry University,Université de Pondichéry,,
+4162,Panjab University,Q567899,Panjab University,ok,,パンジャーブ大学,旁遮普大學,Panjab University,université du Panjab,Universidad de Panyab,
+4246,University of Hyderabad,Q1191166,University of Hyderabad,ok,하이데라바드 대학교,ハイデラバード大学,海得拉巴大学,University of Hyderabad,université d'Hyderabad,Universidad de Hyderabad,
+4331,Universitas Gadjah Mada,Q1145992,Gadjah Mada University,ok,가자 마다 대학교,ガジャ・マダ大学,加查·马达大学,Gadjah-Mada-Universität,université Gadjah-Mada,Universidad Gadjah Mada,Trường Đại học Gadjah Mada
+4332,Universitas Indonesia,Q534515,University of Indonesia,ok,인도네시아 대학교,インドネシア大学,印度尼西亚大学,Universität Indonesia,université d'Indonésie,Universidad de Indonesia,Trường Đại học Indonesia
+4350,Universitas Muhammadiyah Surakarta,Q4259201,Muhammadiyah University of Surakarta,ok,,,穆罕默迪亚.苏拉卡尔塔大学,,,,
+4355,Universitas Andalas,Q280361,Andalas University,ok,,アンダラス大学,安达拉斯大学,Universität Andalas,université d'Andalas,,
+4414,Universitas Sebelas Maret,Q7442749,Sebelas Maret University,ok,,,三一一大学,,,,
+4446,Universitas Sumatera Utara,Q4200341,University of North Sumatra,check,,スマトラウタラ大学,北蘇門答臘大學,,,,
+4471,Amirkabir University of Technology,Q4746780,Amirkabir University of Technology,ok,,アミール・キャビール工科大学,阿米尔卡比尔理工大学,Amirkabir-Universität für Technologie,université de technologie d'Amirkabir,,
+4601,Sharif University of Technology,Q2096604,Sharif University of Technology,ok,,シャリーフ工科大学,謝里夫理工大學,Scharif-Universität für Technologie,université de technologie de Sharif,Universidad de Sharif de Tecnología,
+4603,Shiraz University,Q2001798,Shiraz University,ok,,シーラーズ大学,設拉子大學,Universität Schiras,université de Chiraz,Universidad de Shiraz,
+4685,University of Basrah,Q1477607,University of Basrah,ok,,バスラ大学,巴士拉大学,Universität Basra,université de Bassorah,Universidad de Basora,Đại học Basrah
+4698,Dublin City University,Q1202897,Dublin City University,ok,더블린시티 대학교,ダブリンシティ大学,都柏林城市大学,Dublin City University,Université de la ville de Dublin,Dublin City University,
+4716,University College Dublin,Q1068258,University College Dublin,ok,유니버시티 칼리지 더블린,ユニバーシティ・カレッジ・ダブリン,都柏林大学,University College Dublin,University College Dublin,University College Dublin,Đại học Cao đẳng Dublin
+4718,University of Limerick,Q573954,University of Limerick,ok,,リムリック大学,利默里克大學,University of Limerick,Université de Limerick,Universidad de Limerick,
+4725,Ben-Gurion University of the Negev,Q737332,Ben-Gurion University of the Negev,ok,네게브의 벤-구리온 대학교,ネゲヴ・ベン＝グリオン大学,內蓋夫本·古里安大學,Ben-Gurion-Universität des Negev,université Ben-Gourion du Néguev,Universidad Ben-Gurión del Néguev,
+4726,Bar-Ilan University,Q1124657,Bar-Ilan University,ok,바르일란 대학교,バル＝イラン大学,巴伊兰大学,Bar-Ilan-Universität,université Bar-Ilan,Universidad Bar Ilán,
+4730,University of Haifa,Q591115,University of Haifa,ok,하이파 대학교,ハイファ大学,海法大学,Universität Haifa,université de Haïfa,Universidad de Haifa,
+4738,Tel Aviv University,Q319239,Tel Aviv University,ok,텔아비브 대학교,テルアビブ大学,特拉維夫大學,Universität Tel Aviv,université de Tel Aviv,Universidad de Tel Aviv,
+4739,Technion - Israel Institute of Technology,Q333705,Technion – Israel Institute of Technology,ok,테크니온,イスラエル工科大学,以色列理工学院,Technion,Technion,Technion - Instituto Tecnológico de Israel,
+4762,Polytechnic Institute of Milan,,not_found,,,,,,,,
+4771,University of Bari,Q1236136,University of Bari,ok,바리 대학교,バーリ大学,巴里大学,Universität Bari,Université de Bari,Universidad de Bari,
+4774,Bocconi University,Q959524,Bocconi University,ok,보코니 대학교,ボッコーニ大学,博科尼大学,Wirtschaftsuniversität Luigi Bocconi,Université Bocconi,Universidad Bocconi,Đại học Bocconi
+4775,University of Bologna,Q131262,University of Bologna,ok,볼로냐 대학교,ボローニャ大学,博洛尼亞大學,Universität Bologna,Université de Bologne,Universidad de Bolonia,Đại học Bologna
+4776,University of Brescia,Q1781263,University of Brescia,ok,브레시아 대학교,ブレシア大学,布雷西亞大學,Universität Brescia,université de Brescia,Universidad de Brescia,Đại học Brescia
+4779,University of Calabria,Q1752540,University of Calabria,ok,,カラブリア大学,卡拉布里亚大学,Universität Kalabrien,Université de Calabre,Universidad de Calabria,
+4790,University of Florence,Q820887,University of Florence,ok,피렌체 대학교,フィレンツェ大学,佛罗伦萨大学,Universität Florenz,Université de Florence,Universidad de Florencia,Đại học Firenze
+4791,University of Genoa,Q593321,University of Genoa,ok,제노바 대학교,ジェノヴァ大学,热那亚大学,Universität Genua,Université de Gênes,Universidad de Génova,
+4804,University of Palermo,Q1641504,University of Palermo,ok,팔레르모 대학교,パレルモ大学,巴勒莫大学,Universität Palermo,Université de Palerme,Universidad de Estudios de Palermo,Đại học Palermo
+4808,University of Parma,Q1758474,University of Parma,ok,파르마 대학교,パルマ大学,帕爾馬大學,Universität Parma,Université de Parme,universidad de Parma,
+4811,"University of Roma ""La Sapienza""",,not_found,,,,,,,,
+4814,University of Salerno,Q1633215,University of Salerno,ok,살레르노 대학교,サレルノ大学,沙列諾大學,Universität Salerno,Université de Salerne,Universidad de Salerno,
+4818,University of Siena,Q1245999,University of Siena,ok,시에나 대학교,シエナ大学,錫耶納大學,Universität Siena,Université de Sienne,Universidad de Siena,
+4824,University of Trento,Q930528,University of Trento,ok,트렌토 대학교,トレント大学,特伦托大学,Universität Trient,Université de Trente,Universidad de Trento,Đại học Trento
+4825,University of Turin,Q499911,University of Turin,ok,토리노 대학교,トリノ大学,都灵大学,Universität Turin,Université de Turin,Universidad de Turín,
+4832,University of Trieste,Q1751060,University of Trieste,ok,트리에스테 대학교,トリエステ大学,的里雅斯特大学,Universität Triest,Université de Trieste,Universidad de Trieste,
+4853,Aoyama Gakuin University,Q616359,Aoyama Gakuin University,ok,아오야마 가쿠인 대학,青山学院大学,青山學院大學,Aoyama-Gakuin-Universität,université Aoyama Gakuin,Universidad Aoyama,
+4876,Chiba University,Q1321803,Chiba University,ok,지바 대학,千葉大学,千叶大学,Universität Chiba,université de Chiba,Universidad de Chiba,
+4899,Doshisha University,Q921088,Doshisha University,ok,도시샤 대학,同志社大学,同志社大學,Dōshisha-Universität,université Dōshisha,Universidad Dōshisha,
+4930,Gifu University,Q1375986,Gifu University,ok,기후 대학,岐阜大学,岐阜大學,Universität Gifu,université de Gifu,,Đại học quốc lập Gifu
+4933,Gunma University,Q178017,Gunma University,ok,군마 대학,群馬大学,群馬大學,Universität Gunma,université de Gunma,Universidad de Gunma,
+4955,Hitotsubashi University,Q204626,Hitotsubashi University,ok,히토쓰바시 대학,一橋大学,一橋大学,Hitotsubashi-Universität,université Hitotsubashi,Universidad de Hitotsubashi,Đại học Hitotsubashi
+4962,Hokkaido University,Q1057199,Hokkaido University,ok,홋카이도 대학,北海道大学,北海道大學,Universität Hokkaidō,université de Hokkaidō,Universidad de Hokkaidō,Đại học Hokkaido
+4975,International Christian University,Q1141728,International Christian University,ok,국제 기독교 대학,国際基督教大学,國際基督教大學,International Christian University,université chrétienne internationale,Universidad Internacional Cristiana,Đại học Cơ Đốc giáo Quốc tế
+5001,Kagoshima University,Q335924,Kagoshima University,ok,가고시마 대학,鹿児島大学,鹿兒島大學,Universität Kagoshima,université de Kagoshima,Universidad de Kagoshima,
+5010,Kanazawa University,Q684783,Kanazawa University,ok,가나자와 대학,金沢大学,金澤大學,Universität Kanazawa,université de Kanazawa,Universidad de Kanazawa,
+5021,Keio University,Q815432,Keio University,ok,게이오기주쿠 대학,慶應義塾大学,慶應義塾大學,Keiō-Universität,université Keiō,Universidad de Keiō,Đại học Keio
+5027,Kyoto Institute of Technology,Q1069423,Kyoto Institute of Technology,ok,교토 공예섬유대학,京都工芸繊維大学,京都工藝纖維大學,Technische Universität Kyōto,université des arts et techniques de Kyoto,,
+5043,Kobe University,Q1192597,Kobe University,ok,고베 대학,神戸大学,神户大学,Universität Kōbe,université de Kōbe,Universidad de Kōbe,Đại học Kobe
+5056,Korea University,Q39997,Korea University,ok,고려대학교,高麗大学校,高麗大學,Korea University,université de Corée,Universidad de Corea,Đại học Korea
+5069,Kumamoto University,Q1148782,Kumamoto University,ok,구마모토 대학,熊本大学,熊本大學,Universität Kumamoto,université de Kumamoto,Universidad de Kumamoto,
+5090,Kyoto University,Q336264,Kyoto University,ok,교토 대학,京都大学,京都大学,Universität Kyōto,université de Kyoto,Universidad de Kioto,Đại học Kyoto
+5096,Kyushu University,Q1188786,Kyushu University,ok,규슈 대학,九州大学,九州大学,Universität Kyūshū,université de Kyūshū,Universidad de Kyūshū,Đại học Kyushu
+5097,Kyushu Institute of Technology,Q1150245,Kyushu Institute of Technology,ok,규슈 공업대학,九州工業大学,九州工业大学,Technische Universität Kyūshū,université de Technologie de Kyūshū,Instituto de tecnología de Kyushu,Viện công nghệ Kyūshū
+5101,Meiji University,Q46492,Meiji University,ok,메이지 대학,明治大学,明治大学,Meiji-Universität,université Meiji,Universidad de Meiji,Đại học Meiji
+5110,Tokyo Metropolitan University,Q1148334,Tokyo metropolitan university,ok,도쿄 도립대학,東京都立大学,東京都立大學,Tokyo Metropolitan University,université métropolitaine de Tokyo,,
+5134,Nagasaki University,Q114892,Nagasaki University,ok,나가사키 대학,長崎大学,長崎大學,Universität Nagasaki,université de Nagasaki,Universidad de Nagasaki,
+5137,Nagoya University,Q1191132,Nagoya University,ok,나고야 대학,名古屋大学,名古屋大學,Universität Nagoya,université de Nagoya,Universidad de Nagoya,Đại học Nagoya
+5160,Niigata University,Q267111,Niigata University,ok,니가타 대학,新潟大学,新潟大學,Universität Niigata,université de Niigata,,
+5192,Okayama University,Q1067916,Okayama University,ok,오카야마 대학,岡山大学,岡山大學,Universität Okayama,université d'Okayama,,
+5197,Osaka City University,Q1143396,Osaka City University,ok,오사카 시립 대학,大阪市立大学,大阪市立大學,Städtische Universität Ōsaka,université municipale d'Osaka,Universidad de la Ciudad de Osaka,
+5207,Osaka University,Q651233,University of Osaka,ok,오사카 대학,大阪大学,大阪大学,Universität Osaka,université d'Osaka,Universidad de Osaka,Đại học Osaka
+5227,Ritsumeikan University,Q1152190,Ritsumeikan University,ok,리쓰메이칸 대학,立命館大学,立命館大學,Ritsumeikan-Universität,université de Ritsumeikan,Universidad de Ritsumeikan,Đại học Ritsumeikan
+5234,Saitama University,Q1322412,Saitama University,ok,사이타마 대학,埼玉大学,埼玉大學,Universität Saitama,université de Saitama,Universidad de Saitama,Đại học Saitama
+5254,Shibaura Institute of Technology,Q4614615,Shibaura Institute of Technology,ok,,芝浦工業大学,芝浦工業大學,,Shibaura Institute of Technology,,
+5261,Shinshu University,Q1209029,Shinshu University,ok,신슈 대학,信州大学,信州大學,Shinshū-Universität,université Shinshū,Universidad Shinshu,
+5284,Sophia University,Q1153094,Sophia University,ok,조치 대학,上智大学,上智大學,Sophia-Universität,université Sophia,Universidad Sofía,Viện Đại học Sophia
+5315,Tokyo Institute of Technology,Q587326,Tokyo Institute of Technology,ok,도쿄 공업대학,東京工業大学,東京工業大學,Tōkyō Kōgyō Daigaku,université de technologie de Tokyo,Instituto Tecnológico de Tokio,Đại học Công nghiệp Tokyo
+5322,Tohoku University,Q1062129,Tohoku University,ok,도호쿠 대학,東北大学,东北大学,Universität Tōhoku,université du Tōhoku,Universidad de Tohoku,Đại học Tohoku
+5337,Tokushima University,Q1150231,University of Tokushima,ok,도쿠시마 대학,徳島大学,德島大學,Universität Tokushima,université de Tokushima,Universidad de Tokushima,
+5359,Tokyo University of Agriculture and Technology,Q1301275,Tokyo University of Agriculture and Technology,ok,도쿄 농공대학,東京農工大学,東京農工大學,Universität für Landwirtschaft und Technologie Tokio,université d'agriculture et de technologie de Tokyo,Universidad de Tokio de Agricultura y Tecnología,
+5385,University of Tokyo,Q7842,University of Tokyo,ok,도쿄 대학,東京大学,东京大学,Universität Tokio,université de Tokyo,Universidad de Tokio,Đại học Tokyo
+5391,Waseda University,Q274486,Waseda University,ok,와세다 대학,早稲田大学,早稻田大学,Waseda-Universität,université Waseda,Universidad de Waseda,Đại học Waseda
+5395,Yamaguchi University,Q1073666,Yamaguchi University,ok,야마구치 대학,山口大学,山口大學,Universität Yamaguchi,université de Yamaguchi,Universidad de Yamaguchi,
+5401,Yokohama National University,Q1192619,Yokohama National University,ok,요코하마 국립 대학,横浜国立大学,橫濱國立大學,Staatliche Universität Yokohama,université nationale de Yokohama,Universidad Nacional de Yokohama,
+5403,Yokohama City University,Q914024,Yokohama City University,ok,요코하마시립 대학,横浜市立大学,橫濱市立大學,Städtische Universität Yokohama,université municipale de Yokohama,Universidad Ciudad de Yokohama,
+5413,German Jordanian University,Q322668,German-Jordanian University,ok,,,,German-Jordanian University,université germano-jordanienne,Universidad Germano-Jordana,
+5420,University of Jordan,Q610253,University of Jordan,ok,,ヨルダン大学,約旦大學,Universität von Jordanien,université de Jordanie,Universidad de Jordania,
+5424,Princess Sumaya University for Technology,Q3551722,Princess Sumaya University for Technology,ok,,,公主科技大學,Princess Sumaya University of Technology,université de technologie Princesse Sumaya,,
+5428,Yarmouk University,Q240784,Yarmouk University,ok,,,雅爾穆克大學,Yarmuk-Universität,université de Yarmouk,Yarmuk University,
+5441,Al-Farabi Kazakh National University,Q427677,Al-Farabi Kazakh National University,ok,알파라비 카자흐 국립 대학교,カザフ国立大学,哈萨克斯坦阿里-法拉比国立大学,Al-Farabi Universität,université nationale kazakhe Al-Farabi,Universidad Nacional Al-Farabi,
+5444,Karaganda State Technical University,Q4213691,Karaganda State Technical University,ok,,,卡拉干達國立科技大學,,université technique d'État de Karaganda,Universidad Técnica Estatal de Karagandá,
+5507,Ajou University,Q491082,Ajou University,ok,아주대학교,亜洲大学校,亞洲大學,Ajou University,université Ajou,Universidad de Ajou,
+5527,Chonnam National University,Q494681,Chonnam National University,ok,전남대학교,全南大学校,全南大学,Universität Chonnam,université nationale de Chonnam,Universidad Nacional de Chonnam,
+5529,Chungbuk National University,Q491714,Chungbuk National University,ok,충북대학교,忠北大学校,忠北大学,Universität Chungbuk,université nationale de Chungbuk,,
+5531,Chungnam National University,Q489488,Chungnam National University,ok,충남대학교,忠南大学校,忠南大学,Universität Chungnam,université nationale de Chungnam,,
+5545,Dankook University,Q491127,Dankook University,ok,단국대학교,檀国大学校,檀國大學,,université Dankook,Universidad de Dankook,Đại học Dankook
+5549,Dongguk University,Q487804,Dongguk University,ok,동국대학교,東国大学校,東國大學,Dongguk University,université Dongguk,Universidad Dongguk,Đại học Dongguk
+5567,Ewha Womans University,Q41114,Ewha Womans University,ok,이화여자대학교,梨花女子大学校,梨花女子大學,Ewha Womans University,université pour femmes Ewha,Universidad de Mujeres Ewha,Đại học Nữ giới Ewha
+5581,Hallym University,Q482724,Hallym University,ok,한림대학교,翰林大学校,翰林大學,,université Hallym,,
+5588,Hanyang University,Q40006,Hanyang University,ok,한양대학교,漢陽大学校,漢陽大學,Hanyang-Universität,université de Hanyang,Universidad de Hanyang,Đại học Hanyang
+5591,Hongik University,Q491511,Hongik University,ok,홍익대학교,弘益大学校,弘益大學,Hongik University,université Hongik,Universidad Hongik,Đại học Hongik
+5609,Inha University,Q488851,Inha University,ok,인하대학교,仁荷大学校,仁荷大學,Inha-Universität,université Inha,Universidad Inha,
+5613,Jeju National University,Q487855,Jeju National University,ok,제주대학교,済州大学校,济州大学,Universität Jeju,université nationale de Jeju,Universidad Nacional de Jeju,
+5619,Korea Advanced Institute of Science & Technology,,not_found,,,,,,,,
+5622,Kangwon National University,Q497259,Kangwon National University,ok,강원대학교,江原大学校,江原大学,,université nationale de Kangwon,,
+5632,Konkuk University,Q41765,Konkuk University,ok,건국대학교,建国大学校,建國大學,Konkuk University,université Konkuk,Universidad Konkuk,Đại học Konkuk
+5634,Kookmin University,Q487177,Kookmin University,ok,국민대학교,国民大学校,國民大學,,université Kookmin,Universidad Kookmin,Đại học Quốc dân Hàn Quốc
+5647,Kyungpook National University,Q487841,Kyungpook National University,ok,경북대학교,慶北大学校,慶北大學,Kyungpook-Nationaluniversität,université nationale Kyungpook,,Đại học quốc gia Kyungpook
+5666,Kyung Hee University,Q496536,Kyung Hee University,ok,경희대학교,慶熙大学校,慶熙大學,Kyung-Hee-Universität,université Kyung Hee,Universidad de Kyung Hee,Đại học Kyung Hee
+5682,Pukyong National University,Q482730,Pukyong National University,ok,부경대학교,釜慶大学校,釜慶大學,,université nationale de Pukyong,,Đại học Quốc gia Pukyong
+5683,Pohang University of Science and Technology,Q40018,Pohang University of Science and Technology,ok,포항공과대학교,浦項工科大学校,浦項工科大學,Technisch-Naturwissenschaftliche Universität Pohang,POSTECH,Universidad de Ciencia y Tecnología de Pohang,Đại học Khoa học và Công nghệ Pohang
+5686,Pusan National University,Q53122,Pusan National University,ok,부산대학교,釜山大学校,釜山大学,Universität Busan,université nationale de Pusan,Universidad Nacional de Pusan,Đại học Busan
+5695,Sejong University,Q491711,Sejong University,ok,세종대학교,世宗大学校,世宗大學,Sejong-Universität,université de Sejong,Universidad Sejong,trường đại học sejong - hàn quốc
+5703,Seoul National University,Q39913,Seoul National University,ok,서울대학교,ソウル大学校,首爾大學,Nationaluniversität Seoul,université nationale de Séoul,Universidad Nacional de Seúl,Đại học Quốc gia Seoul
+5705,Sogang University,Q374457,Sogang University,ok,서강대학교,西江大学校,西江大学,Sogang University,université Sogang,Universidad Sogang,Đại học Sogang
+5706,Sookmyung Women's University,Q482735,Sookmyung Women's University,ok,숙명여자대학교,淑明女子大学校,淑明女子大學,Sookmyung Women's University,université des femmes Sookmyung,,
+5722,Seoul National University of Science and Technology,Q482678,Seoul National University of Science and Technology,ok,서울과학기술대학교,ソウル科学技術大学校,首爾科技大學,Seoul National University of Science and Technology,université nationale de technologie de Séoul,,
+5727,Sungkyunkwan University,Q41085,Sungkyunkwan University,ok,성균관대학교,成均館大学校,成均館大學,Sungkyunkwan University,université Sungkyunkwan,Universidad Sungkyunkwan,Đại học Sungkyunkwan
+5734,University of Ulsan,Q491717,University of Ulsan,ok,울산대학교,蔚山大学校,蔚山大學,Universität Ulsan,université d'Ulsan,Universidad Ulsan,
+5743,Yeungnam University,Q56148,Yeungnam University,ok,영남대학교,嶺南大学校,嶺南大學,,université Yeungnam,Universidad Yeungnam,
+5744,Yonsei University,Q39988,Yonsei University,ok,연세대학교,延世大学校,延世大学,Yonsei University,université Yonsei,Universidad Yonsei,Đại học Yonsei
+5748,Youngsan University,Q8058632,Youngsan University,ok,영산대학교,霊山大学校,靈山大學校,,,Universidad Youngsan,
+5759,Gulf University for Science and Technology,Q1024668,Gulf University for Science and Technology,ok,,,,,,Universidad del Golfo de Ciencia y Tecnología,
+5762,Kuwait University,Q3273657,Kuwait University,ok,쿠웨이트 대학교,クウェート大学,科威特大學,Universität Kuwait,université du Koweït,Universidad de Kuwait,
+5795,Riga Technical University,Q68078280,Riga Technical University,ok,,,,Riga Technical University,Riga Technical University,Riga Technical University,Riga Technical University
+5801,American University of Beirut,Q469482,American University of Beirut,ok,베이루트 아메리칸 대학교,ベイルート・アメリカン大学,贝鲁特美国大学,Amerikanische Universität Beirut,Université américaine de Beyrouth,Universidad Americana de Beirut,
+5806,Beirut Arab University,Q2778441,Beirut Arab University,ok,,ベイルート・アラブ大学,貝魯特阿拉伯大學,Beirut Arab University,université arabe de Beyrouth,Universidad Árabe de Beirut,Đại học Ả Rập Beirut
+5813,Lebanese American University,Q464361,Lebanese American University,ok,,レバノン・アメリカン大学,贝鲁特美国大学,Libanesisch-Amerikanische Universität,Université libanaise-américaine,Universidad Libanesa Americana,
+5819,Lebanese University,Q975461,Lebanese University,ok,,レバノン大学,黎巴嫩大學,Libanesische Universität,université libanaise,Universidad Libanesa,
+5820,Holy Spirit University of Kaslik,Q1310333,Holy Spirit University of Kaslik,ok,,カスリク聖霊大学,,Universität St. Esprit,université Saint-Esprit de Kaslik,Universidad del Santo Espíritu de Kaslik,
+5840,Kaunas University of Technology,Q625158,Kaunas University of Technology,ok,카우나스 공과대학교,カウナス工科大学,考纳斯理工大学,Technische Universität Kaunas,université de technologie de Kaunas,,Đại học Công nghệ Kaunas
+5854,Vilnius University,Q658192,Vilnius University,ok,빌뉴스 대학교,ヴィルニュス大学,维尔纽斯大学,Universität Vilnius,université de Vilnius,Universidad de Vilna,Đại học Vilnius
+5858,University of Macau,Q1563050,University of Macau,ok,마카오 대학교,澳門大学,澳門大學,Universität von Macau,université de Macao,Universidad de Macao,
+5859,Macau University of Science and Technology,Q847993,Macau University of Science and Technology,ok,,マカオ科技大学,澳門科技大學,Macau University of Science and Technology,université de science et de technologie de Macao,Universidad de Ciencia y Tecnología de Macao,
+5957,Management and Science University,Q12712163,Management and Science University,ok,,経営科学大学,管理与科学大学,,,,
+5991,Segi University College,,not_found,,,,,,,,
+6010,Universiti Malaysia Perlis,Q778594,Universiti Malaysia Perlis,ok,,,马来西亚玻璃市大学,Universität Malaysia Perlis,,,
+6023,Universiti Teknologi Malaysia,Q24401,University of Technology Malaysia,ok,,マレーシア技術大学,马来西亚工艺大学,Technische Universität Malaysia,,Universidad Tecnológica de Malaysia,
+6063,Instituto Tecnológico y de Estudios Superiores de Occidente,Q1665244,Instituto Tecnológico y de Estudios Superiores de Occidente,ok,,西部工科および高等教育大学(ITESO),,Instituto Tecnológico y de Estudios Superiores de Occidente,Institut occidental de technologie et d'enseignement supérieur,Instituto Tecnológico y de Estudios Superiores de Occidente,
+6085,Universidad Autónoma de Baja California,Q4826824,Autonomous University of Baja California,ok,,バハカリフォルニア自治大学,下加利福尼亞自治大學,,,Universidad Autónoma de Baja California,
+6105,Universidad Autónoma de Nuevo León,Q29716,Universidad Autónoma Nuevo León,ok,누에보레온 자치 대학교,ヌエボ・レオン州立大学,新莱昂自治大学,Autonome Universität Nuevo León,Université autonome du Nuevo León,Universidad Autónoma de Nuevo León,
+6129,Universidad de Guanajuato,Q641889,Universidad de Guanajuato,ok,,グアナファト大学,,Universidad de Guanajuato,Universidad de Guanajuato,Universidad de Guanajuato,
+6150,Universidad Nacional Autónoma de México,Q222738,National Autonomous University of Mexico,check,멕시코 국립 자치 대학교,メキシコ国立自治大学,墨西哥国立自治大学,Nationale Autonome Universität von Mexiko,Université nationale autonome du Mexique,Universidad Nacional Autónoma de México,Đại học quốc gia UNAM
+6181,Universidad de Sonora,Q489065,Universidad de Sonora,ok,소노라 대학교,,索诺拉大学,Universidad de Sonora,Université du Sonora,Universidad de Sonora,
+6278,Erasmus University Rotterdam,Q633529,Erasmus University Rotterdam,ok,에라스무스 대학교,ロッテルダム大学,鹿特丹大学,Erasmus-Universität Rotterdam,Université Érasme de Rotterdam,Universidad Erasmo de Róterdam,
+6299,University of Groningen,Q850730,University of Groningen,ok,흐로닝언 대학교,フローニンゲン大学,格罗宁根大学,Reichsuniversität Groningen,Université de Groningue,Universidad de Groninga,Đại học Groningen
+6300,Radboud University,Q632004,Radboud University,ok,네이메헌 라드바우드대학교,ラドバウド大学,奈梅亨拉德伯德大學,Radboud-Universität Nijmegen,Université Radboud de Nimègue,Universidad Radboud de Nimega,
+6304,Delft University of Technology,Q752663,Delft University of Technology,ok,델프트 공과대학교,デルフト工科大学,代尔夫特理工大学,Technische Universität Delft,Université de technologie de Delft,Universidad Técnica de Delft,Đại học công nghệ Delft
+6305,Eindhoven University of Technology,Q280824,Eindhoven University of Technology,ok,에인트호번 공과대학,アイントホーフェン工科大学,埃因霍温理工大学,Technische Universität Eindhoven,Université de technologie d'Eindhoven,Universidad Técnica de Eindhoven,
+6307,Maastricht University,Q1137652,Maastricht University,ok,마스트리흐트 대학교,マーストリヒト大学,马斯特里赫特大学,Universität Maastricht,Université de Maastricht,Universidad de Maastricht,Đại học Maastricht
+6308,University of Twente,Q1547084,University of Twente,ok,,トゥウェンテ大学,特文特大学,Universität Twente,Université de Twente,Universidad de Twente,
+6309,Utrecht University,Q221653,Utrecht University,ok,위트레흐트 대학교,ユトレヒト大学,乌特勒支大学,Universität Utrecht,Université d'Utrecht,Universidad de Utrecht,Đại học Utrecht
+6310,University of Amsterdam,Q214341,University of Amsterdam,ok,암스테르담 대학교,アムステルダム大学,阿姆斯特丹大学,Universiteit van Amsterdam,Université d'Amsterdam,Universidad de Ámsterdam,Đại học Amsterdam
+6312,Vrije Universiteit Amsterdam,Q1065414,Vrije Universiteit Amsterdam,ok,암스테르담 자유 대학교,アムステルダム自由大学,阿姆斯特丹自由大学,Vrije Universiteit Amsterdam,Université libre d'Amsterdam,Universidad Libre de Ámsterdam,
+6318,University of Auckland,Q492467,University of Auckland,ok,오클랜드 대학교,オークランド大学,奧克蘭大學,University of Auckland,Université d'Auckland,Universidad de Auckland,Đại học Auckland
+6324,University of Otago,Q1201513,University of Otago,ok,오타고 대학교,オタゴ大学,奥塔哥大学,University of Otago,Université d'Otago,Universidad de Otago,Đại học Otago
+6325,Victoria University of Wellington,Q1150437,Victoria University of Wellington,ok,웰링턴 빅토리아 대학교,ヴィクトリア大学ウェリントン,惠灵顿维多利亚大学,Victoria University of Wellington,Université Victoria de Wellington,Universidad Victoria en Wellington,
+6477,University of Bergen,Q204457,University of Bergen,ok,베르겐 대학교,ベルゲン大学,卑尔根大学,Universität Bergen,Université de Bergen,Universidad de Bergen,
+6478,University of Oslo,Q486156,University of Oslo,ok,오슬로 대학교,オスロ大学,奥斯陆大学,Universität Oslo,Université d'Oslo,Universidad de Oslo,Đại học Oslo
+6490,Sultan Qaboos University,Q1808326,Sultan Qaboos University,ok,,,卡布斯苏丹大学,Sultan-Qabus-Universität,Sultan Qaboos University,Universidad Sultán Qaboos,
+6580,Pakistan Institute of Engineering and Applied Sciences (PIEAS),,not_found,,,,,,,,
+6587,Quaid-i-Azam University,Q2047109,Quaid-i-Azam University,ok,,クエイド＝イ＝アザーム大学,真納大學,,université Quaid-i-Azam,Universidad Quaid-i-Azam,
+6670,Universidad Nacional Agraria La Molina,Q3551806,National Agrarian University,check,,ラ・モリーナ国立農業大学,,,université nationale agraire La Molina,Universidad Nacional Agraria La Molina,
+6672,Universidad San Ignacio de Loyola,Q7894314,Universidad San Ignacio de Loyola,ok,,サンイグナシオデロヨーラ大学,,Universidad San Ignacio de Loyola,,Universidad San Ignacio de Loyola,
+6686,Universidad de Lima,Q29675,University of Lima,ok,,リマ大学,利马大学,Universität Lima,université de Lima,Universidad de Lima,University của Lima
+6705,Universidad Nacional Mayor de San Marcos,Q270145,National University of San Marcos,ok,산마르코스 국립 대학교,国立サン・マルコス大学,国立圣马尔科斯大学,Universidad Nacional Mayor de San Marcos,Université nationale principale de San Marcos,Universidad Nacional Mayor de San Marcos,
+6716,Universidad Peruana de Ciencias Aplicadas,Q5202363,Peruvian University of Applied Sciences,check,,,,Universidad Peruana de Ciencias Aplicadas,,Universidad Peruana de Ciencias Aplicadas,
+6736,Ateneo de Manila University,Q533235,Ateneo de Manila University,ok,아테네오 대학교 마닐라,アテネオ・デ・マニラ大学,马尼拉雅典耀大学,Ateneo de Manila University,université Ateneo de Manila,Universidad Ateneo de Manila,
+6754,De La Salle University,Q1815710,De La Salle University,ok,,デ・ラ・サール大学,德拉萨大学,Universität De La Salle,Université de La Salle-Manille,Universidad La Salle en Manila,Đại học De La Salle-Manila
+6826,University of the Philippines Visayas,Q3707494,University of the Philippines Visayas,ok,,フィリピン大学ビサヤ校,,,,Universidad de Filipinas en Bisayas,
+6847,AGH University of Science and Technology,Q414245,AGH University of Science and Technology,ok,,AGH 科学技術大学,AGH科技大学,Berg- und Hüttenakademie Krakau,École des mines et de la métallurgie de Cracovie,AGH Universidad de Ciencia y Tecnología,AGH Đại học Khoa học và Công nghệ
+6905,Technical University of Lublin,,not_found,,,,,,,,
+6912,Warsaw University of Technology,Q1718656,Warsaw University of Technology,ok,바르샤바 공과대학교,ワルシャワ工科大学,华沙理工大学,Technische Universität Warschau,École polytechnique de Varsovie,Universidad Politécnica de Varsovia,Đại học Công nghệ Warszawa
+6927,University of Bialystok,Q1658883,University of Białystok,check,,ビアリストーク大学,比亚韦斯托克大学,Universität Białystok,Université de Białystok,Universidad de Białystok,Đại học Bialystok
+6932,University of Lodz,Q137503,University of Łódź,check,,ウッチ大学,罗兹大学,Universität Łódź,Université de Łódź,Universidad de Łódź,Đại học lodz
+6935,University of Gdansk,Q1758009,University of Gdańsk,check,그단스크 대학교,グダニスク大学,格但斯克大学,Universität Danzig,Université de Gdańsk,Universidad de Gdansk,Đại học Gdańsk
+6938,University of Wroclaw,Q315658,University of Wrocław,check,브로츠와프 대학교,ヴロツワフ大学,弗羅茨瓦夫大學,Universität Breslau,Université de Wrocław,Universidad de Breslavia,Đại học Wrocław
+6942,University of Warsaw,Q144488,University of Warsaw,ok,바르샤바 대학교,ワルシャワ大学,华沙大学,Universität Warschau,Université de Varsovie,Universidad de Varsovia,Đại học Warszawa
+7028,Universidade Nova de Lisboa,Q1979891,NOVA University Lisbon,ok,,新リスボン大学,里斯本新大學,Neue Universität Lissabon,Université nouvelle de Lisbonne,Universidad Nueva de Lisboa,
+7052,Universidad de Puerto Rico,Q2075365,University of Puerto Rico,ok,푸에르토리코 대학교,プエルトリコ大学,波多黎各大学,Universität von Puerto Rico,Université de Porto Rico,Universidad de Puerto Rico,Đại học Puerto Rico
+7075,University Politehnica of Bucharest,Q1465448,Politehnica University of Bucharest,ok,,ブカレスト工科大学,布加勒斯特理工大學,Polytechnische Universität Bukarest,université polytechnique de Bucarest,Universidad Politécnica de Bucarest,
+7117,Technical University of Cluj-Napoca,Q729296,Technical University of Cluj-Napoca,ok,,クルージュ・ナポカ工科大学,克卢日-纳波卡技术大学,Technische Universität Cluj-Napoca,université technique de Cluj-Napoca,,
+7137,Altai State University,Q4062936,Altai State University,ok,,アルタイ国立大学,阿爾泰州立大學,,Université d'État de l'Altaï,,
+7141,Bauman Moscow State Technical University,Q1472245,Bauman Moscow State Technical University,ok,바우만 모스크바 국립 공과대학교,バウマン・モスクワ州立工科大学,鲍曼莫斯科国立技术大学,Staatliche Technische Universität Moskau,université technique d'État de Moscou-Bauman,Universidad Técnica Estatal Bauman de Moscú,Đại học Tổng hợp Kỹ thuật Moskva Bauman
+7182,Higher School of Economics,Q1959511,National Research University – Higher School of Economics,ok,,ロシア国立研究大学経済高等学院,國立高等經濟學院,Wirtschaftshochschule Moskau,École des hautes études en sciences économiques,Universidad Nacional de Investigación – Escuela Superior de Economía,Trường Kinh tế Cao cấp
+7189,ITMO University,Q89039612,ITMO University Peak,ok,,,,Pik der ITMO-Universität,,,
+7199,Irkutsk State University,Q670649,Irkutsk State University,ok,이르쿠츠크 연합대학교,イルクーツク国立大学,伊尔库茨克国立大学,Staatliche Universität Irkutsk,université d'État d'Irkoutsk,Universidad de Irkutsk,
+7204,Moscow Pedagogical State University,Q1778321,Moscow Pedagogical State University,ok,,モスクワ教育大学,莫斯科國立師範大學,Staatliche Pädagogische Universität Moskau,université pédagogique d'État de Moscou,,Đại học Sư phạm Quốc gia Moskva
+7270,Lomonosov Moscow State University,Q13164,Lomonosov Moscow State University,ok,모스크바 대학교,モスクワ大学,莫斯科国立大学,Lomonossow-Universität,université d'État de Moscou,Universidad Estatal de Moscú,Đại học Quốc gia Moskva
+7286,Novosibirsk State Technical University,Q1467445,Novosibirsk State Technical University,ok,국립 노보시비르스크 과학 대학교,ノボシビルスク国立工科大学,新西伯利亚国立技术大学,Staatliche Technische Universität Nowosibirsk,,,
+7287,Novosibirsk State University,Q1637997,Novosibirsk State University,ok,노보시비르스크 국립 대학교,ノヴォシビルスク大学,新西伯利亚国立大学,Staatliche Universität Nowosibirsk,université d'État de Novossibirsk,Universidad Estatal de Novosibirsk,
+7311,Russian State University for the Humanities,Q2631070,Russian State University for the Humanities,ok,,ロシア国立人文大学,俄罗斯国立人文大学,Russische Staatliche Geisteswissenschaftliche Universität,université d'État des sciences humaines de Russie,Universidad Estatal Rusa de Humanidades,
+7334,St. Petersburg State University,Q27621,Saint Petersburg State University,ok,상트페테르부르크 대학교,サンクトペテルブルク大学,圣彼得堡国立大学,Staatliche Universität Sankt Petersburg,université d'État de Saint-Pétersbourg,Universidad Estatal de San Petersburgo,Đại học Tổng hợp Sankt-Peterburg
+7373,Tomsk State University,Q742494,Tomsk State University,ok,톰스크 국립 대학교,トムスク大学,托木斯克國立大學,Staatliche Universität Tomsk,université d'État de Tomsk,Universidad Estatal de Tomsk,
+7432,Moscow University for Industry and Finance “Synergy”,,not_found,,,,,,,,
+7480,King Faisal University,Q3070702,King Faisal University,ok,,キング・ファイサル大学,费萨尔国王大学,König-Faisal-Universität,université du roi Fayçal,,
+7484,King Saud University,Q1752043,King Saud University,ok,킹 사우드 대학교,キングサウード大学,沙特國王大學,König-Saud-Universität,université du Roi-Saoud,Universidad Rey Saúd,
+7493,Prince Mohammad Bin Fahd University,Q7244166,Prince Mohammad bin Fahd University,ok,,プリンス・モハメド・ビン・ファハド大学,穆罕默德·本·法赫德亲王大学,,,,
+7497,Qassim University,Q7267062,Qassim University,ok,,カスィーム大学,卡西姆大学,,,,
+7503,Taibah University,Q7675882,Taibah University,ok,,タイバ大学,泰巴大学,Universität Taibah,,,
+7509,Umm Al-Qura University,Q3133606,Umm al-Qura University,ok,,ウンム・アル＝クラー大学,烏姆埃爾古拉大學,Umm-al-Qura-Universität,université Oumm al-Qura,,
+7527,University of Kragujevac,Q2303907,University of Kragujevac,ok,,クラグイェヴァツ大学,克拉古耶瓦茨大學,Universität Kragujevac,université de Kragujevac,Universidad de Kragujevac,
+7543,Nanyang Technological University,Q721064,Nanyang Technological University,ok,난양 이공대학,南洋理工大学,南洋理工大學,Nanyang Technological University,université de technologie de Nanyang,Universidad Tecnológica de Nanyang,Đại học Công nghệ Nanyang
+7544,National University of Singapore,Q738236,National University of Singapore,ok,싱가포르 국립 대학,シンガポール国立大学,新加坡国立大學,National University of Singapore,université nationale de Singapour,Universidad Nacional de Singapur,Đại học Quốc gia Singapore
+7547,Singapore Management University,Q950609,Singapore Management University,ok,싱가포르 경영대학,シンガポールマネージメント大学,新加坡管理大學,Singapore Management University,,,Đại học Quản lý Singapore
+7570,Slovak University of Technology in Bratislava,Q1778355,Slovak University of Technology in Bratislava,ok,,スロバキア工科大学,斯洛伐克科技大學,Slowakische Technische Universität Bratislava,université technique slovaque,Universidad Tecnológica de Eslovaquia en Bratislava,
+7578,Slovak University of Agriculture in Nitra,Q1668416,Slovak University of Agriculture,ok,,スロヴァキア農業大学,尼特拉斯洛伐克农业大学,Slowakische Landwirtschaftliche Universität Nitra,université slovaque d'agronomie,,
+7591,University of Ljubljana,Q1377,University of Ljubljana,ok,류블랴나 대학교,リュブリャナ大学,卢布尔雅那大学,Universität Ljubljana,Université de Ljubljana,Universidad de Liubliana,Đại học Ljubljana
+7615,Rhodes University,Q377757,Rhodes University,ok,로즈 대학교,ローズ大学,罗德斯大学,Rhodes-Universität,Université Rhodes,Universidad de Rhodes,Đại học Rhodes
+7618,University of Cape Town,Q951305,University of Cape Town,ok,케이프타운 대학교,ケープタウン大学,开普敦大学,Universität Kapstadt,Université du Cap,Universidad de Ciudad del Cabo,Đại học Cape Town
+7620,University of Johannesburg,Q1972050,University of Johannesburg,ok,,ヨハネスブルグ大学,约翰内斯堡大学,Universität Johannesburg,Université de Johannesbourg,Universidad de Johannesburgo,
+7625,North-West University,Q1998811,North-West University,ok,노스-웨스트 대학교,ノース・ウェスト大学,西北大學,Nordwest-Universität,université du Nord-Ouest,,
+7627,University of Pretoria,Q604444,University of Pretoria,ok,프리토리아 대학교,プレトリア大学,比勒陀利亞大學,Universität Pretoria,Université de Pretoria,Universidad de Pretoria,Đại học Pretoria
+7631,University of Witwatersrand,Q534643,University of the Witwatersrand,ok,위트워터스랜드 대학교,ウィットウォータース大学,金山大學,Witwatersrand-Universität,Université du Witwatersrand,Universidad del Witwatersrand,Đại học Witwatersrand
+7648,IE University,Q283501,IE University,ok,IE 대학교,IE大学,IE大学,IE University,IE Universidad,IE Universidad,
+7658,Universidad Autónoma de Madrid,Q788091,Autonomous University of Madrid,ok,,マドリード自治大学,马德里自治大学,Autonome Universität Madrid,Université autonome de Madrid,Universidad Autónoma de Madrid,
+7660,Universitat de Barcelona,Q219615,University of Barcelona,ok,바르셀로나 대학교,バルセロナ大学,巴塞罗那大学,Universität Barcelona,Université de Barcelone,Universidad de Barcelona,Đại học Barcelona
+7662,Universidad Carlos III de Madrid,Q1247135,Universidad Carlos III de Madrid,ok,마드리드 카를로스 3세 대학교,マドリード・カルロス3世大学,马德里卡洛斯三世大学,Universität Carlos III,Université Charles-III de Madrid,Universidad Carlos III de Madrid,
+7668,Universidad Complutense de Madrid,Q219694,Complutense University of Madrid,ok,마드리드 콤플루텐세 대학교,マドリード・コンプルテンセ大学,马德里康普顿斯大学,Universität Complutense Madrid,Université complutense de Madrid,Universidad Complutense de Madrid,Đại học Complutense Madrid
+7670,Universidade da Coruña,Q280305,University of A Coruña,ok,,ア・コルーニャ大学,拉科魯尼亞大學,Universität A Coruña,Université de La Corogne,Universidad de La Coruña,
+7675,Universidad de Granada,Q1232180,University of Granada,ok,그라나다 대학교,グラナダ大学,格拉纳达大学,Universität Granada,Université de Grenade,Universidad de Granada,
+7697,Universidad de Oviedo,Q2303432,University of Oviedo,ok,,オビエド大学,奧維多大學,Universität Oviedo,Université d'Oviedo,Universidad de Oviedo,
+7700,Universidad de Zaragoza,Q633561,University of Zaragoza,ok,,サラゴサ大学,薩拉戈薩大學,Universität Saragossa,Université de Saragosse,Universidad de Zaragoza,
+7704,Universidad Pontificia Comillas,Q1687025,Comillas Pontifical University,ok,,ポンティフィシア・コミージャス大学,科米利亚斯主教大学,Päpstliche Universität Comillas,Université pontificale de Comillas,Universidad Pontificia Comillas,Đại học Giáo Hoàng Comillas
+7711,Universidad Rey Juan Carlos,Q2000629,King Juan Carlos University,ok,,レイ・フアン・カルロス大学,胡安卡洛斯國王大學,Universität Rey Juan Carlos,Université Rey Juan Carlos,Universidad Rey Juan Carlos,
+7712,Universitat Ramon Llull,Q24576,University Ramon Llull,ok,,ラモン・リュイ大学,拉曼大學 (西班牙),Ramon-Llull-Universität,Université Raymond-Lulle,Universidad Ramon Llull,
+7715,Universidade de Santiago de Compostela,Q1473677,University of Santiago de Compostela,ok,,サンティアゴ・デ・コンポステーラ大学,孔波斯特拉聖地牙哥大學,Universität Santiago de Compostela,Université de Saint-Jacques-de-Compostelle,Universidad de Santiago de Compostela,
+7716,Universidad de Sevilla,Q1229996,University of Seville,check,,セビリア大学,塞维利亚大学,Universität Sevilla,Université de Séville,Universidad de Sevilla,
+7720,Universidade de Vigo,Q666916,Vigo University,ok,,ビーゴ大学,維戈大學,Universität Vigo,Université de Vigo,Universidad de Vigo,
+7781,University of Khartoum,Q656871,University of Khartoum,ok,하르툼 대학교,ハルツーム大学,喀土穆大學,Universität Khartum,université de Khartoum,Universidad de Jartum,
+7786,Chalmers University of Technology,Q836805,Chalmers University of Technology,ok,찰머스 공과대학교,チャルマース工科大学,查爾摩斯工學院,Technische Hochschule Chalmers,université de technologie Chalmers,Universidad Politécnica de Chalmers,
+7803,KTH Royal Institute of Technology,Q854280,Royal Institute of Technology,ok,왕립 공과대학교,スウェーデン王立工科大学,皇家理工学院,Königliche Technische Hochschule,Institut royal de technologie,Real Universidad Politécnica,
+7806,Lund University,Q218506,Lund University,ok,룬드 대학교,ルンド大学,隆德大学,Universität Lund,université de Lund,Universidad de Lund,Đại học Lund
+7816,Stockholm University,Q221645,Stockholm University,ok,스톡홀름 대학교,ストックホルム大学,斯德哥尔摩大学,Universität Stockholm,université de Stockholm,Universidad de Estocolmo,Đại học Stockholm
+7818,Uppsala University,Q185246,Uppsala University,ok,웁살라 대학교,ウプサラ大学,乌普萨拉大学,Universität Uppsala,université d’Uppsala,Universidad de Upsala,Đại học Uppsala
+7851,EPFL - EPF Lausanne,,not_found,,,,,,,,
+7852,ETHZ - ETH Zurich,,not_found,,,,,,,,
+7854,University of Basel,Q372608,University of Basel,ok,바젤 대학교,バーゼル大学,巴塞尔大学,Universität Basel,Université de Bâle,Universidad de Basilea,Đại học Basel
+7856,University of Geneva,Q503473,University of Geneva,ok,제네바 대학교,ジュネーヴ大学,日内瓦大学,Universität Genf,Université de Genève,Universidad de Ginebra,Đại học Geneva
+7897,Damascus University,Q1351317,Damascus University,ok,다마스쿠스 대학교,ダマスカス大学,大马士革大学,Universität Damaskus,université de Damas,Universidad de Damasco,Đại học Damascus
+7910,National Chung Cheng University,Q697299,National Chung Cheng University,ok,국립 중정 대학,国立中正大学,國立中正大學,Chung-Cheng-Nationaluniversität,université nationale Chung Cheng,,
+7911,Chang Gung University,Q2748799,Chang Gung University,ok,창겅 대학,長庚大学,長庚大學,,,,
+7919,Chung Yuan Christian University,Q5116360,Chung Yuan Christian University,ok,종위안 대학,中原大学,中原大學,,,,
+7923,Feng Chia University,Q696672,Feng Chia University,ok,펑쟈 대학,逢甲大学,逢甲大學,,"Feng Chia university. Taichung, Chine, République",,Đại học Phùng Giáp
+7924,Fu Jen Catholic University,Q685664,Fu Jen Catholic University,ok,푸젠 가톨릭 대학,輔仁大学,天主教輔仁大學,Katholische Fu-Jen-Universität,université catholique Fu-Jen,Universidad Católica Fu Jen,Đại học Công giáo Phụ Nhân
+7934,National Chengchi University,Q712849,National Chengchi University,ok,국립 정치 대학,国立政治大学,國立政治大學,Chengchi-Nationaluniversität,université nationale Chengchi,Universidad Nacional Chengchi,Đại học Chính trị Quốc gia (Đài Loan)
+7939,National Central University,Q714891,National Central University,ok,국립 쫑양 대학,国立中央大学,國立中央大學,,université nationale centrale,Universidad Nacional Central,Đại học quốc lập Trung ương
+7942,National Dong Hwa University,Q11194540,National Dong Hwa University,ok,국립 동화 대학,国立東華大学,國立東華大學,Dong-Hwa-Nationaluniversität,université nationale Dong Hwa,Universidad Nacional Dong Hwa,
+7954,National Sun Yat-Sen University,Q32751,National Sun Yat-sen University,ok,국립 중산 대학,国立中山大学,國立中山大學,Sun-Yat-sen-Nationaluniversität,université nationale Sun Yat-sen,Universidad Nacional Sun Yat-sen,Đại học Quốc gia Trung Sơn
+7959,National Tsinghua University,,not_found,,,,,,,,
+7961,National Taiwan Normal University,Q706712,National Taiwan Normal University,ok,국립 대만 사범대학,国立台湾師範大学,國立臺灣師範大學,,National Taiwan Normal University,,Đại học quốc lập Sư phạm Đài Loan
+7962,National Taiwan Ocean University,Q6978829,National Taiwan Ocean University,ok,국립 타이완 해양 대학,国立台湾海洋大学,國立臺灣海洋大學,National Taiwan Ocean University,National Taiwan Ocean University,Universidad Nacional del Océano de Taiwán,
+7964,National Taipei University,Q707456,National Taipei University,ok,국립 타이베이 대학,国立台北大学,國立臺北大學,Nationaluniversität Taipeh,université nationale de Taipei,Universidad Nacional de Taipei,
+7966,National Taiwan University,Q32746,National Taiwan University,ok,국립대만대학교,国立台湾大学,國立臺灣大學,Nationaluniversität Taiwan,université nationale de Taïwan,Universidad de Taiwán,Đại học Quốc gia Đài Loan
+7968,National Taipei University of Technology,Q6978828,National Taipei University of Technology,ok,국립 타이베이 과학기술대학,国立台北科技大学,國立臺北科技大學,,université nationale des sciences et des technologies de Taipei,,
+7975,Soochow University,Q1639978,Soochow University,ok,,蘇州大学,苏州大学,Soochow-Universität,université de Suzhou,,
+7981,Tunghai University,Q707948,Tunghai University,ok,동하이 대학,東海大学,東海大學,Tunghai-Universität,université Tunghai,Tunghai University,
+7982,Tamkang University,Q5952880,Tamkang University,ok,담강대학,淡江大学,淡江大學,Tamkang-Universität,université de Tamkang,Universidad de Tamkang,
+7989,National Yang Ming Chiao Tung University,Q85877927,National Yang Ming Chiao Tung University,ok,국립 양명 자오퉁 대학,国立陽明交通大学,國立陽明交通大學,Yang-Ming-Chiao-Tung-Nationaluniversität,université nationale Yang Ming Chiao Tung,Universidad Nacional Yang Ming Chiao Tung,
+7991,Yuan Ze University,Q8060057,Yuan Ze University,ok,위안지 대학,元智大学,元智大學,,,Universidad Yuan Ze,
+8022,Chiang Mai University,Q1071609,Chiang Mai University,ok,치앙마이 대학교,チエンマイ大学,清邁大學,Chiang-Mai-Universität,université de Chiang Mai,Universidad de Chiang Mai,Đại học Chiang Mai
+8024,Chulalongkorn University,Q855730,Chulalongkorn University,ok,쭐랄롱꼰 대학교,チュラーロンコーン大学,朱拉隆功大学,Chulalongkorn-Universität,université Chulalongkorn,Universidad de Chulalongkorn,Đại học Chulalongkorn
+8036,Khon Kaen University,Q368329,Khon Kaen University,ok,콘깬 대학교,コンケン大学,孔敬大學,Khon-Kaen-Universität,université de Khon Kaen,Universidad de Khon Kaen,Đại học Khon Kaen
+8037,King Mongkut's Institute of Technology Ladkrabang,Q849209,King Mongkut's Institute of Technology Ladkrabang,ok,,モンクット王工科大学ラートクラバン校,先皇技術學院,King Mongkut’s Institute of Technology Lat Krabang,,,Viện Công nghệ Ladkrabang của vua Mongkut
+8039,King Mongkut's University of Technology Thonburi,Q476521,King Mongkut's University of Technology Thonburi,ok,,モンクット王トンブリー工科大学,吞武里蒙固国王科技大学,King Mongkut's University of Technology Thonburi,,,
+8041,Kasetsart University,Q452406,Kasetsart University,ok,까셋삿 대학교,カセサート大学,泰國農業大學,Kasetsart-Universität,université Kasetsart,,Đại học Kasetsart
+8060,Prince of Songkla University,Q1519696,Prince of Songkla University,ok,,ソンクラ王子大学,宋卡王子大學,Prinz-von-Songkhla-Universität,université du Prince de Songkla,,Đại học Hoàng tử Songkla
+8073,Suranaree University of Technology,Q670307,Suranaree University of Technology,ok,,スラナリー工科大学,素罗娜丽科技大学,Suranaree University of Technology,université de technologie de Suranaree,,Đại học Công nghệ Suranaree
+8076,Thammasat University,Q1209733,Thammasat University,ok,탐마삿 대학교,タンマサート大学,泰國國立法政大學,Thammasat-Universität,université Thammasat,Universidad de Thammasat,Trường đại học Thammasat
+8102,Université de Tunis El Manar,Q3551684,Tunis El Manar University,ok,,,突尼斯-萨尔瓦多马纳尔大学,Universität Tunis - El Manar,université de Tunis - El Manar,,
+8103,Université de Tunis,Q3551686,Tunis University,ok,,チュニス大学,突尼西亞大學,Universität Tunis,université de Tunis,Universidad de Túnez,
+8122,Bilkent University,Q861904,Bilkent University,ok,빌켄트 대학교,ビルケント大学,毕尔肯大学,Bilkent-Universität,université Bilkent,Universidad Bilkent,
+8123,Boğaziçi University,Q896267,Boğaziçi University,ok,보아지치 대학교,ボアズィチ大学,海峡大学,Boğaziçi Üniversitesi,Université du Bosphore,Universidad del Bósforo,
+8146,Hacettepe University,Q1567050,Hacettepe University,ok,하체테페 대학교,ハジェッテペ芸術学校,哈西德佩大学,Hacettepe-Universität,Université Hacettepe,Universidad de Hacettepe,
+8152,Istanbul Technical University,Q344334,Istanbul Technical University,ok,이스탄불 공과대학교,イスタンブル工科大学,伊斯坦布尔理工大学,Technische Universität Istanbul,université technique d'Istanbul,Universidad Politécnica de Estambul,
+8166,Marmara University,Q1424081,Marmara University,ok,,マルマラ大学,馬爾馬拉大學,Marmara-Universität,université de Marmara,Universidad de Marmara,Đại học Marmara
+8173,Middle East Technical University,Q756126,Middle East Technical University,ok,중동 공과대학교,中東工科大学,中东技术大学,Technische Universität des Nahen Ostens,université technique du Moyen-Orient,Universidad Técnica de Medio Oriente,
+8180,Sakarya University,Q1718685,Sakarya University,ok,,,,Sakarya Üniversitesi,université de Sakarya,,
+8192,Yildiz Technical University,Q1093258,Yıldız Technical University,ok,,ユルドゥズ工科大学,耶尔德兹理工大学,Yıldız Teknik Üniversitesi,Université technique de Yıldız,Universidad Técnica de Yıldız,
+8211,Makerere University,Q261506,Makerere University,ok,마케레레 대학교,マケレレ大学,马凯雷雷大学,Makerere-Universität,Université Makerere,Universidad Makerere,Đại học Makerere
+8251,Lviv Polytechnic National University,Q1817355,Lviv Polytechnic,ok,,リヴィウ工科大学,利沃夫理工學院,Nationale Polytechnische Universität Lwiw,université nationale polytechnique de Lviv,Universidad Politécnica Nacional de Leópolis,Đại học Bách khoa Quốc gia Lviv
+8273,Sumy State University,Q4446047,Sumy State University,ok,,,苏梅州立大学,,université d'État de Soumy,,
+8283,Taras Shevchenko National University of Kyiv,Q84151,Taras Shevchenko National University of Kyiv,ok,키예프 대학교,キーウ国立大学,塔拉斯·舍夫琴科国立基辅大学,Nationale Taras-Schewtschenko-Universität Kiew,université nationale Taras-Chevtchenko de Kiev,Universidad de Kiev,Đại học Quốc gia Kyiv
+8294,American College Of Dubai,Q30262793,American College of Dubai,ok,,,,American College of Dubai,,,
+8295,Abu Dhabi University,Q4670157,Abu Dhabi University,ok,,アブダビ大学,,Abu Dhabi University,Abu Dhabi University,Abu Dhabi University,
+8297,Ajman University,Q12204508,Ajman University,ok,,アジュマーン大学,,,,,
+8300,American University in Dubai,Q467144,American University in Dubai,ok,,,,American University in Dubai,Université américaine de Dubaï,,Trường đại học Hoa Kỳ ở Dubai
+8301,American University in the Emirates,Q4745311,American University in the Emirates,ok,,,阿聯酋美國大學,American University in the Emirates,,,
+8302,American University of Sharjah,Q4115992,American University of Sharjah,ok,,シャルジャアメリカン大学,沙迦美国大学,,université américaine de Charjah,Universidad Americana de Sharjah,
+8307,Etisalat University College,Q5404636,Etisalat University College,ok,,,,,,,
+8309,Gulf Medical University,Q5617504,Gulf Medical University,ok,,湾岸医科大学,,,,,
+8310,Hamdan Bin Mohammed e-University,Q5644372,Hamdan Bin Mohammed Smart University,ok,,,,Hamdan Bin Mohammed Smart University,université intelligente Hamdane Bin Mohammed,,
+8311,Higher Colleges of Technology,Q5758041,Higher Colleges of Technology,ok,,,,,,,
+8312,Ittihad University,Q6095050,Ittihad University,ok,,,,,,,
+8316,Khalifa University,Q6399651,Khalifa University,ok,,ハリーファ大学,哈利法大学,Khalifa University,université Khalifa,Universidad de Khalifa,
+8320,Rak Medical & Health Sciences University,Q7294680,RAK Medical and Health Sciences University,ok,,,,,,,
+8321,University of Sharjah,Q7896294,University of Sharjah,ok,,シャールジャ大学,沙迦大学,Universität Schardscha,université de Charjah,,
+8324,United Arab Emirates University,Q1544739,United Arab Emirates University,ok,,アラブ首長国連邦大学,阿拉伯聯合酋長國大學,United Arab Emirates University,université des Émirats arabes unis,Universidad de los Emiratos Árabes Unidos,
+8328,Zayed University,Q8067559,Zayed University,ok,,ザーイド大学,扎耶德大學,Zayed Universität,université Zayed,Universidad de Zayed,
+8330,University of Aberdeen,Q270532,University of Aberdeen,ok,애버딘 대학교,アバディーン大学,阿伯丁大学,University of Aberdeen,Université d'Aberdeen,Universidad de Aberdeen,
+8331,Aberystwyth University,Q319761,Aberystwyth University,ok,에버리스트위스 대학교,アベリストウィス大学,阿伯里斯特威斯大學,Aberystwyth University,Université d'Aberystwyth,Universidad de Aberystwyth,
+8335,Aston University,Q750066,Aston University,ok,,アストン大学,阿斯頓大學,Aston University,Université Aston,Aston University,
+8338,University of Bath,Q1422458,University of Bath,ok,배스 대학교,バース大学,巴斯大學,University of Bath,Université de Bath,Universidad de Bath,
+8342,Birmingham City University,Q3547145,Birmingham City University,ok,,バーミンガムシティ大学,伯明翰城市大學,Birmingham City University,Birmingham City University,Universidad Ciudad de Birmingham,
+8344,University of Birmingham,Q223429,University of Birmingham,ok,버밍엄 대학교,バーミンガム大学,伯明翰大学,,Université de Birmingham,Universidad de Birmingham,Đại học Birmingham
+8346,Bournemouth University,Q3182943,Bournemouth University,ok,,ボーンマス大学,伯恩茅斯大學,Bournemouth University,Université de Bournemouth,Universidad de Bournemouth,Đại học Bournemouth
+8347,University of Bradford,Q954035,University of Bradford,ok,브래드퍼드 대학교,ブラッドフォード大学,布拉德福德大学,Universität Bradford,Université de Bradford,Universidad de Bradford,
+8349,University of Bristol,Q459506,University of Bristol,ok,브리스틀 대학교,ブリストル大学,布里斯托尔大学,University of Bristol,Université de Bristol,Universidad de Brístol,Đại học Bristol
+8350,Oxford Brookes University,Q132478,Oxford Brookes University,ok,옥스퍼드 브룩스 대학교,オックスフォード・ブルックス大学,牛津布魯克斯大學,Oxford Brookes University,Oxford Brookes University,Universidad Oxford Brookes,
+8352,University of Brighton,Q3056813,University of Brighton,ok,브라이턴 대학교,ブライトン大学,布萊頓大學,Universität Brighton,Université de Brighton,Universidad de Brighton,
+8355,University of Cambridge,Q35794,University of Cambridge,ok,케임브리지 대학교,ケンブリッジ大学,剑桥大学,University of Cambridge,Université de Cambridge,Universidad de Cambridge,Đại học Cambridge
+8357,Canterbury Christ Church University,Q3182956,Canterbury Christ Church University,ok,,カンタベリー・クライスト・チャーチ大学,坎特伯雷基督教會大學,,Université Canterbury Christ Church,Universidad Christ Church de Canterbury,
+8358,Cardiff University,Q1035745,Cardiff University,ok,카디프 대학교,カーディフ大学,卡迪夫大学,Cardiff University,Université de Cardiff,Universidad de Cardiff,
+8362,Coventry University,Q1138080,Coventry University,ok,코번트리 대학교,コヴェントリー大学,考文垂大学,,Université de Coventry,Universidad de Coventry,
+8365,University of Derby,Q3183295,University of Derby,ok,,ダービー大学,德比大学,,Université de Derby,Universidad de Derby,
+8367,University of Dundee,Q1249005,University of Dundee,ok,던디 대학교,ダンディー大学,邓迪大学,University of Dundee,Université de Dundee,Universidad de Dundee,
+8370,University of Edinburgh,Q160302,University of Edinburgh,ok,에든버러 대학교,エディンバラ大学,爱丁堡大学,Universität von Edinburgh,Université d'Édimbourg,Universidad de Edimburgo,Đại học Edinburgh
+8372,University of Exeter,Q1414861,University of Exeter,ok,엑서터 대학교,エクセター大学,艾希特大學,University of Exeter,Université d'Exeter,Universidad de Exeter,Đại học Exeter
+8374,Glasgow Caledonian University,Q1353139,Glasgow Caledonian University,ok,,グラスゴー・カレドニアン大学,格拉斯哥卡利多尼安大學,Glasgow Caledonian University,Université calédonienne de Glasgow,Universidad Glasgow Caledonian,
+8375,University of Glasgow,Q192775,University of Glasgow,ok,글래스고 대학교,グラスゴー大学,格拉斯哥大學,Universität Glasgow,Université de Glasgow,Universidad de Glasgow,Đại học Glasgow
+8379,University of Greenwich,Q1896148,University of Greenwich,ok,,グリニッジ大学,格林威治大學,University of Greenwich,Université de Greenwich,Universidad de Greenwich,Đại học Greenwich
+8382,University of Hertfordshire,Q1745633,University of Hertfordshire,ok,하트포드셔 대학교,ハートフォードシャー大学,赫特福德大学,University of Hertfordshire,Université du Hertfordshire,Universidad de Hertfordshire,
+8385,University of Huddersfield,Q3056815,University of Huddersfield,ok,허더스필드 대학교,ハダースフィールド大学,哈德斯菲尔德大学,University of Huddersfield,Université de Huddersfield,,
+8386,University of Hull,Q1474019,University of Hull,ok,헐 대학교,ハル大学,赫爾大學,Universität Hull,Université de Hull,Universidad de Hull,
+8388,Heriot-Watt University,Q1610024,Heriot-Watt University,ok,헤리엇 와트 대학교,ヘリオット・ワット大学,赫瑞瓦特大学,Heriot-Watt University,Université Heriot-Watt,Universidad Heriot-Watt,Đại học Heriot-Watt
+8389,Imperial College London,Q189022,Imperial College London,ok,임페리얼 칼리지 런던,インペリアル・カレッジ・ロンドン,伦敦帝国学院,Imperial College London,Imperial College London,Escuela Imperial de Londres,
+8395,Keele University,Q1737734,University of Keele,ok,,キール大学,基爾大學,Keele University,Université de Keele,Universidad de Keele,
+8400,Loughborough University,Q1434547,Loughborough University,ok,러프버러 대학교,ラフバラー大学,羅浮堡大學,Loughborough University,Université de Loughborough,Universidad de Loughborough,
+8402,University of Leicester,Q1333399,University of Leicester,ok,레스터 대학교,レスター大学,萊斯特大學,University of Leicester,Université de Leicester,Universidad de Leicester,
+8403,University of Leeds,Q503424,University of Leeds,ok,리즈 대학교,リーズ大学,利兹大学,University of Leeds,Université de Leeds,Universidad de Leeds,Đại học Leeds
+8406,University of Lincoln,Q2738646,University of Lincoln,ok,링컨 대학교,リンカーン大学 (イギリス),林肯大学,University of Lincoln,Université de Lincoln,,
+8407,University of Liverpool,Q499510,University of Liverpool,ok,리버풀 대학교,リヴァプール大学,利物浦大学,University of Liverpool,Université de Liverpool,Universidad de Liverpool,Đại học Liverpool
+8408,Liverpool John Moores University,Q1627967,Liverpool John Moores University,ok,리버풀 존 무어스 대학교,リバプールジョンムーア大学,利物浦約翰摩爾斯大學,Liverpool John Moores University,Université de Liverpool John-Moores,Universidad John Moores,Đại học Liverpool John Moores
+8409,Leeds Beckett University,Q2392351,Leeds Beckett University,ok,리즈 베켓 대학교,リーズ・ベケット大学,利兹都会大学,Leeds Beckett University,Université de Leeds Beckett,,Đại Học Leeds Metropolitan
+8410,University of London,Q170027,University of London,ok,런던 대학교,ロンドン大学,倫敦大學,University of London,Université de Londres,Universidad de Londres,Đại học London
+8411,London Metropolitan University,Q1869028,London Metropolitan University,ok,런던 메트로폴리탄 대학교,ロンドン・メトロポリタン大学,倫敦都會大學,London Metropolitan University,Université métropolitaine de Londres,Universidad Metropolitana de Londres,
+8415,University of Manchester,Q230899,University of Manchester,ok,맨체스터 대학교,マンチェスター大学,曼徹斯特大學,University of Manchester,Université de Manchester,Universidad de Mánchester,Đại học Manchester
+8419,Edinburgh Napier University,Q1277357,Edinburgh Napier University,ok,,エディンバラ・ネピア大学,愛丁堡納皮爾大學,Edinburgh Napier University,Université Napier d'Édimbourg,Edinburgh Napier University,
+8420,Newcastle University,Q837164,Newcastle University,ok,뉴캐슬 대학교,ニューカッスル大学,纽卡斯尔大学,Newcastle University,Université de Newcastle upon Tyne,Universidad de Newcastle upon Tyne,
+8424,University of Nottingham,Q472316,University of Nottingham,ok,노팅엄 대학교,ノッティンガム大学,諾丁漢大學,University of Nottingham,Université de Nottingham,Universidad de Nottingham,Đại học Nottingham
+8425,Nottingham Trent University,Q2002619,Nottingham Trent University,ok,노팅엄 트렌트 대학교,ノッティンガム・トレント大学,諾丁漢特倫特大學,Nottingham Trent University,Université de Nottingham Trent,universidad Nottingham Trent,
+8427,University of Oxford,Q34433,University of Oxford,ok,옥스퍼드 대학교,オックスフォード大学,牛津大学,University of Oxford,Université d'Oxford,Universidad de Oxford,Đại học Oxford
+8429,University of Plymouth,Q1711558,University of Plymouth,ok,,プリマス大学,普利茅斯大学,University of Plymouth,Université de Plymouth,Universidad de Plymouth,
+8435,University of Reading,Q1432632,University of Reading,ok,레딩 대학교,レディング大学,雷丁大学,University of Reading,Université de Reading,Universidad de Reading,
+8441,University of Salford,Q2738622,University of Salford,ok,솔퍼드 대학교,サルフォード大学,索爾福德大學,University of Salford,Université de Salford,Universidad de Salford,Đại học Salford
+8447,The University of Sheffield,Q823917,University of Sheffield,ok,셰필드 대학교,シェフィールド大学,谢菲尔德大学,Universität Sheffield,Université de Sheffield,Universidad de Sheffield,
+8448,Sheffield Hallam University,Q1752117,Sheffield Hallam University,ok,셰필드 할람 대학교,シェフィールド・ハラム大学,谢菲尔德哈勒姆大学,Sheffield Hallam University,Université de Sheffield Hallam,Universidad de Sheffield Hallam,
+8453,University of Southampton,Q76473,University of Southampton,ok,사우샘프턴 대학교,サウサンプトン大学,南安普敦大学,Universität Southampton,Université de Southampton,Universidad de Southampton,Đại học Southampton
+8457,University of Stirling,Q963530,University of Stirling,ok,스털링 대학교,スターリング大学,斯特灵大学,University of Stirling,Université de Stirling,Universidad de Stirling,
+8459,University of Strathclyde,Q1859178,University of Strathclyde,ok,스트래스클라이드 대학교,ストラスクライド大学,斯特拉斯克萊德大學,University of Strathclyde,Université de Strathclyde,Universidad de Strathclyde,
+8461,University of Surrey,Q546976,University of Surrey,ok,서리 대학교,サリー大学,薩里大學,University of Surrey,Université de Surrey,universidad de Surrey,
+8462,University of Sussex,Q1161297,University of Sussex,ok,서식스 대학교,サセックス大学,萨塞克斯大学,University of Sussex,Université du Sussex,Universidad de Sussex,
+8469,University of Central Lancashire,Q1857773,University of Lancashire,ok,,セントラル・ランカッシャー大学,中央兰开夏大学,,,Universidad de Lancashire,
+8472,University of East London,Q1345942,University of East London,ok,이스트 런던 대학교,イーストロンドン大学,東倫敦大學,University of East London,Université de Londres-Est,Universidad del Este de Londres,
+8484,University of Westminster,Q1247544,University of Westminster,ok,웨스트민스터 대학교,ウエストミンスター大学,威斯敏斯特大學,University of Westminster,Université de Westminster,Universidad de Westminster,Đại học Westminster
+8487,University of Wolverhampton,Q1816202,University of Wolverhampton,ok,울버햄튼 대학교,ウォルヴァーハンプトン大学,伍爾弗漢普頓大學,,Université de Wolverhampton,,
+8489,University of York,Q967165,University of York,ok,요크 대학교,ヨーク大学,約克大學,University of York,Université d'York,Universidad de York,
+8494,Swansea University,Q1420500,Swansea University,ok,스완지 대학교,スウォンジ大学,斯旺西大学,Swansea University,Université de Swansea,Universidad de Swansea,
+8498,Universidad ORT Uruguay,Q3772943,Universidad ORT Uruguay,ok,,ウルグアイORT大学,乌拉圭大学,,,Universidad ORT Uruguay,
+8528,Universidad Católica Andres Bello,Q4760155,Andrés Bello Catholic University,ok,,アンドレス・ベジョ・カソリック大学,安德烈斯·貝約天主教大學,Universidad Católica Andrés Bello,Université catholique Andrés-Bello,Universidad Católica Andrés Bello,
+8532,Universidad Central de Venezuela,Q936476,Central University of Venezuela,ok,,ベネズエラ中央大学,委內瑞拉中央大學,Universidad Central de Venezuela,Université centrale du Venezuela,Universidad Central de Venezuela,
+8583,Hanoi University of Science,Q5649339,Hanoi University of Science,ok,,ハノイ国家大学自然科学大学,河內國家大學附屬自然科學大學,,,,"Trường Đại học Khoa học Tự nhiên, Đại học Quốc gia Hà Nội"
+8599,Vietnam National University Hanoi,,not_found,,,,,,,,
+8671,Istanbul University,Q6099542,Istanbul University Faculty of Law,ok,,イスタンブール大学法学部,伊斯坦布尔大学法学院,,faculté de droit de l'université d'Istanbul,Facultad de Derecho de la Universidad de Estambul,
+8700,Istanbul Aydin University,Q6088582,Istanbul Aydın University,ok,,,伊斯坦布尔阿依登大学,,,,
+8729,Duke University,Q168751,Duke University,ok,듀크 대학교,デューク大学,杜克大学,Duke University,Université Duke,Universidad Duke,Đại học Duke
+9637,University of Michigan-Flint,Q99474260,University of Michigan Flint Official Bookstore,ok,,,,,,,
+9648,Hanoi University of Science and Technology,Q3075696,Hanoi University of Science and Technology,ok,하노이 과학기술대학교,ハノイ工科大学,河內理工大學,Technische Universität Hanoi,Institut polytechnique de Hanoï,,Đại học Bách khoa Hà Nội
+9677,Toronto Metropolitan University,Q611723,Toronto Metropolitan University,ok,토론토 메트로폴리턴 대학교,トロント・メトロポリタン大学,多倫多都會大學,Ryerson University,Université métropolitaine de Toronto,Universidad Metropolitana de Toronto,
+9698,Corvinus University of Budapest,Q851164,Corvinus University of Budapest,ok,부다페스트 코르비누스 대학교,ブダペシュト・コルヴィヌス大学,布达佩斯考文纽斯大学,Corvinus-Universität Budapest,université Corvinus de Budapest,Universidad Corvinus de Budapest,Đại học Corvinus
+9704,Institut d'études politiques de Rennes,Q3151965,Institut d'études politiques de Rennes,ok,,レンヌ政治学院,雷恩政治学院,Institut d’études politiques de Rennes,Institut d'études politiques de Rennes,Instituto de Estudios Políticos de Rennes,
+9721,The University of Alabama,Q492318,University of Alabama,ok,앨라배마 대학교,アラバマ大学,阿拉巴马大学,University of Alabama,Université de l'Alabama,Universidad de Alabama,Đại học Alabama
+9854,Technological University Dublin,Q55619051,Technological University Dublin,ok,,ダブリン工科大学,都柏林科技大學,Technological University Dublin,université technologique Dublin,Universidad Tecnológica Dublín,
+9859,University of Barcelona,Q219615,University of Barcelona,ok,바르셀로나 대학교,バルセロナ大学,巴塞罗那大学,Universität Barcelona,Université de Barcelone,Universidad de Barcelona,Đại học Barcelona
+9863,Ulster University,Q2096524,Ulster University,ok,,アルスター大学,阿爾斯特大學,Ulster University,Université d'Ulster,Universidad del Úlster,Đại học Ulster
+9929,Université Paris-Saclay,Q109409389,Paris-Saclay University,ok,파리-사클레 대학교,パリ＝サクレー大学,巴黎-薩克雷大學,Universität Paris-Saclay,université Paris-Saclay,Universidad Paris-Saclay,Đại học Paris-Saclay
+10099,Shanghai Jiao Tong University,Q525169,Shanghai Jiao Tong University,ok,상하이 자오퉁 대학,上海交通大学,上海交通大学,Jiaotong-Universität Shanghai,université Jiao-tong de Shanghai,Universidad de Shanghái Jiao Tong,Đại học Giao thông Thượng Hải
+10107,Western Sydney University,Q1141452,Western Sydney University,ok,웨스턴시드니 대학교,ウェスタンシドニー大学,西悉尼大学,University of Western Sydney,Université occidentale de Sydney,,Đại học Tây Sydney
+10109,London South Bank University,Q289348,London South Bank University,ok,런던 사우스뱅크 대학교,ロンドンサウスバンク大学,倫敦南岸大學,London South Bank University,Université de South Bank de Londres,,
+10136,KU Leuven,Q833670,Katholieke Universiteit Leuven,ok,루뱅 카톨릭대학교,ルーヴェン・カトリック大学,鲁汶天主教大学 (荷兰语),Katholieke Universiteit Leuven,Université catholique de Louvain,KU Leuven,KU Leuven

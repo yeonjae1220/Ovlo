@@ -9,5 +9,6 @@ public record UniversityReportResult(
         String body,
         String content,     // raw JSON string (JSONB)
         int sourceVideoCount,
-        int sourceWebCount
+        int sourceWebCount,
+        String countryCode  // 대학 소재국 ISO-3166 alpha-2 (디스플레이 통화 환산용)
 ) {}

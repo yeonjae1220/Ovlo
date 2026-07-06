@@ -23,7 +23,9 @@ public interface UniversityCatalogJpaRepository extends JpaRepository<GlobalUniv
                    eu.id                                  AS exchange_univ_id,
                    r.id                                   AS report_id,
                    gu.name_en                             AS name_en,
-                   COALESCE(eu.name_ko, gu.local_name)    AS name_ko,
+                   COALESCE(eu.name_ko, gu.local_name,
+                            (SELECT gn.name FROM global_university_names gn
+                             WHERE gn.global_univ_id = gu.id AND gn.lang = 'ko' LIMIT 1)) AS name_ko,
                    COALESCE(gu.country, eu.country)       AS country,
                    COALESCE(gu.country_code, eu.country_code) AS country_code,
                    COALESCE(gu.city, eu.city)             AS city
@@ -55,7 +57,11 @@ public interface UniversityCatalogJpaRepository extends JpaRepository<GlobalUniv
             + "FROM (" + CONTENT_SET + ") t "
             + "WHERE (:keyword IS NULL "
             + "       OR t.name_en ILIKE '%' || :keyword || '%' "
-            + "       OR t.name_ko ILIKE '%' || :keyword || '%') "
+            + "       OR t.name_ko ILIKE '%' || :keyword || '%' "
+            + "       OR (t.global_univ_id IS NOT NULL AND EXISTS ("
+            + "            SELECT 1 FROM global_university_names gn "
+            + "            WHERE gn.global_univ_id = t.global_univ_id "
+            + "              AND gn.name ILIKE '%' || :keyword || '%')) ) "
             + "  AND (:countryCode IS NULL OR t.country_code = :countryCode) "
             + "ORDER BY (t.report_id IS NOT NULL) DESC, "
             + "         (t.exchange_univ_id IS NOT NULL) DESC, "
@@ -72,7 +78,11 @@ public interface UniversityCatalogJpaRepository extends JpaRepository<GlobalUniv
     @Query(value = "SELECT COUNT(*) FROM (" + CONTENT_SET + ") t "
             + "WHERE (:keyword IS NULL "
             + "       OR t.name_en ILIKE '%' || :keyword || '%' "
-            + "       OR t.name_ko ILIKE '%' || :keyword || '%') "
+            + "       OR t.name_ko ILIKE '%' || :keyword || '%' "
+            + "       OR (t.global_univ_id IS NOT NULL AND EXISTS ("
+            + "            SELECT 1 FROM global_university_names gn "
+            + "            WHERE gn.global_univ_id = t.global_univ_id "
+            + "              AND gn.name ILIKE '%' || :keyword || '%')) ) "
             + "  AND (:countryCode IS NULL OR t.country_code = :countryCode)",
             nativeQuery = true)
     long countSearch(@Param("keyword") String keyword,

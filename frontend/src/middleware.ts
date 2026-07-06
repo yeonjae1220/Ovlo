@@ -10,7 +10,7 @@ export function middleware(request: NextRequest) {
     "style-src 'self' 'unsafe-inline'",
     "img-src 'self' data: https: blob:",
     "font-src 'self'",
-    "connect-src 'self' https://ovlo.mungji.com wss://ovlo.mungji.com",
+    "connect-src 'self' https://ovlo.mungji.com wss://ovlo.mungji.com https://open.er-api.com",
     "frame-src 'none'",
     "object-src 'none'",
     "base-uri 'self'",

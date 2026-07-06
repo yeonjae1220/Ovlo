@@ -6,8 +6,13 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface GlobalUniversityJpaRepository extends JpaRepository<GlobalUniversityJpaEntity, Long> {
+
+    /** 리포트 통화 환산용 대학 소재국 코드 조회. */
+    @Query(value = "SELECT country_code FROM global_universities WHERE id = :id", nativeQuery = true)
+    Optional<String> findCountryCodeById(@Param("id") Long id);
 
     @Query(value = """
             SELECT * FROM global_universities

@@ -21,6 +21,7 @@ export interface UniversityReportDetail {
   content?: string   // raw JSON string
   sourceVideoCount: number
   sourceWebCount: number
+  countryCode?: string | null   // 대학 소재국 — 비용 표시 통화 결정용
 }
 
 interface GlobalUniversityItem {
