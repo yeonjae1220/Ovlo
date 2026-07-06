@@ -2,6 +2,7 @@ package me.yeonjae.ovlo.adapter.out.persistence;
 
 import me.yeonjae.ovlo.adapter.out.persistence.entity.UniversityReportJpaEntity;
 import me.yeonjae.ovlo.adapter.out.persistence.entity.UniversityReportTranslationJpaEntity;
+import me.yeonjae.ovlo.adapter.out.persistence.repository.GlobalUniversityJpaRepository;
 import me.yeonjae.ovlo.adapter.out.persistence.repository.UniversityReportJpaRepository;
 import me.yeonjae.ovlo.adapter.out.persistence.repository.UniversityReportTranslationJpaRepository;
 import me.yeonjae.ovlo.application.dto.result.PageResult;
@@ -22,12 +23,15 @@ public class UniversityReportPersistenceAdapter implements LoadUniversityReportP
 
     private final UniversityReportJpaRepository reportRepo;
     private final UniversityReportTranslationJpaRepository translationRepo;
+    private final GlobalUniversityJpaRepository globalUnivRepo;
 
     public UniversityReportPersistenceAdapter(
             UniversityReportJpaRepository reportRepo,
-            UniversityReportTranslationJpaRepository translationRepo) {
+            UniversityReportTranslationJpaRepository translationRepo,
+            GlobalUniversityJpaRepository globalUnivRepo) {
         this.reportRepo = reportRepo;
         this.translationRepo = translationRepo;
+        this.globalUnivRepo = globalUnivRepo;
     }
 
     @Override
@@ -101,10 +105,12 @@ public class UniversityReportPersistenceAdapter implements LoadUniversityReportP
             boolean hasLang = Arrays.asList(supported).contains(lang);
             if (!hasLang) effectiveLang = supported[0];
         }
+        String countryCode = r.getGlobalUnivId() == null ? null
+                : globalUnivRepo.findCountryCodeById(r.getGlobalUnivId()).orElse(null);
         return translationRepo.findByIdReportIdAndIdLang(r.getId(), effectiveLang)
                 .map(t -> new UniversityReportResult(
                         r.getId(), r.getGlobalUnivId(), t.getLang(),
                         t.getTitle(), t.getSummary(), t.getBody(), t.getContent(),
-                        r.getSourceVideoCount(), r.getSourceWebCount()));
+                        r.getSourceVideoCount(), r.getSourceWebCount(), countryCode));
     }
 }

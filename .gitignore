@@ -57,3 +57,7 @@ frontend/.next/
 *.tsbuildinfo
 .env.local
 *.env.local
+
+# report data-quality ops — 대용량/일회성 산출물 제외
+scripts/ko_translations_backup_*.csv
+scripts/report_defects.csv

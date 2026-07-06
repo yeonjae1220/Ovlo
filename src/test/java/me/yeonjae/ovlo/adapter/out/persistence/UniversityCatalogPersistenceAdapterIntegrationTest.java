@@ -72,6 +72,7 @@ class UniversityCatalogPersistenceAdapterIntegrationTest {
         jdbc.update("DELETE FROM exchange_video_reviews");
         jdbc.update("DELETE FROM university_report");
         jdbc.update("DELETE FROM exchange_universities");
+        jdbc.update("DELETE FROM global_university_names");
         jdbc.update("DELETE FROM global_universities");
 
         reportOnlyGlobalId = insertGlobal("Seoul National University", "서울대학교", "대한민국", "KR", "Seoul");
@@ -141,6 +142,23 @@ class UniversityCatalogPersistenceAdapterIntegrationTest {
     }
 
     @Test
+    @DisplayName("다국어 이름(global_university_names)으로 검색된다 — ja/zh 라벨 매칭")
+    void multilingualNameMatches() {
+        // bothGlobal(뮌헨공대)에 일본어·중국어 라벨 시드
+        insertGlobalName(bothGlobalId, "ja", "ミュンヘン工科大学");
+        insertGlobalName(bothGlobalId, "zh", "慕尼黑工业大学");
+
+        // 일본어 라벨로 검색 → 매칭 (name_en/name_ko 로는 안 잡히는 키워드)
+        assertThat(search("ミュンヘン工科大学", null))
+                .extracting(UniversityCatalogResult::globalUnivId).containsExactly(bothGlobalId);
+        // 중국어 부분 문자열로 검색 → 매칭
+        assertThat(search("慕尼黑", null))
+                .extracting(UniversityCatalogResult::globalUnivId).containsExactly(bothGlobalId);
+        // 다른 대학의 다국어 라벨과 혼동되지 않음
+        assertThat(search("ミュンヘン工科大学", null)).hasSize(1);
+    }
+
+    @Test
     @DisplayName("countryCode로 필터링된다")
     void countryFilter() {
         List<UniversityCatalogResult> jp = search(null, "JP");
@@ -184,6 +202,11 @@ class UniversityCatalogPersistenceAdapterIntegrationTest {
                 "INSERT INTO exchange_universities (global_univ_id, name_ko, name_en, country, country_code, city) "
                         + "VALUES (?,?,?,?,?,?) RETURNING id",
                 Long.class, globalId, nameKo, nameEn, country, code, city);
+    }
+
+    private void insertGlobalName(Long globalId, String lang, String name) {
+        jdbc.update("INSERT INTO global_university_names (global_univ_id, lang, name) VALUES (?,?,?)",
+                globalId, lang, name);
     }
 
     private void insertPublishedReport(Long globalId) {
