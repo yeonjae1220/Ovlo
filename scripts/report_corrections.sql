@@ -6,8 +6,8 @@
 -- 마커가 정본으로 치환된다(LIKE 가드로 멱등 — 몇 번이든 안전 재실행).
 --
 -- 미확인 전수 조회:  WHERE ... LIKE '%(?)%'
--- 현재 30개 마커(2026-07-06). 각 마커의 report 위치는 note 참조.
--- 백업: scripts/ko_translations_backup_20260705.csv, in-DB _bak_titles_20260706
+-- 현재 39개 마커(2026-07-08, +9 한자혼입 2차 교정에서 추가). 각 마커의 report 위치는 note 참조.
+-- 백업: scripts/ko_translations_backup_20260705.csv, in-DB _bak_titles_20260706, _bak_han_in_ko_round2_20260708
 -- ============================================================================
 \pset pager off
 BEGIN;
@@ -43,7 +43,16 @@ INSERT INTO corr(marker, confirmed, note) VALUES
   ('수크롬(?)',     NULL, 'r1030 방콕 기숙사(미상)'),
   ('헤이관(?)',     NULL, 'r1051 대학 인근 지역(미상)'),
   ('엘호슨(?)',     NULL, 'r1069 지역명(미상)'),
-  ('다웁(?)',       NULL, 'r1070 American University 인근(Dubai? 미상)');
+  ('다웁(?)',       NULL, 'r1070 American University 인근(Dubai? 미상)'),
+  ('스티어스(?)',   NULL, 'r171 Toronto Metropolitan University 인근 지역(Stirs? 미상)'),
+  ('랄(?)',         NULL, 'r328 JNU 델리 관광지(Lal Qila? 미상)'),
+  ('즈핀(?)',       NULL, 'r797 베이징외대 채용 앱(Zhipin/直聘? 미상)'),
+  ('샹저우구(?)',   NULL, 'r984 중산대 소재 지역(Xiangzhou? 미상)'),
+  ('압돌라히(?)',   NULL, 'r1014 시라즈대 페르시아 요리명(미상)'),
+  ('텀(?)',         NULL, 'r1024 카세트사트대 태국 음식/지역(Term? 미상)'),
+  ('아만하(?)',     NULL, 'r1041 PUC 리우데자네이루 인근 명소(미상)'),
+  ('스트란트(?)',   NULL, 'r1082 RIT 로체스터 인근 명소(Strand? 미상)'),
+  ('하트워른(?)',   NULL, 'r845 WVU 도서관명(Hartwerth? 미상)');
 
 -- 마커 → 확정값 (confirmed 채워진 것만 치환)
 DO $$
