@@ -9,6 +9,8 @@ import { useBreakpoint } from '../hooks/useBreakpoint'
 import { InstallBanner } from '../components/InstallBanner'
 import { useI18n } from '../i18n/I18nProvider'
 import { Badge, Card, LinkButton, SearchBox } from '../components/ui'
+import { UiLanguageSwitcher } from '../components/ui/UiLanguageSwitcher'
+import { ThemeToggle } from '../components/ui/ThemeToggle'
 
 const C = {
   elevated: 'var(--color-bg-elevated)',
@@ -66,6 +68,8 @@ export default function LandingPage() {
           Ovlo
         </Link>
         <nav style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap', justifyContent: 'flex-end' }}>
+          <ThemeToggle />
+          <UiLanguageSwitcher />
           <Link href="/exchange-universities" style={{ padding: '9px 12px', color: C.muted, fontSize: 14, fontWeight: 750, textDecoration: 'none' }}>
             {t('landing.nav.search')}
           </Link>
