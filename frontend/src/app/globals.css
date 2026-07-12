@@ -18,6 +18,10 @@
   --ease-out: cubic-bezier(.16, 1, .3, 1);
 }
 
+/* 기본(data-theme 무속성) = dark 안전망. 인라인 스크립트가 CSP로 차단되거나
+   실행 전이어도 흰 화면(light) 대신 dark로 렌더된다. light는 아래 [data-theme='light']가
+   더 높은 specificity로 override. (Ovlo 테마 '가끔 light' 버그 해결) */
+:root,
 :root[data-theme='dark'] {
   color-scheme: dark;
   --color-bg: #151718;

@@ -1,8 +1,9 @@
 import type { Metadata } from 'next'
-import { headers } from 'next/headers'
+import { cookies, headers } from 'next/headers'
 import './globals.css'
 import { Providers } from './providers'
 import { themeInitScript } from '@/theme/themeConfig'
+import { resolveUiLang } from '@/i18n/messages'
 
 export const dynamic = 'force-dynamic'
 
@@ -36,12 +37,17 @@ export const metadata: Metadata = {
 }
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
-  const nonce = (await headers()).get('x-nonce') ?? ''
+  const [headerList, cookieStore] = await Promise.all([headers(), cookies()])
+  const nonce = headerList.get('x-nonce') ?? ''
+  const initialLanguage = resolveUiLang(cookieStore.get('ovlo_lang')?.value)
   return (
-    <html lang="ko">
-      <body data-nonce={nonce}>
+    <html lang={initialLanguage} data-theme="dark" suppressHydrationWarning>
+      <head>
+        {/* 페인트 전에 테마 적용(플래시 방지). :root 기본 dark 안전망과 함께 이중 방어. */}
         <script nonce={nonce} dangerouslySetInnerHTML={{ __html: themeInitScript }} />
-        <Providers>{children}</Providers>
+      </head>
+      <body data-nonce={nonce}>
+        <Providers initialLanguage={initialLanguage}>{children}</Providers>
       </body>
     </html>
   )

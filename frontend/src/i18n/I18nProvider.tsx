@@ -27,18 +27,29 @@ type I18nContextValue = {
 
 const I18nContext = createContext<I18nContextValue | null>(null)
 
-export function I18nProvider({ children }: { children: React.ReactNode }) {
-  // 쿠키가 있으면 동기적으로 읽어 FOUC를 최소화, 없으면 'en' (hydration safe)
+export function I18nProvider({
+  children,
+  initialLanguage,
+}: {
+  children: React.ReactNode
+  initialLanguage?: UiLanguage
+}) {
+  // 서버가 쿠키로 결정한 언어를 초기값으로 사용(SSR/hydration 일치).
+  // 서버 prop이 없으면 클라이언트 쿠키 → 'en' 순으로 폴백.
   const [language, setLanguageState] = useState<UiLanguage>(() => {
+    if (initialLanguage) return initialLanguage
     const cookie = readLangCookie()
     return cookie ? resolveUiLang(cookie) : 'en'
   })
 
   useEffect(() => {
-    // localStorage가 쿠키보다 최신이면 동기화 — 외부 저장소(localStorage)와의 의도된 mount-time 동기화
-    const stored = resolveUiLang(localStorage.getItem(STORAGE_KEY) ?? navigator.language)
+    // 쿠키 > localStorage > 브라우저 순으로 해석하고 쿠키에 백필해
+    // 기존(쿠키 없는) 사용자도 다음 로드부터 서버 SSR <html lang>이 정확해진다.
+    const resolved = resolveUiLang(readLangCookie() ?? localStorage.getItem(STORAGE_KEY) ?? navigator.language)
     // eslint-disable-next-line react-hooks/set-state-in-effect
-    if (stored !== language) setLanguageState(stored)
+    if (resolved !== language) setLanguageState(resolved)
+    localStorage.setItem(STORAGE_KEY, resolved)
+    writeLangCookie(resolved)
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
