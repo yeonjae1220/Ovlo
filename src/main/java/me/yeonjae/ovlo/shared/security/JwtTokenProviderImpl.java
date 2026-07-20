@@ -30,7 +30,7 @@ public class JwtTokenProviderImpl implements JwtTokenProvider {
     public JwtTokenProviderImpl(
             @Value("${jwt.secret}") String base64Secret,
             @Value("${jwt.access-token-ttl-minutes:15}") long accessTokenTtlMinutes,
-            @Value("${jwt.refresh-token-ttl-minutes:10080}") long refreshTokenTtlMinutes) {
+            @Value("${jwt.refresh-token-ttl-minutes:43200}") long refreshTokenTtlMinutes) {
         byte[] keyBytes = Base64.getDecoder().decode(base64Secret);
         this.secretKey = Keys.hmacShaKeyFor(keyBytes);
         this.accessTokenTtlMinutes = accessTokenTtlMinutes;

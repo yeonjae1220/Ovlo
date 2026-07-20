@@ -19,6 +19,7 @@ import me.yeonjae.ovlo.application.port.in.auth.LogoutUseCase;
 import me.yeonjae.ovlo.application.port.in.auth.RefreshTokenUseCase;
 import me.yeonjae.ovlo.shared.security.ClientIpResolver;
 import me.yeonjae.ovlo.shared.security.RateLimiterService;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.env.Environment;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -36,7 +37,6 @@ public class AuthApiController {
 
     private static final String REFRESH_COOKIE_NAME = "refresh_token";
     private static final String REFRESH_COOKIE_PATH = "/api/v1/auth";
-    private static final long REFRESH_COOKIE_MAX_AGE = 30L * 24 * 60 * 60; // 30일
 
     private final LoginUseCase loginUseCase;
     private final RefreshTokenUseCase refreshTokenUseCase;
@@ -45,6 +45,9 @@ public class AuthApiController {
     private final RateLimiterService rateLimiterService;
     private final Environment environment;
     private final ClientIpResolver clientIpResolver;
+    // 쿠키 수명은 refresh 토큰 실제 만료(jwt.refresh-token-ttl-minutes)와 동일 소스에서 파생 —
+    // 별도 하드코딩 상수로 두면 두 값이 드리프트해 쿠키만 살아있는 유령 세션이 생긴다.
+    private final long refreshTokenTtlMinutes;
 
     public AuthApiController(
             LoginUseCase loginUseCase,
@@ -53,7 +56,8 @@ public class AuthApiController {
             GoogleLoginUseCase googleLoginUseCase,
             RateLimiterService rateLimiterService,
             Environment environment,
-            ClientIpResolver clientIpResolver
+            ClientIpResolver clientIpResolver,
+            @Value("${jwt.refresh-token-ttl-minutes:43200}") long refreshTokenTtlMinutes
     ) {
         this.loginUseCase = loginUseCase;
         this.refreshTokenUseCase = refreshTokenUseCase;
@@ -62,6 +66,7 @@ public class AuthApiController {
         this.rateLimiterService = rateLimiterService;
         this.environment = environment;
         this.clientIpResolver = clientIpResolver;
+        this.refreshTokenTtlMinutes = refreshTokenTtlMinutes;
     }
 
     @Operation(summary = "로그인")
@@ -124,7 +129,7 @@ public class AuthApiController {
                 .httpOnly(true)
                 .secure(isSecureCookieRequired())
                 .sameSite("Lax")
-                .maxAge(REFRESH_COOKIE_MAX_AGE)
+                .maxAge(refreshTokenTtlMinutes * 60)
                 .path(REFRESH_COOKIE_PATH)
                 .build();
     }
