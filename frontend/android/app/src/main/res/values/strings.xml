@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Ovlo</string>
+    <string name="title_activity_main">Ovlo</string>
+    <string name="package_name">com.mungji.ovlo</string>
+    <string name="custom_url_scheme">com.mungji.ovlo</string>
+</resources>

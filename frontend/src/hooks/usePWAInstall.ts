@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { isNativeApp } from '../utils/platform'
 
 interface BeforeInstallPromptEvent extends Event {
   prompt(): Promise<void>
@@ -23,6 +24,14 @@ export function usePWAInstall() {
   const [platform] = useState<Platform>(() => detectPlatform())
 
   useEffect(() => {
+    // 네이티브 셸 안에서는 이미 설치된 앱이므로 "앱 설치" 안내가 나오면 안 된다.
+    // 서비스워커도 등록하지 않는다(WKWebView 지원이 제한적이고 캐시 용도라 이득이 없다).
+    if (isNativeApp()) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setIsInstalled(true)
+      return
+    }
+
     if (window.matchMedia('(display-mode: standalone)').matches) {
       // 외부 시스템(display-mode 미디어쿼리)과의 동기화 — 의도된 mount-time setState
       // eslint-disable-next-line react-hooks/set-state-in-effect

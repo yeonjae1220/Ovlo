@@ -1,4 +1,4 @@
-import type { Metadata } from 'next'
+import type { Metadata, Viewport } from 'next'
 import { cookies, headers } from 'next/headers'
 import './globals.css'
 import { Providers } from './providers'
@@ -34,6 +34,16 @@ export const metadata: Metadata = {
     images: ['/icons/og-image.png'],
   },
   robots: { index: true, follow: true },
+}
+
+// viewportFit: 'cover' 가 있어야 env(safe-area-inset-*) 가 실제 값을 갖는다.
+// 없으면 항상 0이라 네이티브 셸에서 헤더가 상태바 아래로, 하단 탭이 홈 인디케이터 아래로 들어간다.
+// 웹에서는 inset 이 0이므로 레이아웃 변화가 없다.
+// eslint-disable-next-line react-refresh/only-export-components
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  viewportFit: 'cover',
 }
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
