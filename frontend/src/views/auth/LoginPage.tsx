@@ -1,6 +1,7 @@
 'use client'
 
 import { saveOauthState } from '@/utils/oauthState'
+import { openOAuthUrl } from '@/utils/nativeOAuth'
 
 import { useState, type FormEvent } from 'react'
 import Link from 'next/link'
@@ -40,7 +41,7 @@ function redirectToGoogle(notConfiguredMsg: string) {
     prompt: 'select_account',
     state,
   })
-  window.location.href = `https://accounts.google.com/o/oauth2/v2/auth?${params.toString()}`
+  void openOAuthUrl(`https://accounts.google.com/o/oauth2/v2/auth?${params.toString()}`)
 }
 
 export default function LoginPage() {
