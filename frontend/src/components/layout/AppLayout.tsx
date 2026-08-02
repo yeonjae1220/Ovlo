@@ -38,7 +38,11 @@ export default function AppLayout({ children }: { children: ReactNode }) {
     <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', background: 'var(--color-bg)', color: 'var(--color-text)' }}>
       <header
         style={{
-          padding: isMobile ? '10px 14px' : '12px 24px',
+          // 상단은 safe-area 만큼 밀어낸다 — 네이티브 셸에서 상태바와 겹치는 것을 방지.
+          // 하단 탭바의 env(safe-area-inset-bottom) 처리와 같은 패턴이며, 웹에서는 inset 이 0이라 동일하다.
+          padding: isMobile
+            ? 'max(10px, env(safe-area-inset-top)) 14px 10px'
+            : 'max(12px, env(safe-area-inset-top)) 24px 12px',
           borderBottom: '1px solid var(--color-border)',
           display: 'flex',
           alignItems: 'center',

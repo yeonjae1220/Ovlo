@@ -22,3 +22,7 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Capacitor — 플랫폼별 산출물은 ios/.gitignore·android/.gitignore 가 담당한다.
+# 여기서는 SPM 로컬 빌드 디렉터리만 추가로 제외.
+ios/App/.build/

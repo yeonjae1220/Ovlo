@@ -9,6 +9,11 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@capacitor/android": "^8.5.0",
+    "@capacitor/app": "^8.1.1",
+    "@capacitor/cli": "^8.5.0",
+    "@capacitor/core": "^8.5.0",
+    "@capacitor/ios": "^8.5.0",
     "@stomp/stompjs": "^7.3.0",
     "@tanstack/react-query": "^5.90.21",
     "axios": "^1.13.6",

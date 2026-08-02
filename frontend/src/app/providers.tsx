@@ -5,6 +5,7 @@ import { useState } from 'react'
 import { I18nProvider } from '@/i18n/I18nProvider'
 import type { UiLanguage } from '@/i18n/messages'
 import { InstallBanner } from '@/components/InstallBanner'
+import { NativeShell } from '@/components/NativeShell'
 import { ThemeProvider } from '@/theme/ThemeProvider'
 
 export function Providers({
@@ -29,6 +30,7 @@ export function Providers({
         <I18nProvider initialLanguage={initialLanguage}>
           {children}
           <InstallBanner />
+          <NativeShell />
         </I18nProvider>
       </ThemeProvider>
     </QueryClientProvider>
