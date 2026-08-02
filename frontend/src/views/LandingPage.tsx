@@ -51,7 +51,11 @@ export default function LandingPage() {
   return (
     <div style={{ minHeight: '100vh', color: C.textSecondary, display: 'flex', flexDirection: 'column' }}>
       <header style={{
-        padding: compactHeader ? '14px 16px' : '16px 32px',
+        // 랜딩은 AppLayout을 거치지 않으므로 여기서 직접 safe-area를 처리한다.
+        // 없으면 네이티브 셸에서 언어/테마 스위처가 상태바 아래에 깔린다.
+        padding: compactHeader
+          ? 'max(14px, env(safe-area-inset-top)) 16px 14px'
+          : 'max(16px, env(safe-area-inset-top)) 32px 16px',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'space-between',

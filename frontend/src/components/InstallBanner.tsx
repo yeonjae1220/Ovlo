@@ -114,7 +114,9 @@ export function InstallBanner() {
           style={{
             position: 'fixed', inset: 0, zIndex: 9999,
             display: 'flex', alignItems: 'flex-end', justifyContent: 'center',
-            background: 'rgba(0,0,0,0.6)', padding: 16,
+            background: 'rgba(0,0,0,0.6)',
+            // 하단 시트라 viewport-fit=cover 에서 홈 인디케이터 위로 올려줘야 한다.
+            padding: '16px 16px max(16px, env(safe-area-inset-bottom))',
           }}
         >
           <div
