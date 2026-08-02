@@ -110,6 +110,7 @@ export function InstallBanner() {
 
       {showIOSGuide && (
         <div
+          data-modal-overlay
           onClick={() => setShowIOSGuide(false)}
           style={{
             position: 'fixed', inset: 0, zIndex: 9999,
