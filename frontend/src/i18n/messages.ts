@@ -24,6 +24,8 @@ export function resolveUiLang(input: string | null | undefined): UiLanguage {
 type Messages = Record<string, string>
 
 const en: Messages = {
+  'common.retry': 'Try again',
+  'error.unexpected': 'Something went wrong.',
   // Nav / Tabs
   'tab.all': 'All',
   'tab.free': 'Free Board',
@@ -441,6 +443,8 @@ const en: Messages = {
 }
 
 const ko: Messages = {
+  'common.retry': '다시 시도',
+  'error.unexpected': '문제가 발생했습니다.',
   'tab.all': '전체',
   'tab.free': '자유',
   'tab.tips': '팁',
@@ -828,6 +832,8 @@ const ko: Messages = {
 }
 
 const ja: Messages = {
+  'common.retry': '再試行',
+  'error.unexpected': '問題が発生しました。',
   'tab.all': 'すべて',
   'tab.free': '自由掲示板',
   'tab.tips': 'ヒント',
@@ -1169,6 +1175,8 @@ const ja: Messages = {
 }
 
 const zh: Messages = {
+  'common.retry': '重试',
+  'error.unexpected': '出现了问题。',
   'tab.all': '全部',
   'tab.free': '自由版块',
   'tab.tips': '提示',
@@ -1510,6 +1518,8 @@ const zh: Messages = {
 }
 
 const es: Messages = {
+  'common.retry': 'Reintentar',
+  'error.unexpected': 'Algo salió mal.',
   'tab.all': 'Todo',
   'tab.free': 'Tablón libre',
   'tab.tips': 'Consejos',
@@ -1851,6 +1861,8 @@ const es: Messages = {
 }
 
 const fr: Messages = {
+  'common.retry': 'Réessayer',
+  'error.unexpected': 'Une erreur s\'est produite.',
   'tab.all': 'Tout',
   'tab.free': 'Tableau libre',
   'tab.tips': 'Conseils',
@@ -2192,6 +2204,8 @@ const fr: Messages = {
 }
 
 const de: Messages = {
+  'common.retry': 'Erneut versuchen',
+  'error.unexpected': 'Etwas ist schiefgelaufen.',
   'tab.all': 'Alle',
   'tab.free': 'Freies Board',
   'tab.tips': 'Tipps',
@@ -2533,6 +2547,8 @@ const de: Messages = {
 }
 
 const pt: Messages = {
+  'common.retry': 'Tentar novamente',
+  'error.unexpected': 'Algo deu errado.',
   "tab.all": "Todos",
   "tab.free": "Mural livre",
   "tab.tips": "Dicas",
@@ -2901,6 +2917,8 @@ const pt: Messages = {
 }
 
 const ru: Messages = {
+  'common.retry': 'Повторить',
+  'error.unexpected': 'Что-то пошло не так.',
   "tab.all": "Все",
   "tab.free": "Свободная доска",
   "tab.tips": "Советы",
