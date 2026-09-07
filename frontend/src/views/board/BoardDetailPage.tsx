@@ -6,7 +6,7 @@ import { useBoard, useSubscribeBoard, useUnsubscribeBoard } from '../../hooks/us
 import { usePosts } from '../../hooks/usePost'
 import { useAuthStore } from '../../store/authStore'
 import { useI18n } from '../../i18n/I18nProvider'
-import { Badge, Button, Card, EmptyState, LinkButton, PageHeader } from '../../components/ui'
+import { Badge, Button, Card, EmptyState, LinkButton, PageHeader, QueryErrorNotice } from '../../components/ui'
 
 const C = {
   text: 'var(--color-text)',
@@ -18,13 +18,15 @@ export default function BoardDetailPage() {
   const { t } = useI18n()
   const params = useParams()
   const id = params?.id as string | undefined
-  const { data: board, isLoading: boardLoading } = useBoard(id!)
-  const { data: posts, isLoading: postsLoading } = usePosts(id!)
+  const { data: board, isLoading: boardLoading, isError: boardError, refetch: refetchBoard } = useBoard(id!)
+  const { data: posts, isLoading: postsLoading, isError: postsError, refetch: refetchPosts } = usePosts(id!)
   const subscribe = useSubscribeBoard()
   const unsubscribe = useUnsubscribeBoard()
   const { currentUser } = useAuthStore()
 
   if (boardLoading) return <p style={{ color: C.muted }}>{t('common.loading')}</p>
+  // 조회 실패가 '게시판을 찾을 수 없습니다' 로 보이면 안 된다 (GLOBAL-PIT-108).
+  if (boardError) return <QueryErrorNotice onRetry={() => void refetchBoard()} />
   if (!board) return <EmptyState icon="!" title={t('board.notFound')} />
 
   return (
@@ -75,7 +77,8 @@ export default function BoardDetailPage() {
           </Link>
         ))}
       </div>
-      {posts?.length === 0 && <EmptyState icon="◎" title={t('board.empty')} />}
+      {postsError && <QueryErrorNotice onRetry={() => void refetchPosts()} />}
+      {!postsError && !postsLoading && posts?.length === 0 && <EmptyState icon="◎" title={t('board.empty')} />}
     </div>
   )
 }

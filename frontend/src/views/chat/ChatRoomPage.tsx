@@ -10,7 +10,7 @@ import { useBreakpoint } from '../../hooks/useBreakpoint'
 import { stompClient } from '../../utils/stomp'
 import type { HistoryMessage, Message } from '../../types'
 import { useI18n } from '../../i18n/I18nProvider'
-import { Avatar, Badge, Button, Card, TextField } from '../../components/ui'
+import { Avatar, Badge, Button, Card, QueryErrorNotice, TextField } from '../../components/ui'
 
 const PAGE_SIZE = 50
 const C = {
@@ -42,7 +42,7 @@ export default function ChatRoomPage() {
   const id = params?.id as string | undefined
   const router = useRouter()
   const queryClient = useQueryClient()
-  const { data: room, isLoading } = useChatRoom(id!)
+  const { data: room, isLoading, isError, refetch } = useChatRoom(id!)
   const { currentUser, accessToken } = useAuthStore()
   const { isMobile } = useBreakpoint()
   const markRead = useMarkRead()
@@ -189,6 +189,8 @@ export default function ChatRoomPage() {
   }
 
   if (isLoading) return <p style={{ color: C.muted }}>{t('chat.room.loading')}</p>
+  // 🔴 조회 실패를 아래 not-found 분기가 삼키면 '없다'는 **사실이 아닌 문장**이 뜬다 (GLOBAL-PIT-108).
+  if (isError) return <QueryErrorNotice onRetry={() => void refetch()} />
   if (!room) return <p style={{ color: C.muted }}>{t('chat.room.notFound')}</p>
 
   const currentUserId = currentUser?.id ? Number(currentUser.id) : null

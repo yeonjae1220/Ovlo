@@ -4,6 +4,7 @@ import { useState } from 'react'
 import Link from 'next/link'
 import { useUniversitySearch } from '../../hooks/useUniversity'
 import { useI18n } from '../../i18n/I18nProvider'
+import { QueryErrorNotice } from '../../components/ui'
 
 const C = {
   border: 'var(--color-border)',
@@ -15,7 +16,7 @@ export default function UniversitySearchPage() {
   const { t } = useI18n()
   const [keyword, setKeyword] = useState('')
   const [countryCode, setCountryCode] = useState('')
-  const { data: universities, isLoading } = useUniversitySearch(keyword, countryCode || undefined)
+  const { data: universities, isLoading, isError, refetch } = useUniversitySearch(keyword, countryCode || undefined)
 
   return (
     <div>
@@ -43,6 +44,8 @@ export default function UniversitySearchPage() {
 
       {isLoading && <p>{t('univ.search.loading')}</p>}
 
+      {!isLoading && isError && <QueryErrorNotice onRetry={() => void refetch()} />}
+
       <ul style={{ listStyle: 'none', padding: 0 }}>
         {universities?.map((u) => (
           <li key={u.id} style={{ padding: 12, borderBottom: `1px solid ${C.border}` }}>
@@ -52,7 +55,7 @@ export default function UniversitySearchPage() {
         ))}
       </ul>
 
-      {universities?.length === 0 && keyword && <p>{t('univ.search.notFound')}</p>}
+      {!isError && !isLoading && universities?.length === 0 && keyword && <p>{t('univ.search.notFound')}</p>}
     </div>
   )
 }

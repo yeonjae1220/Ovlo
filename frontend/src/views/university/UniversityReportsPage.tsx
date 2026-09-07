@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useUniversityReports } from '../../hooks/useUniversity'
+import { QueryErrorNotice } from '../../components/ui'
 import { useI18n } from '../../i18n/I18nProvider'
 
 function stripReportSuffix(title: string) {
@@ -40,8 +41,9 @@ export default function UniversityReportsPage() {
   const [page, setPage] = useState(0)
   const router = useRouter()
 
-  const { data, isLoading } = useUniversityReports(lang, keyword, page, PAGE_SIZE)
-  const reports = data?.content ?? []
+  const { data, isLoading, isError, refetch } = useUniversityReports(lang, keyword, page, PAGE_SIZE)
+  // 실패 시 data 는 undefined 라 `?? []` 가 그대로 '보고서 없음'을 그린다 — error 를 먼저 가른다.
+  const reports = isError ? [] : data?.content ?? []
 
   const handleLang = (l: string) => { setLang(l as typeof language); setPage(0) }
   const handleKeyword = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -95,7 +97,9 @@ export default function UniversityReportsPage() {
 
       {isLoading && <p style={{ color: C.textMuted }}>{t('univ.reports.loading')}</p>}
 
-      {!isLoading && reports.length === 0 && (
+      {!isLoading && isError && <QueryErrorNotice onRetry={() => void refetch()} />}
+
+      {!isLoading && !isError && reports.length === 0 && (
         <p style={{ color: C.textDim, textAlign: 'center', paddingTop: 48 }}>
           {keyword ? t('univ.reports.empty') : t('univ.reports.noReports')}
         </p>
