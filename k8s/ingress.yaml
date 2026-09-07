@@ -29,6 +29,15 @@ spec:
                 name: app
                 port:
                   number: 8080
+          # 백엔드 Thymeleaf admin (formLogin 세션). 최장 prefix 매칭이라
+          # /admin 만 백엔드로, 나머지 / 는 frontend 로 유지된다.
+          - path: /admin
+            pathType: Prefix
+            backend:
+              service:
+                name: app
+                port:
+                  number: 8080
           - path: /ws
             pathType: Prefix
             backend:
