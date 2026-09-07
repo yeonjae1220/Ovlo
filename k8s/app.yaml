@@ -18,6 +18,16 @@ metadata:
   namespace: ovlo
 spec:
   replicas: 1
+  # strategy 를 일부러 지정하지 않는다(= RollingUpdate). RWO PVC(업로드 미디어)를 쓰지만
+  # GLOBAL-PIT-095 에 해당하지 않는다 — 2026-09-07 실측 근거 셋:
+  #   ① 이 컨테이너는 데이터 디렉터리를 배타 락하지 않는다(postgres/minio 와 다름).
+  #      구·신 파드가 잠시 함께 떠도 서로를 막지 않는다.
+  #   ② local-path PV 에 spec.nodeAffinity.required 가 이미 박혀 있어, 노드가 늘어도
+  #      스케줄러가 이 PVC 를 쓰는 파드를 그 노드 밖에 배치하지 못한다.
+  #      따라서 파드 레벨 nodeSelector/affinity 는 같은 제약을 두 벌 적는 것이라 불필요하다.
+  #   ③ 실제로 130세대까지 정상 롤아웃됐다.
+  # 단일 레플리카 DB 와 달리 여기서는 RollingUpdate 가 진짜 무중단을 준다.
+  # Recreate 로 바꾸면 배포마다 앱 기동 시간만큼 다운타임이 생긴다.
   selector:
     matchLabels:
       app: app
