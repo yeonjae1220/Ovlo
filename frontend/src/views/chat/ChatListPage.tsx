@@ -8,7 +8,7 @@ import { useI18n } from '../../i18n/I18nProvider'
 import { useMemberSearch } from '../../hooks/useMember'
 import { useAuthStore } from '../../store/authStore'
 import type { ChatRoomType, Member } from '../../types'
-import { Avatar, Badge, Button, Card, EmptyState, PageHeader, SearchBox, SelectField, TextField } from '../../components/ui'
+import { Avatar, Badge, Button, Card, EmptyState, PageHeader, QueryErrorNotice, SearchBox, SelectField, TextField } from '../../components/ui'
 
 const C = {
   border: 'var(--color-border)',
@@ -24,7 +24,7 @@ const C = {
 
 export default function ChatListPage() {
   const { t } = useI18n()
-  const { data: rooms, isLoading } = useChatRooms()
+  const { data: rooms, isLoading, isError, refetch } = useChatRooms()
   const { currentUser } = useAuthStore()
   const createRoom = useCreateChatRoom()
   const router = useRouter()
@@ -313,7 +313,9 @@ export default function ChatListPage() {
         })}
       </div>
 
-      {rooms?.length === 0 && (
+      {isError && <QueryErrorNotice onRetry={() => void refetch()} />}
+
+      {!isError && !isLoading && rooms?.length === 0 && (
         <EmptyState
           icon="⌕"
           title={t('chat.empty')}

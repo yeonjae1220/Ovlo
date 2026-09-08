@@ -7,6 +7,7 @@ import { useRouter } from 'next/navigation'
 import { useExchangeUniversity, useExchangeUniversityReviews, useUniversityReportByExchangeUniv } from '../../hooks/useUniversity'
 import type { VideoReview, ExchangeUniversity } from '../../types'
 import { useI18n } from '../../i18n/I18nProvider'
+import { QueryErrorNotice } from '../../components/ui'
 import type { MessageKey } from '../../i18n/messages'
 
 const C = {
@@ -132,12 +133,14 @@ export default function ExchangeUniversityDetailPage() {
   const [direction, setDirection] = useState<string | undefined>(undefined)
   const [reportLang, setReportLang] = useState(language)
 
-  const { data: univ, isLoading: univLoading } = useExchangeUniversity(univId)
+  const { data: univ, isLoading: univLoading, isError: univError, refetch: refetchUniv } = useExchangeUniversity(univId)
   const { data: reviewPage, isLoading: reviewLoading } = useExchangeUniversityReviews(univId, direction)
   const { data: aiReport } = useUniversityReportByExchangeUniv(univId || null, reportLang)
   const reviews = reviewPage?.content ?? []
 
   if (univLoading) return <div style={{ padding: 40, color: C.textMuted }}>{t('exch.detail.loading')}</div>
+  // 🔴 조회 실패를 아래 not-found 분기가 삼키면 '없다'는 **사실이 아닌 문장**이 뜬다 (GLOBAL-PIT-108).
+  if (univError) return <QueryErrorNotice onRetry={() => void refetchUniv()} />
   if (!univ) return <div style={{ padding: 40, color: C.notRecTx }}>{t('exch.detail.notFound')}</div>
 
   const starCount = univ.avgRating ? Math.round(univ.avgRating) : 0

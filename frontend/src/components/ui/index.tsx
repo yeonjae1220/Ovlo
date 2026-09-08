@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import { useI18n } from '../../i18n/I18nProvider'
 import type {
   ButtonHTMLAttributes,
   HTMLAttributes,
@@ -208,6 +209,54 @@ export function SkeletonLines({ count = 3 }: { count?: number }) {
       {Array.from({ length: count }).map((_, index) => (
         <span key={index} className="ui-skeleton__line" />
       ))}
+    </div>
+  )
+}
+
+/**
+ * 쿼리 실패를 화면에 드러내는 공용 알림.
+ *
+ * 🔴 이 앱은 지금까지 쿼리 실패를 화면에 표시하는 수단이 아예 없었다 — `isError` 는 프론트 전체에서
+ *    4번 나오는데 전부 mutation 이고, 쿼리 결과를 구조분해하는 37곳 중 error 를 함께 꺼내는 곳이
+ *    0곳이었다. react-query 는 실패 시 data 가 undefined 라 `data?.content ?? []` 가 그대로
+ *    **빈 목록**을 그리므로, 사용자에게 '조회 실패'와 '데이터 없음'이 똑같이 보였다
+ *    (GLOBAL-PIT-108). isLoading 은 43곳에서 쓰여 loading/empty 는 이미 갈려 있었고 error 만 빠져 있었다.
+ *
+ * 사용 규칙:
+ *   1. 실패 시에는 목록·빈 상태·파생값(합계·차트) 중 **아무것도 그리지 않는다** — 전부 거짓 정보가 된다.
+ *   2. 실패 판정은 react-query 의 `isError` 로 한다(error 객체의 truthy 여부로 하지 않는다).
+ *   3. `refetch` 를 넘겨 사용자가 직접 재시도할 수 있게 한다.
+ */
+export function QueryErrorNotice({
+  onRetry,
+  compact = false,
+}: {
+  onRetry?: () => void
+  compact?: boolean
+}) {
+  const { t } = useI18n()
+  return (
+    <div
+      role="alert"
+      style={{
+        display: 'flex',
+        flexDirection: compact ? 'row' : 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        gap: 12,
+        padding: compact ? '12px 16px' : '32px 20px',
+        border: '1px solid var(--color-border)',
+        borderRadius: 12,
+        background: 'var(--color-surface)',
+        textAlign: 'center',
+      }}
+    >
+      <span style={{ color: 'var(--color-text-secondary)', fontSize: 14 }}>{t('error.unexpected')}</span>
+      {onRetry && (
+        <Button variant="secondary" onClick={onRetry}>
+          {t('common.retry')}
+        </Button>
+      )}
     </div>
   )
 }

@@ -11,7 +11,7 @@ import { useBreakpoint } from '../../hooks/useBreakpoint'
 import type { CreateBoardRequest, BoardCategory, LocationScope, Post } from '../../types'
 import { useI18n } from '../../i18n/I18nProvider'
 import { resolveReportLang } from '../../utils/resolveReportLang'
-import { Badge, Button, Card, EmptyState, PageHeader, SelectField, Tabs, TextField } from '../../components/ui'
+import { Badge, Button, Card, EmptyState, PageHeader, QueryErrorNotice, SelectField, Tabs, TextField } from '../../components/ui'
 
 const C = {
   border: 'var(--color-border)',
@@ -56,12 +56,16 @@ export default function BoardListPage() {
 
   const freeBoard = boards?.find((b) => b.category === 'GENERAL' && b.scope === 'GLOBAL') ?? null
 
-  const { data: allPostsPage, isLoading: allPostsLoading } = useAllPosts(allPage, 20)
-  const { data: freePosts, isLoading: freeLoading } = usePosts(freeBoard?.id ? String(freeBoard.id) : '')
-  const { data: tipsPage, isLoading: tipsLoading } = useUniversityReports(language, '', 0, 20)
-  const { data: reportsPage, isLoading: reportsLoading } = useUniversityReports(language, '', 0, 20)
+  const { data: allPostsPage, isLoading: allPostsLoading, isError: allPostsError, refetch: refetchAllPosts } = useAllPosts(allPage, 20)
+  const { data: freePosts, isLoading: freeLoading, isError: freeError, refetch: refetchFree } = usePosts(freeBoard?.id ? String(freeBoard.id) : '')
+  const { data: tipsPage, isLoading: tipsLoading, isError: tipsError, refetch: refetchTips } = useUniversityReports(language, '', 0, 20)
+  const { data: reportsPage, isLoading: reportsLoading, isError: reportsError, refetch: refetchReports } = useUniversityReports(language, '', 0, 20)
 
   const allLoading = allPostsLoading || tipsLoading
+  // 혼합 피드는 두 소스를 합치므로 **한쪽만 실패해도** 화면의 목록이 조용히 반쪽이 된다.
+  // 부분 성공을 '전부 이것뿐'처럼 보여주지 않기 위해 둘 중 하나라도 실패하면 실패로 표시한다
+  // (GLOBAL-PIT-108 ⑤: 실패 시 파생값을 그리지 않는다).
+  const allError = allPostsError || tipsError
   const allFeedItems: FeedItem[] = (() => {
     const posts = (allPostsPage?.content ?? []).map((p): FeedItem => ({ type: 'post', data: p }))
     const tips = (tipsPage?.content ?? []).map((r): FeedItem => ({ type: 'tip', data: r }))
@@ -170,6 +174,11 @@ export default function BoardListPage() {
           <MixedFeed
             items={allFeedItems}
             isLoading={allLoading}
+            isError={allError}
+            onRetry={() => {
+              void refetchAllPosts()
+              void refetchTips()
+            }}
             emptyText={t('community.empty')}
             language={language}
             onOpenTip={(id, lang) => router.push(`/university-reports/${id}?lang=${lang}`)}
@@ -195,7 +204,7 @@ export default function BoardListPage() {
               action={<Button onClick={() => setShowCreateForm(true)}>{t('community.createBoard.action')}</Button>}
             />
           ) : (
-            <PostFeed posts={freePosts ?? []} isLoading={freeLoading} emptyText={t('community.empty')} showBoardName={false} />
+            <PostFeed posts={freePosts ?? []} isLoading={freeLoading} isError={freeError} onRetry={() => void refetchFree()} emptyText={t('community.empty')} showBoardName={false} />
           )}
         </>
       )}
@@ -204,6 +213,8 @@ export default function BoardListPage() {
         <ReportFeed
           reports={reportsPage?.content ?? []}
           isLoading={reportsLoading}
+          isError={reportsError}
+          onRetry={() => void refetchReports()}
           language={language}
           onOpen={(id, lang) => router.push(`/university-reports/${id}?lang=${lang}`)}
         />
@@ -215,18 +226,24 @@ export default function BoardListPage() {
 function MixedFeed({
   items,
   isLoading,
+  isError,
+  onRetry,
   emptyText,
   language,
   onOpenTip,
 }: {
   items: FeedItem[]
   isLoading: boolean
+  isError: boolean
+  onRetry: () => void
   emptyText: string
   language: string
   onOpenTip: (id: number, lang: string) => void
 }) {
   const { t } = useI18n()
   if (isLoading) return <p style={{ color: C.muted, padding: '24px 0' }}>{t('community.loading')}</p>
+  // 실패는 빈 상태보다 먼저 가른다 — 순서가 바뀌면 '글이 없습니다' 가 실패를 덮는다.
+  if (isError) return <QueryErrorNotice onRetry={onRetry} />
   if (items.length === 0) return <EmptyState icon="◎" title={emptyText} />
 
   return (
@@ -246,9 +263,10 @@ function MixedFeed({
   )
 }
 
-function PostFeed({ posts, isLoading, emptyText, showBoardName }: { posts: Post[]; isLoading: boolean; emptyText: string; showBoardName: boolean }) {
+function PostFeed({ posts, isLoading, isError, onRetry, emptyText, showBoardName }: { posts: Post[]; isLoading: boolean; isError: boolean; onRetry: () => void; emptyText: string; showBoardName: boolean }) {
   const { t } = useI18n()
   if (isLoading) return <p style={{ color: C.muted, padding: '24px 0' }}>{t('community.loading')}</p>
+  if (isError) return <QueryErrorNotice onRetry={onRetry} />
   if (posts.length === 0) return <EmptyState icon="◎" title={emptyText} />
 
   return (
@@ -291,16 +309,21 @@ function PostCard({ post, showBoardName }: { post: Post; showBoardName: boolean 
 function ReportFeed({
   reports,
   isLoading,
+  isError,
+  onRetry,
   language,
   onOpen,
 }: {
   reports: import('../../api/university').UniversityReportSummary[]
   isLoading: boolean
+  isError: boolean
+  onRetry: () => void
   language: string
   onOpen: (id: number, lang: string) => void
 }) {
   const { t } = useI18n()
   if (isLoading) return <p style={{ color: C.muted, padding: '24px 0' }}>{t('community.loading')}</p>
+  if (isError) return <QueryErrorNotice onRetry={onRetry} />
   if (reports.length === 0) return <EmptyState icon="✦" title={t('community.emptyTips')} />
 
   return (

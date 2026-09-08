@@ -19,6 +19,7 @@ import { useTheme, type ThemeMode } from '../../theme/themeContext'
 import { useMyVerification } from '../../hooks/useVerification'
 import { TrustBadge } from '../verification/TrustBadge'
 import { VerificationSection } from '../verification/VerificationSection'
+import { QueryErrorNotice } from '../../components/ui'
 
 const C = {
   card:        'var(--color-surface)',
@@ -44,7 +45,7 @@ export default function ProfilePage() {
   const { currentUser, clearAuth } = useAuthStore()
   const { language, setLanguage, t } = useI18n()
   const { theme, setTheme } = useTheme()
-  const { data: member, isLoading } = useMember(id!)
+  const { data: member, isLoading, isError, refetch } = useMember(id!)
   const { data: followers } = useFollowers(id!)
   const { data: followings } = useFollowings(id!)
   const updateProfile = useUpdateProfile()
@@ -106,6 +107,8 @@ export default function ProfilePage() {
   }
 
   if (isLoading) return <p>{t('profile.loading')}</p>
+  // 🔴 조회 실패를 아래 not-found 분기가 삼키면 '없다'는 **사실이 아닌 문장**이 뜬다 (GLOBAL-PIT-108).
+  if (isError) return <QueryErrorNotice onRetry={() => void refetch()} />
   if (!member) return <p>{t('profile.notFound')}</p>
 
   return (

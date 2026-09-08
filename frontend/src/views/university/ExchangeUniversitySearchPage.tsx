@@ -10,7 +10,7 @@ import { useDebounce } from '../../hooks/useDebounce'
 import { useBreakpoint } from '../../hooks/useBreakpoint'
 import { useI18n } from '../../i18n/I18nProvider'
 import type { UniversityCatalogItem } from '../../types'
-import { Badge, Button, Card, EmptyState, PageHeader, SearchBox, SelectField, SkeletonLines } from '../../components/ui'
+import { Badge, Button, Card, EmptyState, PageHeader, QueryErrorNotice, SearchBox, SelectField, SkeletonLines } from '../../components/ui'
 
 const STAR = (avg?: number | null) =>
   avg !== undefined && avg !== null
@@ -45,13 +45,13 @@ export default function ExchangeUniversitySearchPage() {
   const debouncedQuery = useDebounce(query.trim(), 300)
 
   const { data: countries = [] } = useUniversityCatalogCountries()
-  const { data: pageData, isLoading } = useUniversityCatalogSearch(
+  const { data: pageData, isLoading, isError, refetch } = useUniversityCatalogSearch(
     debouncedQuery,
     countryCode,
     page,
     PAGE_SIZE
   )
-  const universities = pageData?.content ?? []
+  const universities = isError ? [] : pageData?.content ?? []
   const hasSearched = !!(debouncedQuery || countryCode)
 
   const resetPage = () => setPage(0)
@@ -129,7 +129,9 @@ export default function ExchangeUniversitySearchPage() {
 
       {isLoading && <SkeletonLines count={4} />}
 
-      {!isLoading && hasSearched && universities.length === 0 && (
+      {!isLoading && isError && <QueryErrorNotice onRetry={() => void refetch()} />}
+
+      {!isLoading && !isError && hasSearched && universities.length === 0 && (
         <EmptyState
           icon="⌕"
           title={t('exch.empty')}

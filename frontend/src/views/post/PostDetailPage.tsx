@@ -12,7 +12,7 @@ import {
 } from '../../hooks/usePost'
 import { useAuthStore } from '../../store/authStore'
 import { useI18n } from '../../i18n/I18nProvider'
-import { Avatar, Badge, Button, Card, EmptyState, PageHeader, TextField } from '../../components/ui'
+import { Avatar, Badge, Button, Card, EmptyState, PageHeader, QueryErrorNotice, TextField } from '../../components/ui'
 
 const C = {
   border: 'var(--color-border)',
@@ -37,7 +37,7 @@ export default function PostDetailPage() {
   const params = useParams()
   const id = params?.id as string | undefined
   const router = useRouter()
-  const { data: post, isLoading } = usePost(id!)
+  const { data: post, isLoading, isError, refetch } = usePost(id!)
   const { currentUser } = useAuthStore()
   const deletePost = useDeletePost()
   const addComment = useAddComment()
@@ -48,6 +48,10 @@ export default function PostDetailPage() {
   const [commentContent, setCommentContent] = useState('')
 
   if (isLoading) return <p style={{ color: C.muted }}>{t('common.loading')}</p>
+  // 🔴 조회 실패를 그대로 두면 아래 `!post` 가 '게시글을 찾을 수 없습니다' 를 그린다 —
+  //    글이 실제로 없을 때와 조회에 실패했을 때가 사용자에게 똑같아지고, 게다가 후자는
+  //    **사실이 아닌 문장**이다 (GLOBAL-PIT-108). 실패는 실패로 표시하고 재시도를 준다.
+  if (isError) return <QueryErrorNotice onRetry={() => void refetch()} />
   if (!post) return <EmptyState icon="!" title={t('post.notFound')} />
 
   const isMyPost = currentUser && String(post.authorId) === currentUser.id

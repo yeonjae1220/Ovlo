@@ -8,6 +8,7 @@ import { useUniversityReport, useUniversityReportLanguages } from '../../hooks/u
 import { useExchangeRates } from '../../hooks/useExchangeRates'
 import { COUNTRY_CURRENCY, parseKrwRange, formatConvertedRange } from '../../lib/currency'
 import { useI18n } from '../../i18n/I18nProvider'
+import { QueryErrorNotice } from '../../components/ui'
 
 const C = {
   bg:          'var(--color-bg)',
@@ -69,7 +70,7 @@ export default function UniversityReportDetailPage() {
   const reportId = Number(id)
   const [lang, setLang] = useState(searchParams?.get('lang') ?? 'en')
 
-  const { data: report, isLoading } = useUniversityReport(reportId, lang)
+  const { data: report, isLoading, isError, refetch } = useUniversityReport(reportId, lang)
   const { data: langs = [] } = useUniversityReportLanguages(reportId)
   const { data: fxRates } = useExchangeRates()
 
@@ -79,6 +80,8 @@ export default function UniversityReportDetailPage() {
   }
 
   if (isLoading) return <div style={{ padding: 40, color: C.textMuted }}>{t('univ.detail.loading')}</div>
+  // 🔴 조회 실패를 아래 not-found 분기가 삼키면 '없다'는 **사실이 아닌 문장**이 뜬다 (GLOBAL-PIT-108).
+  if (isError)   return <QueryErrorNotice onRetry={() => void refetch()} />
   if (!report)   return <div style={{ padding: 40, color: C.danger }}>{t('univ.detail.notFound')}</div>
 
   let parsed: ReportContent | null = null
