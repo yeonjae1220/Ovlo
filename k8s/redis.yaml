@@ -49,6 +49,14 @@ spec:
         - 128mb
         - --maxmemory-policy
         - allkeys-lru
+        - --requirepass
+        - $(REDIS_PASSWORD)
+        env:
+        - name: REDIS_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: ovlo-secret
+              key: REDIS_PASSWORD
         image: redis:7-alpine
         imagePullPolicy: IfNotPresent
         name: redis
@@ -58,8 +66,9 @@ spec:
         readinessProbe:
           exec:
             command:
-            - redis-cli
-            - ping
+            - /bin/sh
+            - -c
+            - REDISCLI_AUTH="$REDIS_PASSWORD" redis-cli ping
           failureThreshold: 3
           initialDelaySeconds: 5
           periodSeconds: 10
