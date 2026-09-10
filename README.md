@@ -100,7 +100,7 @@ docker compose -f docker/docker-compose.yml up -d
 
 ## Key Design Decisions
 
-- **좋아요 동시성**: JPA `@Version` Optimistic Lock → 고트래픽 시 Redis counter로 교체 가능
+- **반응 동시성**: 회원별 `(post_id, member_id)` 복합키로 중복 반응을 막고, 게시글 카운트는 SQL 원자 증감으로 갱신합니다. PostgreSQL 기반 동시성 통합 테스트에서 48회 요청의 반응 행과 집계 수렴을 검증했습니다.
 - **파일 스토리지**: `StoragePort` 인터페이스로 추상화, `LocalStorageAdapter` → `S3StorageAdapter` 무중단 교체
 - **HEIC 변환**: `ImageConverterPort` + TwelveMonkeys ImageIO
 - **인증**: Access Token 15분 (stateless) + Refresh Token(Redis, SHA-256 해시 저장). httpOnly 쿠키 기반 로그인 지속 + 멀티세션 지원
