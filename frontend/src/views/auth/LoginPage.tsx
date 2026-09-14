@@ -8,14 +8,13 @@ import Link from 'next/link'
 import { useLogin } from '../../hooks/useAuth'
 import { useI18n } from '../../i18n/I18nProvider'
 import { Button, Card, FieldGroup, TextField } from '../../components/ui'
+import { Brand } from '../../components/ui/Brand'
 
 const GOOGLE_CLIENT_ID = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || null
 const C = {
   border: 'var(--color-border)',
   borderStrong: 'var(--color-border-strong)',
   surface: 'var(--color-surface)',
-  accentStrong: 'var(--color-accent-strong)',
-  onAccent: 'var(--color-on-accent)',
   text: 'var(--color-text)',
   textSecondary: 'var(--color-text-secondary)',
   muted: 'var(--color-text-muted)',
@@ -71,10 +70,7 @@ export default function LoginPage() {
           boxShadow: 'var(--shadow-soft)',
         }}
       >
-        <Link href="/" style={{ display: 'inline-flex', alignItems: 'center', gap: 9, marginBottom: 24, color: C.text, textDecoration: 'none', fontSize: 20, fontWeight: 900 }}>
-          <span style={{ width: 30, height: 30, borderRadius: 8, background: C.accentStrong, color: C.onAccent, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontSize: 15 }}>O</span>
-          Ovlo
-        </Link>
+        <div style={{ marginBottom: 24 }}><Brand /></div>
 
         <h1 style={{ margin: '0 0 22px', color: C.text, fontSize: 28, lineHeight: 1.18, fontWeight: 900 }}>{t('login.title')}</h1>
 

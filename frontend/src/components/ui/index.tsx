@@ -75,9 +75,30 @@ export function IconButton({
 export function Card({
   className,
   interactive,
+  onClick,
+  onKeyDown,
+  role,
+  tabIndex,
   ...props
 }: HTMLAttributes<HTMLDivElement> & { interactive?: boolean }) {
-  return <div className={cx('ui-card', interactive && 'ui-card--interactive', className)} {...props} />
+  const keyboardInteractive = interactive && !!onClick
+  return (
+    <div
+      className={cx('ui-card', interactive && 'ui-card--interactive', className)}
+      onClick={onClick}
+      onKeyDown={(event) => {
+        onKeyDown?.(event)
+        if (!keyboardInteractive || event.defaultPrevented) return
+        if (event.key === 'Enter' || event.key === ' ') {
+          event.preventDefault()
+          event.currentTarget.click()
+        }
+      }}
+      role={role ?? (keyboardInteractive ? 'button' : undefined)}
+      tabIndex={tabIndex ?? (keyboardInteractive ? 0 : undefined)}
+      {...props}
+    />
+  )
 }
 
 export function Badge({
@@ -130,7 +151,12 @@ export function TextField({ className, ...props }: InputHTMLAttributes<HTMLInput
 export function SearchBox({ className, ...props }: InputHTMLAttributes<HTMLInputElement>) {
   return (
     <div className={cx('ui-search', className)}>
-      <span aria-hidden="true" className="ui-search__icon">⌕</span>
+      <span aria-hidden="true" className="ui-search__icon">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+          <circle cx="10.75" cy="10.75" r="6.25" stroke="currentColor" strokeWidth="1.8" />
+          <path d="m15.5 15.5 4 4" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+        </svg>
+      </span>
       <input className="ui-field ui-search__input" {...props} />
     </div>
   )

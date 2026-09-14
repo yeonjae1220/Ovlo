@@ -7,7 +7,6 @@ import {
   useUniversityCatalogCountries,
 } from '../../hooks/useUniversity'
 import { useDebounce } from '../../hooks/useDebounce'
-import { useBreakpoint } from '../../hooks/useBreakpoint'
 import { useI18n } from '../../i18n/I18nProvider'
 import type { UniversityCatalogItem } from '../../types'
 import { Badge, Button, Card, EmptyState, PageHeader, QueryErrorNotice, SearchBox, SelectField, SkeletonLines } from '../../components/ui'
@@ -36,7 +35,6 @@ export default function ExchangeUniversitySearchPage() {
   const { t, language } = useI18n()
   const router = useRouter()
   const searchParams = useSearchParams()
-  const { isMobile } = useBreakpoint()
   const initialQuery = searchParams?.get('q')?.trim() ?? ''
 
   const [query, setQuery] = useState(initialQuery)
@@ -78,24 +76,16 @@ export default function ExchangeUniversitySearchPage() {
 
   return (
     <div>
+      <Button className="ui-back-button" variant="ghost" onClick={() => router.back()} icon="←">
+        {t('exch.back').replace('← ', '')}
+      </Button>
       <PageHeader
-        eyebrow={t('exch.back')}
         title={t('exch.title')}
         description={t('exch.subtitle')}
-        actions={
-          <Button variant="ghost" onClick={() => router.back()} icon="←">
-            {t('exch.back').replace('← ', '')}
-          </Button>
-        }
       />
 
-      <Card style={{ padding: isMobile ? 14 : 18, marginBottom: 18 }}>
-        <div style={{
-          display: 'grid',
-          gridTemplateColumns: isMobile ? '1fr' : 'minmax(0, 1.4fr) minmax(220px, .6fr)',
-          gap: 12,
-          alignItems: 'start',
-        }}>
+      <Card className="exchange-filter-card" style={{ marginBottom: 18 }}>
+        <div className="exchange-filter-grid">
           <SearchBox
             placeholder={t('exch.searchPlaceholder')}
             value={query}
@@ -148,14 +138,7 @@ export default function ExchangeUniversitySearchPage() {
         />
       )}
 
-      <ul style={{
-        listStyle: 'none',
-        padding: 0,
-        margin: 0,
-        display: 'grid',
-        gridTemplateColumns: isMobile ? '1fr' : 'repeat(2, minmax(0, 1fr))',
-        gap: 12,
-      }}>
+      <ul className="exchange-results-grid">
         {universities.map((u) => (
           <li key={`${u.globalUnivId ?? 'g'}-${u.exchangeUnivId ?? 'e'}-${u.reportId ?? 'r'}`}>
             <Card
