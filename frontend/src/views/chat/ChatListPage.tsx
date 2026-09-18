@@ -7,7 +7,7 @@ import { useChatRooms, useCreateChatRoom } from '../../hooks/useChat'
 import { useI18n } from '../../i18n/I18nProvider'
 import { useMemberSearch } from '../../hooks/useMember'
 import { useAuthStore } from '../../store/authStore'
-import type { ChatRoomType, Member } from '../../types'
+import type { ChatRoomType, MemberSummary } from '../../types'
 import { Avatar, Badge, Button, Card, EmptyState, PageHeader, QueryErrorNotice, SearchBox, SelectField, TextField } from '../../components/ui'
 
 const C = {
@@ -38,12 +38,12 @@ export default function ChatListPage() {
   const [type, setType] = useState<ChatRoomType>('DM')
   const [roomName, setRoomName] = useState('')
   const [nicknameQuery, setNicknameQuery] = useState('')
-  const [selectedMember, setSelectedMember] = useState<Member | null>(null)
+  const [selectedMember, setSelectedMember] = useState<MemberSummary | null>(null)
 
   const { data: searchResults } = useMemberSearch(nicknameQuery)
   const filteredResults = searchResults?.filter((m) => m.id !== currentUser?.id) ?? []
 
-  const handleStartDm = (member: Member) => {
+  const handleStartDm = (member: MemberSummary) => {
     setDmQuery('')
     setDmDropdownOpen(false)
 
@@ -65,7 +65,7 @@ export default function ChatListPage() {
     )
   }
 
-  const handleSelectMember = (member: Member) => {
+  const handleSelectMember = (member: MemberSummary) => {
     setSelectedMember(member)
     setNicknameQuery(member.nickname)
   }

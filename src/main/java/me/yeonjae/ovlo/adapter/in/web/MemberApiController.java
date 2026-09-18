@@ -7,12 +7,14 @@ import me.yeonjae.ovlo.adapter.in.web.dto.request.CompleteOnboardingRequest;
 import me.yeonjae.ovlo.adapter.in.web.dto.request.RegisterMemberRequest;
 import me.yeonjae.ovlo.adapter.in.web.dto.request.UpdateMemberProfileRequest;
 import me.yeonjae.ovlo.adapter.in.web.dto.request.UpdateProfileImageRequest;
+import me.yeonjae.ovlo.adapter.in.web.dto.response.NicknameAvailabilityResponse;
 import me.yeonjae.ovlo.application.dto.command.CompleteOnboardingCommand;
 import me.yeonjae.ovlo.application.dto.command.RegisterMemberCommand;
 import me.yeonjae.ovlo.application.dto.command.UpdateMemberProfileCommand;
 import me.yeonjae.ovlo.application.dto.command.UpdateProfileImageCommand;
 import me.yeonjae.ovlo.application.dto.command.WithdrawMemberCommand;
 import me.yeonjae.ovlo.application.dto.result.MemberResult;
+import me.yeonjae.ovlo.application.dto.result.MemberSummaryResult;
 import me.yeonjae.ovlo.application.port.in.member.CompleteOnboardingUseCase;
 import me.yeonjae.ovlo.application.port.in.member.GetMemberQuery;
 import me.yeonjae.ovlo.application.port.in.member.RegisterMemberUseCase;
@@ -93,17 +95,27 @@ public class MemberApiController {
         return ResponseEntity.ok(result);
     }
 
-    @Operation(summary = "닉네임으로 회원 검색")
+    @Operation(summary = "닉네임으로 회원 검색 (로그인 필요, 공개 필드만)")
     @GetMapping("/search")
-    public ResponseEntity<List<MemberResult>> search(
+    public ResponseEntity<List<MemberSummaryResult>> search(
             @RequestParam String nickname,
             @AuthenticationPrincipal Long memberId
     ) {
         if (nickname == null || nickname.isBlank()) {
             return ResponseEntity.ok(List.of());
         }
-        List<MemberResult> results = getMemberQuery.searchByNickname(nickname);
+        List<MemberSummaryResult> results = getMemberQuery.searchByNickname(nickname);
         return ResponseEntity.ok(results);
+    }
+
+    @Operation(summary = "닉네임 사용 가능 여부 (회원가입용, 로그인 불필요)")
+    @GetMapping("/check-nickname")
+    public ResponseEntity<NicknameAvailabilityResponse> checkNickname(@RequestParam String nickname) {
+        if (nickname.isBlank()) {
+            return ResponseEntity.ok(new NicknameAvailabilityResponse(false));
+        }
+        boolean available = getMemberQuery.isNicknameAvailable(nickname);
+        return ResponseEntity.ok(new NicknameAvailabilityResponse(available));
     }
 
     @Operation(summary = "회원 프로필 수정")

@@ -7,7 +7,7 @@ import { useState, type FormEvent } from 'react'
 import Link from 'next/link'
 import { useRegister } from '../../hooks/useAuth'
 import { useUniversitySearch } from '../../hooks/useUniversity'
-import { useMemberSearch } from '../../hooks/useMember'
+import { useNicknameAvailability } from '../../hooks/useMember'
 import { useI18n } from '../../i18n/I18nProvider'
 import { SUPPORTED_UI_LANGUAGES, LANGUAGE_LABELS } from '../../i18n/messages'
 import type { MessageKey } from '../../i18n/messages'
@@ -196,9 +196,9 @@ export default function RegisterPage() {
 
   const register = useRegister()
   const { data: universities } = useUniversitySearch(uniQuery)
-  const { data: nicknameResults } = useMemberSearch(step === 1 ? form.nickname : '')
-  const nicknameAvailable = form.nickname.length >= 2 && nicknameResults?.length === 0
-  const nicknameTaken = form.nickname.length >= 2 && (nicknameResults?.length ?? 0) > 0
+  const { data: nicknameCheck } = useNicknameAvailability(step === 1 ? form.nickname : '')
+  const nicknameAvailable = form.nickname.length >= 2 && nicknameCheck?.available === true
+  const nicknameTaken = form.nickname.length >= 2 && nicknameCheck?.available === false
 
   const set = (key: keyof FormData) =>
     (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
@@ -276,7 +276,7 @@ export default function RegisterPage() {
                 placeholder={t('register.nickname.placeholder')}
                 required minLength={2} maxLength={30}
               />
-              {form.nickname.length >= 2 && (
+              {(nicknameAvailable || nicknameTaken) && (
                 <span style={{
                   position: 'absolute', right: 10, top: '50%', transform: 'translateY(-50%)',
                   fontSize: 12, color: nicknameAvailable ? 'var(--color-success)' : 'var(--color-danger)', fontWeight: 700,

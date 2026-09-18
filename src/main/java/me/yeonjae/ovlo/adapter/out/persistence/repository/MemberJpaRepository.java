@@ -1,6 +1,7 @@
 package me.yeonjae.ovlo.adapter.out.persistence.repository;
 
 import me.yeonjae.ovlo.adapter.out.persistence.entity.MemberJpaEntity;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -12,7 +13,7 @@ public interface MemberJpaRepository extends JpaRepository<MemberJpaEntity, Long
     Optional<MemberJpaEntity> findByEmail(String email);
     boolean existsByEmail(String email);
     boolean existsByNickname(String nickname);
-    List<MemberJpaEntity> findByNicknameContainingIgnoreCase(String keyword);
+    List<MemberJpaEntity> findByNicknameContainingIgnoreCase(String keyword, Pageable pageable);
 
     /** 본교 대학 ID만 프로젝션 — 멤버 없음/본교 null이면 empty. */
     @Query("select m.homeUniversityId from MemberJpaEntity m where m.id = :id")

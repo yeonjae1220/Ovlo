@@ -1,6 +1,7 @@
 package me.yeonjae.ovlo.application.service.query;
 
 import me.yeonjae.ovlo.application.dto.result.MemberResult;
+import me.yeonjae.ovlo.application.dto.result.MemberSummaryResult;
 import me.yeonjae.ovlo.application.port.out.member.LoadMemberPort;
 import me.yeonjae.ovlo.domain.member.exception.MemberException;
 import me.yeonjae.ovlo.domain.member.model.*;
@@ -14,6 +15,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -70,6 +72,42 @@ class MemberQueryServiceTest {
             assertThatThrownBy(() -> memberQueryService.getById(new MemberId(999L)))
                     .isInstanceOf(MemberException.class)
                     .hasMessageContaining("회원을 찾을 수 없습니다");
+        }
+    }
+
+    @Nested
+    @DisplayName("닉네임 검색")
+    class SearchByNickname {
+
+        @Test
+        @DisplayName("결과 수 상한을 걸어 조회하고 다른 회원에게 보여도 되는 필드만 담는다")
+        void shouldLimitAndReturnSummary() {
+            given(loadMemberPort.searchByNickname("yeon", 20)).willReturn(List.of(member));
+
+            List<MemberSummaryResult> results = memberQueryService.searchByNickname("yeon");
+
+            assertThat(results).containsExactly(new MemberSummaryResult(1L, "yeonjae", "김연재", null));
+        }
+    }
+
+    @Nested
+    @DisplayName("닉네임 사용 가능 여부")
+    class NicknameAvailability {
+
+        @Test
+        @DisplayName("같은 닉네임의 회원이 없으면 사용할 수 있다")
+        void shouldBeAvailable_whenNicknameIsFree() {
+            given(loadMemberPort.existsByNickname("newbie")).willReturn(false);
+
+            assertThat(memberQueryService.isNicknameAvailable("newbie")).isTrue();
+        }
+
+        @Test
+        @DisplayName("같은 닉네임의 회원이 있으면 사용할 수 없다")
+        void shouldBeUnavailable_whenNicknameIsTaken() {
+            given(loadMemberPort.existsByNickname("yeonjae")).willReturn(true);
+
+            assertThat(memberQueryService.isNicknameAvailable("yeonjae")).isFalse();
         }
     }
 }

@@ -58,6 +58,18 @@ export interface Member {
   createdAt: string
 }
 
+/** 닉네임 검색 결과 — 다른 회원에게 보여도 되는 필드만 온다 (이메일·생년월일·연락처 없음). */
+export interface MemberSummary {
+  id: string
+  nickname: string
+  name: string
+  profileImageMediaId?: string
+}
+
+export interface NicknameAvailability {
+  available: boolean
+}
+
 export interface RegisterMemberRequest {
   nickname: string
   name: string
