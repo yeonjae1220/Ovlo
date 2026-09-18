@@ -21,6 +21,15 @@ export function useMemberSearch(keyword: string) {
   })
 }
 
+/** 가입 화면용 — 로그인 전에 부를 수 있고, 같은 닉네임이 정확히 있는지만 알려준다. */
+export function useNicknameAvailability(nickname: string) {
+  return useQuery({
+    queryKey: ['members', 'check-nickname', nickname],
+    queryFn: () => memberApi.checkNickname(nickname),
+    enabled: nickname.length >= 2,
+  })
+}
+
 export function useUpdateProfile() {
   const queryClient = useQueryClient()
   const { currentUser, setCurrentUser } = useAuthStore()

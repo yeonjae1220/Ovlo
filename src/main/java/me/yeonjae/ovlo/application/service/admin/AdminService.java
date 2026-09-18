@@ -69,7 +69,8 @@ public class AdminService {
         java.util.LinkedHashMap<Long, Member> byId = new java.util.LinkedHashMap<>();
         loadMemberPort.findByEmail(kw.toLowerCase())
                 .ifPresent(m -> byId.put(m.getId().value(), m));
-        for (Member m : loadMemberPort.searchByNickname(kw)) {
+        // 이메일 일치와 겹치는 행은 최대 1건이라 limit 행만 읽어도 limit 개를 채운다
+        for (Member m : loadMemberPort.searchByNickname(kw, limit)) {
             byId.putIfAbsent(m.getId().value(), m);
         }
         return byId.values().stream().limit(limit).map(AdminMemberResponse::of).toList();
