@@ -5,7 +5,7 @@ import Link from 'next/link'
 import { useParams } from 'next/navigation'
 import { useRouter } from 'next/navigation'
 import { useMember, useUpdateProfile } from '../../hooks/useMember'
-import { useFollowers, useFollowings, useFollow, useUnfollow } from '../../hooks/useFollow'
+import { useFollowers, useFollowings, useFollowingStatus, useFollow, useUnfollow } from '../../hooks/useFollow'
 import { useAuthStore } from '../../store/authStore'
 import { useDropzone } from 'react-dropzone'
 import { useUploadMedia } from '../../hooks/useMedia'
@@ -46,8 +46,8 @@ export default function ProfilePage() {
   const { language, setLanguage, t } = useI18n()
   const { theme, setTheme } = useTheme()
   const { data: member, isLoading, isError, refetch } = useMember(id!)
-  const { data: followers } = useFollowers(id!)
-  const { data: followings } = useFollowings(id!)
+  const { data: followers } = useFollowers(id!, 0, 1)
+  const { data: followings } = useFollowings(id!, 0, 1)
   const updateProfile = useUpdateProfile()
   const followMutation = useFollow()
   const unfollowMutation = useUnfollow()
@@ -62,7 +62,8 @@ export default function ProfilePage() {
 
   const queryClient = useQueryClient()
   const isOwner = String(currentUser?.id) === id
-  const isFollowing = followers?.some((f) => String(f.id) === String(currentUser?.id))
+  const { data: followingIds } = useFollowingStatus(isOwner || !id ? [] : [id])
+  const isFollowing = followingIds?.has(String(id)) ?? false
   const { data: myVerification } = useMyVerification(isOwner)
 
   const { getRootProps, getInputProps } = useDropzone({
@@ -139,7 +140,7 @@ export default function ProfilePage() {
               </div>
               <p style={{ color: C.textMuted }}>{member.name} · {member.email}</p>
               {member.bio && <p style={{ color: C.textSec }}>{member.bio}</p>}
-              <p style={{ color: C.textMuted }}>{t('profile.followers')} {followers?.length ?? 0} · {t('profile.following')} {followings?.length ?? 0}</p>
+              <p style={{ color: C.textMuted }}>{t('profile.followers')} {followers?.totalElements ?? 0} · {t('profile.following')} {followings?.totalElements ?? 0}</p>
               {isOwner ? (
                 <button onClick={startEdit}>{t('profile.editBtn')}</button>
               ) : (

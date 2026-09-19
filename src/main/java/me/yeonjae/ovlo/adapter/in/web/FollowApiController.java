@@ -3,9 +3,15 @@ package me.yeonjae.ovlo.adapter.in.web;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.Size;
 import me.yeonjae.ovlo.adapter.in.web.dto.request.FollowRequest;
+import me.yeonjae.ovlo.adapter.in.web.dto.response.FollowingStatusResponse;
 import me.yeonjae.ovlo.application.dto.command.FollowCommand;
-import me.yeonjae.ovlo.application.dto.result.MemberResult;
+import me.yeonjae.ovlo.application.dto.result.MemberSummaryResult;
+import me.yeonjae.ovlo.application.dto.result.PageResult;
 import me.yeonjae.ovlo.application.port.in.follow.FollowMemberUseCase;
 import me.yeonjae.ovlo.application.port.in.follow.GetFollowQuery;
 import me.yeonjae.ovlo.application.port.in.follow.UnfollowMemberUseCase;
@@ -16,13 +22,16 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 
 @Tag(name = "Follow", description = "팔로우 API")
+@Validated
 @RestController
 @RequestMapping("/api/v1/follows")
 public class FollowApiController {
@@ -61,15 +70,32 @@ public class FollowApiController {
         return ResponseEntity.noContent().build();
     }
 
-    @Operation(summary = "특정 회원의 팔로워 목록 조회")
+    @Operation(summary = "특정 회원의 팔로워 목록 조회 (공개 필드만)")
     @GetMapping("/followers/{memberId}")
-    public ResponseEntity<List<MemberResult>> getFollowers(@PathVariable Long memberId) {
-        return ResponseEntity.ok(getFollowQuery.getFollowers(memberId));
+    public ResponseEntity<PageResult<MemberSummaryResult>> getFollowers(
+            @PathVariable Long memberId,
+            @RequestParam(defaultValue = "0") @Min(0) int page,
+            @RequestParam(defaultValue = "20") @Min(1) @Max(100) int size
+    ) {
+        return ResponseEntity.ok(getFollowQuery.getFollowers(memberId, page, size));
     }
 
-    @Operation(summary = "특정 회원의 팔로잉 목록 조회")
+    @Operation(summary = "특정 회원의 팔로잉 목록 조회 (공개 필드만)")
     @GetMapping("/followings/{memberId}")
-    public ResponseEntity<List<MemberResult>> getFollowings(@PathVariable Long memberId) {
-        return ResponseEntity.ok(getFollowQuery.getFollowings(memberId));
+    public ResponseEntity<PageResult<MemberSummaryResult>> getFollowings(
+            @PathVariable Long memberId,
+            @RequestParam(defaultValue = "0") @Min(0) int page,
+            @RequestParam(defaultValue = "20") @Min(1) @Max(100) int size
+    ) {
+        return ResponseEntity.ok(getFollowQuery.getFollowings(memberId, page, size));
+    }
+
+    @Operation(summary = "후보 회원 중 내가 팔로우 중인 ID 조회 (관계 확인 전용)")
+    @GetMapping("/following-status")
+    public ResponseEntity<FollowingStatusResponse> getFollowingStatus(
+            @AuthenticationPrincipal Long memberId,
+            @RequestParam @NotEmpty @Size(max = 100) List<Long> memberIds
+    ) {
+        return ResponseEntity.ok(new FollowingStatusResponse(getFollowQuery.filterFollowing(memberId, memberIds)));
     }
 }
