@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { useMemberSearch } from '../../hooks/useMember'
-import { useFollowings, useFollow, useUnfollow } from '../../hooks/useFollow'
+import { useFollowingStatus, useFollow, useUnfollow } from '../../hooks/useFollow'
 import { useAuthStore } from '../../store/authStore'
 import { useI18n } from '../../i18n/I18nProvider'
 
@@ -21,12 +21,11 @@ export default function SearchPage() {
   const { currentUser } = useAuthStore()
   const [query, setQuery] = useState('')
   const { data: results, isFetching } = useMemberSearch(query)
-  const { data: followings } = useFollowings(currentUser?.id ?? '')
+  const { data: followingIds } = useFollowingStatus((results ?? []).map((m) => String(m.id)))
   const follow = useFollow()
   const unfollow = useUnfollow()
 
-  const isFollowing = (memberId: string) =>
-    followings?.some((f) => String(f.id) === memberId) ?? false
+  const isFollowing = (memberId: string) => followingIds?.has(memberId) ?? false
 
   return (
     <div style={{ maxWidth: 800, margin: '0 auto' }}>
