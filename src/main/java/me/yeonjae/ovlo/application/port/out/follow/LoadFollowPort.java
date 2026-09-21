@@ -12,7 +12,14 @@ public interface LoadFollowPort {
 
     boolean existsByFollowerAndFollowee(MemberId followerId, MemberId followeeId);
 
-    List<Follow> findFollowersByFolloweeId(MemberId followeeId);
+    List<Follow> findFollowersByFolloweeId(MemberId followeeId, int offset, int limit);
 
-    List<Follow> findFollowingsByFollowerId(MemberId followerId);
+    long countFollowersByFolloweeId(MemberId followeeId);
+
+    List<Follow> findFollowingsByFollowerId(MemberId followerId, int offset, int limit);
+
+    long countFollowingsByFollowerId(MemberId followerId);
+
+    /** 후보 중 followerId 가 실제로 팔로우 중인 회원 ID — 관계 확인 전용(회원 정보를 싣지 않는다). */
+    List<MemberId> findFollowingIdsIn(MemberId followerId, List<MemberId> candidateIds);
 }

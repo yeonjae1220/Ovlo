@@ -70,6 +70,11 @@ export interface NicknameAvailability {
   available: boolean
 }
 
+/** 후보 회원 중 내가 팔로우 중인 ID — 목록 전체를 받지 않고 관계만 확인한다. */
+export interface FollowingStatus {
+  following: number[]
+}
+
 export interface RegisterMemberRequest {
   nickname: string
   name: string
