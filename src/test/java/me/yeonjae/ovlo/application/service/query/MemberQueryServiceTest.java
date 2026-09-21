@@ -15,6 +15,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
@@ -72,6 +73,62 @@ class MemberQueryServiceTest {
             assertThatThrownBy(() -> memberQueryService.getById(new MemberId(999L)))
                     .isInstanceOf(MemberException.class)
                     .hasMessageContaining("회원을 찾을 수 없습니다");
+        }
+    }
+
+    @Nested
+    @DisplayName("프로필 조회 — 공개 범위")
+    class GetProfile {
+
+        private final MemberId owner = new MemberId(7L);
+
+        private Member memberWithPrivateFields() {
+            return Member.restore(owner, "kimchi", "김치", "Seoul",
+                    new Email("kimchi@example.com"), new Password("hashed"),
+                    OAuthProvider.LOCAL, null,
+                    new UniversityId(1L), new Major("CS", DegreeType.BACHELOR, 2),
+                    MemberStatus.ACTIVE, null, "안녕하세요", LocalDate.of(2000, 1, 2),
+                    List.of(), List.of(),
+                    List.of(new ContactInfo(ContactType.SNS, "@kimchi")),
+                    MemberRole.MEMBER);
+        }
+
+        @Test
+        @DisplayName("본인은 계정 이메일·생년월일까지 전부 본다")
+        void owner_seesEverything() {
+            given(loadMemberPort.findById(owner)).willReturn(Optional.of(memberWithPrivateFields()));
+
+            MemberResult result = memberQueryService.getProfile(owner, owner);
+
+            assertThat(result.email()).isEqualTo("kimchi@example.com");
+            assertThat(result.birthDate()).isEqualTo(LocalDate.of(2000, 1, 2));
+        }
+
+        @Test
+        @DisplayName("다른 회원에게는 계정 이메일·생년월일을 가리고, 본인이 공개용으로 등록한 연락처는 보여준다")
+        void others_seeProfileWithoutPrivateFields() {
+            given(loadMemberPort.findById(owner)).willReturn(Optional.of(memberWithPrivateFields()));
+
+            MemberResult result = memberQueryService.getProfile(owner, new MemberId(42L));
+
+            assertThat(result.email()).isNull();
+            assertThat(result.birthDate()).isNull();
+            assertThat(result.nickname()).isEqualTo("kimchi");
+            assertThat(result.bio()).isEqualTo("안녕하세요");
+            assertThat(result.contactInfos())
+                    .extracting(MemberResult.ContactInfoData::value)
+                    .containsExactly("@kimchi");
+        }
+
+        @Test
+        @DisplayName("조회자를 알 수 없으면 다른 회원과 같이 취급한다")
+        void unknownViewer_isTreatedAsOthers() {
+            given(loadMemberPort.findById(owner)).willReturn(Optional.of(memberWithPrivateFields()));
+
+            MemberResult result = memberQueryService.getProfile(owner, null);
+
+            assertThat(result.email()).isNull();
+            assertThat(result.birthDate()).isNull();
         }
     }
 

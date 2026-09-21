@@ -88,10 +88,14 @@ public class MemberApiController {
         return ResponseEntity.status(HttpStatus.CREATED).body(result);
     }
 
-    @Operation(summary = "회원 조회")
+    @Operation(summary = "회원 조회 (본인은 전체, 다른 회원에게는 계정 이메일·생년월일 제외)")
     @GetMapping("/{id}")
-    public ResponseEntity<MemberResult> getById(@PathVariable Long id) {
-        MemberResult result = getMemberQuery.getById(new MemberId(id));
+    public ResponseEntity<MemberResult> getById(
+            @PathVariable Long id,
+            @AuthenticationPrincipal Long viewerId
+    ) {
+        MemberId viewer = viewerId != null ? new MemberId(viewerId) : null;
+        MemberResult result = getMemberQuery.getProfile(new MemberId(id), viewer);
         return ResponseEntity.ok(result);
     }
 

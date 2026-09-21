@@ -138,7 +138,7 @@ export default function ProfilePage() {
                 <h2 style={{ color: C.textPrimary, margin: 0 }}>{member.nickname}</h2>
                 {isOwner && myVerification && <TrustBadge level={myVerification.trustLevel} />}
               </div>
-              <p style={{ color: C.textMuted }}>{member.name} · {member.email}</p>
+              <p style={{ color: C.textMuted }}>{member.name}{member.email ? ` · ${member.email}` : ''}</p>
               {member.bio && <p style={{ color: C.textSec }}>{member.bio}</p>}
               <p style={{ color: C.textMuted }}>{t('profile.followers')} {followers?.totalElements ?? 0} · {t('profile.following')} {followings?.totalElements ?? 0}</p>
               {isOwner ? (
