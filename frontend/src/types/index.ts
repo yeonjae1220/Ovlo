@@ -42,7 +42,8 @@ export interface ContactInfo {
 
 export interface Member {
   id: string
-  email: string
+  /** 본인 조회에서만 온다 — 다른 회원의 프로필에는 계정 이메일이 없다. */
+  email?: string
   name: string
   nickname: string
   status: MemberStatus

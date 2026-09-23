@@ -33,6 +33,12 @@ public class MemberQueryService implements GetMemberQuery {
     }
 
     @Override
+    public MemberResult getProfile(MemberId target, MemberId viewer) {
+        MemberResult profile = getById(target);
+        return target.equals(viewer) ? profile : profile.withoutPrivateFields();
+    }
+
+    @Override
     public List<MemberSummaryResult> searchByNickname(String keyword) {
         return loadMemberPort.searchByNickname(keyword, SEARCH_RESULT_LIMIT).stream()
                 .map(MemberSummaryResult::from)
