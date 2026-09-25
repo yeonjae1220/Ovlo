@@ -1,3 +1,11 @@
+# 🔴 이 파일이 frontend 의 정본이다 — 라이브를 바꿀 일이 있으면 kubectl 이 아니라 이 파일을 고칠 것.
+#    CI 가 `set image` 만 해서 이 파일은 라이브에 닿은 적이 없었다(GLOBAL-PIT-036). 라이브는 최초
+#    매니페스트(9182bec, 2026-03-24) 값 그대로 probe·env 가 없고 메모리 limit 이 64Mi 라, Next.js 가
+#    OOMKill 로 30일에 약 110번 재시작했고 그중 4번은 파드가 모두 빠져 사이트가 503 이었다.
+#    반대로 이 파일엔 라이브와 다른 값이 남아 있었다 — Service NodePort 30081(라이브는 2026-05-31
+#    patch 로 ClusterIP), imagePullPolicy Always(라이브는 Never), readiness /health/ready(아래 ①).
+#    그대로 apply 했다면 걷어낸 노드포트가 다시 생기고, 새 파드는 Ready 가 못 돼 롤아웃이 멈췄다
+#    (GLOBAL-PIT-083). 2026-09-25 에 `kubectl diff` 로 하나씩 맞춘 뒤 apply 했다.
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -17,20 +25,34 @@ spec:
         project2: ovlo
       containers:
         - name: frontend
+          # 태그는 CI 가 정한다(sha-xxxxxxx). 손으로 apply 할 때도 이 줄을 라이브 태그로 바꿔서 할 것 —
+          # 아래 Never 때문에 :latest 는 노드에 없어(ErrImageNeverPull) 새 파드가 뜨지 못한다.
           image: ghcr.io/yeonjae1220/ovlo-frontend:latest
-          imagePullPolicy: Always
+          # CI 가 `k3s ctr images pull` 로 정확한 태그를 미리 받아 둔다. Always 면 컨테이너가 뜰
+          # 때마다 GHCR 에 물어봐야 해서, 인터넷이 끊긴 동안 OOMKill 등으로 재시작하면 이미지가
+          # 노드에 있는데도 ImagePullBackOff 로 못 뜬다. 라이브 값을 회수했다.
+          imagePullPolicy: Never
           env:
             - name: PORT
               value: "3000"
             - name: HOSTNAME
               value: "0.0.0.0"
+            # /health/ready 만 이 값을 쓴다. /api/* rewrite 목적지는 빌드 때 굳어 있고
+            # (routes-manifest: localhost:8080), 공개 트래픽의 /api 는 ingress 가 app 으로 바로 보낸다.
             - name: API_URL
               value: "http://app.ovlo.svc.cluster.local:8080"
           ports:
             - containerPort: 3000
+          # readiness 도 liveness 와 같은 /health/live 다 — /health/ready(백엔드까지 확인)가 아니다.
+          # ① /health/ready 가 부르는 백엔드 /actuator/health/readiness 는 ADMIN 전용이라 401 이다
+          #    (SecurityConfig, 2026-09-25 파드 안에서 실측). 여기에 걸면 새 파드가 영영 Ready 가
+          #    못 돼 롤아웃이 멈춘다.
+          # ② 그게 풀려도 백엔드 readiness 그룹이 db·redis 를 포함하므로, 레플리카 1개인 frontend 에
+          #    걸면 DB·Redis 순단 하나가 로그인 화면까지 503 으로 만든다. 백엔드 상태는 라우팅이
+          #    아니라 모니터링이 볼 일이다.
           readinessProbe:
             httpGet:
-              path: /health/ready
+              path: /health/live
               port: 3000
             initialDelaySeconds: 10
             periodSeconds: 10
@@ -42,6 +64,8 @@ spec:
             initialDelaySeconds: 30
             periodSeconds: 20
             failureThreshold: 3
+          # 64Mi 에서는 next-server 가 한도에 닿아 OOMKill 됐다(memory.peak == memory.max).
+          # 같은 구성의 TimeManager frontend 는 512Mi 로 올린 뒤 관측 최고치가 약 82Mi 다(2026-09-25).
           resources:
             requests:
               memory: "256Mi"
@@ -56,10 +80,11 @@ metadata:
   name: frontend
   namespace: ovlo
 spec:
-  type: NodePort
+  # ClusterIP 다 — 외부 진입은 ingress-nginx 로만 받는다. 라이브는 2026-05-31 `kubectl patch` 로
+  # NodePort 30081 을 걷어냈는데 이 파일엔 반영되지 않았다가 2026-09-25 에 맞췄다.
+  type: ClusterIP
   selector:
     app: frontend
   ports:
     - port: 80
       targetPort: 3000
-      nodePort: 30081
