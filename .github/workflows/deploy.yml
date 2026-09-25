@@ -225,9 +225,29 @@ jobs:
             --user "yeonjae1220:${GH_TOKEN}" \
             ghcr.io/yeonjae1220/ovlo-frontend:${FRONTEND_IMAGE_TAG}
 
-          sudo kubectl set image deployment/frontend \
-            frontend=ghcr.io/yeonjae1220/ovlo-frontend:${FRONTEND_IMAGE_TAG} \
-            -n ovlo
+          # frontend 는 k8s/frontend.yaml 이 정본이다. set image 만 하면 매니페스트의 env·probe·
+          # resources 가 라이브에 영영 닿지 않는다(GLOBAL-PIT-036) — 2026-09-25 까지 라이브가 최초
+          # 매니페스트의 64Mi 로 OOMKill 을 반복했다. 이미지 줄만 이번 빌드 태그로 바꿔 한 번에
+          # apply 한다(롤아웃 1회). apply 와 set image 로 나누면 중간 롤아웃이 노드에 없는 :latest 를
+          # imagePullPolicy: Never 로 찾다가 ErrImageNeverPull 로 멈춘다.
+          FRONTEND_IMAGE="ghcr.io/yeonjae1220/ovlo-frontend:${FRONTEND_IMAGE_TAG}"
+          FRONTEND_MANIFEST="${RUNNER_TEMP}/frontend.yaml"
+          sed "s#image: ghcr.io/yeonjae1220/ovlo-frontend:latest\$#image: ${FRONTEND_IMAGE}#" \
+            k8s/frontend.yaml > "${FRONTEND_MANIFEST}"
+          if [ "$(grep -c "image: ${FRONTEND_IMAGE}\$" "${FRONTEND_MANIFEST}")" != 1 ]; then
+            echo "::error::k8s/frontend.yaml 의 이미지 줄을 ${FRONTEND_IMAGE} 로 치환하지 못했다"
+            exit 1
+          fi
+
+          # 이번 배포가 매니페스트로 무엇을 바꾸는지 로그에 남긴다. 이미지 태그가 바뀌므로 diff 는
+          # 거의 항상 1(차이 있음)이 정상이고, 2 이상만 오류다.
+          rc=0
+          sudo kubectl diff -f "${FRONTEND_MANIFEST}" || rc=$?
+          if [ "$rc" -gt 1 ]; then
+            echo "::error::kubectl diff 실패 (rc=${rc})"
+            exit 1
+          fi
+          sudo kubectl apply -f "${FRONTEND_MANIFEST}"
 
           sudo kubectl rollout status deployment/frontend \
             -n ovlo --timeout=300s

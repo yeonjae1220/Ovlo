@@ -1,5 +1,7 @@
-# 🔴 이 파일이 frontend 의 정본이다 — 라이브를 바꿀 일이 있으면 kubectl 이 아니라 이 파일을 고칠 것.
-#    CI 가 `set image` 만 해서 이 파일은 라이브에 닿은 적이 없었다(GLOBAL-PIT-036). 라이브는 최초
+# 🔴 이 파일이 frontend 의 정본이다 — 2026-09-25 부터 CI(deploy.yml)가 매 배포마다 이미지 줄만 이번
+#    빌드 태그로 바꿔 apply 한다. 라이브를 바꿀 일이 있으면 kubectl 이 아니라 이 파일을 고칠 것 — 다음
+#    배포가 덮어쓴다.
+#    그전엔 CI 가 `set image` 만 해서 이 파일이 라이브에 닿은 적이 없었다(GLOBAL-PIT-036). 라이브는 최초
 #    매니페스트(9182bec, 2026-03-24) 값 그대로 probe·env 가 없고 메모리 limit 이 64Mi 라, Next.js 가
 #    OOMKill 로 30일에 약 110번 재시작했고 그중 4번은 파드가 모두 빠져 사이트가 503 이었다.
 #    반대로 이 파일엔 라이브와 다른 값이 남아 있었다 — Service NodePort 30081(라이브는 2026-05-31
@@ -25,8 +27,10 @@ spec:
         project2: ovlo
       containers:
         - name: frontend
-          # 태그는 CI 가 정한다(sha-xxxxxxx). 손으로 apply 할 때도 이 줄을 라이브 태그로 바꿔서 할 것 —
-          # 아래 Never 때문에 :latest 는 노드에 없어(ErrImageNeverPull) 새 파드가 뜨지 못한다.
+          # 태그는 CI 가 정한다 — deploy.yml 의 sed 가 이 줄을 글자 그대로 찾아 이번 빌드의 sha-xxxxxxx
+          # 로 바꾸니, 형식을 바꾸면 거기도 같이 고칠 것(못 찾으면 배포가 실패한다). 손으로 apply 할
+          # 때도 라이브 태그로 바꿔서 할 것 — 아래 Never 때문에 :latest 는 노드에 없어
+          # (ErrImageNeverPull) 새 파드가 뜨지 못한다.
           image: ghcr.io/yeonjae1220/ovlo-frontend:latest
           # CI 가 `k3s ctr images pull` 로 정확한 태그를 미리 받아 둔다. Always 면 컨테이너가 뜰
           # 때마다 GHCR 에 물어봐야 해서, 인터넷이 끊긴 동안 OOMKill 등으로 재시작하면 이미지가
