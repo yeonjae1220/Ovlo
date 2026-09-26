@@ -29,7 +29,7 @@ def alias_pattern(words):
 
 CURRENCY = alias_pattern(list(ALIASES)+['$', '¥', '￥'])
 
-UNIT = r'(?:[万萬億亿千百十만천억]|백만|(?:[kKmMbB]|million(?:s)?|Millionen|billion(?:s)?|thousand|tausend|mille|Mio\.|triệu|nghìn)(?![A-Za-zÀ-ž]))'
+UNIT = r'(?:[万萬億亿千百十만천억]|백만|(?:[kKmMbB]|million(?:s)?|Millionen|billion(?:s)?|thousand|tausend|mille|Mio\.|triệu|nghìn)(?![^\W\d_]))'
 NUMBER = r'\d(?:[\d.,\u00a0 ]*\d)?'
 VALUE = NUMBER + r'(?:\s*' + UNIT + r')*(?:\d[\d.,]*(?:' + UNIT + r')+)*'
 AMOUNT = VALUE + r'(?:\s*(?:[-–—〜～~]|to|bis|à|đến|至|到)\s*' + VALUE + r')?'
@@ -70,13 +70,13 @@ def _monies(text, local):
             currency = next((c for c in local if c in ('USD','CAD','AUD','NZD','SGD','HKD','TWD','MXN','ARS','CLP','COP','UYU')), None)
         end=m.end()
         # An explicit code disambiguates a bare symbol (e.g. "$50 USD").
-        explicit=re.match(r'\s*(USD|CAD|AUD|NZD|SGD|HKD|TWD|JPY|CNY)\b',text[end:],re.I)
+        explicit=re.match(r'\s*(USD|CAD|AUD|NZD|SGD|HKD|TWD|JPY|CNY)(?![A-Za-z])',text[end:],re.I)
         if explicit and token in ('$', '¥', '￥'):
             currency=explicit[1].upper();end+=explicit.end()
         item = Money(m.start(), end, currency, text[m.start():end])
-        if explicit and token=='$' and result and re.fullmatch(r'\$[\d., ]+',result[-1].text) and re.fullmatch(r'\s*[-–—~]\s*',text[result[-1].end:item.start]):
+        if explicit and token=='$' and result and re.fullmatch(r'\$[\d., ]+',result[-1].text) and re.fullmatch(r'\s*(?:[-–—〜～~]|to|bis|à|đến|至|到)\s*',text[result[-1].end:item.start]):
             result[-1]=Money(result[-1].start,result[-1].end,currency,result[-1].text)
-        if result and item.currency == result[-1].currency and re.fullmatch(r'\s*(?:[-–—〜～~]|to|bis|à|至|到)\s*',text[result[-1].end:item.start]):
+        if result and item.currency == result[-1].currency and re.fullmatch(r'\s*(?:[-–—〜～~]|to|bis|à|đến|至|到)\s*',text[result[-1].end:item.start]):
             last = result.pop(); item = Money(last.start,item.end,currency,text[last.start:item.end])
         result.append(item)
     return result
@@ -175,7 +175,8 @@ def _clean_string(value, local, structured=False):
         for start,end in parens(text):
             inner = text[start+1:end-1]
             inside = monies(inner,local)
-            outside = monies(text[:start],local)
+            offset=max(0,start-160)
+            outside = [Money(m.start+offset,m.end+offset,m.currency,m.text) for m in monies(text[offset:start],local)]
             previous = outside[-1] if outside and re.fullmatch(r'[\s*_]*',text[outside[-1].end:start]) else None
             if not inside: continue
             local_inside = [m for m in inside if m.currency in local]
