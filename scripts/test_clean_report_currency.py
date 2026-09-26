@@ -1,6 +1,6 @@
 import unittest,tempfile
 from pathlib import Path
-from clean_report_currency import clean_string,clean_row,generate
+from clean_report_currency import clean_string,clean_row,generate,monies
 
 class CurrencyCleanupTest(unittest.TestCase):
  def test_foreign_conversions(self):
@@ -19,6 +19,8 @@ class CurrencyCleanupTest(unittest.TestCase):
    ('€600 (etwa 60 Tausend Won)','€600',['EUR']),
    ('£700–£900（110,000–135,000 KRW)','£700–£900',['GBP']),
    ('60,000 원 (~$50 USD)','$50 USD',['USD']),
+   ('**$150–$250 USD** (40–60 million COP)','**40–60 million COP**',['COP']),
+   ('**$60 USD** (equivalent to 60,000 COP)','**60,000 COP**',['COP']),
    ('€1,200–€1,500 (120–150k won)','€1,200–€1,500',['EUR']),
   ]:
    with self.subTest(raw=raw): self.assertEqual(expected,clean_string(raw,local))
@@ -52,6 +54,9 @@ class CurrencyCleanupTest(unittest.TestCase):
  def test_mixed_cost_prose_is_preserved(self):
   for text in ['Off-campus options are available near Downtown, with rents of 80 million KRW.', 'Transport costs 7 million KRW, though biking can reduce expenses.', '## Housing costs 60 million KRW.', 'Costs €600, and flights cost about USD 800.']:
    self.assertEqual(text,clean_string(text,['EUR']))
+ def test_scale_tokens_do_not_consume_following_words(self):
+  self.assertEqual('€600',monies('€600 kostet',['EUR'])[0].text)
+  self.assertEqual('£50',monies('£50 monthly',['GBP'])[0].text)
  def row(self):
   return dict(report_id=70,lang='en',country_code='DE',title='Munich',summary='Guide',body='**Visa & Entry**\nD-2 student visa costs €600 (≈60,000 won). Processing takes 4–8 weeks.',content={'visa':{'type':'D-2 student visa','cost':'€600 (≈60,000 won)','duration':'4–8 weeks','required_docs':['Passport']},'work':{'legal_limit':'20 hours/week','part_time_allowed':True},'costs':{'monthly_total':'€1200 (1,200,000 KRW)','currency':'KRW'},'misc':{'empty':None,'list':[]}})
  def test_visa_and_work_facts_are_preserved(self):

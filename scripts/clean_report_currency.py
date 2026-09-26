@@ -28,7 +28,7 @@ def alias_pattern(words):
 
 CURRENCY = alias_pattern(list(ALIASES)+['$', '¥', '￥'])
 
-UNIT = r'(?:[kKmMbB万萬億亿千百十만천억]|million(?:s)?|Millionen|billion(?:s)?|thousand|tausend|mille|Mio\.|triệu|nghìn|백만)'
+UNIT = r'(?:[万萬億亿千百十만천억]|백만|(?:[kKmMbB]|million(?:s)?|Millionen|billion(?:s)?|thousand|tausend|mille|Mio\.|triệu|nghìn)(?![A-Za-zÀ-ž]))'
 NUMBER = r'\d(?:[\d.,\u00a0 ]*\d)?'
 VALUE = NUMBER + r'(?:\s*' + UNIT + r')*(?:\d[\d.,]*(?:' + UNIT + r')+)*'
 AMOUNT = VALUE + r'(?:\s*(?:[-–—〜～~]|to|bis|à|đến|至|到)\s*' + VALUE + r')?'
@@ -73,6 +73,8 @@ def _monies(text, local):
         if explicit and token in ('$', '¥', '￥'):
             currency=explicit[1].upper();end+=explicit.end()
         item = Money(m.start(), end, currency, text[m.start():end])
+        if explicit and token=='$' and result and re.fullmatch(r'\$[\d., ]+',result[-1].text) and re.fullmatch(r'\s*[-–—~]\s*',text[result[-1].end:item.start]):
+            result[-1]=Money(result[-1].start,result[-1].end,currency,result[-1].text)
         if result and item.currency == result[-1].currency and re.fullmatch(r'\s*(?:[-–—〜～~]|to|bis|à|至|到)\s*',text[result[-1].end:item.start]):
             last = result.pop(); item = Money(last.start,item.end,currency,text[last.start:item.end])
         result.append(item)
@@ -178,7 +180,9 @@ def _clean_string(value, local, structured=False):
             local_inside = [m for m in inside if m.currency in local]
             if local_inside and previous and previous.currency not in local and previous.currency is not None and price_only(inner,local):
                 # Local amount already present: retain its exact digits/symbols.
+                closing=text[previous.end:start].strip()
                 replacement = APPROX.sub('',inner).strip()
+                if closing: replacement=replacement.strip('*_')+closing
                 text = text[:previous.start] + replacement + text[end:]
                 changed=True; break
             if (previous and previous.currency in local) or (all(m.currency=='KRW' for m in inside) and 'KRW' not in local):
