@@ -29,13 +29,13 @@ def alias_pattern(words):
 
 CURRENCY = alias_pattern(list(ALIASES)+['$', '¥', '￥'])
 
-UNIT = r'(?:[万萬億亿千百十만천억]|백만|(?:[kKmMbB]|million(?:s)?|Millionen|billion(?:s)?|thousand|tausend|mille|Mio\.|triệu|nghìn)(?![^\W\d_]))'
+UNIT = r'(?:[万萬億亿千百十만천억]|백만|(?:[kKmMbB]|million(?:s)?|Millionen|billion(?:s)?|thousand|tausend|mille|Mio\.|triệu|nghìn)(?![A-Za-zÀ-ž\u1e00-\u1eff]))'
 NUMBER = r'\d(?:[\d.,\u00a0 ]*\d)?'
 VALUE = NUMBER + r'(?:\s*' + UNIT + r')*(?:\d[\d.,]*(?:' + UNIT + r')+)*'
 AMOUNT = VALUE + r'(?:\s*(?:[-–—〜～~]|to|bis|à|đến|至|到)\s*' + VALUE + r')?'
 # Number and currency must be adjacent except for scale words and French "de".
 MONEY = re.compile(r'(?<![A-Za-z])(?P<pre>' + CURRENCY + r')\s*(?P<pnum>' + AMOUNT + r')|(?P<snum>' + AMOUNT + r')\s*(?:de\s+)?(?P<post>' + CURRENCY + r')(?![A-Za-z])', re.I)
-APPROX = re.compile(r'^(?:\s|[≈~≃=*]|approximately\b|approx\.?\b|around\b|about\b|roughly\b|equivalent to\b|ca\.|etwa\b|um\b|environ\b|khoảng\b|약|約|约|대략|대략적으로|およそ)+', re.I)
+APPROX = re.compile(r'^(?:\s|[≈~≃=*]|approximately\b|approx\.?\b|around\b|about\b|roughly\b|equivalent to\b|ca\.|etwa\b|um\b|environ\b|khoảng\b|tương đương|约合|약|約|约|대략|대략적으로|およそ)+', re.I)
 UNITS = re.compile(r'^[\s*_/.,:;，、：()（）\[\]~≈–—-]*(?:(?:per|a|each|pro|par|mỗi)\s*)?(?:month|mo|Monat|Monate|Monaten|mois|tháng|monthly|week|weeks|year|annually|hour|hr|월|개월|달|月|年|년|주|시간|日|일|시간당|每月|毎月|月額)?[\s*_/.,:;，、：()（）\[\]~≈–—-]*$', re.I)
 CONVERSION = re.compile(r'(?:equivalent\s+to|approximately|approx\.?|around|about|roughly|converted\s+to|environ|etwa|entspricht|umgerechnet|khoảng|tương đương|약|約|约|相当|换算|換算|환산|≈)', re.I)
 D2 = re.compile(r'(?<![A-Za-z0-9])D[\s‐‑–—-]*2(?![0-9])', re.I)
@@ -107,7 +107,7 @@ def price_only(text, local):
 def trim_approx(text, start):
     # Include only a contiguous approximation prefix, not preceding prose.
     prefix = text[:start]
-    found = re.search(r'(?:[≈~≃]|\bapproximately|\bapprox\.?|\baround|\babout|\benviron|\betwa|\bkhoảng|약|約|约)\s*[*_]*\s*$',prefix,re.I)
+    found = re.search(r'(?:[≈~≃]|\bapproximately|\bapprox\.?|\baround|\babout|\benviron|\betwa|\bkhoảng|tương đương|约合|약|約|约)\s*[*_]*\s*$',prefix,re.I)
     return found.start() if found else start
 
 

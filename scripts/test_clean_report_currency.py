@@ -16,6 +16,8 @@ class CurrencyCleanupTest(unittest.TestCase):
    ('€600 (environ 60 000 wons)','€600',['EUR']),
    ('€600 (khoảng 60.000 won Hàn Quốc)','€600',['EUR']),
    ('€600 (约6万韩元)','€600',['EUR']),
+   ('¥800（约合7美元）','¥800',['JPY']),
+   ('€120 (tương đương 60.000 won)','€120',['EUR']),
    ('€600 (etwa 60 Tausend Won)','€600',['EUR']),
    ('£700–£900（110,000–135,000 KRW)','£700–£900',['GBP']),
    ('60,000 원 (~$50 USD)','$50 USD',['USD']),
@@ -61,6 +63,7 @@ class CurrencyCleanupTest(unittest.TestCase):
   self.assertEqual('£50',monies('£50 monthly',['GBP'])[0].text)
   self.assertEqual('£50',monies('£50 mỗi tháng',['GBP'])[0].text)
   self.assertEqual('$160 USD',monies('$160 USD입니다',['USD'])[0].text)
+  self.assertEqual('¥40–60 million',monies('¥40–60 million之间',['JPY'])[0].text)
  def row(self):
   return dict(report_id=70,lang='en',country_code='DE',title='Munich',summary='Guide',body='**Visa & Entry**\nD-2 student visa costs €600 (≈60,000 won). Processing takes 4–8 weeks.',content={'visa':{'type':'D-2 student visa','cost':'€600 (≈60,000 won)','duration':'4–8 weeks','required_docs':['Passport']},'work':{'legal_limit':'20 hours/week','part_time_allowed':True},'costs':{'monthly_total':'€1200 (1,200,000 KRW)','currency':'KRW'},'misc':{'empty':None,'list':[]}})
  def test_visa_and_work_facts_are_preserved(self):
