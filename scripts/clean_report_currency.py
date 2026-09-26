@@ -10,6 +10,7 @@ import json
 import re
 from dataclasses import dataclass
 from functools import lru_cache
+from collections import Counter
 from pathlib import Path
 
 DATA = json.loads(Path(__file__).with_name('report_currency_data.json').read_text(encoding='utf-8'))
@@ -324,6 +325,15 @@ def generate(rows,directory,run_id):
             for k in FIELDS:
                 if new[k]!=row[k]: edits.append({'report_id':row['report_id'],'lang':row['lang'],'field':k,'before':row[k],'after':new[k]})
         if clean_row(new)[0]!=new: raise ValueError(f"Non-idempotent {row['report_id']}/{row['lang']}")
+        local=DATA['countries'].get(row.get('country_code'),[])
+        def prices(value):
+            if isinstance(value,str): return Counter(m.text for m in monies(value,local) if m.currency in local)
+            items=value.values() if isinstance(value,dict) else value if isinstance(value,list) else []
+            result=Counter()
+            for item in items: result.update(prices(item))
+            return result
+        if prices({k:row[k] for k in FIELDS})-prices({k:new[k] for k in FIELDS}):
+            raise ValueError(f"Local price lost {row['report_id']}/{row['lang']}")
         if new['title']!=row['title']: raise ValueError('Title changed')
         if 'visa' in row['content'] and 'visa' not in new['content']: raise ValueError('Visa card removed')
         for k in ('type','duration','processing_days'):
