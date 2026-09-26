@@ -220,10 +220,10 @@ export default function ExchangeUniversityDetailPage() {
               if (!parsed) return null
               return (
                 <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', marginBottom: 10 }}>
-                  {parsed.costs && (
+                  {parsed.costs && (parsed.costs.monthly_total || parsed.costs.rent) && (
                     <div style={{ flex: 1, minWidth: 130, background: C.bg, borderRadius: 8, padding: '10px 12px', border: `1px solid ${C.border}` }}>
                       <div style={{ fontSize: 10, fontWeight: 700, color: C.textDim, textTransform: 'uppercase', marginBottom: 4 }}>💰 {t('exch.detail.cost')}</div>
-                      <div style={{ fontSize: 13, color: C.textSec, fontWeight: 600 }}>{parsed.costs.monthly_total ?? '-'}</div>
+                      {parsed.costs.monthly_total && <div style={{ fontSize: 13, color: C.textSec, fontWeight: 600 }}>{parsed.costs.monthly_total}</div>}
                       {parsed.costs.currency && <div style={{ fontSize: 11, color: C.textMuted }}>{parsed.costs.currency}</div>}
                       {parsed.costs.rent && <div style={{ fontSize: 11, color: C.textMuted }}>{t('exch.detail.rent')} {parsed.costs.rent}</div>}
                     </div>
