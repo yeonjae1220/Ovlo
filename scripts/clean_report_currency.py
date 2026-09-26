@@ -30,7 +30,7 @@ def alias_pattern(words):
 CURRENCY = alias_pattern(list(ALIASES)+['$', '¥', '￥'])
 
 UNIT = r'(?:[万萬億亿千百十만천억]|백만|(?:[kKmMbB]|million(?:s)?|Millionen|billion(?:s)?|thousand|tausend|mille|Mio\.|triệu|nghìn)(?![A-Za-zÀ-ž\u1e00-\u1eff]))'
-NUMBER = r'\d(?:[\d.,\u00a0 ]*\d)?'
+NUMBER = r'\d(?:[\d.,]*\d)?(?:[ \u00a0]\d{3}(?!\d))*'
 VALUE = NUMBER + r'(?:\s*' + UNIT + r')*(?:\d[\d.,]*(?:' + UNIT + r')+)*'
 AMOUNT = VALUE + r'(?:\s*(?:[-–—〜～~]|to|bis|à|đến|至|到)\s*' + VALUE + r')?'
 # Number and currency must be adjacent except for scale words and French "de".
@@ -74,7 +74,7 @@ def _monies(text, local):
         if explicit and token in ('$', '¥', '￥'):
             currency=explicit[1].upper();end+=explicit.end()
         item = Money(m.start(), end, currency, text[m.start():end])
-        if explicit and token=='$' and result and re.fullmatch(r'\$[\d., ]+',result[-1].text) and re.fullmatch(r'\s*(?:[-–—〜～~]|to|bis|à|đến|至|到)\s*',text[result[-1].end:item.start]):
+        if explicit and token=='$' and result and re.fullmatch(r'\$'+VALUE,result[-1].text) and re.fullmatch(r'\s*(?:[-–—〜～~]|to|bis|à|đến|至|到)\s*',text[result[-1].end:item.start]):
             result[-1]=Money(result[-1].start,result[-1].end,currency,result[-1].text)
         if result and item.currency == result[-1].currency and re.fullmatch(r'\s*(?:[-–—〜～~]|to|bis|à|đến|至|到)\s*',text[result[-1].end:item.start]):
             last = result.pop(); item = Money(last.start,item.end,currency,text[last.start:item.end])
