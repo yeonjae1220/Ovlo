@@ -38,6 +38,9 @@ jobs:
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
 
+      - name: Test report currency cleanup
+        run: python3 -B -m unittest discover -s scripts -p test_clean_report_currency.py
+
       - name: Build and test with Gradle
         run: ./gradlew build --no-daemon
 
