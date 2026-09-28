@@ -3,10 +3,10 @@
 import { useEffect } from 'react'
 import { useMutation } from '@tanstack/react-query'
 import { useRouter } from 'next/navigation'
-import axios from 'axios'
 import { authApi } from '../api/auth'
 import { memberApi } from '../api/member'
 import { useAuthStore } from '../store/authStore'
+import { refreshAuth } from '../utils/refreshAuth'
 import type { CompleteOnboardingRequest } from '../types'
 
 export function useLogin() {
@@ -32,8 +32,6 @@ export function useLogin() {
  */
 export function useProactiveRefresh() {
   const accessToken = useAuthStore((s) => s.accessToken)
-  const setAccessToken = useAuthStore((s) => s.setAccessToken)
-  const clearAuth = useAuthStore((s) => s.clearAuth)
 
   useEffect(() => {
     if (!accessToken) return
@@ -53,40 +51,18 @@ export function useProactiveRefresh() {
     if (msUntilRefresh <= 0) return
 
     const timer = setTimeout(() => {
-      // 인터셉터 루프를 피하기 위해 raw axios 사용
-      // 쿠키(refresh_token)가 자동 전송됨
-      let attempts = 0
-      const tryRefresh = async () => {
-        try {
-          const { data } = await axios.post<{ accessToken: string }>(
-            '/api/v1/auth/refresh',
-            undefined,
-            { withCredentials: true }
-          )
-          setAccessToken(data.accessToken)
-        } catch (err: unknown) {
-          const status = (err as { response?: { status?: number } })?.response?.status
-          if (status && status >= 400 && status < 500) {
-            // 쿠키가 만료됨 → 로그아웃
-            clearAuth()
-            window.location.href = '/login'
-            return
-          }
-          // 일시적 오류 → 재시도 (최대 3회, 2s / 4s / 6s 간격)
-          attempts++
-          if (attempts < 3) {
-            setTimeout(tryRefresh, 2000 * attempts)
-          } else {
-            clearAuth()
-            window.location.href = '/login'
-          }
-        }
-      }
-      tryRefresh()
+      // 다른 재발급 경로(layout·axios interceptor·다른 탭)와 겹치지 않도록 반드시 싱글톤으로 보낸다.
+      // 일시적 실패는 refreshAuth 가 재시도한 뒤 throw 한다 — 이때는 로그인 상태를 유지하고,
+      // 다음 API 호출의 401 을 interceptor 가 다시 처리한다.
+      refreshAuth()
+        .then((token) => {
+          if (!token) window.location.href = '/login'
+        })
+        .catch(() => {})
     }, msUntilRefresh)
 
     return () => clearTimeout(timer)
-  }, [accessToken, setAccessToken, clearAuth])
+  }, [accessToken])
 }
 
 export function useRegister() {
