@@ -11,6 +11,7 @@ import me.yeonjae.ovlo.application.port.out.auth.TokenStorePort;
 import me.yeonjae.ovlo.application.port.out.member.LoadMemberPort;
 import me.yeonjae.ovlo.domain.auth.exception.AuthException;
 import me.yeonjae.ovlo.domain.auth.model.AuthSession;
+import me.yeonjae.ovlo.domain.auth.model.RefreshRotationOutcome;
 import me.yeonjae.ovlo.domain.member.model.MemberId;
 import me.yeonjae.ovlo.shared.security.JwtTokenProvider;
 import org.junit.jupiter.api.BeforeEach;
@@ -18,6 +19,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
@@ -33,6 +35,7 @@ import me.yeonjae.ovlo.domain.member.model.MemberRole;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.then;
+import static org.mockito.Mockito.never;
 
 @ExtendWith(MockitoExtension.class)
 class AuthCommandServiceTest {
@@ -140,23 +143,73 @@ class AuthCommandServiceTest {
     @DisplayName("토큰 재발급")
     class Refresh {
 
+        private AuthSession stubSession(String presentedToken) {
+            AuthSession session = AuthSession.create(new MemberId(1L), presentedToken,
+                    Instant.now().plus(7, ChronoUnit.DAYS));
+            given(tokenStorePort.findByRefreshToken(presentedToken)).willReturn(Optional.of(session));
+            given(jwtTokenProvider.generateRefreshToken()).willReturn("new-refresh-token");
+            return session;
+        }
+
         @Test
-        @DisplayName("유효한 refresh token으로 재발급하면 새 토큰 쌍을 반환한다")
+        @DisplayName("유효한 refresh token으로 재발급하면 제출 토큰 기준으로 rotate 하고 새 토큰 쌍을 반환한다")
         void shouldReturnNewTokenPair_whenValidToken() {
             MemberId memberId = new MemberId(1L);
-            String oldRefreshToken = "old-refresh-token";
-            AuthSession session = AuthSession.create(memberId, oldRefreshToken,
-                    Instant.now().plus(7, ChronoUnit.DAYS));
-
-            given(tokenStorePort.findByRefreshToken(oldRefreshToken)).willReturn(Optional.of(session));
+            stubSession("old-refresh-token");
+            given(tokenStorePort.rotate(any(AuthSession.class), eq("old-refresh-token")))
+                    .willReturn(RefreshRotationOutcome.ROTATED);
             given(jwtTokenProvider.generateAccessToken(eq(memberId), any(MemberRole.class))).willReturn("new-access-token");
-            given(jwtTokenProvider.generateRefreshToken()).willReturn("new-refresh-token");
 
-            TokenPairResult result = sut.refresh(new RefreshTokenCommand(oldRefreshToken));
+            TokenPairResult result = sut.refresh(new RefreshTokenCommand("old-refresh-token"));
 
             assertThat(result.accessToken()).isEqualTo("new-access-token");
             assertThat(result.refreshToken()).isEqualTo("new-refresh-token");
-            then(tokenStorePort).should().save(any(AuthSession.class));
+            ArgumentCaptor<AuthSession> rotated = ArgumentCaptor.forClass(AuthSession.class);
+            then(tokenStorePort).should().rotate(rotated.capture(), eq("old-refresh-token"));
+            assertThat(rotated.getValue().getRefreshToken()).isEqualTo("new-refresh-token");
+            then(tokenStorePort).should(never()).save(any(AuthSession.class));
+        }
+
+        @Test
+        @DisplayName("동시 재발급 경합에서 진 요청은 409(AUTH_CONFLICT)로 종료되고 access token을 발급하지 않는다")
+        void shouldThrowConflict_whenConcurrentRotation() {
+            stubSession("old-refresh-token");
+            given(tokenStorePort.rotate(any(AuthSession.class), eq("old-refresh-token")))
+                    .willReturn(RefreshRotationOutcome.CONCURRENT);
+
+            assertThatThrownBy(() -> sut.refresh(new RefreshTokenCommand("old-refresh-token")))
+                    .isInstanceOf(AuthException.class)
+                    .extracting(e -> ((AuthException) e).getErrorType())
+                    .isEqualTo(AuthException.ErrorType.CONFLICT);
+            then(jwtTokenProvider).should(never()).generateAccessToken(any(), any());
+        }
+
+        @Test
+        @DisplayName("유예 시간 이후 직전 토큰 재사용은 401 — 세션은 폐기하지 않는다(감지·로그 단계)")
+        void shouldThrowUnauthorized_whenReuseDetected() {
+            stubSession("old-refresh-token");
+            given(tokenStorePort.rotate(any(AuthSession.class), eq("old-refresh-token")))
+                    .willReturn(RefreshRotationOutcome.REUSED);
+
+            assertThatThrownBy(() -> sut.refresh(new RefreshTokenCommand("old-refresh-token")))
+                    .isInstanceOf(AuthException.class)
+                    .extracting(e -> ((AuthException) e).getErrorType())
+                    .isEqualTo(AuthException.ErrorType.UNAUTHORIZED);
+            then(tokenStorePort).should(never()).delete(any());
+            then(tokenStorePort).should(never()).deleteByRefreshToken(anyString());
+        }
+
+        @Test
+        @DisplayName("원자 구간에서 INVALID(로그아웃 경합·구세대 토큰)이면 401")
+        void shouldThrowUnauthorized_whenRotationInvalid() {
+            stubSession("old-refresh-token");
+            given(tokenStorePort.rotate(any(AuthSession.class), eq("old-refresh-token")))
+                    .willReturn(RefreshRotationOutcome.INVALID);
+
+            assertThatThrownBy(() -> sut.refresh(new RefreshTokenCommand("old-refresh-token")))
+                    .isInstanceOf(AuthException.class)
+                    .hasMessageContaining("유효하지 않은 리프레시 토큰입니다");
+            then(jwtTokenProvider).should(never()).generateAccessToken(any(), any());
         }
 
         @Test

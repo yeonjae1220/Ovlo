@@ -14,8 +14,11 @@ import me.yeonjae.ovlo.application.port.out.auth.TokenStorePort;
 import me.yeonjae.ovlo.application.port.out.member.LoadMemberPort;
 import me.yeonjae.ovlo.domain.auth.exception.AuthException;
 import me.yeonjae.ovlo.domain.auth.model.AuthSession;
+import me.yeonjae.ovlo.domain.auth.model.RefreshRotationOutcome;
 import me.yeonjae.ovlo.domain.member.model.MemberRole;
 import me.yeonjae.ovlo.shared.security.JwtTokenProvider;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import org.springframework.transaction.annotation.Transactional;
@@ -26,6 +29,7 @@ import java.time.temporal.ChronoUnit;
 @Transactional
 public class AuthCommandService implements LoginUseCase, LogoutUseCase, RefreshTokenUseCase {
 
+    private static final Logger log = LoggerFactory.getLogger(AuthCommandService.class);
     private static final long REFRESH_TOKEN_TTL_DAYS = 30L;
 
     private final LoadMemberCredentialsPort loadMemberCredentialsPort;
@@ -83,15 +87,31 @@ public class AuthCommandService implements LoginUseCase, LogoutUseCase, RefreshT
             throw new AuthException("만료되었거나 유효하지 않은 세션입니다. 다시 로그인해 주세요");
         }
 
+        String newRefreshToken = jwtTokenProvider.generateRefreshToken();
+        Instant newExpiry = Instant.now().plus(REFRESH_TOKEN_TTL_DAYS, ChronoUnit.DAYS);
+        session.rotate(newRefreshToken, newExpiry);
+
+        // 조회와 교체 사이에 다른 요청이 같은 토큰으로 먼저 교체했을 수 있다. 저장소가 제출 토큰을
+        // 현재 토큰과 원자적으로 비교해 판정하므로, 같은 토큰으로 시작한 요청 중 하나만 통과한다.
+        RefreshRotationOutcome outcome = tokenStorePort.rotate(session, command.refreshToken());
+        switch (outcome) {
+            case ROTATED -> { }
+            case CONCURRENT -> throw new AuthException(AuthException.ErrorType.CONFLICT,
+                    "토큰 재발급이 동시에 진행되었습니다. 다시 시도해 주세요");
+            case REUSED -> {
+                // 재사용 감지 1단계: 기록만 하고 세션은 유지한다. iOS WebView가 Set-Cookie를 저장하지
+                // 못하고 직전 토큰을 다시 보내는 정상 사용자(GLOBAL-PIT-051)와 탈취를 아직 구분하지 못해서다.
+                log.warn("Refresh token reuse detected: sessionId={}, memberId={}",
+                        session.getId().value(), session.getMemberId().value());
+                throw new AuthException("유효하지 않은 리프레시 토큰입니다");
+            }
+            case INVALID -> throw new AuthException("유효하지 않은 리프레시 토큰입니다");
+        }
+
         MemberRole role = loadMemberPort.findById(session.getMemberId())
                 .map(m -> m.getRole())
                 .orElse(MemberRole.MEMBER);
         String newAccessToken = jwtTokenProvider.generateAccessToken(session.getMemberId(), role);
-        String newRefreshToken = jwtTokenProvider.generateRefreshToken();
-        Instant newExpiry = Instant.now().plus(REFRESH_TOKEN_TTL_DAYS, ChronoUnit.DAYS);
-
-        session.rotate(newRefreshToken, newExpiry);
-        tokenStorePort.save(session);
 
         return new TokenPairResult(newAccessToken, newRefreshToken, session.getMemberId().value());
     }
