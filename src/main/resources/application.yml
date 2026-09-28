@@ -88,6 +88,11 @@ ovlo:
     signup-limit: ${RATE_LIMIT_SIGNUP:5}
     search-limit: ${RATE_LIMIT_SEARCH:100}
     window-seconds: ${RATE_LIMIT_WINDOW_SECONDS:600}
+  auth:
+    refresh-reuse:
+      # 유예(10초)가 지난 직전 refresh 토큰 재사용(REUSED) 시 세션까지 폐기할지. 기본은 로그만 남긴다 —
+      # iOS WebView 쿠키 저장 누락(GLOBAL-PIT-051) 오탐 빈도를 운영 로그로 확인한 뒤 켠다(ADR-0004).
+      revoke-session: ${AUTH_REFRESH_REUSE_REVOKE_SESSION:false}
   # 신뢰 프록시 IP 목록 — 이 주소에서 온 요청만 X-Real-IP 헤더를 신뢰
   # Docker 내부 nginx: 172.x.x.x, 로컬 개발: 127.0.0.1/::1
   trusted-proxy-ips: ${TRUSTED_PROXY_IPS:127.0.0.1,::1}

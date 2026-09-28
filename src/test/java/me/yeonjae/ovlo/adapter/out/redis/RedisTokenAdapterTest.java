@@ -259,6 +259,21 @@ class RedisTokenAdapterTest {
     }
 
     @Test
+    @DisplayName("재사용 감지 뒤 직전 토큰으로 지우면 세션이 폐기돼 현재 토큰도 더는 못 쓴다(B안 경로)")
+    void shouldRevokeWholeSession_whenDeletedByPreviousToken() {
+        AuthSession base = saveBase("old-token");
+        rotate(base.getId(), "old-token", "new-token");
+
+        adapter.deleteByRefreshToken("old-token");
+
+        assertThat(redisTemplate.hasKey("auth:session:" + base.getId().value())).isFalse();
+        assertThat(redisTemplate.opsForSet().isMember("auth:member:sessions:" + memberId.value(),
+                base.getId().value())).isFalse();
+        assertThat(adapter.findByRefreshToken("new-token")).isEmpty();
+        assertThat(rotate(base.getId(), "new-token", "next-token")).isEqualTo(RefreshRotationOutcome.INVALID);
+    }
+
+    @Test
     @DisplayName("두 세대 이전 토큰을 제출하면 INVALID")
     void shouldReturnInvalid_whenOlderThanPreviousToken() {
         AuthSession base = saveBase("t0");
