@@ -34,7 +34,9 @@
 2. `save()` 는 새 세션 생성 전용(MULTI/EXEC 쓰기만)으로 줄인다.
 3. 재사용 감지는 **1단계(기록만)**: 세션은 폐기하지 않는다. iOS WebView 가 Set-Cookie 를 저장하지 못하고 직전
    토큰을 다시 보내는 정상 사용자(GLOBAL-PIT-051)와 탈취를 아직 구분할 근거가 없기 때문이다. 로그 빈도를 본 뒤
-   세션 폐기(2단계)로 올린다.
+   세션 폐기(2단계)로 올린다. 2단계는 코드 변경 없이 `ovlo.auth.refresh-reuse.revoke-session=true`
+   (env `AUTH_REFRESH_REUSE_REVOKE_SESSION`)로 켠다 — `REUSED` 때 직전 토큰 역인덱스로 그 세션을 지운다.
+   `CONCURRENT`(409)는 켜도 세션을 지우지 않는다.
 4. 프론트: 모든 재발급을 `refreshAuth()` 로 모으고 Web Locks 로 탭 사이를 직렬화한다. 409 는 1회 재시도,
    일시적 실패는 로그아웃하지 않는다(`docs/frontend-security.md` §2).
 

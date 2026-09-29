@@ -10,10 +10,12 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
 import javax.crypto.SecretKey;
+import java.time.Duration;
 import java.util.Base64;
 import java.util.Date;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class JwtTokenProviderImplTest {
 
@@ -140,6 +142,19 @@ class JwtTokenProviderImplTest {
             String second = provider.generateRefreshToken();
 
             assertThat(first).isNotEqualTo(second);
+        }
+
+        @Test
+        @DisplayName("리프레시 토큰 수명은 jwt.refresh-token-ttl-minutes 설정값이다")
+        void shouldExposeConfiguredRefreshTokenTtl() {
+            assertThat(provider.refreshTokenTtl()).isEqualTo(Duration.ofMinutes(10080));
+        }
+
+        @Test
+        @DisplayName("리프레시 토큰 수명이 0 이하면 시작하지 않는다")
+        void shouldRejectNonPositiveRefreshTokenTtl() {
+            assertThatThrownBy(() -> new JwtTokenProviderImpl(TEST_SECRET, 15L, 0L))
+                    .isInstanceOf(IllegalArgumentException.class);
         }
     }
 }

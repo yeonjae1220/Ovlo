@@ -11,6 +11,7 @@ import org.springframework.stereotype.Component;
 
 import javax.crypto.SecretKey;
 import java.nio.charset.StandardCharsets;
+import java.time.Duration;
 import java.util.Base64;
 import java.util.Date;
 import java.util.UUID;
@@ -25,7 +26,7 @@ public class JwtTokenProviderImpl implements JwtTokenProvider {
 
     private final SecretKey secretKey;
     private final long accessTokenTtlMinutes;
-    private final long refreshTokenTtlMinutes;
+    private final Duration refreshTokenTtl;
 
     public JwtTokenProviderImpl(
             @Value("${jwt.secret}") String base64Secret,
@@ -34,7 +35,10 @@ public class JwtTokenProviderImpl implements JwtTokenProvider {
         byte[] keyBytes = Base64.getDecoder().decode(base64Secret);
         this.secretKey = Keys.hmacShaKeyFor(keyBytes);
         this.accessTokenTtlMinutes = accessTokenTtlMinutes;
-        this.refreshTokenTtlMinutes = refreshTokenTtlMinutes;
+        if (refreshTokenTtlMinutes <= 0) {
+            throw new IllegalArgumentException("jwt.refresh-token-ttl-minutes 는 0보다 커야 합니다: " + refreshTokenTtlMinutes);
+        }
+        this.refreshTokenTtl = Duration.ofMinutes(refreshTokenTtlMinutes);
     }
 
     @Override
@@ -56,6 +60,11 @@ public class JwtTokenProviderImpl implements JwtTokenProvider {
     @Override
     public String generateRefreshToken() {
         return UUID.randomUUID().toString();
+    }
+
+    @Override
+    public Duration refreshTokenTtl() {
+        return refreshTokenTtl;
     }
 
     @Override

@@ -23,6 +23,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.time.Duration;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Optional;
@@ -35,6 +36,7 @@ import me.yeonjae.ovlo.domain.member.model.MemberRole;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.then;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.never;
 
 @ExtendWith(MockitoExtension.class)
@@ -51,17 +53,31 @@ class AuthCommandServiceTest {
     @Mock
     private LoadMemberPort loadMemberPort;
 
+    private static final Duration REFRESH_TTL = Duration.ofDays(45);
+
     private AuthCommandService sut;
 
     @BeforeEach
     void setUp() {
-        sut = new AuthCommandService(
+        lenient().when(jwtTokenProvider.refreshTokenTtl()).thenReturn(REFRESH_TTL);
+        sut = newService(false);
+    }
+
+    private AuthCommandService newService(boolean revokeSessionOnReuse) {
+        return new AuthCommandService(
                 loadMemberCredentialsPort,
                 passwordHasherPort,
                 tokenStorePort,
                 jwtTokenProvider,
-                loadMemberPort
+                loadMemberPort,
+                revokeSessionOnReuse
         );
+    }
+
+    /** 세션 만료가 "지금 + 설정된 refresh TTL"인지 본다(쿠키 maxAge 와 같은 소스, GLOBAL-PIT-070). */
+    private static void assertExpiresAfterConfiguredTtl(AuthSession session, Instant before) {
+        assertThat(session.getExpiresAt())
+                .isBetween(before.plus(REFRESH_TTL), Instant.now().plus(REFRESH_TTL));
     }
 
     @Nested
@@ -82,11 +98,14 @@ class AuthCommandServiceTest {
             given(jwtTokenProvider.generateAccessToken(eq(memberId), any(MemberRole.class))).willReturn("access-token");
             given(jwtTokenProvider.generateRefreshToken()).willReturn("refresh-token");
 
+            Instant before = Instant.now();
             TokenPairResult result = sut.login(new LoginCommand(email, rawPassword));
 
             assertThat(result.accessToken()).isEqualTo("access-token");
             assertThat(result.refreshToken()).isEqualTo("refresh-token");
-            then(tokenStorePort).should().save(any(AuthSession.class));
+            ArgumentCaptor<AuthSession> saved = ArgumentCaptor.forClass(AuthSession.class);
+            then(tokenStorePort).should().save(saved.capture());
+            assertExpiresAfterConfiguredTtl(saved.getValue(), before);
         }
 
         @Test
@@ -160,6 +179,7 @@ class AuthCommandServiceTest {
                     .willReturn(RefreshRotationOutcome.ROTATED);
             given(jwtTokenProvider.generateAccessToken(eq(memberId), any(MemberRole.class))).willReturn("new-access-token");
 
+            Instant before = Instant.now();
             TokenPairResult result = sut.refresh(new RefreshTokenCommand("old-refresh-token"));
 
             assertThat(result.accessToken()).isEqualTo("new-access-token");
@@ -167,6 +187,7 @@ class AuthCommandServiceTest {
             ArgumentCaptor<AuthSession> rotated = ArgumentCaptor.forClass(AuthSession.class);
             then(tokenStorePort).should().rotate(rotated.capture(), eq("old-refresh-token"));
             assertThat(rotated.getValue().getRefreshToken()).isEqualTo("new-refresh-token");
+            assertExpiresAfterConfiguredTtl(rotated.getValue(), before);
             then(tokenStorePort).should(never()).save(any(AuthSession.class));
         }
 
@@ -196,6 +217,36 @@ class AuthCommandServiceTest {
                     .extracting(e -> ((AuthException) e).getErrorType())
                     .isEqualTo(AuthException.ErrorType.UNAUTHORIZED);
             then(tokenStorePort).should(never()).delete(any());
+            then(tokenStorePort).should(never()).deleteByRefreshToken(anyString());
+        }
+
+        @Test
+        @DisplayName("재사용 시 세션 폐기를 켜면 401 과 함께 그 세션을 지운다(B안)")
+        void shouldRevokeSession_whenReuseDetectedAndRevokeEnabled() {
+            sut = newService(true);
+            stubSession("old-refresh-token");
+            given(tokenStorePort.rotate(any(AuthSession.class), eq("old-refresh-token")))
+                    .willReturn(RefreshRotationOutcome.REUSED);
+
+            assertThatThrownBy(() -> sut.refresh(new RefreshTokenCommand("old-refresh-token")))
+                    .isInstanceOf(AuthException.class)
+                    .extracting(e -> ((AuthException) e).getErrorType())
+                    .isEqualTo(AuthException.ErrorType.UNAUTHORIZED);
+            then(tokenStorePort).should().deleteByRefreshToken("old-refresh-token");
+            then(tokenStorePort).should(never()).delete(any());
+        }
+
+        @Test
+        @DisplayName("재사용 시 세션 폐기를 켜도 동시 경합(409)에서는 세션을 지우지 않는다")
+        void shouldNotRevokeSession_whenConcurrentEvenIfRevokeEnabled() {
+            sut = newService(true);
+            stubSession("old-refresh-token");
+            given(tokenStorePort.rotate(any(AuthSession.class), eq("old-refresh-token")))
+                    .willReturn(RefreshRotationOutcome.CONCURRENT);
+
+            assertThatThrownBy(() -> sut.refresh(new RefreshTokenCommand("old-refresh-token")))
+                    .extracting(e -> ((AuthException) e).getErrorType())
+                    .isEqualTo(AuthException.ErrorType.CONFLICT);
             then(tokenStorePort).should(never()).deleteByRefreshToken(anyString());
         }
 
