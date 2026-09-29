@@ -83,10 +83,44 @@ docker compose -f docker/docker-compose.yml up -d
 
 ### 로컬 개발 (백엔드)
 
+기본 프로파일은 `local` 입니다. 어느 DB 로 띄우든 아래 값은 직접 넣어야 합니다 — admin 계정은 기본값이
+거부되도록 되어 있어(알려진 기본 자격증명 차단) 로컬에서도 본인 값이 필요합니다.
+
 ```bash
-# dev 프로파일 사용 (H2 인메모리 DB)
-./gradlew bootRun --args='--spring.profiles.active=dev'
+export JAVA_HOME=/Library/Java/JavaVirtualMachines/jdk-21.jdk/Contents/Home   # JDK 21
+export JWT_SECRET=$(openssl rand -base64 32)
+export ADMIN_EMAIL=admin@dev.test                     # .local·.example.com 도메인은 거부됨
+export ADMIN_PASSWORD_BCRYPT=$(htpasswd -bnBC 10 "" '<로컬 admin 비밀번호>' | tr -d ':\n')
+docker run -d --rm --name ovlo-redis -p 127.0.0.1:6379:6379 redis:7-alpine   # 이미 있으면 생략
 ```
+
+**A. H2 (인메모리, 기동·API 확인용)** — 엔티티로 스키마를 만듭니다. 시드 데이터가 없어 회원가입(대학 필수)은
+안 되고, PostgreSQL 배열/jsonb 컬럼을 쓰는 `university_report`·`exchange_video_reviews` 는 생성되지 않습니다.
+
+```bash
+./gradlew bootRun
+```
+
+**B. PostgreSQL (전체 기능)** — 운영과 같이 Flyway 로 스키마·대학 시드를 올립니다. `JPA_DDL_AUTO=none` 을
+빼면 Hibernate 가 먼저 테이블을 만들어 Flyway 가 실패합니다.
+
+```bash
+docker run -d --rm --name ovlo-pg -e POSTGRES_DB=ovlo -e POSTGRES_USER=ovlo -e POSTGRES_PASSWORD=ovlo \
+  -p 127.0.0.1:5433:5432 postgres:16-alpine
+SPRING_DATASOURCE_URL=jdbc:postgresql://localhost:5433/ovlo SPRING_DATASOURCE_USERNAME=ovlo \
+SPRING_DATASOURCE_PASSWORD=ovlo SPRING_DATASOURCE_DRIVER=org.postgresql.Driver \
+JPA_DIALECT=org.hibernate.dialect.PostgreSQLDialect FLYWAY_ENABLED=true JPA_DDL_AUTO=none \
+./gradlew bootRun
+```
+
+### 로컬 개발 (프론트엔드)
+
+```bash
+cd frontend && npm ci --legacy-peer-deps && npm run dev   # http://localhost:3000, /api 는 :8080 으로 프록시
+```
+
+`local` 프로파일은 CORS 에 `http://localhost:3000` 을 기본 허용합니다. 다른 포트로 띄우면 `CORS_ALLOWED_ORIGINS` 를
+맞춰 주세요.
 
 ### 테스트
 

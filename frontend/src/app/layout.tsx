@@ -53,8 +53,9 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   return (
     <html lang={initialLanguage} data-theme="dark" suppressHydrationWarning>
       <head>
-        {/* 페인트 전에 테마 적용(플래시 방지). :root 기본 dark 안전망과 함께 이중 방어. */}
-        <script nonce={nonce} dangerouslySetInnerHTML={{ __html: themeInitScript }} />
+        {/* 페인트 전에 테마 적용(플래시 방지). :root 기본 dark 안전망과 함께 이중 방어.
+            브라우저는 로드 뒤 nonce 속성을 JS 에서 빈 값으로 숨겨 dev 에서 hydration 경고가 난다 — 무시한다. */}
+        <script nonce={nonce} dangerouslySetInnerHTML={{ __html: themeInitScript }} suppressHydrationWarning />
       </head>
       <body data-nonce={nonce}>
         <Providers initialLanguage={initialLanguage}>{children}</Providers>

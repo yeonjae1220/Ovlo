@@ -3,10 +3,13 @@ import type { NextRequest } from 'next/server'
 
 export function middleware(request: NextRequest) {
   const nonce = Buffer.from(crypto.randomUUID()).toString('base64')
+  // next dev 는 React Refresh·소스맵에 eval 을 쓴다. 없으면 스크립트가 막혀 화면이 hydrate 되지 않는다.
+  // 운영 빌드(next build)에는 NODE_ENV=production 이라 붙지 않는다.
+  const devEval = process.env.NODE_ENV === 'development' ? " 'unsafe-eval'" : ''
 
   const csp = [
     "default-src 'self'",
-    `script-src 'nonce-${nonce}' 'strict-dynamic' 'unsafe-inline'`,
+    `script-src 'nonce-${nonce}' 'strict-dynamic' 'unsafe-inline'${devEval}`,
     "style-src 'self' 'unsafe-inline'",
     "img-src 'self' data: https: blob:",
     "font-src 'self'",
