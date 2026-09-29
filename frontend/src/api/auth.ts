@@ -8,9 +8,6 @@ export const authApi = {
   logout: () =>
     apiClient.post('/auth/logout'),
 
-  refresh: () =>
-    apiClient.post<{ accessToken: string }>('/auth/refresh').then((r) => r.data),
-
   googleLogin: (code: string, redirectUri: string) =>
     apiClient.post<GoogleLoginResult>('/auth/google', { code, redirectUri }).then((r) => r.data),
 }

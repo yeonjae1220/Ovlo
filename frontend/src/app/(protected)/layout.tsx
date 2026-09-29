@@ -24,7 +24,7 @@ function AuthSkeleton() {
 }
 
 export default function ProtectedLayout({ children }: { children: React.ReactNode }) {
-  const { accessToken, currentUser, clearAuth } = useAuthStore()
+  const { accessToken, currentUser } = useAuthStore()
   const router = useRouter()
   const pathname = usePathname()
   const [hydrated, setHydrated] = useState(false)
@@ -33,9 +33,10 @@ export default function ProtectedLayout({ children }: { children: React.ReactNod
     const init = async () => {
       if (!accessToken) {
         // currentUser는 localStorage에서 복원됨 — token만 재발급
-        // refreshAuth() 싱글톤: layout과 axios interceptor가 동시 호출해도 1회만 실행
-        const token = await refreshAuth()
-        if (!token) clearAuth()
+        // refreshAuth() 싱글톤: layout과 axios interceptor가 동시 호출해도 1회만 실행.
+        // 세션이 끝났으면 refreshAuth 가 인증 상태를 지운다. 일시적 실패(throw)는 지우지 않아
+        // 다음 진입 때 다시 복원을 시도한다(GLOBAL-PIT-012).
+        await refreshAuth().catch(() => null)
       }
       setHydrated(true)
     }

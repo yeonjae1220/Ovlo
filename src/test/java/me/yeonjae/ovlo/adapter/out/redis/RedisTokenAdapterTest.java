@@ -2,6 +2,7 @@ package me.yeonjae.ovlo.adapter.out.redis;
 
 import me.yeonjae.ovlo.domain.auth.model.AuthSession;
 import me.yeonjae.ovlo.domain.auth.model.AuthSessionId;
+import me.yeonjae.ovlo.domain.auth.model.RefreshRotationOutcome;
 import me.yeonjae.ovlo.domain.member.model.MemberId;
 import me.yeonjae.ovlo.shared.security.TokenHashUtil;
 import org.junit.jupiter.api.BeforeEach;
@@ -21,6 +22,8 @@ import org.testcontainers.utility.DockerImageName;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CyclicBarrier;
@@ -111,20 +114,6 @@ class RedisTokenAdapterTest {
     }
 
     @Test
-    @DisplayName("동일 세션을 rotate 후 저장하면 새 토큰으로 갱신된다")
-    void shouldUpdateToken_whenSavingRotatedSession() {
-        AuthSession session = AuthSession.create(memberId, "first-token", expiresAt);
-        adapter.save(session);
-
-        session.rotate("second-token", Instant.now().plus(7, ChronoUnit.DAYS));
-        adapter.save(session);
-
-        Optional<AuthSession> found = adapter.findByMemberId(memberId);
-        assertThat(found).isPresent();
-        assertThat(found.get().getRefreshToken()).isEqualTo(TokenHashUtil.sha256("second-token"));
-    }
-
-    @Test
     @DisplayName("refreshToken은 평문이 아닌 SHA-256 해시로 Redis에 저장된다 (GLOBAL-PIT-001)")
     void shouldStoreRefreshTokenHashedNotPlaintext() {
         AuthSession session = AuthSession.create(memberId, refreshToken, expiresAt);
@@ -149,61 +138,156 @@ class RedisTokenAdapterTest {
         assertThat(storedField).isEqualTo(hashed);
     }
 
-    @Test
-    @DisplayName("토큰 rotation 시 구 토큰 해시 역인덱스가 삭제된다")
-    void shouldDeleteOldTokenIndex_onRotation() {
-        AuthSession session = AuthSession.create(memberId, "old-token", expiresAt);
-        adapter.save(session);
+    // ── rotate: 제출 토큰 기준 compare-and-rotate ────────────────────────────
 
-        session.rotate("new-token", Instant.now().plus(7, ChronoUnit.DAYS));
-        adapter.save(session);
+    private AuthSession saveBase(String token) {
+        AuthSession base = AuthSession.create(memberId, token, expiresAt);
+        adapter.save(base);
+        return base;
+    }
 
-        // 구 토큰으로는 더 이상 조회되지 않고, 신 토큰으로 조회된다
-        assertThat(adapter.findByRefreshToken("old-token")).isEmpty();
-        assertThat(adapter.findByRefreshToken("new-token")).isPresent();
-        assertThat(redisTemplate.hasKey("auth:token:" + TokenHashUtil.sha256("old-token"))).isFalse();
+    private RefreshRotationOutcome rotate(AuthSessionId sessionId, String presented, String next) {
+        AuthSession rotated = AuthSession.restore(sessionId, memberId, next,
+                Instant.now().plus(7, ChronoUnit.DAYS), false);
+        return adapter.rotate(rotated, presented);
+    }
+
+    private String sessionField(AuthSessionId sessionId, String field) {
+        return (String) redisTemplate.opsForHash().get("auth:session:" + sessionId.value(), field);
     }
 
     @Test
-    @DisplayName("같은 세션에 대한 동시 rotation 뒤에도 유효 refresh 토큰은 정확히 하나만 남는다 (WATCH CAS)")
-    void shouldKeepExactlyOneToken_underConcurrentRotation() throws Exception {
-        // 기준 세션 저장 후, 매 라운드 같은 세션을 서로 다른 토큰으로 동시에 rotate 한다.
-        AuthSession base = AuthSession.create(memberId, "base-token", expiresAt);
-        adapter.save(base);
-        AuthSessionId sessionId = base.getId();
-        Instant exp = Instant.now().plus(7, ChronoUnit.DAYS);
+    @DisplayName("현재 토큰을 제출하면 ROTATED — 새 토큰으로 조회되고 직전 토큰 해시가 기록된다")
+    void shouldRotate_whenPresentedTokenIsCurrent() {
+        AuthSession base = saveBase("old-token");
 
-        ExecutorService pool = Executors.newFixedThreadPool(2);
+        RefreshRotationOutcome outcome = rotate(base.getId(), "old-token", "new-token");
+
+        assertThat(outcome).isEqualTo(RefreshRotationOutcome.ROTATED);
+        assertThat(adapter.findByRefreshToken("new-token")).isPresent();
+        assertThat(sessionField(base.getId(), "refreshToken")).isEqualTo(TokenHashUtil.sha256("new-token"));
+        assertThat(sessionField(base.getId(), "prevRefreshToken")).isEqualTo(TokenHashUtil.sha256("old-token"));
+    }
+
+    @Test
+    @DisplayName("rotation 뒤에도 Redis 어디에도 평문 토큰이 남지 않는다 (GLOBAL-PIT-001)")
+    void shouldNotStorePlaintext_afterRotation() {
+        AuthSession base = saveBase("plain-old-token");
+        rotate(base.getId(), "plain-old-token", "plain-new-token");
+
+        Set<String> allKeys = redisTemplate.keys("*");
+        assertThat(allKeys).noneMatch(k -> k.contains("plain-old-token") || k.contains("plain-new-token"));
+        assertThat(redisTemplate.opsForHash().values("auth:session:" + base.getId().value()))
+                .noneMatch(v -> v.equals("plain-old-token") || v.equals("plain-new-token"));
+    }
+
+    @Test
+    @DisplayName("교체된 직전 토큰의 역인덱스는 재사용 감지 창만큼만 짧게 남는다")
+    void shouldShortenPreviousTokenIndexTtl_onRotation() {
+        AuthSession base = saveBase("old-token");
+
+        rotate(base.getId(), "old-token", "new-token");
+
+        Long prevTtl = redisTemplate.getExpire("auth:token:" + TokenHashUtil.sha256("old-token"));
+        Long newTtl = redisTemplate.getExpire("auth:token:" + TokenHashUtil.sha256("new-token"));
+        assertThat(prevTtl).isPositive().isLessThanOrEqualTo(RedisTokenAdapter.REUSE_DETECTION_WINDOW.toSeconds());
+        assertThat(newTtl).isGreaterThan(prevTtl);
+    }
+
+    @Test
+    @DisplayName("같은 이전 토큰으로 동시에 재발급하면 정확히 하나만 ROTATED, 나머지는 CONCURRENT")
+    void shouldRotateExactlyOnce_underConcurrentRefreshWithSameToken() throws Exception {
+        int contenders = 8;
+        ExecutorService pool = Executors.newFixedThreadPool(contenders);
         try {
-            for (int round = 0; round < 25; round++) {
-                String tokenA = "tokA-" + round;
-                String tokenB = "tokB-" + round;
-                // rotate 이후 상태(동일 sessionId·memberId, 서로 다른 새 토큰)를 두 스레드가 동시 저장
-                AuthSession sa = AuthSession.restore(sessionId, memberId, tokenA, exp, false);
-                AuthSession sb = AuthSession.restore(sessionId, memberId, tokenB, exp, false);
+            for (int round = 0; round < 15; round++) {
+                redisTemplate.getConnectionFactory().getConnection().serverCommands().flushAll();
+                AuthSession base = saveBase("shared-old-" + round);
+                String presented = "shared-old-" + round;
 
-                CyclicBarrier barrier = new CyclicBarrier(2);
-                Future<?> fa = pool.submit(() -> { barrier.await(); adapter.save(sa); return null; });
-                Future<?> fb = pool.submit(() -> { barrier.await(); adapter.save(sb); return null; });
-                fa.get();
-                fb.get();
+                CyclicBarrier barrier = new CyclicBarrier(contenders);
+                List<Future<RefreshRotationOutcome>> futures = new ArrayList<>();
+                for (int i = 0; i < contenders; i++) {
+                    String next = "next-" + round + "-" + i;
+                    futures.add(pool.submit(() -> {
+                        barrier.await();
+                        return rotate(base.getId(), presented, next);
+                    }));
+                }
 
-                // 불변식: 매 라운드 후 세션당 유효 refresh 토큰 역인덱스는 정확히 1개여야 한다.
-                // (WATCH 없이 read-modify-write 하면 두 토큰이 모두 남아 orphan 이 누적된다)
-                Set<String> tokenKeys = redisTemplate.keys("auth:token:*");
-                assertThat(tokenKeys)
-                        .as("라운드 %d 후 유효 토큰 인덱스 수", round)
-                        .hasSize(1);
+                List<String> winners = new ArrayList<>();
+                int concurrent = 0;
+                for (int i = 0; i < contenders; i++) {
+                    RefreshRotationOutcome outcome = futures.get(i).get();
+                    if (outcome == RefreshRotationOutcome.ROTATED) winners.add("next-" + round + "-" + i);
+                    if (outcome == RefreshRotationOutcome.CONCURRENT) concurrent++;
+                }
+
+                // single-use 계약: 같은 이전 토큰으로 시작한 재발급 중 정확히 하나만 성공한다
+                assertThat(winners).as("라운드 %d ROTATED 수", round).hasSize(1);
+                assertThat(concurrent).as("라운드 %d CONCURRENT 수", round).isEqualTo(contenders - 1);
+
+                // 살아남은 토큰은 승자의 토큰이고, 패자가 만든 토큰은 어디에도 저장되지 않는다
+                String winner = winners.get(0);
+                assertThat(sessionField(base.getId(), "refreshToken")).isEqualTo(TokenHashUtil.sha256(winner));
+                for (int i = 0; i < contenders; i++) {
+                    String candidate = "next-" + round + "-" + i;
+                    if (!candidate.equals(winner)) {
+                        assertThat(adapter.findByRefreshToken(candidate)).as("패자 토큰 %s", candidate).isEmpty();
+                    }
+                }
             }
         } finally {
             pool.shutdownNow();
         }
+    }
 
-        // 최종적으로 남은 단 하나의 토큰 인덱스는 세션 Hash의 refreshToken 필드와 일치해야 한다.
-        Set<String> sessionKeys = redisTemplate.keys("auth:session:*");
-        assertThat(sessionKeys).hasSize(1);
-        String storedHash = (String) redisTemplate.opsForHash()
-                .get(sessionKeys.iterator().next(), "refreshToken");
-        assertThat(redisTemplate.hasKey("auth:token:" + storedHash)).isTrue();
+    @Test
+    @DisplayName("유예 시간이 지난 뒤 직전 토큰을 다시 제출하면 REUSED — 현재 토큰은 영향받지 않는다")
+    void shouldDetectReuse_whenPreviousTokenPresentedAfterGrace() {
+        AuthSession base = saveBase("old-token");
+        rotate(base.getId(), "old-token", "new-token");
+        // rotatedAt 을 유예 시간 밖으로 되돌린다
+        long past = Instant.now().minus(RedisTokenAdapter.CONCURRENT_GRACE).minusSeconds(1).toEpochMilli();
+        redisTemplate.opsForHash().put("auth:session:" + base.getId().value(), "rotatedAt", String.valueOf(past));
+
+        RefreshRotationOutcome outcome = rotate(base.getId(), "old-token", "attacker-token");
+
+        assertThat(outcome).isEqualTo(RefreshRotationOutcome.REUSED);
+        assertThat(adapter.findByRefreshToken("attacker-token")).isEmpty();
+        assertThat(sessionField(base.getId(), "refreshToken")).isEqualTo(TokenHashUtil.sha256("new-token"));
+    }
+
+    @Test
+    @DisplayName("두 세대 이전 토큰을 제출하면 INVALID")
+    void shouldReturnInvalid_whenOlderThanPreviousToken() {
+        AuthSession base = saveBase("t0");
+        rotate(base.getId(), "t0", "t1");
+        rotate(base.getId(), "t1", "t2");
+
+        assertThat(rotate(base.getId(), "t0", "t3")).isEqualTo(RefreshRotationOutcome.INVALID);
+        assertThat(sessionField(base.getId(), "refreshToken")).isEqualTo(TokenHashUtil.sha256("t2"));
+    }
+
+    @Test
+    @DisplayName("로그아웃과 경합한 재발급은 INVALID이고 세션을 되살리지 않는다")
+    void shouldNotResurrectSession_whenRotateRacesLogout() {
+        AuthSession base = saveBase("old-token");
+
+        adapter.deleteByRefreshToken("old-token");
+        RefreshRotationOutcome outcome = rotate(base.getId(), "old-token", "new-token");
+
+        assertThat(outcome).isEqualTo(RefreshRotationOutcome.INVALID);
+        assertThat(redisTemplate.hasKey("auth:session:" + base.getId().value())).isFalse();
+        assertThat(adapter.findByRefreshToken("new-token")).isEmpty();
+    }
+
+    @Test
+    @DisplayName("무효화된 세션은 현재 토큰이라도 INVALID")
+    void shouldReturnInvalid_whenSessionRevoked() {
+        AuthSession base = saveBase("old-token");
+        redisTemplate.opsForHash().put("auth:session:" + base.getId().value(), "revoked", "true");
+
+        assertThat(rotate(base.getId(), "old-token", "new-token")).isEqualTo(RefreshRotationOutcome.INVALID);
     }
 }
