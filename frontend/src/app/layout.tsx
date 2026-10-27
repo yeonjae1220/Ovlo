@@ -25,13 +25,13 @@ export const metadata: Metadata = {
     siteName: 'Ovlo',
     title: 'Ovlo — 교환학생 커뮤니티',
     description: '교환학생 커뮤니티 — 대학교 정보, 게시판, 채팅을 한 곳에서',
-    images: [{ url: '/icons/og-image.png', width: 1200, height: 630, alt: 'Ovlo' }],
+    images: [{ url: '/opengraph-image', width: 1200, height: 630, alt: 'Ovlo exchange student community' }],
   },
   twitter: {
     card: 'summary_large_image',
     title: 'Ovlo — 교환학생 커뮤니티',
     description: '교환학생 커뮤니티 — 대학교 정보, 게시판, 채팅을 한 곳에서',
-    images: ['/icons/og-image.png'],
+    images: ['/opengraph-image'],
   },
   robots: { index: true, follow: true },
 }

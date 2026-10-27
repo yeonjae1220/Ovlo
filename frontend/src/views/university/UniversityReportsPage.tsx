@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import Link from 'next/link'
 import { useUniversityReports } from '../../hooks/useUniversity'
 import { QueryErrorNotice } from '../../components/ui'
 import { useI18n } from '../../i18n/I18nProvider'
@@ -16,7 +17,6 @@ function stripReportSuffix(title: string) {
 const C = {
   bg:          'var(--color-bg)',
   card:        'var(--color-surface)',
-  hover:       'var(--color-surface-hover)',
   disabled:    'var(--color-surface-disabled)',
   border:      'var(--color-border)',
   borderLight: 'var(--color-border-strong)',
@@ -107,16 +107,11 @@ export default function UniversityReportsPage() {
 
       <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
         {reports.map((r) => (
-          <li
-            key={r.id}
-            onClick={() => router.push(`/university-reports/${r.id}?lang=${lang}`)}
-            style={{
-              padding: '16px 20px', borderBottom: `1px solid ${C.border}`,
-              cursor: 'pointer', transition: 'background 0.15s',
-            }}
-            onMouseEnter={(e) => { (e.currentTarget as HTMLLIElement).style.background = C.hover }}
-            onMouseLeave={(e) => { (e.currentTarget as HTMLLIElement).style.background = 'transparent' }}
-          >
+          <li key={r.id} style={{ borderBottom: `1px solid ${C.border}` }}>
+            <Link
+              href={`/university-reports/${r.id}?lang=${lang}`}
+              className="report-list-link"
+            >
             <div style={{ fontWeight: 600, fontSize: 16, color: C.textPrimary, marginBottom: 4 }}>
               {stripReportSuffix(r.title)}
             </div>
@@ -135,6 +130,7 @@ export default function UniversityReportsPage() {
             <div style={{ marginTop: 8, fontSize: 11, color: C.textDim }}>
               {t('univ.reports.aiDisclaimer')}
             </div>
+            </Link>
           </li>
         ))}
       </ul>

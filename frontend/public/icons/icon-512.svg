@@ -1,4 +1,7 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
-  <rect width="512" height="512" rx="100" fill="#7c3aed"/>
-  <text x="256" y="330" font-family="system-ui, sans-serif" font-size="240" font-weight="bold" fill="white" text-anchor="middle">O</text>
+  <rect width="512" height="512" rx="128" fill="#0a5f55"/>
+  <circle cx="256" cy="256" r="130" fill="none" stroke="#fffdf8" stroke-width="45"/>
+  <path d="M125 181C176 104 336 104 387 181" fill="none" stroke="#fffdf8" stroke-width="19" stroke-linecap="round" opacity=".72"/>
+  <circle cx="112" cy="187" r="29" fill="#d45d3d" stroke="#fffdf8" stroke-width="13"/>
+  <circle cx="400" cy="325" r="29" fill="#f1b45b" stroke="#fffdf8" stroke-width="13"/>
 </svg>

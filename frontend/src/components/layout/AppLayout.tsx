@@ -2,181 +2,119 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import type { CSSProperties, ReactNode } from 'react'
+import type { ReactNode } from 'react'
 import { useAuthStore } from '../../store/authStore'
-import { useBreakpoint } from '../../hooks/useBreakpoint'
 import { useI18n } from '../../i18n/I18nProvider'
 import { Avatar } from '../ui'
+import { Brand } from '../ui/Brand'
+import { ThemeToggle } from '../ui/ThemeToggle'
+import { UiLanguageSwitcher } from '../ui/UiLanguageSwitcher'
+
+type NavIconName = 'home' | 'globe' | 'chat' | 'profile'
+
+function NavIcon({ name }: { name: NavIconName }) {
+  if (name === 'home') {
+    return (
+      <svg aria-hidden="true" width="19" height="19" viewBox="0 0 24 24" fill="none">
+        <path d="m4 10.5 8-6.5 8 6.5v8.25a1.25 1.25 0 0 1-1.25 1.25H5.25A1.25 1.25 0 0 1 4 18.75V10.5Z" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round" />
+        <path d="M9.5 20v-6h5v6" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round" />
+      </svg>
+    )
+  }
+  if (name === 'globe') {
+    return (
+      <svg aria-hidden="true" width="19" height="19" viewBox="0 0 24 24" fill="none">
+        <circle cx="12" cy="12" r="8.5" stroke="currentColor" strokeWidth="1.8" />
+        <path d="M3.8 12h16.4M12 3.5c2.3 2.3 3.4 5.1 3.4 8.5S14.3 18.2 12 20.5C9.7 18.2 8.6 15.4 8.6 12S9.7 5.8 12 3.5Z" stroke="currentColor" strokeWidth="1.5" />
+      </svg>
+    )
+  }
+  if (name === 'chat') {
+    return (
+      <svg aria-hidden="true" width="19" height="19" viewBox="0 0 24 24" fill="none">
+        <path d="M5.2 5.2h13.6v10.1H10l-4.8 4v-14Z" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round" />
+        <path d="M8.5 9h7M8.5 12h4.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+      </svg>
+    )
+  }
+  return (
+    <svg aria-hidden="true" width="19" height="19" viewBox="0 0 24 24" fill="none">
+      <circle cx="12" cy="8" r="3.25" stroke="currentColor" strokeWidth="1.8" />
+      <path d="M5.5 20c.5-4 2.7-6 6.5-6s6 2 6.5 6" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+    </svg>
+  )
+}
 
 export default function AppLayout({ children }: { children: ReactNode }) {
   const { t } = useI18n()
   const { currentUser } = useAuthStore()
-  const { isMobile } = useBreakpoint()
   const pathname = usePathname()
   const userLabel = currentUser?.nickname ?? currentUser?.name ?? t('nav.profile')
 
-  const NAV_ITEMS = [
-    { to: '/boards', labelKey: 'nav.home' as const, icon: '⌂' },
-    { to: '/exchange-universities', labelKey: 'nav.exchange' as const, icon: '⌕' },
-    { to: '/chat', labelKey: 'nav.chat' as const, icon: '◦' },
+  const navItems: Array<{ to: string; label: string; icon: NavIconName }> = [
+    { to: '/boards', label: t('nav.home'), icon: 'home' },
+    { to: '/exchange-universities', label: t('nav.exchange'), icon: 'globe' },
+    { to: '/chat', label: t('nav.chat'), icon: 'chat' },
   ]
 
   const isActive = (path: string) => pathname !== null && (pathname === path || pathname.startsWith(path + '/'))
 
-  const desktopLinkStyle = (active: boolean): CSSProperties => ({
-    padding: '8px 13px',
-    borderRadius: 8,
-    textDecoration: 'none',
-    fontSize: 14,
-    fontWeight: active ? 800 : 650,
-    color: active ? 'var(--color-accent)' : 'var(--color-text-muted)',
-    background: active ? 'var(--color-accent-subtle)' : 'transparent',
-    transition: 'color 0.15s, background 0.15s',
-  })
-
   return (
-    <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', background: 'var(--color-bg)', color: 'var(--color-text)' }}>
-      <header
-        style={{
-          // 상단은 safe-area 만큼 밀어낸다 — 네이티브 셸에서 상태바와 겹치는 것을 방지.
-          // 하단 탭바의 env(safe-area-inset-bottom) 처리와 같은 패턴이며, 웹에서는 inset 이 0이라 동일하다.
-          padding: isMobile
-            ? 'max(10px, env(safe-area-inset-top)) 14px 10px'
-            : 'max(12px, env(safe-area-inset-top)) 24px 12px',
-          borderBottom: '1px solid var(--color-border)',
-          display: 'flex',
-          alignItems: 'center',
-          gap: 16,
-          position: 'sticky',
-          top: 0,
-          background: 'color-mix(in srgb, var(--color-bg-elevated) 92%, transparent)',
-          backdropFilter: 'blur(14px)',
-          zIndex: 100,
-        }}
-      >
-        <Link href="/" style={{ display: 'inline-flex', alignItems: 'center', gap: 8, fontWeight: 900, fontSize: 21, textDecoration: 'none', color: 'var(--color-text)', flexShrink: 0 }}>
-          <span style={{ width: 28, height: 28, borderRadius: 9, background: 'var(--color-accent-strong)', color: 'var(--color-on-accent)', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontSize: 15 }}>O</span>
-          Ovlo
-        </Link>
+    <div className="app-shell">
+      <header className="app-header">
+        <div className="app-header__inner">
+          <Brand compact />
 
-        {!isMobile && (
-          <nav style={{ display: 'flex', gap: 4, alignItems: 'center' }}>
-            {NAV_ITEMS.map(({ to, labelKey }) => (
-              <Link key={to} href={to} style={desktopLinkStyle(isActive(to))}>
-                {t(labelKey)}
+          <nav className="app-nav-desktop" aria-label="Primary">
+            {navItems.map(({ to, label }) => (
+              <Link key={to} href={to} className={isActive(to) ? 'app-nav-link app-nav-link--active' : 'app-nav-link'}>
+                {label}
               </Link>
             ))}
             {currentUser && (
-              <Link href={`/profile/${currentUser.id}`} style={desktopLinkStyle(isActive(`/profile/${currentUser.id}`))}>
+              <Link
+                href={`/profile/${currentUser.id}`}
+                className={isActive(`/profile/${currentUser.id}`) ? 'app-nav-link app-nav-link--active' : 'app-nav-link'}
+              >
                 {t('nav.profile')}
               </Link>
             )}
           </nav>
-        )}
 
-        <div style={{ marginLeft: 'auto', display: 'flex', gap: 12, alignItems: 'center' }}>
-          {currentUser && (
-            <Link
-              href={`/profile/${currentUser.id}`}
-              style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: 8,
-                color: 'var(--color-text-secondary)',
-                fontSize: 14,
-                fontWeight: 750,
-                textDecoration: 'none',
-                maxWidth: isMobile ? 120 : 220,
-                overflow: 'hidden',
-              }}
-              title={userLabel}
-            >
-              <Avatar label={userLabel} size="sm" />
-              {!isMobile && <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{userLabel}</span>}
-            </Link>
-          )}
+          <div className="app-header__tools">
+            <span className="app-header__theme"><ThemeToggle /></span>
+            <UiLanguageSwitcher />
+            {currentUser && (
+              <Link className="app-user" href={`/profile/${currentUser.id}`} title={userLabel}>
+                <Avatar label={userLabel} size="sm" />
+                <span className="app-user-label">{userLabel}</span>
+              </Link>
+            )}
+          </div>
         </div>
       </header>
 
-      <main
-        style={{
-          flex: 1,
-          padding: isMobile ? '18px 14px' : '34px 24px',
-          paddingBottom: isMobile ? 'calc(22px + 72px)' : '34px',
-        }}
-      >
-        <div style={{ maxWidth: 'var(--layout-max)', margin: '0 auto', width: '100%' }}>
-          {children}
-        </div>
+      <main className="app-main">
+        <div className="app-main__inner">{children}</div>
       </main>
 
-      {isMobile && (
-        <nav
-          style={{
-            borderTop: '1px solid var(--color-border)',
-            padding: '7px 8px max(7px, env(safe-area-inset-bottom))',
-            display: 'flex',
-            gap: 6,
-            position: 'fixed',
-            bottom: 0,
-            left: 0,
-            right: 0,
-            background: 'color-mix(in srgb, var(--color-bg-elevated) 94%, transparent)',
-            backdropFilter: 'blur(14px)',
-            zIndex: 100,
-          }}
-        >
-          {NAV_ITEMS.map(({ to, labelKey, icon }) => (
-            <Link
-              key={to}
-              href={to}
-              style={{
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: 3,
-                textDecoration: 'none',
-                fontSize: 11,
-                fontWeight: 800,
-                color: isActive(to) ? 'var(--color-accent)' : 'var(--color-text-muted)',
-                background: isActive(to) ? 'var(--color-accent-subtle)' : 'transparent',
-                borderRadius: 10,
-                padding: '7px 6px',
-                minWidth: 0,
-                flex: 1,
-              }}
-            >
-              <span aria-hidden="true" style={{ fontSize: 18, lineHeight: 1 }}>{icon}</span>
-              {t(labelKey)}
-            </Link>
-          ))}
-          {currentUser && (
-            <Link
-              href={`/profile/${currentUser.id}`}
-              style={{
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: 3,
-                textDecoration: 'none',
-                fontSize: 11,
-                fontWeight: 800,
-                color: isActive(`/profile/${currentUser.id}`) ? 'var(--color-accent)' : 'var(--color-text-muted)',
-                background: isActive(`/profile/${currentUser.id}`) ? 'var(--color-accent-subtle)' : 'transparent',
-                borderRadius: 10,
-                padding: '7px 6px',
-                minWidth: 0,
-                flex: 1,
-              }}
-            >
-              <span aria-hidden="true" style={{ fontSize: 18, lineHeight: 1 }}>◎</span>
-              {t('nav.profile')}
-            </Link>
-          )}
-        </nav>
-      )}
+      <nav className="app-nav-mobile" aria-label="Primary">
+        {navItems.map(({ to, label, icon }) => (
+          <Link key={to} href={to} className={isActive(to) ? 'app-mobile-link app-mobile-link--active' : 'app-mobile-link'}>
+            <NavIcon name={icon} />
+            <span>{label}</span>
+          </Link>
+        ))}
+        {currentUser && (
+          <Link
+            href={`/profile/${currentUser.id}`}
+            className={isActive(`/profile/${currentUser.id}`) ? 'app-mobile-link app-mobile-link--active' : 'app-mobile-link'}
+          >
+            <NavIcon name="profile" />
+            <span>{t('nav.profile')}</span>
+          </Link>
+        )}
+      </nav>
     </div>
   )
 }

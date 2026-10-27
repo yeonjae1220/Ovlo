@@ -11,6 +11,7 @@ import { useNicknameAvailability } from '../../hooks/useMember'
 import { useI18n } from '../../i18n/I18nProvider'
 import { SUPPORTED_UI_LANGUAGES, LANGUAGE_LABELS } from '../../i18n/messages'
 import type { MessageKey } from '../../i18n/messages'
+import { Brand } from '../../components/ui/Brand'
 
 const GOOGLE_CLIENT_ID = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || null
 
@@ -259,6 +260,7 @@ export default function RegisterPage() {
 
   return (
     <div style={containerStyle}>
+      <div style={{ marginBottom: 22 }}><Brand /></div>
       <h2 style={{ margin: '0 0 24px', fontSize: 22, fontWeight: 800, color: 'var(--color-text)' }}>{t('register.title')}</h2>
 
       <StepIndicator step={step} t={t} />

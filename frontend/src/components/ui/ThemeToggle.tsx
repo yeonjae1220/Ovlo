@@ -12,8 +12,8 @@ const OPTIONS: { value: ThemePreference; icon: string; key: MessageKey }[] = [
 ]
 
 /**
- * system/light/dark 3-way 토글. 저장된 선호가 없으면 dark가 기본이지만
- * 사용자는 언제든 system(OS 따름)·light로 바꿀 수 있다.
+ * system/light/dark 3-way 토글. 저장된 선호가 없으면 light가 기본이며
+ * 사용자는 언제든 system(OS 따름)·dark로 바꿀 수 있다.
  */
 export function ThemeToggle() {
   const { preference, setPreference } = useTheme()
