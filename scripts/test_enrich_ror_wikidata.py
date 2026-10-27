@@ -10,7 +10,8 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 from enrich_ror_wikidata import (  # noqa: E402
-    batch_cache_key, build_plan, cached, host_suffixes, match_by_domain, match_by_name, name_similarity,
+    REJECTED_MATCHES, batch_cache_key, build_plan, cached, host_suffixes, match_all, match_by_domain,
+    match_by_name, name_similarity,
     normalize_name, pick_label, plan_name_change, write_apply_sql,
 )
 
@@ -198,10 +199,50 @@ class BuildPlanTest(unittest.TestCase):
         self.assertEqual({("ko", "refresh"), ("ja", "keep_protected")}, {(d[2], d[-1]) for d in diff})
         self.assertEqual((1, 1), (stats["name_refresh"], stats["name_keep_protected"]))
 
+    def test_korean_name_with_latin_letters_goes_to_review(self) -> None:
+        _, names, diff, _, stats = self.plan(labels={"Q1": {"ko": "ESPCI 파리", "ja": "ESPCIパリ"}})
+        self.assertEqual(["ja"], [n["lang"] for n in names])  # 라틴 검사는 ko 만
+        self.assertIn(("ko", "latin_review"), {(d[2], d[-1]) for d in diff})
+        self.assertEqual(1, stats["name_latin_review"])
+
+    def test_korean_name_used_by_other_university_goes_to_review(self) -> None:
+        current = {("2", "ko"): {"name": "부산대학교", "source": "wikidata", "qid": "Q2"}}
+        _, names, diff, _, stats = self.plan(current=current, labels={"Q1": {"ko": "부산대학교"}})
+        self.assertEqual([], names)
+        self.assertEqual("duplicate_review", diff[0][-1])
+        self.assertEqual((1, 0), (stats["name_duplicate_review"], stats["name_insert"]))
+
+    def test_duplicate_between_two_proposals_holds_both(self) -> None:
+        rows = [self.row(), {**self.row(), "id": "2", "name_en": "Pusan National University"}]
+        match2 = {**self.match(qid="Q2"), "ror_id": "0other000"}
+        extra = {**self.extra(SEOUL), "Q2": {"coords": [], "ror": {"0other000"}}}
+        _, names, diff, _, _ = build_plan(rows, {"1": self.match(), "2": match2}, {},
+                                          {"Q1": {"ko": "부산대학교"}, "Q2": {"ko": "부산대학교"}}, extra)
+        self.assertEqual([], names)
+        self.assertEqual({"duplicate_review"}, {d[-1] for d in diff})
+
+    def test_same_qid_on_another_row_is_still_a_duplicate(self) -> None:
+        # 밀양대가 ROR 별칭으로 부산대 레코드(같은 QID)에 매칭된 경우 — 같은 QID 여도 막는다
+        current = {("2", "ko"): {"name": "서울대학교", "source": "wikidata", "qid": "Q1"}}
+        _, names, diff, _, _ = self.plan(current=current)
+        self.assertEqual([], names)
+        self.assertEqual("duplicate_review", diff[0][-1])
+
     def test_match_without_qid_records_ror_only(self) -> None:
         gu, names, _, coords, _ = self.plan(match=self.match(qid=None), extra={})
         self.assertEqual(("04h9pn542", None), (gu[0]["ror_id"], gu[0]["qid"]))
         self.assertEqual(([], []), (names, coords))
+
+
+class RejectedMatchTest(unittest.TestCase):
+    def test_rejected_row_is_not_matched_even_with_exact_domain(self) -> None:
+        rid = next(iter(REJECTED_MATCHES))
+        row = {**master("West Virginia University at Parkersburg", "westliberty.edu"), "id": rid}
+        result = match_all([row], index(ror("0wlu00000", "West Liberty University", hosts=("westliberty.edu",))), {})
+        self.assertEqual({"method": "rejected_manual"}, result[rid])
+
+    def test_rejected_ids_are_the_reviewed_four(self) -> None:
+        self.assertEqual({"1244", "2697", "5494", "9861"}, set(REJECTED_MATCHES))
 
 
 class CacheTest(unittest.TestCase):

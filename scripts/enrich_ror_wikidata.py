@@ -45,6 +45,18 @@ MIN_NAME_SIM_FOR_DOMAIN = 0.34
 MIN_NAME_SIM_FOR_SUFFIX = 0.6
 MAX_COORD_DISTANCE_KM = 150
 AMBIGUITY_MARGIN = 0.5
+# 이름 유사도 0.5 미만 도메인 매칭 96건을 사람이 검토해 걸러낸 행(2026-10-27). 키는 운영 global_universities.id.
+REJECTED_MATCHES = {
+    "1244": "마스터 domain 이 다른 학교(westliberty.edu) — WVU Parkersburg ≠ West Liberty University",
+    "5494": "단과대 행이 본교 레코드로 매칭됨 (Riara University School of Business and Law)",
+    "2697": "이름이 일반적이라 Cali 의 Bellas Artes 인지 불확실",
+    "9861": "학생 포털 도메인(aluno.ifsp.edu.br)으로 매칭 — 이름이 일반적이라 IFSP 인지 불확실",
+}
+# 화면에 바로 보이는 언어만 검사한다. 라틴 문자가 섞인 이름은 음역이 덜 된 라벨이고,
+# QID 가 다른 학교와 같은 이름은 상위 기관·통합 전 학교 라벨일 가능성이 높다(예: 밀양대 → 부산대학교).
+LATIN_CHECK_LANGS = {"ko"}
+DUPLICATE_CHECK_LANGS = {"ko"}
+LATIN_RE = re.compile(r"[A-Za-z]")
 
 ZH_TRADITIONAL_COUNTRIES = {"TW", "HK", "MO"}
 LANG_FALLBACKS = {
@@ -207,6 +219,9 @@ def match_by_name(row: dict, by_name: dict) -> tuple[tuple | None, str]:
 def match_all(rows: list[dict], by_host: dict, by_name: dict) -> dict[str, dict]:
     results = {}
     for row in rows:
+        if row["id"] in REJECTED_MATCHES:
+            results[row["id"]] = {"method": "rejected_manual"}
+            continue
         cand, method = match_by_domain(row, by_host)
         if cand is None and method != "ambiguous_domain":
             cand, method = match_by_name(row, by_name)
@@ -356,6 +371,31 @@ def plan_name_change(current: dict | None, proposed: str, qid: str) -> str:
 APPLIED_ACTIONS = {"insert", "replace_suspicious"}
 
 
+def name_owners(current_names: dict, proposals: list[tuple]) -> dict[tuple[str, str], set]:
+    """(lang, 이름) → 그 이름을 쓰거나 쓰게 될 대학 id 집합."""
+    owners = defaultdict(set)
+    for (uid, lang), cur in current_names.items():
+        if lang in DUPLICATE_CHECK_LANGS:
+            owners[(lang, cur["name"])].add(uid)
+    for uid, lang, value, action in proposals:
+        if lang in DUPLICATE_CHECK_LANGS and action in APPLIED_ACTIONS:
+            owners[(lang, value)].add(uid)
+    return owners
+
+
+def review_action(action: str, uid: str, lang: str, value: str, owners: dict) -> str:
+    """적용 예정 이름이 화면 품질 검사에 걸리면 검토 action 으로 바꾼다."""
+    if action not in APPLIED_ACTIONS:
+        return action
+    if lang in LATIN_CHECK_LANGS and LATIN_RE.search(value):
+        return "latin_review"
+    # QID 가 같아도 검토로 보낸다 — ROR 이 통합 전 학교를 별칭으로 품고 있으면
+    # 다른 학교 행이 같은 QID 로 매칭된다(예: 밀양대 → 부산대 레코드).
+    if any(o_id != uid for o_id in owners.get((lang, value), ())):
+        return "duplicate_review"
+    return action
+
+
 def sql_str(v: object) -> str:
     return "NULL" if v is None or v == "" else "'" + str(v).replace("'", "''") + "'"
 
@@ -458,7 +498,7 @@ def load_snapshot(gu_path: str, names_path: str) -> tuple[list[dict], dict[tuple
 
 def build_plan(rows: list[dict], matches: dict[str, dict], current_names: dict, labels: dict,
                wd_extra: dict) -> tuple[list[dict], list[dict], list[list], list[list], Counter]:
-    gu_updates, name_rows, name_diff, coord_rows = [], [], [], []
+    gu_updates, name_rows, name_diff, coord_rows, candidates = [], [], [], [], []
     stats = Counter()
     for row in rows:
         m = matches[row["id"]]
@@ -505,12 +545,17 @@ def build_plan(rows: list[dict], matches: dict[str, dict], current_names: dict, 
                 stats[f"label_{how}:{lang}"] += 1
                 continue
             cur = current_names.get((row["id"], lang))
-            action = plan_name_change(cur, value, qid)
-            stats[f"name_{action}"] += 1
-            name_diff.append([row["id"], row["name_en"], lang, cur["name"] if cur else "",
-                              cur["source"] if cur else "", value, how, action])
-            if action in APPLIED_ACTIONS:
-                name_rows.append({"id": row["id"], "lang": lang, "name": value, "qid": qid})
+            candidates.append((row, lang, cur, value, how, qid, plan_name_change(cur, value, qid)))
+    # 중복 검사는 모든 대학의 제안이 모인 뒤에야 할 수 있다.
+    owners = name_owners(current_names, [(r["id"], lang, value, action)
+                                         for r, lang, _, value, _, _, action in candidates])
+    for row, lang, cur, value, how, qid, base_action in candidates:
+        action = review_action(base_action, row["id"], lang, value, owners)
+        stats[f"name_{action}"] += 1
+        name_diff.append([row["id"], row["name_en"], lang, cur["name"] if cur else "",
+                          cur["source"] if cur else "", value, how, action])
+        if action in APPLIED_ACTIONS:
+            name_rows.append({"id": row["id"], "lang": lang, "name": value, "qid": qid})
     return gu_updates, name_rows, name_diff, coord_rows, stats
 
 
