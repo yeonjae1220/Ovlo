@@ -10,9 +10,9 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 from enrich_ror_wikidata import (  # noqa: E402
-    HELD_NAMES, REJECTED_MATCHES, batch_cache_key, build_plan, cached, host_suffixes, match_all,
-    match_by_domain, match_by_name, name_similarity, normalize_name, pick_label, plan_name_change,
-    review_action, write_apply_sql,
+    HELD_NAMES, NAME_OVERRIDES, REJECTED_MATCHES, batch_cache_key, build_plan, cached, host_suffixes,
+    match_all, match_by_domain, match_by_name, name_similarity, normalize_name, pick_label,
+    plan_name_change, review_action, write_apply_sql, write_revert_sql,
 )
 
 
@@ -152,7 +152,7 @@ class BuildPlanTest(unittest.TestCase):
         gu, names, diff, coords, stats = self.plan()
         self.assertEqual([("1", "04h9pn542", "Q1", 37.46, 126.95)],
                          [(u["id"], u["ror_id"], u["qid"], u["lat"], u["lon"]) for u in gu])
-        self.assertEqual([{"id": "1", "lang": "ko", "name": "서울대학교", "qid": "Q1"}], names)
+        self.assertEqual([{"id": "1", "lang": "ko", "name": "서울대학교", "qid": "Q1", "source": "wikidata_ror"}], names)
         self.assertEqual("apply", coords[0][-1])
         self.assertEqual(1, stats["name_insert"])
 
@@ -234,6 +234,40 @@ class BuildPlanTest(unittest.TestCase):
         self.assertEqual(([], []), (names, coords))
 
 
+class OverrideTest(unittest.TestCase):
+    """사람이 확정한 이름(name_overrides)은 라벨 제안을 대체하고, 매칭이 없어도 적용된다."""
+    UID, LANG = next(iter(NAME_OVERRIDES))
+
+    def row(self) -> dict:
+        return {"id": self.UID, "name_en": "X", "country_code": "US", "latitude": ""}
+
+    def plan(self, current: dict, match: dict | None = None, labels: dict | None = None) -> tuple:
+        return build_plan([self.row()], {self.UID: match or {"method": "no_match"}}, current, labels or {}, {})
+
+    def test_override_replaces_wrong_existing_name(self) -> None:
+        cur = {(self.UID, self.LANG): {"name": "틀린 이름", "source": "wikidata", "qid": "Q9"}}
+        _, names, diff, _, stats = self.plan(cur)
+        self.assertEqual([{"id": self.UID, "lang": self.LANG, "name": NAME_OVERRIDES[(self.UID, self.LANG)],
+                           "qid": "Q9", "source": "manual"}], names)
+        self.assertEqual("override", diff[0][-1])
+        self.assertEqual(1, stats["name_override:override"])
+
+    def test_override_wins_over_wikidata_label_without_duplicates(self) -> None:
+        match = {"method": "domain_exact", "ror_id": "r1", "ror_status": "active", "qid": "Q1",
+                 "geonames_id": 1, "ror_city_coord": None}
+        _, names, diff, _, stats = self.plan({}, match, {"Q1": {self.LANG: "라벨 이름"}})
+        self.assertEqual([NAME_OVERRIDES[(self.UID, self.LANG)]], [n["name"] for n in names if n["lang"] == self.LANG])
+        self.assertEqual(1, len([d for d in diff if d[2] == self.LANG]))
+        self.assertEqual(0, stats["name_insert"])  # 대체된 라벨 제안은 집계에서 빠진다
+
+    def test_override_respects_protected_and_identical(self) -> None:
+        for source, name, action in (("manual", "다른 이름", "keep_protected"),
+                                     ("wikidata", NAME_OVERRIDES[(self.UID, self.LANG)], "unchanged")):
+            cur = {(self.UID, self.LANG): {"name": name, "source": source, "qid": "Q1"}}
+            _, names, diff, _, _ = self.plan(cur)
+            self.assertEqual(([], action), (names, diff[0][-1]))
+
+
 class RejectedMatchTest(unittest.TestCase):
     def test_rejected_row_is_not_matched_even_with_exact_domain(self) -> None:
         rid = next(iter(REJECTED_MATCHES))
@@ -275,21 +309,61 @@ class CacheTest(unittest.TestCase):
 
 
 class ApplySqlTest(unittest.TestCase):
-    def test_guards_and_post_check(self) -> None:
+    META = {"ror_dump": "d.json", "rows": 1, "generated": "now", "tag": "20261027120000"}
+
+    def render(self, writer, *args) -> str:
         with tempfile.TemporaryDirectory() as d:
-            path = Path(d) / "apply.sql"
-            write_apply_sql(path,
-                            [{"id": "7", "ror_id": "abc", "qid": "Q1", "geonames_id": 5, "ror_status": "active",
-                              "lat": 1.5, "lon": 2.5}],
-                            [{"id": "7", "lang": "fr", "name": "L'Université", "qid": "Q1"}],
-                            {"ror_dump": "d.json", "rows": 1, "generated": "now", "expect_ror": 1, "expect_names": 1})
-            sql = path.read_text()
+            path = Path(d) / "out.sql"
+            writer(path, *args, self.META)
+            return path.read_text()
+
+    def apply_sql(self) -> str:
+        return self.render(write_apply_sql,
+                           [{"id": "7", "ror_id": "abc", "qid": "Q1", "geonames_id": 5, "ror_status": "active",
+                             "lat": 1.5, "lon": 2.5}],
+                           [{"id": "7", "lang": "fr", "name": "L'Université", "qid": "Q1", "source": "wikidata_ror"},
+                            {"id": "7", "lang": "ko", "name": "교정", "qid": "Q1", "source": "manual"}])
+
+    def test_guards_timeouts_and_no_commit(self) -> None:
+        sql = self.apply_sql()
         self.assertIn("\\set ON_ERROR_STOP on", sql)
         self.assertIn("RAISE EXCEPTION 'V31 미적용", sql)
         self.assertIn("'L''Université'", sql)  # 작은따옴표 이스케이프
         self.assertIn("COALESCE(g.ror_id, v.ror_id)", sql)
-        self.assertIn("WHERE source = 'wikidata_ror'", sql)
-        self.assertIn("IF n_ror < 1 OR n_names < 1 THEN", sql)
+        for setting in ("lock_timeout", "statement_timeout", "idle_in_transaction_session_timeout"):
+            self.assertIn(f"SET LOCAL {setting}", sql)
+        self.assertLess(sql.index("BEGIN;"), sql.index("SET LOCAL lock_timeout"))  # SET LOCAL 은 트랜잭션 안에서만
+        self.assertNotIn("COMMIT;\n", sql.replace("-- 확인 후 수동으로 COMMIT;", ""))
+
+    def test_post_check_requires_exact_counts(self) -> None:
+        sql = self.apply_sql()
+        self.assertIn("IF got <> 1 THEN", sql)  # 대학 1행
+        self.assertIn("IF got <> 2 THEN", sql)  # 이름 2행
+        self.assertNotIn("n_ror <", sql)  # 하한(>=) 검사로 되돌아가지 않게
+
+    def test_name_source_is_per_row_and_override_bypasses_qid_guard(self) -> None:
+        sql = self.apply_sql()
+        self.assertIn("'L''Université', 'Q1', 'wikidata_ror')", sql)
+        self.assertIn("'교정', 'Q1', 'manual')", sql)
+        self.assertIn("OR EXCLUDED.source = 'manual'", sql)
+
+    def test_backup_is_taken_before_changes(self) -> None:
+        sql = self.apply_sql()
+        backup = sql.index("CREATE TABLE enrich_ror_bk_gu_20261027120000 AS")
+        self.assertLess(backup, sql.index("UPDATE global_universities"))
+        self.assertLess(sql.index("CREATE TABLE enrich_ror_bk_names_20261027120000 AS"),
+                        sql.index("INSERT INTO global_university_names"))
+
+    def test_revert_restores_from_same_backup_with_exact_counts(self) -> None:
+        sql = self.render(write_revert_sql, 1, 2)
+        self.assertIn("FROM enrich_ror_bk_gu_20261027120000 b", sql)
+        self.assertIn("enrich_ror_bk_names_20261027120000", sql)
+        self.assertIn("NOT b.existed", sql)  # 새로 넣은 이름은 삭제
+        # 보강이 쓴 값이 그대로일 때만 — 보강 뒤 사람이 고친 이름은 건드리지 않음
+        self.assertEqual(2, sql.count("AND n.name = b.planned_name AND n.source = b.planned_source"))
+        self.assertIn("IF got <> 1 THEN", sql)
+        self.assertIn("IF got <> 2 THEN", sql)
+        self.assertIn("SET LOCAL lock_timeout", sql)
         self.assertNotIn("COMMIT;\n", sql.replace("-- 확인 후 수동으로 COMMIT;", ""))
 
 
