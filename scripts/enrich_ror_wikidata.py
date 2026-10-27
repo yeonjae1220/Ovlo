@@ -21,6 +21,7 @@ Wikidata QID 는 이름 검색이 아니라 ROR 레코드의 external_ids 에서
 """
 import argparse
 import csv
+import hashlib
 import json
 import math
 import re
@@ -240,6 +241,16 @@ def http_json(url: str, data: bytes | None = None) -> dict:
             time.sleep(2 ** attempt)
 
 
+def batch_cache_key(kind: str, batch: list[str]) -> str:
+    """배치 내용 전체로 캐시 키를 만든다.
+
+    위치·첫 QID 만으로 키를 만들면 스냅샷이 바뀌어 배치 구성이 달라져도 옛 응답을 읽어
+    라벨·좌표가 조용히 빠진다.
+    """
+    digest = hashlib.sha256("|".join(batch).encode()).hexdigest()[:16]
+    return f"{kind}_{digest}"
+
+
 def cached(cache_dir: Path, key: str, fetch: Callable[[], dict]) -> dict:
     path = Path(cache_dir) / f"{key}.json"
     if path.exists():
@@ -261,7 +272,7 @@ def fetch_labels(qids: list[str], cache_dir: Path) -> dict[str, dict[str, str]]:
         url = "https://www.wikidata.org/w/api.php?" + urllib.parse.urlencode({
             "action": "wbgetentities", "ids": "|".join(batch), "props": "labels",
             "languages": "|".join(label_lang_codes()), "format": "json"})
-        data = cached(cache_dir, f"labels_{i:06d}_{batch[0]}", lambda: http_json(url))
+        data = cached(cache_dir, batch_cache_key("labels", batch), lambda: http_json(url))
         for qid, ent in data.get("entities", {}).items():
             # 리다이렉트된 QID 는 entities 키가 새 QID 다. 요청한 QID 로도 찾을 수 있게 둘 다 기록.
             mapped = {k: v["value"] for k, v in ent.get("labels", {}).items()}
@@ -282,7 +293,7 @@ def fetch_coords_and_ror(qids: list[str], cache_dir: Path) -> dict[str, dict]:
                  "FILTER(?rank != wikibase:DeprecatedRank) } "
                  "OPTIONAL { ?item wdt:P6782 ?ror } }") % " ".join(f"wd:{q}" for q in batch)
         body = urllib.parse.urlencode({"query": query, "format": "json"}).encode()
-        data = cached(cache_dir, f"sparql_{i:06d}_{batch[0]}",
+        data = cached(cache_dir, batch_cache_key("sparql", batch),
                       lambda: http_json("https://query.wikidata.org/sparql", data=body))
         for b in data["results"]["bindings"]:
             qid = b["item"]["value"].rsplit("/", 1)[-1]
@@ -298,7 +309,12 @@ def fetch_coords_and_ror(qids: list[str], cache_dir: Path) -> dict[str, dict]:
     return out
 
 
-def pick_label(lang: str, labels: dict[str, str], country_code: str) -> tuple[str | None, str]:
+def same_text(a: str, b: str) -> bool:
+    return " ".join(a.casefold().split()) == " ".join(b.casefold().split())
+
+
+def pick_label(lang: str, labels: dict[str, str], country_code: str,
+               name_en: str) -> tuple[str | None, str]:
     if lang == "zh":
         order = (["zh-hant", "zh-tw", "zh-hk", "zh"] if country_code in ZH_TRADITIONAL_COUNTRIES
                  else ["zh-hans", "zh-cn", "zh"])
@@ -311,6 +327,10 @@ def pick_label(lang: str, labels: dict[str, str], country_code: str) -> tuple[st
         pattern = SCRIPT_PATTERNS.get(lang)
         if pattern and not pattern.search(value):
             return None, "script_mismatch"
+        # 영문명을 그대로 옮긴 라벨은 정보가 없다(화면은 어차피 name_en 으로 폴백).
+        # 넣어 두면 나중에 진짜 번역이 생겨도 refresh 로 분류돼 자동 교체되지 않는다.
+        if same_text(value, name_en):
+            return None, "same_as_en"
         return value, code
     return None, "missing"
 
@@ -399,11 +419,19 @@ def write_apply_sql(path: Path, gu_updates: list[dict], name_rows: list[dict], m
             "",
         ]
     lines += [
-        "-- 3) 사후 확인 — 기대값과 다르면 ROLLBACK 할 것",
-        f"-- 기대: ror_id 채워진 행 >= {meta['expect_ror']}, {NAME_SOURCE} 이름 >= {meta['expect_names']}",
+        "-- 3) 사후 확인 — 기대값에 못 미치면 예외로 트랜잭션을 중단시킨다(COMMIT 불가).",
+        "--    ON CONFLICT 가드에 걸려 조용히 건너뛴 이름 행(스냅샷이 낡은 경우)도 여기서 드러난다.",
+        "DO $$ DECLARE n_ror bigint; n_names bigint; BEGIN",
+        "  SELECT count(ror_id) INTO n_ror FROM global_universities;",
+        f"  SELECT count(*) INTO n_names FROM global_university_names WHERE source = '{NAME_SOURCE}';",
+        f"  IF n_ror < {meta['expect_ror']} OR n_names < {meta['expect_names']} THEN",
+        f"    RAISE EXCEPTION '사후 확인 실패: ror_id % (기대 >= {meta['expect_ror']}), "
+        f"{NAME_SOURCE} 이름 % (기대 >= {meta['expect_names']})', n_ror, n_names;",
+        "  END IF;",
+        "END $$;",
         "SELECT count(ror_id) AS with_ror, count(wikidata_qid) AS with_qid, count(latitude) AS with_coords",
         "  FROM global_universities;",
-        "SELECT lang, count(*) FROM global_university_names GROUP BY lang ORDER BY lang;",
+        "SELECT lang, source, count(*) FROM global_university_names GROUP BY lang, source ORDER BY lang, source;",
         "-- 확인 후 수동으로 COMMIT; (기본은 열린 트랜잭션으로 남겨 둔다)",
     ]
     Path(path).write_text("\n".join(lines) + "\n")
@@ -472,7 +500,7 @@ def build_plan(rows: list[dict], matches: dict[str, dict], current_names: dict, 
             continue
         ent_labels = labels.get(qid, {})
         for lang in LANGS:
-            value, how = pick_label(lang, ent_labels, row["country_code"])
+            value, how = pick_label(lang, ent_labels, row["country_code"], row["name_en"])
             if value is None:
                 stats[f"label_{how}:{lang}"] += 1
                 continue
