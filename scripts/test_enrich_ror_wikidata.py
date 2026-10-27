@@ -10,9 +10,9 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 from enrich_ror_wikidata import (  # noqa: E402
-    REJECTED_MATCHES, batch_cache_key, build_plan, cached, host_suffixes, match_all, match_by_domain,
-    match_by_name, name_similarity,
-    normalize_name, pick_label, plan_name_change, write_apply_sql,
+    HELD_NAMES, REJECTED_MATCHES, batch_cache_key, build_plan, cached, host_suffixes, match_all,
+    match_by_domain, match_by_name, name_similarity, normalize_name, pick_label, plan_name_change,
+    review_action, write_apply_sql,
 )
 
 
@@ -241,8 +241,21 @@ class RejectedMatchTest(unittest.TestCase):
         result = match_all([row], index(ror("0wlu00000", "West Liberty University", hosts=("westliberty.edu",))), {})
         self.assertEqual({"method": "rejected_manual"}, result[rid])
 
-    def test_rejected_ids_are_the_reviewed_four(self) -> None:
-        self.assertEqual({"1244", "2697", "5494", "9861"}, set(REJECTED_MATCHES))
+    def test_review_file_keeps_known_rejects(self) -> None:
+        # 이름 유사도 검토 4건 + 전수 검토(밀양대 → 부산대 같은 통합 전 학교 등)
+        self.assertTrue({"1244", "2697", "5494", "9861", "5669"} <= set(REJECTED_MATCHES))
+        self.assertTrue(all(k.isdigit() and v for k, v in REJECTED_MATCHES.items()))
+
+
+class HeldNameTest(unittest.TestCase):
+    def test_held_name_goes_to_review_but_other_langs_apply(self) -> None:
+        uid, lang = next(iter(HELD_NAMES))
+        self.assertEqual("held_review", review_action("insert", uid, lang, "이름", {}))
+        self.assertEqual("insert", review_action("insert", uid, "ja", "名前", {}))
+
+    def test_held_name_does_not_touch_non_applied_actions(self) -> None:
+        uid, lang = next(iter(HELD_NAMES))
+        self.assertEqual("unchanged", review_action("unchanged", uid, lang, "이름", {}))
 
 
 class CacheTest(unittest.TestCase):

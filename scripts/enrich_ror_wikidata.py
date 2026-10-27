@@ -45,13 +45,10 @@ MIN_NAME_SIM_FOR_DOMAIN = 0.34
 MIN_NAME_SIM_FOR_SUFFIX = 0.6
 MAX_COORD_DISTANCE_KM = 150
 AMBIGUITY_MARGIN = 0.5
-# 이름 유사도 0.5 미만 도메인 매칭 96건을 사람이 검토해 걸러낸 행(2026-10-27). 키는 운영 global_universities.id.
-REJECTED_MATCHES = {
-    "1244": "마스터 domain 이 다른 학교(westliberty.edu) — WVU Parkersburg ≠ West Liberty University",
-    "5494": "단과대 행이 본교 레코드로 매칭됨 (Riara University School of Business and Law)",
-    "2697": "이름이 일반적이라 Cali 의 Bellas Artes 인지 불확실",
-    "9861": "학생 포털 도메인(aluno.ifsp.edu.br)으로 매칭 — 이름이 일반적이라 IFSP 인지 불확실",
-}
+# 사람·서브에이전트 검토로 걸러낸 행(키는 운영 global_universities.id) — 내용과 사유는 JSON 에 둔다.
+REVIEW = json.loads(Path(__file__).with_name("ror_enrichment_review.json").read_text())
+REJECTED_MATCHES: dict[str, str] = REVIEW["rejected_matches"]
+HELD_NAMES: dict[tuple[str, str], str] = {tuple(k.split(":")): v for k, v in REVIEW["held_names"].items()}
 # 화면에 바로 보이는 언어만 검사한다. 라틴 문자가 섞인 이름은 음역이 덜 된 라벨이고,
 # QID 가 다른 학교와 같은 이름은 상위 기관·통합 전 학교 라벨일 가능성이 높다(예: 밀양대 → 부산대학교).
 LATIN_CHECK_LANGS = {"ko"}
@@ -387,6 +384,8 @@ def review_action(action: str, uid: str, lang: str, value: str, owners: dict) ->
     """적용 예정 이름이 화면 품질 검사에 걸리면 검토 action 으로 바꾼다."""
     if action not in APPLIED_ACTIONS:
         return action
+    if (uid, lang) in HELD_NAMES:
+        return "held_review"
     if lang in LATIN_CHECK_LANGS and LATIN_RE.search(value):
         return "latin_review"
     # QID 가 같아도 검토로 보낸다 — ROR 이 통합 전 학교를 별칭으로 품고 있으면
