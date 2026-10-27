@@ -3,12 +3,13 @@ package me.yeonjae.ovlo.adapter.out.redis;
 import me.yeonjae.ovlo.application.port.out.auth.TokenStorePort;
 import me.yeonjae.ovlo.domain.auth.model.AuthSession;
 import me.yeonjae.ovlo.domain.auth.model.AuthSessionId;
+import me.yeonjae.ovlo.domain.auth.model.RefreshRotationOutcome;
 import me.yeonjae.ovlo.domain.member.model.MemberId;
 import me.yeonjae.ovlo.shared.security.TokenHashUtil;
-import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.data.redis.core.RedisOperations;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.SessionCallback;
+import org.springframework.data.redis.core.script.RedisScript;
 import org.springframework.stereotype.Component;
 
 import java.time.Duration;
@@ -23,9 +24,11 @@ import java.util.Set;
  * 다중 세션 Redis 어댑터.
  *
  * 키 구조:
- *   auth:session:{sessionId}           — 세션 Hash (기기별 독립, refreshToken 필드는 SHA-256 해시)
+ *   auth:session:{sessionId}           — 세션 Hash (기기별 독립). refreshToken·prevRefreshToken 필드는
+ *                                        SHA-256 해시, rotatedAt 은 마지막 교체 시각(ms)
  *   auth:member:sessions:{memberId}    — 해당 멤버의 sessionId Set
  *   auth:token:{sha256(refreshToken)}  — refreshToken 해시 → sessionId 역인덱스
+ *                                        (직전 토큰 것은 재사용 감지 창만큼만 유지)
  *
  * 보안: refresh token은 고엔트로피이므로 SHA-256 단방향 해시만 저장한다. Redis가
  * 유출되어도 원문 토큰을 복원할 수 없어 세션 탈취를 막는다 (GLOBAL-PIT-001).
@@ -37,8 +40,51 @@ public class RedisTokenAdapter implements TokenStorePort {
     private static final String MEMBER_SESSIONS_PREFIX = "auth:member:sessions:";
     private static final String TOKEN_INDEX_PREFIX = "auth:token:";
 
-    /** WATCH/MULTI/EXEC CAS가 동시 rotation 경합으로 abort될 때 재시도하는 최대 횟수. */
-    private static final int MAX_SAVE_ATTEMPTS = 3;
+    /**
+     * 교체 직후 직전 토큰이 다시 오면 동시 재발급 경합(다중 탭·중복 호출)에서 진 요청으로 본다.
+     * 이긴 요청의 Set-Cookie가 이미 쿠키 저장소에 들어갔을 시간이라, 클라이언트는 409를 받고 한 번
+     * 재시도하면 새 토큰으로 성공한다.
+     */
+    static final Duration CONCURRENT_GRACE = Duration.ofSeconds(10);
+
+    /**
+     * 교체된 직전 토큰의 역인덱스를 남겨두는 기간. 이 기간 안에 직전 토큰이 유예 시간을 넘겨 다시
+     * 오면 REUSED로 판정해 보안 로그를 남긴다. 그보다 오래된 토큰은 INVALID로만 보인다.
+     */
+    static final Duration REUSE_DETECTION_WINDOW = Duration.ofDays(1);
+
+    /**
+     * 제출 토큰 기준 compare-and-rotate. 비교·판정·쓰기를 Lua 한 번으로 실행해 원자적이다.
+     * KEYS: 1 세션 Hash, 2 제출 토큰 역인덱스, 3 새 토큰 역인덱스, 4 멤버 세션 Set
+     * ARGV: 1 제출 토큰 해시, 2 새 토큰 해시, 3 now(ms), 4 새 만료(ms), 5 sessionId,
+     *       6 세션 TTL(s), 7 재사용 감지 창(s), 8 멤버 Set TTL(s), 9 유예 시간(ms)
+     * 세션이 없으면 아무것도 쓰지 않으므로 로그아웃과 경합해도 세션이 되살아나지 않는다.
+     */
+    private static final RedisScript<String> ROTATE_SCRIPT = RedisScript.of("""
+            local s = redis.call('HMGET', KEYS[1], 'refreshToken', 'prevRefreshToken', 'rotatedAt', 'revoked', 'expiresAt')
+            local current, previous, rotatedAt, revoked, expiresAt = s[1], s[2], s[3], s[4], s[5]
+            local presented, now = ARGV[1], tonumber(ARGV[3])
+            if not current or not expiresAt or revoked == 'true' or tonumber(expiresAt) <= now then
+              return 'INVALID'
+            end
+            if current == presented then
+              redis.call('HSET', KEYS[1], 'refreshToken', ARGV[2], 'prevRefreshToken', presented,
+                         'rotatedAt', ARGV[3], 'expiresAt', ARGV[4])
+              redis.call('EXPIRE', KEYS[1], ARGV[6])
+              redis.call('SET', KEYS[3], ARGV[5], 'EX', ARGV[6])
+              redis.call('EXPIRE', KEYS[2], ARGV[7])
+              redis.call('SADD', KEYS[4], ARGV[5])
+              redis.call('EXPIRE', KEYS[4], ARGV[8])
+              return 'ROTATED'
+            end
+            if previous and previous == presented then
+              if rotatedAt and now - tonumber(rotatedAt) <= tonumber(ARGV[9]) then
+                return 'CONCURRENT'
+              end
+              return 'REUSED'
+            end
+            return 'INVALID'
+            """, String.class);
 
     private final RedisTemplate<String, String> redisTemplate;
 
@@ -63,50 +109,54 @@ public class RedisTokenAdapter implements TokenStorePort {
         fields.put("expiresAt", String.valueOf(session.getExpiresAt().toEpochMilli()));
         fields.put("revoked", String.valueOf(session.isRevoked()));
 
-        // WATCH/MULTI/EXEC 낙관적 락(CAS):
-        //   구 토큰 역인덱스 삭제 여부는 "현재 저장된 refreshToken"에 의존하는 read-modify-write다.
-        //   이 읽기를 MULTI 바깥에서 하면 동시 rotation 시 두 요청이 같은 구 토큰을 보고 각자
-        //   새 토큰을 저장해, 한 세션에 유효한 refresh 토큰이 둘 남는다(single-use rotation 붕괴).
-        //   따라서 sessionKey를 WATCH한 뒤 그 안에서 구 토큰을 읽고 트랜잭션을 실행한다. 다른
-        //   요청이 먼저 sessionKey를 바꾸면 exec()가 null(abort)을 반환하므로 최신 값 기준으로
-        //   재시도해, 경합 후에도 유효 토큰이 정확히 하나만 남도록 보장한다.
-        for (int attempt = 0; attempt < MAX_SAVE_ATTEMPTS; attempt++) {
-            Boolean committed = redisTemplate.execute(new SessionCallback<Boolean>() {
-                @Override
-                @SuppressWarnings("unchecked")
-                public <K, V> Boolean execute(RedisOperations<K, V> ops) {
-                    RedisOperations<String, String> operations = (RedisOperations<String, String>) ops;
-                    operations.watch(sessionKey);
+        // 새 세션(무작위 sessionId)이라 읽고-판단할 이전 상태가 없다 — 쓰기만 MULTI/EXEC로 묶는다.
+        // 기존 세션의 토큰 교체는 제출 토큰 비교가 필요하므로 rotate()가 맡는다.
+        redisTemplate.execute(new SessionCallback<List<Object>>() {
+            @Override
+            @SuppressWarnings("unchecked")
+            public <K, V> List<Object> execute(RedisOperations<K, V> ops) {
+                RedisOperations<String, String> operations = (RedisOperations<String, String>) ops;
+                operations.multi();
+                operations.opsForHash().putAll(sessionKey, fields);
+                operations.expire(sessionKey, ttl);
+                operations.opsForSet().add(memberSessionsKey, session.getId().value());
+                operations.expire(memberSessionsKey, ttl.plusDays(1));
+                operations.opsForValue().set(tokenIndexKey, session.getId().value(), ttl);
+                return operations.exec();
+            }
+        });
+    }
 
-                    // 세션 Hash에는 이미 해시값이 저장돼 있으므로 재해시 없이 그대로 비교/삭제한다.
-                    Object current = operations.opsForHash().get(sessionKey, "refreshToken");
-                    String oldHashedToken = (current instanceof String s) ? s : null;
-                    String oldTokenIndexKeyToDelete =
-                            (oldHashedToken != null && !oldHashedToken.equals(hashedToken))
-                                    ? tokenIndexKey(oldHashedToken) : null;
+    @Override
+    public RefreshRotationOutcome rotate(AuthSession rotated, String presentedToken) {
+        Instant now = Instant.now();
+        Duration ttl = Duration.between(now, rotated.getExpiresAt());
+        if (ttl.isNegative() || ttl.isZero()) return RefreshRotationOutcome.INVALID;
 
-                    operations.multi();
-                    if (oldTokenIndexKeyToDelete != null) {
-                        operations.delete(oldTokenIndexKeyToDelete);
-                    }
-                    operations.opsForHash().putAll(sessionKey, fields);
-                    operations.expire(sessionKey, ttl);
-                    operations.opsForSet().add(memberSessionsKey, session.getId().value());
-                    operations.expire(memberSessionsKey, ttl.plusDays(1));
-                    operations.opsForValue().set(tokenIndexKey, session.getId().value(), ttl);
+        String presentedHash = TokenHashUtil.sha256(presentedToken);
+        String newHash = TokenHashUtil.sha256(rotated.getRefreshToken());
+        String sessionId = rotated.getId().value();
 
-                    // exec()가 null이면 WATCH한 sessionKey가 변경돼 트랜잭션이 취소된 것 → 재시도
-                    List<Object> results = operations.exec();
-                    return results != null;
-                }
-            });
+        List<String> keys = List.of(
+                sessionKey(rotated.getId()),
+                tokenIndexKey(presentedHash),
+                tokenIndexKey(newHash),
+                memberSessionsKey(rotated.getMemberId()));
+        String result = redisTemplate.execute(ROTATE_SCRIPT, keys,
+                presentedHash,
+                newHash,
+                String.valueOf(now.toEpochMilli()),
+                String.valueOf(rotated.getExpiresAt().toEpochMilli()),
+                sessionId,
+                String.valueOf(ttl.toSeconds()),
+                String.valueOf(REUSE_DETECTION_WINDOW.toSeconds()),
+                String.valueOf(ttl.plusDays(1).toSeconds()),
+                String.valueOf(CONCURRENT_GRACE.toMillis()));
 
-            if (Boolean.TRUE.equals(committed)) return;
+        if (result == null) {
+            throw new IllegalStateException("refresh 토큰 교체 스크립트가 결과를 반환하지 않았습니다: " + sessionId);
         }
-        // WATCH CAS가 MAX_SAVE_ATTEMPTS 회 연속 abort — 동시 rotation 경합(낙관적 동시성 제어 실패).
-        // GlobalExceptionHandler가 409(다시 시도)로 매핑한다. 500 대신 재시도 가능 신호를 준다.
-        throw new OptimisticLockingFailureException(
-                "세션 저장이 동시 갱신 경합으로 실패했습니다: " + session.getId().value());
+        return RefreshRotationOutcome.valueOf(result);
     }
 
     @Override

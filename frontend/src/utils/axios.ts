@@ -16,9 +16,7 @@ apiClient.interceptors.request.use((config) => {
   return config
 })
 
-// 401 → refreshAuth() 싱글톤 사용 — layout과 중복 호출 없음
-let pendingQueue: Array<{ resolve: (t: string) => void; reject: (e: unknown) => void }> = []
-
+// 401 → refreshAuth() 싱글톤 — layout·선제 갱신 타이머와 같은 요청을 공유한다
 apiClient.interceptors.response.use(
   (res) => res,
   async (error) => {
@@ -26,24 +24,24 @@ apiClient.interceptors.response.use(
     const status = error.response?.status
 
     // 403 = 권한 없음 — 토큰 자체는 유효하므로 auth 클리어 안 함
-    if (status !== 401 || original._retry) return Promise.reject(error)
+    if (status !== 401 || !original || original._retry) return Promise.reject(error)
 
     original._retry = true
 
-    // refreshAuth가 이미 진행 중이면 같은 Promise를 기다림
-    const newToken = await refreshAuth()
+    let newToken: string | null
+    try {
+      newToken = await refreshAuth()
+    } catch {
+      // 일시적 실패 — 로그인 상태는 유지하고 이 요청만 실패시킨다
+      return Promise.reject(error)
+    }
 
     if (!newToken) {
-      // refresh 실패 — pendingQueue 거절
-      pendingQueue.forEach(({ reject }) => reject(error))
-      pendingQueue = []
+      // 세션 종료 — refreshAuth 가 이미 인증 상태를 지웠다
       if (typeof window !== 'undefined') window.location.href = '/login'
       return Promise.reject(error)
     }
 
-    // 대기 중이던 요청들 재시도
-    pendingQueue.forEach(({ resolve }) => resolve(newToken))
-    pendingQueue = []
     original.headers.Authorization = `Bearer ${newToken}`
     return apiClient(original)
   }

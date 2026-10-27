@@ -42,7 +42,8 @@ export interface ContactInfo {
 
 export interface Member {
   id: string
-  email: string
+  /** 본인 조회에서만 온다 — 다른 회원의 프로필에는 계정 이메일이 없다. */
+  email?: string
   name: string
   nickname: string
   status: MemberStatus
@@ -56,6 +57,23 @@ export interface Member {
   universityExperiences: UniversityExperience[]
   contactInfos: ContactInfo[]
   createdAt: string
+}
+
+/** 닉네임 검색 결과 — 다른 회원에게 보여도 되는 필드만 온다 (이메일·생년월일·연락처 없음). */
+export interface MemberSummary {
+  id: string
+  nickname: string
+  name: string
+  profileImageMediaId?: string
+}
+
+export interface NicknameAvailability {
+  available: boolean
+}
+
+/** 후보 회원 중 내가 팔로우 중인 ID — 목록 전체를 받지 않고 관계만 확인한다. */
+export interface FollowingStatus {
+  following: number[]
 }
 
 export interface RegisterMemberRequest {

@@ -8,7 +8,9 @@ import me.yeonjae.ovlo.application.port.out.member.SaveMemberPort;
 import me.yeonjae.ovlo.domain.member.model.Member;
 import me.yeonjae.ovlo.domain.member.model.MemberId;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -56,8 +58,9 @@ public class MemberPersistenceAdapter implements LoadMemberPort, SaveMemberPort 
     }
 
     @Override
-    public List<Member> searchByNickname(String keyword) {
-        return memberJpaRepository.findByNicknameContainingIgnoreCase(keyword).stream()
+    public List<Member> searchByNickname(String keyword, int limit) {
+        PageRequest firstPage = PageRequest.of(0, limit, Sort.by("nickname"));
+        return memberJpaRepository.findByNicknameContainingIgnoreCase(keyword, firstPage).stream()
                 .map(memberMapper::toDomain)
                 .toList();
     }

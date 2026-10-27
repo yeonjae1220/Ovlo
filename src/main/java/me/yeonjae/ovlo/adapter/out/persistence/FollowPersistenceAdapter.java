@@ -6,6 +6,8 @@ import me.yeonjae.ovlo.application.port.out.follow.LoadFollowPort;
 import me.yeonjae.ovlo.application.port.out.follow.SaveFollowPort;
 import me.yeonjae.ovlo.domain.follow.model.Follow;
 import me.yeonjae.ovlo.domain.member.model.MemberId;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Component;
 import java.util.List;
 import java.util.Optional;
@@ -33,15 +35,38 @@ public class FollowPersistenceAdapter implements LoadFollowPort, SaveFollowPort 
     }
 
     @Override
-    public List<Follow> findFollowersByFolloweeId(MemberId followeeId) {
-        return followJpaRepository.findByFolloweeIdAndHiddenByWithdrawalFalse(followeeId.value()).stream()
-                .map(followMapper::toDomain).toList();
+    public List<Follow> findFollowersByFolloweeId(MemberId followeeId, int offset, int limit) {
+        return followJpaRepository.findByFolloweeIdAndHiddenByWithdrawalFalse(followeeId.value(), recentFirst(offset, limit))
+                .stream().map(followMapper::toDomain).toList();
     }
 
     @Override
-    public List<Follow> findFollowingsByFollowerId(MemberId followerId) {
-        return followJpaRepository.findByFollowerIdAndHiddenByWithdrawalFalse(followerId.value()).stream()
-                .map(followMapper::toDomain).toList();
+    public long countFollowersByFolloweeId(MemberId followeeId) {
+        return followJpaRepository.countByFolloweeIdAndHiddenByWithdrawalFalse(followeeId.value());
+    }
+
+    @Override
+    public List<Follow> findFollowingsByFollowerId(MemberId followerId, int offset, int limit) {
+        return followJpaRepository.findByFollowerIdAndHiddenByWithdrawalFalse(followerId.value(), recentFirst(offset, limit))
+                .stream().map(followMapper::toDomain).toList();
+    }
+
+    @Override
+    public long countFollowingsByFollowerId(MemberId followerId) {
+        return followJpaRepository.countByFollowerIdAndHiddenByWithdrawalFalse(followerId.value());
+    }
+
+    @Override
+    public List<MemberId> findFollowingIdsIn(MemberId followerId, List<MemberId> candidateIds) {
+        List<Long> ids = candidateIds.stream().map(MemberId::value).toList();
+        return followJpaRepository
+                .findByFollowerIdAndFolloweeIdInAndHiddenByWithdrawalFalse(followerId.value(), ids)
+                .stream().map(e -> new MemberId(e.getFolloweeId())).toList();
+    }
+
+    /** 최근 맺은 관계부터. offset/limit 은 호출부 규약(PostPersistenceAdapter 와 동일). */
+    private static PageRequest recentFirst(int offset, int limit) {
+        return PageRequest.of(limit > 0 ? offset / limit : 0, limit, Sort.by("id").descending());
     }
 
     @Override

@@ -1,5 +1,12 @@
 import apiClient from '../utils/axios'
-import type { Member, RegisterMemberRequest, UpdateMemberProfileRequest, CompleteOnboardingRequest } from '../types'
+import type {
+  Member,
+  MemberSummary,
+  NicknameAvailability,
+  RegisterMemberRequest,
+  UpdateMemberProfileRequest,
+  CompleteOnboardingRequest,
+} from '../types'
 
 export const memberApi = {
   register: (req: RegisterMemberRequest) =>
@@ -9,7 +16,10 @@ export const memberApi = {
     apiClient.get<Member>(`/members/${id}`).then((r) => r.data),
 
   search: (nickname: string) =>
-    apiClient.get<Member[]>('/members/search', { params: { nickname } }).then((r) => r.data),
+    apiClient.get<MemberSummary[]>('/members/search', { params: { nickname } }).then((r) => r.data),
+
+  checkNickname: (nickname: string) =>
+    apiClient.get<NicknameAvailability>('/members/check-nickname', { params: { nickname } }).then((r) => r.data),
 
   updateProfile: (id: string, req: UpdateMemberProfileRequest) =>
     apiClient.put<Member>(`/members/${id}`, req).then((r) => r.data),

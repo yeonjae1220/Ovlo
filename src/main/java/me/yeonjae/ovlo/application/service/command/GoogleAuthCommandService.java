@@ -16,14 +16,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
-import java.time.temporal.ChronoUnit;
 import java.util.Optional;
 
 @Service
 @Transactional
 public class GoogleAuthCommandService implements GoogleLoginUseCase {
-
-    private static final long REFRESH_TOKEN_TTL_DAYS = 30L;
 
     private final GoogleOAuthPort googleOAuthPort;
     private final LoadMemberPort loadMemberPort;
@@ -81,7 +78,7 @@ public class GoogleAuthCommandService implements GoogleLoginUseCase {
         // Admin 기능은 SSR 세션 기반(/admin) 전용이며 JWT로는 접근 불가.
         String accessToken = jwtTokenProvider.generateAccessToken(member.getId(), MemberRole.MEMBER);
         String refreshToken = jwtTokenProvider.generateRefreshToken();
-        Instant expiresAt = Instant.now().plus(REFRESH_TOKEN_TTL_DAYS, ChronoUnit.DAYS);
+        Instant expiresAt = Instant.now().plus(jwtTokenProvider.refreshTokenTtl());
 
         AuthSession session = AuthSession.create(member.getId(), refreshToken, expiresAt);
         tokenStorePort.save(session);

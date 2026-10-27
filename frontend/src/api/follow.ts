@@ -1,5 +1,5 @@
 import apiClient from '../utils/axios'
-import type { Member } from '../types'
+import type { FollowingStatus, MemberSummary, PageResult } from '../types'
 
 export const followApi = {
   follow: (followeeId: string) =>
@@ -7,9 +7,18 @@ export const followApi = {
 
   unfollow: (followeeId: string) => apiClient.delete(`/follows/${followeeId}`),
 
-  getFollowers: (memberId: string) =>
-    apiClient.get<Member[]>(`/follows/followers/${memberId}`).then((r) => r.data),
+  getFollowers: (memberId: string, page = 0, size = 20) =>
+    apiClient
+      .get<PageResult<MemberSummary>>(`/follows/followers/${memberId}`, { params: { page, size } })
+      .then((r) => r.data),
 
-  getFollowings: (memberId: string) =>
-    apiClient.get<Member[]>(`/follows/followings/${memberId}`).then((r) => r.data),
+  getFollowings: (memberId: string, page = 0, size = 20) =>
+    apiClient
+      .get<PageResult<MemberSummary>>(`/follows/followings/${memberId}`, { params: { page, size } })
+      .then((r) => r.data),
+
+  getFollowingStatus: (memberIds: string[]) =>
+    apiClient
+      .get<FollowingStatus>('/follows/following-status', { params: { memberIds: memberIds.join(',') } })
+      .then((r) => r.data),
 }

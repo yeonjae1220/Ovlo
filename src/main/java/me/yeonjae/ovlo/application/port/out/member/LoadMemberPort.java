@@ -14,7 +14,7 @@ public interface LoadMemberPort {
     Optional<Member> findByEmail(String email);
     boolean existsByEmail(String email);
     boolean existsByNickname(String nickname);
-    List<Member> searchByNickname(String keyword);
+    List<Member> searchByNickname(String keyword, int limit);
     Page<Member> findAll(Pageable pageable);
     long count();
 }

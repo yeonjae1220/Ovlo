@@ -23,19 +23,16 @@ partialize: (state) => ({
 
 ## 2. refresh 싱글톤 (`utils/refreshAuth.ts`)
 
-layout과 axios interceptor가 동시에 refresh를 호출해도 실제 요청은 1회만 실행됩니다.
+refresh 토큰은 1회용이라 같은 쿠키로 두 번 보내면 하나만 성공합니다(서버 계약: [ADR-0004](adr/0004-refresh-token-single-use.md)).
+그래서 **모든 재발급은 `refreshAuth()` 하나로만** 보냅니다 — layout, axios interceptor, 선제 갱신 타이머(`useProactiveRefresh`) 모두.
 
-```typescript
-let pending: Promise<string | null> | null = null
+| 층 | 막는 것 |
+|----|---------|
+| 탭 안 — 진행 중 Promise 공유 | 같은 탭의 layout·interceptor·타이머 동시 호출 |
+| 탭 사이 — `navigator.locks.request('ovlo-auth-refresh')` | 여러 탭 동시 복원. 뒤 탭은 앞 탭이 받은 새 쿠키로 보낸다 |
+| 서버 409 `AUTH_CONFLICT` → 300ms 뒤 1회 재시도 | Web Locks 미지원 환경 등 그래도 겹친 경우 |
 
-export async function refreshAuth(): Promise<string | null> {
-  if (pending) return pending  // 진행 중이면 같은 Promise 반환
-  pending = axios.post('/api/v1/auth/refresh', ...).then(...).finally(() => pending = null)
-  return pending
-}
-```
-
-**중요**: refresh token rotation 사용 시 이중 소비를 방지하는 핵심 패턴입니다.
+실패 분류(GLOBAL-PIT-012): 400·401·403 → `clearAuth()` 후 `null`(로그아웃). 네트워크 오류·5xx·429 → 1s·3s 재시도 후 throw, **인증 상태는 유지**.
 
 ---
 

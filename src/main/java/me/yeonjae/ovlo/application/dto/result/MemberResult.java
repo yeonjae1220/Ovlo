@@ -32,6 +32,15 @@ public record MemberResult(
 
     public record ContactInfoData(String type, String value) {}
 
+    /**
+     * 다른 회원에게 보여줄 사본 — 계정 이메일과 생년월일을 뺀다.
+     * 연락처(contactInfos)는 본인이 교류용으로 직접 등록한 것이라 남긴다.
+     */
+    public MemberResult withoutPrivateFields() {
+        return new MemberResult(id, nickname, name, hometown, null, homeUniversityId, major, status, role,
+                bio, null, profileImageMediaId, languageSkills, universityExperiences, contactInfos);
+    }
+
     public static MemberResult from(Member member) {
         MajorInfo majorInfo = member.getMajor() != null
                 ? new MajorInfo(

@@ -5,8 +5,6 @@ import ReactMarkdown from 'react-markdown'
 import { useParams, useSearchParams } from 'next/navigation'
 import { useRouter } from 'next/navigation'
 import { useUniversityReport, useUniversityReportLanguages } from '../../hooks/useUniversity'
-import { useExchangeRates } from '../../hooks/useExchangeRates'
-import { COUNTRY_CURRENCY, parseKrwRange, formatConvertedRange } from '../../lib/currency'
 import { useI18n } from '../../i18n/I18nProvider'
 import { QueryErrorNotice } from '../../components/ui'
 
@@ -72,7 +70,6 @@ export default function UniversityReportDetailPage() {
 
   const { data: report, isLoading, isError, refetch } = useUniversityReport(reportId, lang)
   const { data: langs = [] } = useUniversityReportLanguages(reportId)
-  const { data: fxRates } = useExchangeRates()
 
   const handleLang = (l: string) => {
     setLang(l)
@@ -92,15 +89,6 @@ export default function UniversityReportDetailPage() {
 
   const availableLangs = langs.length > 1 ? langs : ['ko', 'en']
 
-  // 디스플레이 통화 환산: 원화(만원) 파싱 → 대학 소재국 통화로 실시간 환율 변환
-  const targetCurrency = report.countryCode ? COUNTRY_CURRENCY[report.countryCode] : undefined
-  const convertMonthly = (() => {
-    if (!parsed?.costs?.monthly_total || !targetCurrency || targetCurrency === 'KRW' || !fxRates) return null
-    const range = parseKrwRange(parsed.costs.monthly_total)
-    const rate = fxRates[targetCurrency]
-    if (!range || !rate) return null
-    return formatConvertedRange(range, rate, targetCurrency, lang)
-  })()
 
   return (
     <div style={{ padding: '32px 20px', fontFamily: 'system-ui, sans-serif' }}>
@@ -160,23 +148,14 @@ export default function UniversityReportDetailPage() {
       {/* 구조화 정보 카드 */}
       {parsed && (
         <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', marginBottom: 24 }}>
-          {parsed.costs && (
+          {parsed.costs && (parsed.costs.monthly_total || parsed.costs.rent) && (
             <InfoCard icon="💰" title={t('univ.detail.cost')}>
-              {convertMonthly ? (
-                <>
-                  <div style={{ fontSize: 14, color: C.textPrimary, fontWeight: 700 }}>
-                    ≈ {convertMonthly} <span style={{ fontSize: 10, color: C.textMuted, fontWeight: 400 }}>/mo</span>
-                  </div>
-                  <div style={{ fontSize: 11, color: C.textMuted, marginTop: 2 }} title="원문">
-                    {parsed.costs.monthly_total}
-                  </div>
-                </>
-              ) : (
+              {parsed.costs.monthly_total && (
                 <div style={{ fontSize: 13, color: C.textSec, fontWeight: 600 }}>
-                  {parsed.costs.monthly_total ?? '-'}
+                  {parsed.costs.monthly_total}
                 </div>
               )}
-              {parsed.costs.currency && !convertMonthly && (
+              {parsed.costs.currency && (
                 <div style={{ fontSize: 11, color: C.textMuted, marginTop: 2 }}>{parsed.costs.currency}</div>
               )}
               {parsed.costs.rent && (

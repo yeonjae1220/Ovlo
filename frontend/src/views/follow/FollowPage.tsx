@@ -22,10 +22,10 @@ export default function FollowPage() {
   return (
     <div style={{ display: 'flex', gap: 32 }}>
       <div style={{ flex: 1 }}>
-        <h2 style={{ color: C.text }}>{t('follow.followers')} ({followers?.length ?? 0})</h2>
+        <h2 style={{ color: C.text }}>{t('follow.followers')} ({followers?.totalElements ?? 0})</h2>
         {fl && <p>{t('follow.loading')}</p>}
         <ul style={{ listStyle: 'none', padding: 0 }}>
-          {followers?.map((m) => (
+          {followers?.content.map((m) => (
             <li key={m.id} style={{ padding: '8px 0', borderBottom: `1px solid ${C.border}` }}>
               <Link href={`/profile/${m.id}`}>{m.nickname}</Link>
             </li>
@@ -34,10 +34,10 @@ export default function FollowPage() {
       </div>
 
       <div style={{ flex: 1 }}>
-        <h2 style={{ color: C.text }}>{t('follow.following')} ({followings?.length ?? 0})</h2>
+        <h2 style={{ color: C.text }}>{t('follow.following')} ({followings?.totalElements ?? 0})</h2>
         {fgl && <p>{t('follow.loading')}</p>}
         <ul style={{ listStyle: 'none', padding: 0 }}>
-          {followings?.map((m) => (
+          {followings?.content.map((m) => (
             <li key={m.id} style={{ padding: '8px 0', borderBottom: `1px solid ${C.border}`, display: 'flex', justifyContent: 'space-between' }}>
               <Link href={`/profile/${m.id}`}>{m.nickname}</Link>
               <button onClick={() => unfollow.mutate(m.id)} style={{ fontSize: 12, color: C.danger, background: C.dangerSoft, borderColor: C.danger }}>
