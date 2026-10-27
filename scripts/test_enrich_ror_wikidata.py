@@ -10,7 +10,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 from enrich_ror_wikidata import (  # noqa: E402
-    batch_cache_key, cached, host_suffixes, match_by_domain, match_by_name, name_similarity,
+    batch_cache_key, build_plan, cached, host_suffixes, match_by_domain, match_by_name, name_similarity,
     normalize_name, pick_label, plan_name_change, write_apply_sql,
 )
 
@@ -122,6 +122,86 @@ class PlanNameChangeTest(unittest.TestCase):
         self.assertEqual("replace_suspicious", plan_name_change(self.cur("B", "wikidata_check"), "A", "Q1"))
         self.assertEqual("refresh", plan_name_change(self.cur("B", "wikidata"), "A", "Q1"))
         self.assertEqual("conflict_review", plan_name_change(self.cur("B", "wikidata", "Q2"), "A", "Q1"))
+
+
+SEOUL = (37.46, 126.95)
+
+
+class BuildPlanTest(unittest.TestCase):
+    """매칭 결과 → 적용할 행. 어떤 값이 apply.sql 로 가고 무엇이 검토로 빠지는지 고정한다."""
+
+    def row(self, latitude: str = "") -> dict:
+        return {"id": "1", "name_en": "Seoul National University", "country_code": "KR", "latitude": latitude}
+
+    def match(self, qid: str | None = "Q1") -> dict:
+        return {"method": "domain_exact", "ror_id": "04h9pn542", "ror_status": "active", "qid": qid,
+                "geonames_id": 1835848, "ror_city_coord": SEOUL}
+
+    def extra(self, *coords: tuple[float, float], ror: tuple[str, ...] = ("04h9pn542",)) -> dict:
+        return {"Q1": {"coords": list(coords), "ror": set(ror)}}
+
+    def plan(self, row: dict | None = None, match: dict | None = None, current: dict | None = None,
+             labels: dict | None = None, extra: dict | None = None) -> tuple:
+        row = row or self.row()
+        return build_plan([row], {row["id"]: match or self.match()}, current or {},
+                          {"Q1": {"ko": "서울대학교"}} if labels is None else labels,
+                          self.extra(SEOUL) if extra is None else extra)
+
+    def test_applies_ids_close_coords_and_new_names(self) -> None:
+        gu, names, diff, coords, stats = self.plan()
+        self.assertEqual([("1", "04h9pn542", "Q1", 37.46, 126.95)],
+                         [(u["id"], u["ror_id"], u["qid"], u["lat"], u["lon"]) for u in gu])
+        self.assertEqual([{"id": "1", "lang": "ko", "name": "서울대학교", "qid": "Q1"}], names)
+        self.assertEqual("apply", coords[0][-1])
+        self.assertEqual(1, stats["name_insert"])
+
+    def test_unmatched_row_writes_nothing(self) -> None:
+        gu, names, _, coords, stats = build_plan([self.row()], {"1": {"method": "no_match"}}, {}, {}, {})
+        self.assertEqual(([], [], []), (gu, names, coords))
+        self.assertEqual(1, stats["match:no_match"])
+
+    def test_far_coord_goes_to_review(self) -> None:
+        gu, _, _, coords, stats = self.plan(extra=self.extra((35.18, 129.08)))  # 부산, ~320km
+        self.assertIsNone(gu[0]["lat"])
+        self.assertEqual("review_far", coords[0][-1])
+        self.assertEqual(1, stats["coords_far_from_ror_city_review"])
+
+    def test_multiple_coords_and_existing_coords_are_skipped(self) -> None:
+        gu, _, _, coords, stats = self.plan(extra=self.extra(SEOUL, (37.0, 127.0)))
+        self.assertIsNone(gu[0]["lat"])
+        self.assertEqual([], coords)
+        self.assertEqual(1, stats["coords_multiple_skipped"])
+        gu, _, _, coords, _ = self.plan(row=self.row(latitude="37.4"))
+        self.assertIsNone(gu[0]["lat"])
+        self.assertEqual([], coords)
+
+    def test_existing_name_with_other_qid_holds_qid_coords_and_names(self) -> None:
+        current = {("1", "ja"): {"name": "ソウル大学校", "source": "wikidata", "qid": "Q9"}}
+        gu, names, _, coords, stats = self.plan(current=current)
+        self.assertEqual(("04h9pn542", None, None), (gu[0]["ror_id"], gu[0]["qid"], gu[0]["lat"]))
+        self.assertEqual([], names)
+        self.assertEqual("review_qid_conflict", coords[0][-1])
+        self.assertEqual(1, stats["university_qid_conflict_review"])
+
+    def test_ror_backref_mismatch_keeps_ids_but_skips_names(self) -> None:
+        gu, names, _, _, stats = self.plan(extra=self.extra(SEOUL, ror=("0other000",)))
+        self.assertEqual("Q1", gu[0]["qid"])
+        self.assertEqual([], names)
+        self.assertEqual(1, stats["qid_ror_backref_mismatch"])
+
+    def test_refresh_and_protected_are_diffed_but_not_applied(self) -> None:
+        current = {("1", "ko"): {"name": "서울대", "source": "wikidata", "qid": "Q1"},
+                   ("1", "ja"): {"name": "ソウル大", "source": "manual", "qid": "Q1"}}
+        labels = {"Q1": {"ko": "서울대학교", "ja": "ソウル大学校"}}
+        _, names, diff, _, stats = self.plan(current=current, labels=labels)
+        self.assertEqual([], names)
+        self.assertEqual({("ko", "refresh"), ("ja", "keep_protected")}, {(d[2], d[-1]) for d in diff})
+        self.assertEqual((1, 1), (stats["name_refresh"], stats["name_keep_protected"]))
+
+    def test_match_without_qid_records_ror_only(self) -> None:
+        gu, names, _, coords, _ = self.plan(match=self.match(qid=None), extra={})
+        self.assertEqual(("04h9pn542", None), (gu[0]["ror_id"], gu[0]["qid"]))
+        self.assertEqual(([], []), (names, coords))
 
 
 class CacheTest(unittest.TestCase):
