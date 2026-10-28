@@ -17,6 +17,8 @@ public interface UniversityReportJpaRepository extends JpaRepository<UniversityR
     @Query(value = """
             SELECT r.* FROM university_report r
             WHERE r.status = 'PUBLISHED'
+              AND NOT EXISTS (SELECT 1 FROM global_universities h
+                              WHERE h.id = r.global_univ_id AND h.canonical_id IS NOT NULL)
               AND (:keyword IS NULL OR :keyword = ''
                    OR r.global_univ_id IN (
                        SELECT id FROM global_universities
@@ -32,10 +34,12 @@ public interface UniversityReportJpaRepository extends JpaRepository<UniversityR
             @Param("offset") int offset);
 
     @Query(value = """
-            SELECT COUNT(*) FROM university_report
-            WHERE status = 'PUBLISHED'
+            SELECT COUNT(*) FROM university_report r
+            WHERE r.status = 'PUBLISHED'
+              AND NOT EXISTS (SELECT 1 FROM global_universities h
+                              WHERE h.id = r.global_univ_id AND h.canonical_id IS NOT NULL)
               AND (:keyword IS NULL OR :keyword = ''
-                   OR global_univ_id IN (
+                   OR r.global_univ_id IN (
                        SELECT id FROM global_universities
                        WHERE LOWER(name_en) LIKE LOWER(CONCAT('%', :keyword, '%'))
                    )

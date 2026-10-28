@@ -34,6 +34,13 @@ public class GlobalUniversityJpaEntity {
     private Double latitude;
     private Double longitude;
 
+    /**
+     * 중복 행이면 대표 행 id (V32). 조회 쿼리가 이 값으로 숨긴 행을 거른다.
+     * 엔티티에 두는 이유: Flyway 없이 엔티티로 스키마를 만드는 로컬 H2 에도 컬럼이 생기게.
+     */
+    @Column(name = "canonical_id")
+    private Long canonicalId;
+
     public GlobalUniversityJpaEntity() {}
 
     public Long getId()          { return id; }
@@ -47,4 +54,5 @@ public class GlobalUniversityJpaEntity {
     public String getLocalName() { return localName; }
     public Double getLatitude()  { return latitude; }
     public Double getLongitude() { return longitude; }
+    public Long getCanonicalId() { return canonicalId; }
 }
