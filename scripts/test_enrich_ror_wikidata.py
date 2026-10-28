@@ -10,7 +10,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 from enrich_ror_wikidata import (  # noqa: E402
-    HELD_NAMES, NAME_OVERRIDES, REJECTED_MATCHES, batch_cache_key, build_plan, cached, host_suffixes,
+    HELD_NAMES, LANGS, LATIN_CHECK_LANGS, NAME_OVERRIDES, REJECTED_MATCHES, batch_cache_key, build_plan, cached, host_suffixes,
     match_all, match_by_domain, match_by_name, name_similarity, normalize_name, pick_label,
     plan_name_change, review_action, write_apply_sql, write_revert_sql,
 )
@@ -284,8 +284,9 @@ class RejectedMatchTest(unittest.TestCase):
 class HeldNameTest(unittest.TestCase):
     def test_held_name_goes_to_review_but_other_langs_apply(self) -> None:
         uid, lang = next(iter(HELD_NAMES))
+        other = next(l for l in LANGS if (uid, l) not in HELD_NAMES and l not in LATIN_CHECK_LANGS)
         self.assertEqual("held_review", review_action("insert", uid, lang, "이름", {}))
-        self.assertEqual("insert", review_action("insert", uid, "ja", "名前", {}))
+        self.assertEqual("insert", review_action("insert", uid, other, "名前", {}))
 
     def test_held_name_does_not_touch_non_applied_actions(self) -> None:
         uid, lang = next(iter(HELD_NAMES))
