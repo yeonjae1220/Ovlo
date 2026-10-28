@@ -21,7 +21,7 @@ public interface UniversityReportJpaRepository extends JpaRepository<UniversityR
                               WHERE h.id = r.global_univ_id AND h.canonical_id IS NOT NULL)
               AND (:keyword IS NULL OR :keyword = ''
                    OR r.global_univ_id IN (
-                       SELECT id FROM global_universities
+                       SELECT COALESCE(canonical_id, id) FROM global_universities
                        WHERE LOWER(name_en) LIKE LOWER(CONCAT('%', :keyword, '%'))
                    )
                   )
@@ -40,7 +40,7 @@ public interface UniversityReportJpaRepository extends JpaRepository<UniversityR
                               WHERE h.id = r.global_univ_id AND h.canonical_id IS NOT NULL)
               AND (:keyword IS NULL OR :keyword = ''
                    OR r.global_univ_id IN (
-                       SELECT id FROM global_universities
+                       SELECT COALESCE(canonical_id, id) FROM global_universities
                        WHERE LOWER(name_en) LIKE LOWER(CONCAT('%', :keyword, '%'))
                    )
                   )
