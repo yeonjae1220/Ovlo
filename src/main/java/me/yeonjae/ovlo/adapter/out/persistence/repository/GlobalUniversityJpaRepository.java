@@ -14,9 +14,17 @@ public interface GlobalUniversityJpaRepository extends JpaRepository<GlobalUnive
     @Query(value = "SELECT country_code FROM global_universities WHERE id = :id", nativeQuery = true)
     Optional<String> findCountryCodeById(@Param("id") Long id);
 
+    /**
+     * 본교 선택 검색. 중복으로 숨긴 행(canonical_id 보유)은 제외하되,
+     * 숨긴 행의 옛 이름이 키워드에 맞으면 그 대표 행을 돌려준다.
+     */
     @Query(value = """
             SELECT * FROM global_universities
-            WHERE (:keyword IS NULL OR name_en ILIKE '%' || :keyword || '%')
+            WHERE canonical_id IS NULL
+              AND (:keyword IS NULL OR name_en ILIKE '%' || :keyword || '%'
+                   OR id IN (SELECT h.canonical_id FROM global_universities h
+                             WHERE h.canonical_id IS NOT NULL
+                               AND h.name_en ILIKE '%' || :keyword || '%'))
               AND (:countryCode IS NULL OR country_code = :countryCode)
             ORDER BY name_en
             LIMIT :limit OFFSET :offset
@@ -30,7 +38,11 @@ public interface GlobalUniversityJpaRepository extends JpaRepository<GlobalUnive
 
     @Query(value = """
             SELECT COUNT(*) FROM global_universities
-            WHERE (:keyword IS NULL OR name_en ILIKE '%' || :keyword || '%')
+            WHERE canonical_id IS NULL
+              AND (:keyword IS NULL OR name_en ILIKE '%' || :keyword || '%'
+                   OR id IN (SELECT h.canonical_id FROM global_universities h
+                             WHERE h.canonical_id IS NOT NULL
+                               AND h.name_en ILIKE '%' || :keyword || '%'))
               AND (:countryCode IS NULL OR country_code = :countryCode)
             """, nativeQuery = true)
     long countSearch(@Param("keyword") String keyword, @Param("countryCode") String countryCode);
@@ -38,10 +50,12 @@ public interface GlobalUniversityJpaRepository extends JpaRepository<GlobalUnive
     /**
      * 이메일 도메인으로 대학 역조회 (학교 이메일 검증용).
      * 데이터셋상 동일 domain을 가진 별개 대학이 존재할 수 있어 List 반환(1:N).
+     * 중복으로 숨긴 행의 domain 이 맞으면 그 행 대신 대표 행(canonical_id)을 돌려준다.
      */
     @Query(value = """
             SELECT * FROM global_universities
-            WHERE lower(domain) = lower(:domain)
+            WHERE id IN (SELECT COALESCE(canonical_id, id) FROM global_universities
+                         WHERE lower(domain) = lower(:domain))
             """, nativeQuery = true)
     List<GlobalUniversityJpaEntity> findByDomainIgnoreCase(@Param("domain") String domain);
 }
