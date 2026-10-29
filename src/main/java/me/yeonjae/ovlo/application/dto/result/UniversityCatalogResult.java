@@ -23,6 +23,5 @@ public record UniversityCatalogResult(
         String city,
         boolean hasReport,
         boolean hasReviews,
-        long reviewCount,
-        Double avgRating
+        long reviewCount
 ) {}

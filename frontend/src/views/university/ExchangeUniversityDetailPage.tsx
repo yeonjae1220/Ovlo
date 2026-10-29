@@ -143,8 +143,6 @@ export default function ExchangeUniversityDetailPage() {
   if (univError) return <QueryErrorNotice onRetry={() => void refetchUniv()} />
   if (!univ) return <div style={{ padding: 40, color: C.notRecTx }}>{t('exch.detail.notFound')}</div>
 
-  const starCount = univ.avgRating ? Math.round(univ.avgRating) : 0
-
   return (
     <div style={{ padding: '32px 20px', fontFamily: 'system-ui, sans-serif' }}>
       {/* 뒤로가기 */}
@@ -163,16 +161,6 @@ export default function ExchangeUniversityDetailPage() {
         )}
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, alignItems: 'center' }}>
           <Badge text={`${univ.country} · ${univ.city}`} color={C.textMuted} />
-          {univ.avgRating != null && (
-            <>
-              <span style={{ color: C.warning, fontSize: 18, letterSpacing: 1 }}>
-                {'★'.repeat(starCount)}{'☆'.repeat(5 - starCount)}
-              </span>
-              <span style={{ fontSize: 14, fontWeight: 700, color: C.textSec }}>
-                {univ.avgRating.toFixed(1)}
-              </span>
-            </>
-          )}
           <Badge text={`${univ.reviewCount} ${t('exch.detail.reviews')}`} color={C.activeText} />
         </div>
         {univ.website && (

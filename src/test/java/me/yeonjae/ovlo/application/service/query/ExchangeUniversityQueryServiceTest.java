@@ -61,8 +61,6 @@ class ExchangeUniversityQueryServiceTest {
             given(loadExchangeUniversityPort.count(eq("Tokyo"), isNull())).willReturn(1L);
             given(loadExchangeUniversityPort.countReviewsByUniversityIds(List.of(1L)))
                     .willReturn(Map.of(1L, 5L));
-            given(loadExchangeUniversityPort.avgRatingsByUniversityIds(List.of(1L)))
-                    .willReturn(Map.of(1L, 4.5));
 
             PageResult<ExchangeUniversityResult> result = service.search(
                     new SearchExchangeUniversityCommand("Tokyo", null, 0, 10));
@@ -70,7 +68,6 @@ class ExchangeUniversityQueryServiceTest {
             assertThat(result.content()).hasSize(1);
             assertThat(result.content().get(0).nameEn()).isEqualTo("University of Tokyo");
             assertThat(result.content().get(0).reviewCount()).isEqualTo(5L);
-            assertThat(result.content().get(0).avgRating()).isEqualTo(4.5);
             assertThat(result.totalElements()).isEqualTo(1L);
         }
 
@@ -82,8 +79,6 @@ class ExchangeUniversityQueryServiceTest {
             given(loadExchangeUniversityPort.count(isNull(), eq("FR"))).willReturn(1L);
             given(loadExchangeUniversityPort.countReviewsByUniversityIds(List.of(2L)))
                     .willReturn(Map.of());
-            given(loadExchangeUniversityPort.avgRatingsByUniversityIds(List.of(2L)))
-                    .willReturn(Map.of());
 
             PageResult<ExchangeUniversityResult> result = service.search(
                     new SearchExchangeUniversityCommand(null, "FR", 0, 10));
@@ -93,19 +88,17 @@ class ExchangeUniversityQueryServiceTest {
         }
 
         @Test
-        @DisplayName("리뷰가 없는 대학은 reviewCount=0, avgRating=null 을 반환한다")
+        @DisplayName("리뷰가 없는 대학은 reviewCount=0 을 반환한다")
         void shouldReturnZeroReviewCount_whenNoReviews() {
             given(loadExchangeUniversityPort.search(isNull(), isNull(), eq(0), eq(10)))
                     .willReturn(List.of(tokyo));
             given(loadExchangeUniversityPort.count(isNull(), isNull())).willReturn(1L);
             given(loadExchangeUniversityPort.countReviewsByUniversityIds(any())).willReturn(Map.of());
-            given(loadExchangeUniversityPort.avgRatingsByUniversityIds(any())).willReturn(Map.of());
 
             PageResult<ExchangeUniversityResult> result = service.search(
                     new SearchExchangeUniversityCommand(null, null, 0, 10));
 
             assertThat(result.content().get(0).reviewCount()).isZero();
-            assertThat(result.content().get(0).avgRating()).isNull();
         }
 
         @Test
@@ -146,7 +139,6 @@ class ExchangeUniversityQueryServiceTest {
             ExchangeUniversityId id = new ExchangeUniversityId(1L);
             given(loadExchangeUniversityPort.findById(id)).willReturn(Optional.of(tokyo));
             given(loadExchangeUniversityPort.countReviewsByUniversityId(id, null)).willReturn(3L);
-            given(loadExchangeUniversityPort.avgRatingByUniversityId(id)).willReturn(4.2);
 
             ExchangeUniversityResult result = service.getById(id);
 
@@ -155,7 +147,6 @@ class ExchangeUniversityQueryServiceTest {
             assertThat(result.nameKo()).isEqualTo("도쿄대학교");
             assertThat(result.countryCode()).isEqualTo("JP");
             assertThat(result.reviewCount()).isEqualTo(3L);
-            assertThat(result.avgRating()).isEqualTo(4.2);
         }
 
         @Test
@@ -170,17 +161,15 @@ class ExchangeUniversityQueryServiceTest {
         }
 
         @Test
-        @DisplayName("리뷰 평균이 없는 경우 avgRating은 null이다")
-        void shouldReturnNullAvgRating_whenNoReviews() {
+        @DisplayName("리뷰가 없는 대학은 reviewCount=0 을 반환한다")
+        void shouldReturnZeroReviewCount_whenNoReviews() {
             ExchangeUniversityId id = new ExchangeUniversityId(1L);
             given(loadExchangeUniversityPort.findById(id)).willReturn(Optional.of(tokyo));
             given(loadExchangeUniversityPort.countReviewsByUniversityId(id, null)).willReturn(0L);
-            given(loadExchangeUniversityPort.avgRatingByUniversityId(id)).willReturn(null);
 
             ExchangeUniversityResult result = service.getById(id);
 
             assertThat(result.reviewCount()).isZero();
-            assertThat(result.avgRating()).isNull();
         }
     }
 

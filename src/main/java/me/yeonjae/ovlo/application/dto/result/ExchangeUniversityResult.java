@@ -11,10 +11,9 @@ public record ExchangeUniversityResult(
         String city,
         String website,
         Long globalUnivId,
-        long reviewCount,
-        Double avgRating
+        long reviewCount
 ) {
-    public static ExchangeUniversityResult of(ExchangeUniversity eu, long reviewCount, Double avgRating) {
+    public static ExchangeUniversityResult of(ExchangeUniversity eu, long reviewCount) {
         return new ExchangeUniversityResult(
                 eu.getId().value(),
                 eu.getNameKo(),
@@ -24,8 +23,7 @@ public record ExchangeUniversityResult(
                 eu.getCity(),
                 eu.getWebsite(),
                 eu.getGlobalUnivId(),
-                reviewCount,
-                avgRating
+                reviewCount
         );
     }
 }

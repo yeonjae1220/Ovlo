@@ -44,10 +44,9 @@ public class UniversityCatalogQueryService implements SearchUniversityCatalogQue
                 .filter(java.util.Objects::nonNull)
                 .toList();
         Map<Long, Long> counts = loadExchangePort.countReviewsByUniversityIds(exchangeIds);
-        Map<Long, Double> avgRatings = loadExchangePort.avgRatingsByUniversityIds(exchangeIds);
 
         List<UniversityCatalogResult> content = rows.stream()
-                .map(row -> toResult(row, counts, avgRatings))
+                .map(row -> toResult(row, counts))
                 .toList();
 
         long total = loadCatalogPort.count(command.keyword(), command.countryCode());
@@ -59,12 +58,9 @@ public class UniversityCatalogQueryService implements SearchUniversityCatalogQue
         return loadCatalogPort.findCountries();
     }
 
-    private UniversityCatalogResult toResult(CatalogRow row,
-                                             Map<Long, Long> counts,
-                                             Map<Long, Double> avgRatings) {
+    private UniversityCatalogResult toResult(CatalogRow row, Map<Long, Long> counts) {
         boolean hasReviews = row.exchangeUnivId() != null;
         long reviewCount = hasReviews ? counts.getOrDefault(row.exchangeUnivId(), 0L) : 0L;
-        Double avgRating = hasReviews ? avgRatings.get(row.exchangeUnivId()) : null;
         return new UniversityCatalogResult(
                 row.globalUnivId(),
                 row.exchangeUnivId(),
@@ -76,8 +72,7 @@ public class UniversityCatalogQueryService implements SearchUniversityCatalogQue
                 row.city(),
                 row.reportId() != null,
                 hasReviews,
-                reviewCount,
-                avgRating
+                reviewCount
         );
     }
 }

@@ -48,24 +48,10 @@ public interface ExchangeVideoReviewJpaRepository extends JpaRepository<Exchange
     );
 
     @Query(value = """
-            SELECT AVG(overall_rating) FROM exchange_video_reviews
-            WHERE university_id = :universityId AND overall_rating IS NOT NULL
-            """, nativeQuery = true)
-    Double avgRatingByUniversityId(@Param("universityId") Long universityId);
-
-    @Query(value = """
             SELECT university_id AS universityId, COUNT(*) AS reviewCount
             FROM exchange_video_reviews
             WHERE university_id IN :ids
             GROUP BY university_id
             """, nativeQuery = true)
     List<ReviewCountProjection> countByUniversityIdIn(@Param("ids") List<Long> ids);
-
-    @Query(value = """
-            SELECT university_id AS universityId, AVG(overall_rating) AS avgRating
-            FROM exchange_video_reviews
-            WHERE university_id IN :ids AND overall_rating IS NOT NULL
-            GROUP BY university_id
-            """, nativeQuery = true)
-    List<ReviewAvgRatingProjection> avgRatingByUniversityIdIn(@Param("ids") List<Long> ids);
 }

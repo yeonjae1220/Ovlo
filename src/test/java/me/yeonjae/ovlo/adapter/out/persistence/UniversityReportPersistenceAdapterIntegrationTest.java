@@ -55,6 +55,7 @@ class UniversityReportPersistenceAdapterIntegrationTest {
     void setUp() {
         jdbc.update("DELETE FROM university_report_translation");
         jdbc.update("DELETE FROM university_report");
+        jdbc.update("DELETE FROM exchange_universities");
         jdbc.update("DELETE FROM global_university_names");
         jdbc.update("DELETE FROM global_universities");
     }
@@ -83,6 +84,23 @@ class UniversityReportPersistenceAdapterIntegrationTest {
 
         assertThat(result).isPresent();
         assertThat(result.get().countryCode()).isNull();
+    }
+
+    @Test
+    @DisplayName("DRAFT 리포트는 id·대학·교환대학 어느 경로로도 조회되지 않는다")
+    void draftReportIsNotServed() {
+        Long globalId = insertGlobal("Universitat de Barcelona", "ES");
+        Long reportId = insertReport(globalId);
+        insertTranslation(reportId, "ko", "바르셀로나 대학교 교환학생 가이드");
+        Long exchangeId = jdbc.queryForObject(
+                "INSERT INTO exchange_universities (global_univ_id, name_en) VALUES (?, 'Universitat de Barcelona') RETURNING id",
+                Long.class, globalId);
+        jdbc.update("UPDATE university_report SET exchange_univ_id = ?, status = 'DRAFT' WHERE id = ?", exchangeId, reportId);
+
+        assertThat(loadPort.findByIdAndLang(reportId, "ko")).isEmpty();
+        assertThat(loadPort.findByGlobalUnivIdAndLang(globalId, "ko")).isEmpty();
+        assertThat(loadPort.findByExchangeUnivIdAndLang(exchangeId, "ko")).isEmpty();
+        assertThat(loadPort.findLangsByReportId(reportId)).containsExactly("ko"); // 언어 목록은 상세 조회와 함께 쓰일 때만 노출된다
     }
 
     // ── helpers ──────────────────────────────────────────────────────────────

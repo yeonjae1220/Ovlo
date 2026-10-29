@@ -35,12 +35,16 @@ interface ReportContent {
   housing?: { dorm_available?: boolean; dorm_price?: string; dorm_type?: string }
   visa?: { type?: string; cost?: string; duration?: string; processing_days?: string }
   academics?: { difficulty?: string; workload?: string; gpa_req?: string; language_req?: string; deadline?: string }
+  /** 재생성 리포트만 가진다: 정보 기준 시점과 출처 목록(본문 끝 Sources 와 같은 순서) */
+  as_of?: string
+  sources?: unknown[]
 }
 
 /** "스트라스클라이드 대학교 교환학생 가이드" → "스트라스클라이드 대학교" */
 function stripReportSuffix(title: string) {
   return title
-    .replace(/\s*(교환학생\s*가이드|Exchange\s*(Student\s*)?Guide|Austauschführer|Guide d'échange|Guía de intercambio|Trao đổi sinh viên|交换生指南|交換学生ガイド)\s*$/i, '')
+    .replace(/\s*[–-]?\s*(교환학생\s*가이드|Exchange\s*(Student\s*)?Guide|Austauschführer|Leitfaden für Austauschstudierende|Guide d'échange|Guía de intercambio|Trao đổi sinh viên|交换生指南|交換学生ガイド|交換留学ガイド)\s*$/i, '')
+    .replace(/^\s*(Guide d'échange|Hướng dẫn trao đổi sinh viên)\s*[–:-]?\s*/i, '')
     .replace(/:\s*$/, '')
     .trim()
 }
@@ -123,10 +127,15 @@ export default function UniversityReportDetailPage() {
             </div>
           )}
         </div>
-        <div style={{ marginTop: 10, fontSize: 12, color: C.textDim }}>
-          {t('univ.detail.videos', { count: report.sourceVideoCount })}
-          {report.sourceWebCount > 0 && ` · ${t('univ.reports.web', { count: report.sourceWebCount })}`}
-        </div>
+        {/* 옛 리포트의 '영상 N개 분석'은 실제 원천과 맞지 않아 표시하지 않는다. 출처가 확인된 재생성 리포트만 보여준다. */}
+        {(parsed?.sources?.length || parsed?.as_of) && (
+          <div style={{ marginTop: 10, fontSize: 12, color: C.textDim }}>
+            {[
+              parsed?.sources?.length ? t('univ.detail.sources', { count: parsed.sources.length }) : null,
+              parsed?.as_of ? t('univ.detail.asOf', { date: parsed.as_of }) : null,
+            ].filter(Boolean).join(' · ')}
+          </div>
+        )}
       </div>
 
       {/* AI 면책 고지 */}

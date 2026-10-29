@@ -1,6 +1,5 @@
 package me.yeonjae.ovlo.domain.university.model;
 
-import java.math.BigDecimal;
 import java.util.List;
 
 public class UniversityReport {
@@ -12,13 +11,12 @@ public class UniversityReport {
     private final int sourceVideoCount;
     private final int sourceWebCount;
     private final List<String> supportedLangs;
-    private final BigDecimal avgRating;
     private final String avgCostMonthly;
     private final String costCurrency;
 
     private UniversityReport(Long id, Long globalUnivId, Long exchangeUnivId, String status,
                              int sourceVideoCount, int sourceWebCount, List<String> supportedLangs,
-                             BigDecimal avgRating, String avgCostMonthly, String costCurrency) {
+                             String avgCostMonthly, String costCurrency) {
         this.id = id;
         this.globalUnivId = globalUnivId;
         this.exchangeUnivId = exchangeUnivId;
@@ -26,17 +24,16 @@ public class UniversityReport {
         this.sourceVideoCount = sourceVideoCount;
         this.sourceWebCount = sourceWebCount;
         this.supportedLangs = supportedLangs;
-        this.avgRating = avgRating;
         this.avgCostMonthly = avgCostMonthly;
         this.costCurrency = costCurrency;
     }
 
     public static UniversityReport restore(Long id, Long globalUnivId, Long exchangeUnivId,
                                            String status, int sourceVideoCount, int sourceWebCount,
-                                           List<String> supportedLangs, BigDecimal avgRating,
+                                           List<String> supportedLangs,
                                            String avgCostMonthly, String costCurrency) {
         return new UniversityReport(id, globalUnivId, exchangeUnivId, status,
-                sourceVideoCount, sourceWebCount, supportedLangs, avgRating, avgCostMonthly, costCurrency);
+                sourceVideoCount, sourceWebCount, supportedLangs, avgCostMonthly, costCurrency);
     }
 
     public Long getId()               { return id; }
@@ -46,7 +43,6 @@ public class UniversityReport {
     public int getSourceVideoCount()  { return sourceVideoCount; }
     public int getSourceWebCount()    { return sourceWebCount; }
     public List<String> getSupportedLangs() { return supportedLangs; }
-    public BigDecimal getAvgRating()  { return avgRating; }
     public String getAvgCostMonthly() { return avgCostMonthly; }
     public String getCostCurrency()   { return costCurrency; }
 }

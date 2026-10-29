@@ -5,7 +5,6 @@ import org.hibernate.annotations.Array;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 
-import java.math.BigDecimal;
 import java.time.OffsetDateTime;
 
 @Entity
@@ -34,9 +33,6 @@ public class UniversityReportJpaEntity {
     @JdbcTypeCode(SqlTypes.ARRAY)
     @Array(length = 500)
     private Long[] sourceVideoIds;
-
-    @Column(name = "avg_rating", precision = 3, scale = 2)
-    private BigDecimal avgRating;
 
     @Column(name = "avg_cost_monthly")
     private String avgCostMonthly;
@@ -68,7 +64,6 @@ public class UniversityReportJpaEntity {
     public int getSourceVideoCount()  { return sourceVideoCount; }
     public int getSourceWebCount()    { return sourceWebCount; }
     public String[] getSupportedLangs(){ return supportedLangs; }
-    public BigDecimal getAvgRating()  { return avgRating; }
     public String getAvgCostMonthly() { return avgCostMonthly; }
     public String getCostCurrency()   { return costCurrency; }
     public OffsetDateTime getCreatedAt() { return createdAt; }

@@ -250,7 +250,6 @@ export interface ExchangeUniversity {
   website?: string
   globalUnivId?: number
   reviewCount: number
-  avgRating?: number
 }
 
 // 통합 대학 카탈로그 (리포트 ∪ 후기). hasReport/hasReviews 로 상세 라우팅 결정
@@ -266,7 +265,6 @@ export interface UniversityCatalogItem {
   hasReport: boolean
   hasReviews: boolean
   reviewCount: number
-  avgRating?: number | null
 }
 
 export interface VideoReview {
