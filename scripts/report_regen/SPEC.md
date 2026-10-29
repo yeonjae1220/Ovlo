@@ -23,7 +23,7 @@ Rules for sources:
 - Student-reported numbers are anecdotes: present them as "students reported ~X (year)" with the video year, never as official prices.
 - Official numbers: quote the page's value and the academic year it applies to.
 - If you cannot verify something, leave the field `null` / omit the sentence. For important missing items (deadlines, GPA, dorm price) write one sentence pointing to the official page instead.
-- Prices in the **local currency only**. No conversions to KRW/USD/anything. Keep the currency style of the language (€1,200 / 1.200 € is fine) but never change the amount.
+- Prices in the **local currency**, except where an official university or government page itself states the price in another currency (e.g. a dorm fee listed in USD): then use exactly that currency and amount, backed by a claim with an `O` source whose quote contains the amount. If an official source gives the same item in the local currency too, use the local figure only. Never add conversions to KRW/USD/anything. Keep the currency style of the language (€1,200 / 1.200 € is fine) but never change the amount or the currency in any language.
 - Do not name restaurants, cafés, clubs, courses or course codes unless a source names them.
 - Visa/permit text is written for **Korean passport holders**, and says so ("for Korean citizens"). Take it from `country_facts` only.
 
@@ -61,7 +61,7 @@ Card fields are shown as short labels on info cards — keep them ≤ 60 charact
 `costs.monthly_total`, `costs.rent`, `housing.dorm_price`, `housing.dorm_type`, `academics.gpa_req`, `academics.language_req`, `academics.deadline`.
 Put explanations in the body instead.
 
-Official fees that a government states in a foreign currency (e.g. a visa fee in USD) are allowed when quoted from `country_facts`; never add conversions.
+Official amounts in a foreign currency are allowed when they come from `country_facts` or from an `O`-sourced claim quote (the official page's own wording); never add conversions.
 In the body, video titles in a script the target language cannot read may be replaced by a short description in that language; `content.sources` keeps the published titles.
 
 ## Translation rules (ko, ja, zh, de, fr, vi from the final en)
@@ -73,7 +73,7 @@ In the body, video titles in a script the target language cannot read may be rep
 - `## Sources` list is identical in every language.
 
 ## Style and consistency (added after the pilot review, 2026-10-29)
-- Register: ko polite (-습니다/-요, not -다), ja です・ます (not だ・である), de "du", fr "vous", vi "bạn". Same in every report.
+- Register: polite/formal in every language — ko 존댓말 (-습니다/-요; never 반말·평서 -다/-해), ja です・ます (not だ・である), de "Sie", fr "vous", vi "bạn". Same in every report. (Student posts added later by users are exempt; this applies to generated guides.)
 - Deadlines: translate "by <date>" as inclusive ("spätestens am", "au plus tard le", "chậm nhất ngày", "까지", "までに", "之前（含当日）") — never "before", which moves the deadline a day earlier.
 - Keep the strength of instructions: "must"/"required" ≠ "recommended"; "expected to" ≠ "must"; "not guaranteed" stays not guaranteed.
 - zh = Simplified for everything, including university names (the names table may hold Traditional forms — convert them).
