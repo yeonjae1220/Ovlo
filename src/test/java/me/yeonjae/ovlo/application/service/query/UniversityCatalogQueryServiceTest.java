@@ -39,7 +39,6 @@ class UniversityCatalogQueryServiceTest {
         given(loadCatalogPort.count(eq("서울"), isNull())).willReturn(1L);
         // exchangeUnivId 가 없으므로 빈 리스트로 집계 조회
         given(loadExchangePort.countReviewsByUniversityIds(eq(List.of()))).willReturn(Map.of());
-        given(loadExchangePort.avgRatingsByUniversityIds(eq(List.of()))).willReturn(Map.of());
 
         PageResult<UniversityCatalogResult> page =
                 service.search(new SearchUniversityCatalogCommand("서울", null, 0, 20));
@@ -51,7 +50,6 @@ class UniversityCatalogQueryServiceTest {
         assertThat(r.hasReport()).isTrue();
         assertThat(r.hasReviews()).isFalse();
         assertThat(r.reviewCount()).isZero();
-        assertThat(r.avgRating()).isNull();
         assertThat(r.nameKo()).isEqualTo("서울대학교");
     }
 
@@ -63,7 +61,6 @@ class UniversityCatalogQueryServiceTest {
         given(loadCatalogPort.search(isNull(), eq("JP"), eq(0), eq(20))).willReturn(List.of(row));
         given(loadCatalogPort.count(isNull(), eq("JP"))).willReturn(1L);
         given(loadExchangePort.countReviewsByUniversityIds(eq(List.of(200L)))).willReturn(Map.of(200L, 7L));
-        given(loadExchangePort.avgRatingsByUniversityIds(eq(List.of(200L)))).willReturn(Map.of(200L, 4.5));
 
         PageResult<UniversityCatalogResult> page =
                 service.search(new SearchUniversityCatalogCommand(null, "JP", 0, 20));
@@ -73,7 +70,6 @@ class UniversityCatalogQueryServiceTest {
         assertThat(r.hasReport()).isFalse();
         assertThat(r.hasReviews()).isTrue();
         assertThat(r.reviewCount()).isEqualTo(7L);
-        assertThat(r.avgRating()).isEqualTo(4.5);
     }
 
     @Test
@@ -84,7 +80,6 @@ class UniversityCatalogQueryServiceTest {
         given(loadCatalogPort.search(isNull(), isNull(), eq(0), eq(20))).willReturn(List.of(row));
         given(loadCatalogPort.count(isNull(), isNull())).willReturn(1L);
         given(loadExchangePort.countReviewsByUniversityIds(eq(List.of(300L)))).willReturn(Map.of(300L, 2L));
-        given(loadExchangePort.avgRatingsByUniversityIds(eq(List.of(300L)))).willReturn(Map.of(300L, 3.0));
 
         PageResult<UniversityCatalogResult> page =
                 service.search(new SearchUniversityCatalogCommand(null, null, 0, 20));
@@ -116,7 +111,6 @@ class UniversityCatalogQueryServiceTest {
         given(loadCatalogPort.search(isNull(), isNull(), eq(0), eq(20))).willReturn(List.of());
         given(loadCatalogPort.count(isNull(), isNull())).willReturn(45L);
         given(loadExchangePort.countReviewsByUniversityIds(eq(List.of()))).willReturn(Map.of());
-        given(loadExchangePort.avgRatingsByUniversityIds(eq(List.of()))).willReturn(Map.of());
 
         PageResult<UniversityCatalogResult> page =
                 service.search(new SearchUniversityCatalogCommand(null, null, 0, 20));

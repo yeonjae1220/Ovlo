@@ -121,8 +121,6 @@ export default function UniversityReportsPage() {
               </div>
             )}
             <div style={{ display: 'flex', gap: 16, fontSize: 12, color: C.textMuted, alignItems: 'center' }}>
-              <span>{t('univ.reports.videos', { count: r.sourceVideoCount })}</span>
-              {r.sourceWebCount > 0 && <span>{t('univ.reports.web', { count: r.sourceWebCount })}</span>}
               <span style={{ marginLeft: 'auto' }}>
                 {r.supportedLangs.map((l) => l.toUpperCase()).join(' · ')}
               </span>

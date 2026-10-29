@@ -16,8 +16,6 @@ public interface LoadExchangeUniversityPort {
 
     List<VideoReview> findReviewsByUniversityId(ExchangeUniversityId id, String direction, int offset, int limit);
     long countReviewsByUniversityId(ExchangeUniversityId id, String direction);
-    Double avgRatingByUniversityId(ExchangeUniversityId id);
     Map<Long, Long> countReviewsByUniversityIds(List<Long> universityIds);
-    Map<Long, Double> avgRatingsByUniversityIds(List<Long> universityIds);
     List<ExchangeUniversityCountryResult> findCountries();
 }

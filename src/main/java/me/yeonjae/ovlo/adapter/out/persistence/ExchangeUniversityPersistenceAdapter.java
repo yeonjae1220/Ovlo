@@ -57,27 +57,12 @@ public class ExchangeUniversityPersistenceAdapter implements LoadExchangeUnivers
     }
 
     @Override
-    public Double avgRatingByUniversityId(ExchangeUniversityId id) {
-        return videoReviewRepo.avgRatingByUniversityId(id.value());
-    }
-
-    @Override
     public Map<Long, Long> countReviewsByUniversityIds(List<Long> universityIds) {
         if (universityIds.isEmpty()) return Map.of();
         return videoReviewRepo.countByUniversityIdIn(universityIds).stream()
                 .collect(toMap(
                         p -> p.getUniversityId(),
                         p -> p.getReviewCount()
-                ));
-    }
-
-    @Override
-    public Map<Long, Double> avgRatingsByUniversityIds(List<Long> universityIds) {
-        if (universityIds.isEmpty()) return Map.of();
-        return videoReviewRepo.avgRatingByUniversityIdIn(universityIds).stream()
-                .collect(toMap(
-                        p -> p.getUniversityId(),
-                        p -> p.getAvgRating()
                 ));
     }
 

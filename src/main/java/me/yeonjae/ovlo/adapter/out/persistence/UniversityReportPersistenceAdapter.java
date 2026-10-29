@@ -78,24 +78,32 @@ public class UniversityReportPersistenceAdapter implements LoadUniversityReportP
     @Override
     public Optional<UniversityReportResult> findByIdAndLang(Long id, String lang) {
         return reportRepo.findById(id)
+                .filter(UniversityReportPersistenceAdapter::isPublished)
                 .flatMap(r -> resolveTranslation(r, lang));
     }
 
     @Override
     public Optional<UniversityReportResult> findByGlobalUnivIdAndLang(Long globalUnivId, String lang) {
         return reportRepo.findByGlobalUnivId(globalUnivId)
+                .filter(UniversityReportPersistenceAdapter::isPublished)
                 .flatMap(r -> resolveTranslation(r, lang));
     }
 
     @Override
     public Optional<UniversityReportResult> findByExchangeUnivIdAndLang(Long exchangeUnivId, String lang) {
         return reportRepo.findByExchangeUnivId(exchangeUnivId)
+                .filter(UniversityReportPersistenceAdapter::isPublished)
                 .flatMap(r -> resolveTranslation(r, lang));
     }
 
     @Override
     public List<String> findLangsByReportId(Long reportId) {
         return translationRepo.findLangsByReportId(reportId);
+    }
+
+    /** 목록과 같은 기준: DRAFT(비공개·중복 정리로 내린 리포트)는 상세 경로로도 내보내지 않는다. */
+    private static boolean isPublished(UniversityReportJpaEntity r) {
+        return "PUBLISHED".equals(r.getStatus());
     }
 
     private Optional<UniversityReportResult> resolveTranslation(UniversityReportJpaEntity r, String lang) {

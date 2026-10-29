@@ -31,7 +31,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  *   <li>global 미연결 후기 대학(orphan)도 누락 없이 검색</li>
  *   <li>콘텐츠 없는 global 대학은 제외</li>
  *   <li>한글 키워드(name_ko)·현지어(local_name) 매칭, countryCode 필터</li>
- *   <li>후기 보유 대학의 reviewCount/avgRating 보강</li>
+ *   <li>후기 보유 대학의 reviewCount 보강</li>
  * </ul>
  */
 @Tag("integration")
@@ -119,7 +119,6 @@ class UniversityCatalogPersistenceAdapterIntegrationTest {
         assertThat(r.hasReviews()).isTrue();
         assertThat(r.exchangeUnivId()).isEqualTo(bothExchangeId);
         assertThat(r.reviewCount()).isEqualTo(2L);
-        assertThat(r.avgRating()).isEqualTo(3.0);
     }
 
     @Test

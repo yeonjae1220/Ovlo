@@ -37,13 +37,11 @@ public class ExchangeUniversityQueryService implements SearchExchangeUniversityQ
 
         List<Long> ids = universities.stream().map(university -> university.getId().value()).toList();
         Map<Long, Long> counts = loadExchangeUniversityPort.countReviewsByUniversityIds(ids);
-        Map<Long, Double> avgRatings = loadExchangeUniversityPort.avgRatingsByUniversityIds(ids);
 
         List<ExchangeUniversityResult> content = universities.stream()
                 .map(university -> ExchangeUniversityResult.of(
                         university,
-                        counts.getOrDefault(university.getId().value(), 0L),
-                        avgRatings.get(university.getId().value())
+                        counts.getOrDefault(university.getId().value(), 0L)
                 ))
                 .toList();
         long total = loadExchangeUniversityPort.count(command.keyword(), command.countryCode());
@@ -55,8 +53,7 @@ public class ExchangeUniversityQueryService implements SearchExchangeUniversityQ
         ExchangeUniversity university = loadExchangeUniversityPort.findById(id)
                 .orElseThrow(() -> new UniversityException.NotFound(id.value()));
         long reviewCount = loadExchangeUniversityPort.countReviewsByUniversityId(id, null);
-        Double avgRating = loadExchangeUniversityPort.avgRatingByUniversityId(id);
-        return ExchangeUniversityResult.of(university, reviewCount, avgRating);
+        return ExchangeUniversityResult.of(university, reviewCount);
     }
 
     @Override

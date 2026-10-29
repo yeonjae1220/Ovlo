@@ -359,7 +359,6 @@ function ReportCard({ report, onClick }: { report: import('../../api/university'
           )}
         </div>
         <div style={{ display: 'grid', gap: 6, justifyItems: 'end', flexShrink: 0 }}>
-          <Badge tone="neutral">{report.sourceVideoCount}</Badge>
           <span style={{ color: C.dim, fontSize: 12, fontWeight: 750 }}>{report.supportedLangs.map((l) => l.toUpperCase()).join(' · ')}</span>
         </div>
       </div>

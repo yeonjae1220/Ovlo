@@ -4,6 +4,7 @@ import me.yeonjae.ovlo.application.dto.command.SearchUniversityCatalogCommand;
 import me.yeonjae.ovlo.application.dto.result.UniversityCatalogResult;
 import me.yeonjae.ovlo.application.dto.result.UniversityReportSummaryResult;
 import me.yeonjae.ovlo.application.port.in.university.SearchUniversityCatalogQuery;
+import me.yeonjae.ovlo.application.port.out.university.LoadExchangeUniversityPort;
 import me.yeonjae.ovlo.application.port.out.university.LoadUniversityReportPort;
 import me.yeonjae.ovlo.application.port.out.university.SearchUniversityPort;
 import me.yeonjae.ovlo.application.port.out.university.UniversityDomainLookupPort;
@@ -35,6 +36,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
  *   <li>본교 검색·통합 카탈로그·리포트 목록에서 패배 행이 빠진다</li>
  *   <li>패배 행 도메인으로 이메일 역조회하면 대표 행이 나온다</li>
  *   <li>패배 행의 옛 이름으로 검색해도 대표 행이 나온다</li>
+ *   <li>교환대학 목록 검색·건수·국가 집계에서도 숨김 행에 붙은 교환대학이 빠진다</li>
  *   <li>자기 자신을 가리키는 canonical_id 는 거부된다</li>
  * </ul>
  */
@@ -70,6 +72,9 @@ class UniversityCanonicalDedupIntegrationTest {
 
     @Autowired
     private LoadUniversityReportPort reportPort;
+
+    @Autowired
+    private LoadExchangeUniversityPort exchangePort;
 
     @Autowired
     private JdbcTemplate jdbc;
@@ -202,6 +207,27 @@ class UniversityCanonicalDedupIntegrationTest {
                 .extracting(UniversityReportSummaryResult::id)
                 .containsExactly(canonicalReportId);
         assertThat(page.totalElements()).isEqualTo(1L);
+    }
+
+    @Test
+    @DisplayName("교환대학 목록 검색·건수에서 숨김 행에 붙은 교환대학이 빠지고, 대학 미연결 교환대학은 남는다")
+    void exchangeUniversitySearchExcludesHidden() {
+        insertExchange(null, "Leuven Summer School");
+
+        assertThat(exchangePort.search("Leuven", null, 0, 20))
+                .extracting(u -> u.getNameEn())
+                .containsExactlyInAnyOrder("KU Leuven", "Leuven Summer School");
+        assertThat(exchangePort.count("Leuven", null)).isEqualTo(2L);
+    }
+
+    @Test
+    @DisplayName("교환대학 국가별 집계도 숨김 행에 붙은 교환대학을 세지 않는다")
+    void exchangeCountryCountExcludesHidden() {
+        jdbc.update("UPDATE exchange_universities SET country = '벨기에'");
+
+        assertThat(exchangePort.findCountries())
+                .singleElement()
+                .satisfies(c -> assertThat(c.universityCount()).isEqualTo(1L));
     }
 
     @Test

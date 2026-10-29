@@ -19,6 +19,8 @@ public interface ExchangeUniversityJpaRepository extends JpaRepository<ExchangeU
             ) rc ON rc.university_id = eu.id
             WHERE (:keyword IS NULL OR eu.name_ko ILIKE '%' || :keyword || '%' OR eu.name_en ILIKE '%' || :keyword || '%')
               AND (:countryCode IS NULL OR eu.country_code = :countryCode)
+              AND NOT EXISTS (SELECT 1 FROM global_universities h
+                              WHERE h.id = eu.global_univ_id AND h.canonical_id IS NOT NULL)
             ORDER BY COALESCE(rc.review_count, 0) DESC, eu.name_en
             LIMIT :limit OFFSET :offset
             """, nativeQuery = true)
@@ -30,9 +32,11 @@ public interface ExchangeUniversityJpaRepository extends JpaRepository<ExchangeU
     );
 
     @Query(value = """
-            SELECT COUNT(*) FROM exchange_universities
-            WHERE (:keyword IS NULL OR name_ko ILIKE '%' || :keyword || '%' OR name_en ILIKE '%' || :keyword || '%')
-              AND (:countryCode IS NULL OR country_code = :countryCode)
+            SELECT COUNT(*) FROM exchange_universities eu
+            WHERE (:keyword IS NULL OR eu.name_ko ILIKE '%' || :keyword || '%' OR eu.name_en ILIKE '%' || :keyword || '%')
+              AND (:countryCode IS NULL OR eu.country_code = :countryCode)
+              AND NOT EXISTS (SELECT 1 FROM global_universities h
+                              WHERE h.id = eu.global_univ_id AND h.canonical_id IS NOT NULL)
             """, nativeQuery = true)
     long countSearch(@Param("keyword") String keyword, @Param("countryCode") String countryCode);
 
@@ -41,6 +45,8 @@ public interface ExchangeUniversityJpaRepository extends JpaRepository<ExchangeU
                 e.country, e.countryCode, COUNT(e))
             FROM ExchangeUniversityJpaEntity e
             WHERE e.country IS NOT NULL AND e.countryCode IS NOT NULL
+              AND NOT EXISTS (SELECT 1 FROM GlobalUniversityJpaEntity h
+                              WHERE h.id = e.globalUnivId AND h.canonicalId IS NOT NULL)
             GROUP BY e.country, e.countryCode
             ORDER BY e.country
             """)

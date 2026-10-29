@@ -11,11 +11,6 @@ import { useI18n } from '../../i18n/I18nProvider'
 import type { UniversityCatalogItem } from '../../types'
 import { Badge, Button, Card, EmptyState, PageHeader, QueryErrorNotice, SearchBox, SelectField, SkeletonLines } from '../../components/ui'
 
-const STAR = (avg?: number | null) =>
-  avg !== undefined && avg !== null
-    ? '★'.repeat(Math.round(avg)) + '☆'.repeat(5 - Math.round(avg))
-    : '☆☆☆☆☆'
-
 const PAGE_SIZE = 20
 
 const C = {
@@ -170,11 +165,8 @@ export default function ExchangeUniversitySearchPage() {
 
               <div style={{ marginTop: 'auto', display: 'flex', justifyContent: 'space-between', gap: 12, alignItems: 'flex-end' }}>
                 {u.hasReviews ? (
-                  <div>
-                    <div style={{ color: C.warning, fontSize: 15 }}>{STAR(u.avgRating)}</div>
-                    <div style={{ fontSize: 12, color: C.dim, marginTop: 3 }}>
-                      {(u.avgRating ?? 0).toFixed(1)} · {u.reviewCount} {t('exch.reviews')}
-                    </div>
+                  <div style={{ fontSize: 12, color: C.dim }}>
+                    {u.reviewCount} {t('exch.reviews')}
                   </div>
                 ) : <span />}
                 <span style={{ color: C.accent, fontSize: 13, fontWeight: 900 }}>
