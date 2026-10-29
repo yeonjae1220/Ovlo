@@ -9,6 +9,16 @@ Versioning follows [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Changed
+- 대학 리포트 근거 기반 재생성 도구(`scripts/report_regen/`)와 절차 문서(`docs/report-regeneration.md`) — 파일럿 10개 대학
+- 상세 조회(id·대학·교환대학)가 PUBLISHED 리포트만 반환한다
+- 교환대학 목록 검색·건수·국가 집계가 중복으로 숨긴 대학(canonical_id)의 교환대학을 제외한다
+- 리포트 상세에서 "영상 N개 분석" 대신, 재생성 리포트에 한해 출처 수와 정보 기준 시점을 표시한다
+- 리포트 품질 게이트 트리거가 `content.sources`(원문 출처 제목)를 언어 섞임 검사에서 제외한다 (V33)
+
+### Removed
+- 교환대학·카탈로그의 평균 평점(별점) — LLM 추출값의 평균이라 실제 평가가 아니다
+
 ## [0.5.0] - 2026-06-30
 
 교환학생 **학생 인증 시스템**과 통합 검색, 보안·관측성 강화에 집중한 릴리스.
