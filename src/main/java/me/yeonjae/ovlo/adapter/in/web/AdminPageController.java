@@ -3,7 +3,14 @@ package me.yeonjae.ovlo.adapter.in.web;
 import lombok.RequiredArgsConstructor;
 import me.yeonjae.ovlo.adapter.in.web.dto.response.AdminMemberResponse;
 import me.yeonjae.ovlo.adapter.in.web.dto.response.AdminUniversityResponse;
+import me.yeonjae.ovlo.application.dto.command.CreateOfficeCommand;
+import me.yeonjae.ovlo.application.dto.command.InviteOfficeStaffCommand;
 import me.yeonjae.ovlo.application.dto.command.IssueManualVerificationCommand;
+import me.yeonjae.ovlo.application.port.in.office.AdministerOfficeUseCase;
+import me.yeonjae.ovlo.application.port.in.office.GetOfficeQuery;
+import me.yeonjae.ovlo.application.port.in.office.ManageOfficeStaffUseCase;
+import me.yeonjae.ovlo.domain.office.exception.OfficeException;
+import me.yeonjae.ovlo.domain.office.model.OfficeRole;
 import me.yeonjae.ovlo.application.service.admin.AdminService;
 import me.yeonjae.ovlo.application.service.admin.AdminVerificationService;
 import me.yeonjae.ovlo.domain.member.exception.MemberException;
@@ -31,6 +38,9 @@ public class AdminPageController {
 
     private final AdminService adminService;
     private final AdminVerificationService adminVerificationService;
+    private final AdministerOfficeUseCase administerOfficeUseCase;
+    private final ManageOfficeStaffUseCase manageOfficeStaffUseCase;
+    private final GetOfficeQuery getOfficeQuery;
 
     @GetMapping({"", "/", "/dashboard"})
     public String dashboard(Model model) {
@@ -191,5 +201,61 @@ public class AdminPageController {
     @GetMapping("/login")
     public String loginPage() {
         return "admin/login";
+    }
+
+    // ── 국제처 테넌트 ─────────────────────────────────────────────────────
+
+    @GetMapping("/offices")
+    public String offices(@RequestParam(defaultValue = "0") int page, Model model) {
+        var officePage = getOfficeQuery.findAll(PageRequest.of(page, 20, Sort.by(Sort.Direction.DESC, "id")));
+        model.addAttribute("offices", officePage.getContent());
+        model.addAttribute("currentPage", page);
+        model.addAttribute("totalPages", officePage.getTotalPages());
+        model.addAttribute("totalElements", officePage.getTotalElements());
+        return "admin/offices";
+    }
+
+    @PostMapping("/offices")
+    public String createOffice(@RequestParam Long globalUnivId,
+                               @RequestParam String name,
+                               RedirectAttributes redirectAttributes) {
+        try {
+            var created = administerOfficeUseCase.create(new CreateOfficeCommand(globalUnivId, name));
+            redirectAttributes.addFlashAttribute("successMessage",
+                    "국제처를 만들었습니다: " + created.name() + " (id " + created.id() + "). 첫 담당자를 초대하세요.");
+        } catch (OfficeException | IllegalArgumentException e) {
+            redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
+        }
+        return "redirect:/admin/offices";
+    }
+
+    @PostMapping("/offices/{id}/staff")
+    public String inviteOfficeStaff(@PathVariable Long id,
+                                    @RequestParam String email,
+                                    @RequestParam OfficeRole role,
+                                    Authentication authentication,
+                                    RedirectAttributes redirectAttributes) {
+        try {
+            manageOfficeStaffUseCase.invite(new InviteOfficeStaffCommand(id, email.trim(), role,
+                    "admin:" + authentication.getName()));
+            redirectAttributes.addFlashAttribute("successMessage", email + " 을(를) " + role + " 로 초대했습니다.");
+        } catch (OfficeException | IllegalArgumentException e) {
+            redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
+        }
+        return "redirect:/admin/offices";
+    }
+
+    @PostMapping("/offices/{id}/suspend")
+    public String suspendOffice(@PathVariable Long id, RedirectAttributes redirectAttributes) {
+        administerOfficeUseCase.suspend(id);
+        redirectAttributes.addFlashAttribute("successMessage", "국제처를 정지했습니다.");
+        return "redirect:/admin/offices";
+    }
+
+    @PostMapping("/offices/{id}/activate")
+    public String activateOffice(@PathVariable Long id, RedirectAttributes redirectAttributes) {
+        administerOfficeUseCase.activate(id);
+        redirectAttributes.addFlashAttribute("successMessage", "국제처를 재개했습니다.");
+        return "redirect:/admin/offices";
     }
 }

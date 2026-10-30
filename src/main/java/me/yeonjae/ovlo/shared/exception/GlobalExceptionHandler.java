@@ -6,6 +6,7 @@ import me.yeonjae.ovlo.domain.chat.exception.ChatException;
 import me.yeonjae.ovlo.domain.follow.exception.FollowException;
 import me.yeonjae.ovlo.domain.media.exception.MediaException;
 import me.yeonjae.ovlo.domain.member.exception.MemberException;
+import me.yeonjae.ovlo.domain.office.exception.OfficeException;
 import me.yeonjae.ovlo.domain.post.exception.PostException;
 import me.yeonjae.ovlo.domain.university.exception.UniversityException;
 import me.yeonjae.ovlo.domain.verification.exception.VerificationException;
@@ -76,6 +77,16 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ErrorResponse> handleChatException(ChatException ex) {
         return ResponseEntity.status(resolveStatus(ex.getErrorType()))
                 .body(ErrorResponse.of(resolveCode(ChatException.class, ex.getErrorType()), ex.getMessage()));
+    }
+
+    /** 국제처(Office). SUSPENDED 는 이름이 HTTP 시맨틱이 아니라 따로 403 으로 보낸다. */
+    @ExceptionHandler(OfficeException.class)
+    public ResponseEntity<ErrorResponse> handleOfficeException(OfficeException ex) {
+        HttpStatus status = ex.getErrorType() == OfficeException.ErrorType.SUSPENDED
+                ? HttpStatus.FORBIDDEN
+                : resolveStatus(ex.getErrorType());
+        return ResponseEntity.status(status)
+                .body(ErrorResponse.of(resolveCode(OfficeException.class, ex.getErrorType()), ex.getMessage()));
     }
 
     @ExceptionHandler(VerificationException.class)

@@ -29,6 +29,7 @@ import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.then;
 import static org.mockito.Mockito.never;
@@ -46,6 +47,8 @@ class GoogleAuthCommandServiceTest {
     private TokenStorePort tokenStorePort;
     @Mock
     private JwtTokenProvider jwtTokenProvider;
+    @Mock
+    private me.yeonjae.ovlo.application.port.out.office.LoadOfficeMembershipPort loadOfficeMembershipPort;
 
     @InjectMocks
     private GoogleAuthCommandService sut;
@@ -58,7 +61,7 @@ class GoogleAuthCommandServiceTest {
         given(googleOAuthPort.getUserProfile("code", "https://ovlo.test/cb"))
                 .willReturn(new GoogleUserProfile("g@example.com", "구글", null, "google-1"));
         given(loadMemberPort.findByEmail("g@example.com")).willReturn(Optional.of(googleMember(memberId)));
-        given(jwtTokenProvider.generateAccessToken(memberId, MemberRole.MEMBER)).willReturn("access");
+        given(jwtTokenProvider.generateAccessToken(memberId, MemberRole.MEMBER, null)).willReturn("access");
         given(jwtTokenProvider.generateRefreshToken()).willReturn("refresh");
         given(jwtTokenProvider.refreshTokenTtl()).willReturn(refreshTtl);
 

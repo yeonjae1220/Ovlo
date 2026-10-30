@@ -12,10 +12,13 @@ import me.yeonjae.ovlo.application.port.out.auth.LoadMemberCredentialsPort;
 import me.yeonjae.ovlo.application.port.out.auth.PasswordHasherPort;
 import me.yeonjae.ovlo.application.port.out.auth.TokenStorePort;
 import me.yeonjae.ovlo.application.port.out.member.LoadMemberPort;
+import me.yeonjae.ovlo.application.port.out.office.LoadOfficeMembershipPort;
 import me.yeonjae.ovlo.domain.auth.exception.AuthException;
 import me.yeonjae.ovlo.domain.auth.model.AuthSession;
 import me.yeonjae.ovlo.domain.auth.model.RefreshRotationOutcome;
+import me.yeonjae.ovlo.domain.member.model.MemberId;
 import me.yeonjae.ovlo.domain.member.model.MemberRole;
+import me.yeonjae.ovlo.domain.office.model.OfficeMembership;
 import me.yeonjae.ovlo.shared.security.JwtTokenProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -36,6 +39,7 @@ public class AuthCommandService implements LoginUseCase, LogoutUseCase, RefreshT
     private final TokenStorePort tokenStorePort;
     private final JwtTokenProvider jwtTokenProvider;
     private final LoadMemberPort loadMemberPort;
+    private final LoadOfficeMembershipPort loadOfficeMembershipPort;
     private final boolean revokeSessionOnReuse;
 
     public AuthCommandService(LoadMemberCredentialsPort loadMemberCredentialsPort,
@@ -43,12 +47,14 @@ public class AuthCommandService implements LoginUseCase, LogoutUseCase, RefreshT
                                TokenStorePort tokenStorePort,
                                JwtTokenProvider jwtTokenProvider,
                                LoadMemberPort loadMemberPort,
+                               LoadOfficeMembershipPort loadOfficeMembershipPort,
                                @Value("${ovlo.auth.refresh-reuse.revoke-session:false}") boolean revokeSessionOnReuse) {
         this.loadMemberCredentialsPort = loadMemberCredentialsPort;
         this.passwordHasherPort = passwordHasherPort;
         this.tokenStorePort = tokenStorePort;
         this.jwtTokenProvider = jwtTokenProvider;
         this.loadMemberPort = loadMemberPort;
+        this.loadOfficeMembershipPort = loadOfficeMembershipPort;
         this.revokeSessionOnReuse = revokeSessionOnReuse;
     }
 
@@ -65,7 +71,8 @@ public class AuthCommandService implements LoginUseCase, LogoutUseCase, RefreshT
             throw new AuthException("이메일 또는 비밀번호가 올바르지 않습니다");
         }
 
-        String accessToken = jwtTokenProvider.generateAccessToken(credentials.memberId(), credentials.role());
+        String accessToken = jwtTokenProvider.generateAccessToken(
+                credentials.memberId(), credentials.role(), officeMembershipOf(credentials.memberId()));
         String refreshToken = jwtTokenProvider.generateRefreshToken();
         Instant expiresAt = Instant.now().plus(jwtTokenProvider.refreshTokenTtl());
 
@@ -110,9 +117,15 @@ public class AuthCommandService implements LoginUseCase, LogoutUseCase, RefreshT
         MemberRole role = loadMemberPort.findById(session.getMemberId())
                 .map(m -> m.getRole())
                 .orElse(MemberRole.MEMBER);
-        String newAccessToken = jwtTokenProvider.generateAccessToken(session.getMemberId(), role);
+        String newAccessToken = jwtTokenProvider.generateAccessToken(
+                session.getMemberId(), role, officeMembershipOf(session.getMemberId()));
 
         return new TokenPairResult(newAccessToken, newRefreshToken, session.getMemberId().value());
+    }
+
+    /** 담당자 소속이 있으면 JWT 클레임으로 싣는다(ADR-0005). 정지된 Office 는 포트가 돌려주지 않는다. */
+    private OfficeMembership officeMembershipOf(MemberId memberId) {
+        return loadOfficeMembershipPort.findActiveMembership(memberId).orElse(null);
     }
 
     /**
