@@ -146,7 +146,14 @@ export default function LandingPage() {
         </section>
       </main>
 
-      <footer className="landing-footer">{t('landing.footer')}</footer>
+      <footer className="landing-footer">
+        {t('landing.footer')}
+        <span style={{ marginLeft: 12 }}>
+          <Link href="/terms">{t('legal.terms')}</Link>
+          {' · '}
+          <Link href="/privacy">{t('legal.privacy')}</Link>
+        </span>
+      </footer>
     </div>
   )
 }
