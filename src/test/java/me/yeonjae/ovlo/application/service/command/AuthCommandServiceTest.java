@@ -9,6 +9,7 @@ import me.yeonjae.ovlo.application.port.out.auth.LoadMemberCredentialsPort;
 import me.yeonjae.ovlo.application.port.out.auth.PasswordHasherPort;
 import me.yeonjae.ovlo.application.port.out.auth.TokenStorePort;
 import me.yeonjae.ovlo.application.port.out.member.LoadMemberPort;
+import me.yeonjae.ovlo.application.port.out.office.LoadOfficeMembershipPort;
 import me.yeonjae.ovlo.domain.auth.exception.AuthException;
 import me.yeonjae.ovlo.domain.auth.model.AuthSession;
 import me.yeonjae.ovlo.domain.auth.model.RefreshRotationOutcome;
@@ -52,6 +53,8 @@ class AuthCommandServiceTest {
     private JwtTokenProvider jwtTokenProvider;
     @Mock
     private LoadMemberPort loadMemberPort;
+    @Mock
+    private LoadOfficeMembershipPort loadOfficeMembershipPort;
 
     private static final Duration REFRESH_TTL = Duration.ofDays(45);
 
@@ -70,6 +73,7 @@ class AuthCommandServiceTest {
                 tokenStorePort,
                 jwtTokenProvider,
                 loadMemberPort,
+                loadOfficeMembershipPort,
                 revokeSessionOnReuse
         );
     }
@@ -95,7 +99,7 @@ class AuthCommandServiceTest {
             given(loadMemberCredentialsPort.findByEmail(email))
                     .willReturn(Optional.of(new MemberCredentials(memberId, hashedPassword, MemberRole.MEMBER)));
             given(passwordHasherPort.matches(rawPassword, hashedPassword)).willReturn(true);
-            given(jwtTokenProvider.generateAccessToken(eq(memberId), any(MemberRole.class))).willReturn("access-token");
+            given(jwtTokenProvider.generateAccessToken(eq(memberId), any(MemberRole.class), isNull())).willReturn("access-token");
             given(jwtTokenProvider.generateRefreshToken()).willReturn("refresh-token");
 
             Instant before = Instant.now();
@@ -177,7 +181,7 @@ class AuthCommandServiceTest {
             stubSession("old-refresh-token");
             given(tokenStorePort.rotate(any(AuthSession.class), eq("old-refresh-token")))
                     .willReturn(RefreshRotationOutcome.ROTATED);
-            given(jwtTokenProvider.generateAccessToken(eq(memberId), any(MemberRole.class))).willReturn("new-access-token");
+            given(jwtTokenProvider.generateAccessToken(eq(memberId), any(MemberRole.class), isNull())).willReturn("new-access-token");
 
             Instant before = Instant.now();
             TokenPairResult result = sut.refresh(new RefreshTokenCommand("old-refresh-token"));
@@ -202,7 +206,7 @@ class AuthCommandServiceTest {
                     .isInstanceOf(AuthException.class)
                     .extracting(e -> ((AuthException) e).getErrorType())
                     .isEqualTo(AuthException.ErrorType.CONFLICT);
-            then(jwtTokenProvider).should(never()).generateAccessToken(any(), any());
+            then(jwtTokenProvider).should(never()).generateAccessToken(any(), any(), any());
         }
 
         @Test
@@ -260,7 +264,7 @@ class AuthCommandServiceTest {
             assertThatThrownBy(() -> sut.refresh(new RefreshTokenCommand("old-refresh-token")))
                     .isInstanceOf(AuthException.class)
                     .hasMessageContaining("유효하지 않은 리프레시 토큰입니다");
-            then(jwtTokenProvider).should(never()).generateAccessToken(any(), any());
+            then(jwtTokenProvider).should(never()).generateAccessToken(any(), any(), any());
         }
 
         @Test

@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{admin/layout :: layout(~{::body}, '국제처 테넌트', 'offices')}"
+      lang="ko">
+<body>
+
+<div class="section-header">
+  <span class="section-title">
+    국제처 테넌트
+    <span class="text-muted" style="font-size:13px; font-weight:400;"
+          th:text="'(' + ${totalElements} + '개)'"></span>
+  </span>
+</div>
+
+<div class="card" style="margin-bottom:16px;">
+  <div style="font-weight:600; margin-bottom:10px;">새 국제처 만들기</div>
+  <p class="text-muted" style="font-size:12px; margin:0 0 10px;">
+    대학 1곳에 국제처 1개. 대학 ID 는 <a th:href="@{/admin/universities}">대학 목록</a>에서 확인합니다.
+    만든 뒤 아래 목록에서 첫 담당자(OFFICE_ADMIN)를 이메일로 초대합니다 — 가입된 회원만 초대할 수 있습니다.
+  </p>
+  <form th:action="@{/admin/offices}" method="post" style="display:flex; gap:8px; flex-wrap:wrap; align-items:center;">
+    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+    <input type="number" name="globalUnivId" placeholder="대학 ID" required min="1"
+           style="width:120px; padding:6px 8px; border-radius:5px; border:1px solid var(--border); background:var(--surface-2); color:var(--text);"/>
+    <input type="text" name="name" placeholder="표시 이름 (예: 성균관대학교 국제처)" required maxlength="200"
+           style="flex:1; min-width:240px; padding:6px 8px; border-radius:5px; border:1px solid var(--border); background:var(--surface-2); color:var(--text);"/>
+    <button type="submit" class="btn btn-primary">만들기</button>
+  </form>
+</div>
+
+<div class="card" style="padding:0; overflow:hidden;">
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>이름 / 대학</th>
+          <th>상태</th>
+          <th>담당자</th>
+          <th>초대 · 조치</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr th:if="${offices.empty}">
+          <td colspan="5" style="text-align:center; padding:32px; color:var(--text-muted);">아직 만든 국제처가 없습니다.</td>
+        </tr>
+        <tr th:each="o : ${offices}">
+          <td style="color:var(--text-muted);" th:text="${o.id()}"></td>
+          <td>
+            <div style="font-weight:500;" th:text="${o.name()}"></div>
+            <div class="text-muted" style="font-size:12px;" th:text="${o.universityName()} + ' (univ ' + ${o.globalUnivId()} + ')'"></div>
+          </td>
+          <td>
+            <span th:class="${o.status().name() == 'SUSPENDED'} ? 'badge badge-suspended'
+                           : (${o.status().name() == 'PILOT'} ? 'badge badge-pending' : 'badge badge-active')"
+                  th:text="${o.status().name()}"></span>
+          </td>
+          <td style="font-size:12px;">
+            <div th:if="${o.staff().empty}" class="text-muted">담당자 없음</div>
+            <div th:each="s : ${o.staff()}" style="margin-bottom:3px;">
+              <span th:text="${s.email() ?: ('member ' + s.memberId())}"></span>
+              <span class="badge badge-member" th:text="${s.role().name()}"></span>
+              <span th:class="${s.status().name() == 'ACTIVE'} ? 'badge badge-active' : 'badge badge-pending'"
+                    th:text="${s.status().name()}"></span>
+            </div>
+          </td>
+          <td>
+            <form th:action="@{/admin/offices/{id}/staff(id=${o.id()})}" method="post"
+                  style="display:flex; gap:6px; align-items:center; margin-bottom:6px;">
+              <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+              <input type="email" name="email" placeholder="회원 이메일" required
+                     style="width:180px; padding:4px 6px; font-size:12px; border-radius:5px; border:1px solid var(--border); background:var(--surface-2); color:var(--text);"/>
+              <select name="role" style="padding:4px 6px; font-size:12px; border-radius:5px; border:1px solid var(--border); background:var(--surface-2); color:var(--text);">
+                <option value="OFFICE_ADMIN">OFFICE_ADMIN</option>
+                <option value="OFFICE_STAFF">OFFICE_STAFF</option>
+              </select>
+              <button type="submit" class="btn btn-ghost btn-sm">초대</button>
+            </form>
+            <form th:if="${o.status().name() != 'SUSPENDED'}" th:action="@{/admin/offices/{id}/suspend(id=${o.id()})}" method="post" style="display:inline;">
+              <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+              <!-- admin 체인 CSP 가 script-src 'self' 라 inline confirm 을 쓸 수 없다. 되돌리려면 '재개'를 누른다. -->
+              <button type="submit" class="btn btn-danger btn-sm" title="담당자 세션이 모두 끊기고 학생·담당자 쓰기가 막힙니다">정지</button>
+            </form>
+            <form th:if="${o.status().name() == 'SUSPENDED'}" th:action="@{/admin/offices/{id}/activate(id=${o.id()})}" method="post" style="display:inline;">
+              <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+              <button type="submit" class="btn btn-warning btn-sm">재개</button>
+            </form>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<div class="pagination" th:if="${totalPages > 1}">
+  <a th:href="@{/admin/offices(page=${currentPage - 1})}"
+     th:class="${currentPage == 0} ? 'page-link disabled' : 'page-link'">‹</a>
+  <th:block th:each="i : ${#numbers.sequence(0, totalPages - 1)}">
+    <a th:href="@{/admin/offices(page=${i})}"
+       th:class="${i == currentPage} ? 'page-link active' : 'page-link'"
+       th:text="${i + 1}"></a>
+  </th:block>
+  <a th:href="@{/admin/offices(page=${currentPage + 1})}"
+     th:class="${currentPage == totalPages - 1} ? 'page-link disabled' : 'page-link'">›</a>
+</div>
+
+</body>
+</html>

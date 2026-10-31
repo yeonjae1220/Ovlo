@@ -23,11 +23,11 @@ class RateLimiterServiceTest {
     private RedisTemplate<String, String> redisTemplate;
 
     private final RateLimiterService rateLimiterService(int signupLimit) {
-        return new RateLimiterService(redisTemplate, 10, 30, signupLimit, 100, 600);
+        return new RateLimiterService(redisTemplate, 10, 30, signupLimit, 100, 5, 50, 600);
     }
 
     private final RateLimiterService searchRateLimiter(int searchLimit) {
-        return new RateLimiterService(redisTemplate, 10, 30, 5, searchLimit, 600);
+        return new RateLimiterService(redisTemplate, 10, 30, 5, searchLimit, 5, 50, 600);
     }
 
     @Test

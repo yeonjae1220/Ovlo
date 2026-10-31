@@ -268,6 +268,10 @@ public class SecurityConfig {
                         .requestMatchers("/h2-console/**").hasAuthority("ADMIN") // WARN fix: ADMIN 전용으로 격상
                         .requestMatchers(org.springframework.http.HttpMethod.POST, "/api/feedback").permitAll()
                         .requestMatchers("/api/v1/admin/**").hasAuthority("ADMIN")
+                        // 국제처 담당자 화면 API — 1차 관문. 어느 Office 인지는 서비스의 OfficeAccessPolicy 가 본다(ADR-0005)
+                        .requestMatchers("/api/v1/office-admin/**")
+                            .hasAnyAuthority(JwtAuthenticationFilter.OFFICE_STAFF_AUTHORITY,
+                                    JwtAuthenticationFilter.OFFICE_ADMIN_AUTHORITY)
                         .anyRequest().authenticated()
                 )
                 .exceptionHandling(ex -> ex

@@ -6,6 +6,11 @@ import me.yeonjae.ovlo.domain.chat.exception.ChatException;
 import me.yeonjae.ovlo.domain.follow.exception.FollowException;
 import me.yeonjae.ovlo.domain.media.exception.MediaException;
 import me.yeonjae.ovlo.domain.member.exception.MemberException;
+import me.yeonjae.ovlo.domain.office.exception.ConsultationException;
+import me.yeonjae.ovlo.domain.office.exception.InquiryException;
+import me.yeonjae.ovlo.domain.office.exception.NoticeException;
+import me.yeonjae.ovlo.domain.office.exception.OfficeException;
+import me.yeonjae.ovlo.domain.office.exception.PartnerException;
 import me.yeonjae.ovlo.domain.post.exception.PostException;
 import me.yeonjae.ovlo.domain.university.exception.UniversityException;
 import me.yeonjae.ovlo.domain.verification.exception.VerificationException;
@@ -76,6 +81,55 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ErrorResponse> handleChatException(ChatException ex) {
         return ResponseEntity.status(resolveStatus(ex.getErrorType()))
                 .body(ErrorResponse.of(resolveCode(ChatException.class, ex.getErrorType()), ex.getMessage()));
+    }
+
+    /** 국제처(Office). SUSPENDED 는 이름이 HTTP 시맨틱이 아니라 따로 403 으로 보낸다. */
+    @ExceptionHandler(OfficeException.class)
+    public ResponseEntity<ErrorResponse> handleOfficeException(OfficeException ex) {
+        HttpStatus status = ex.getErrorType() == OfficeException.ErrorType.SUSPENDED
+                ? HttpStatus.FORBIDDEN
+                : resolveStatus(ex.getErrorType());
+        return ResponseEntity.status(status)
+                .body(ErrorResponse.of(resolveCode(OfficeException.class, ex.getErrorType()), ex.getMessage()));
+    }
+
+    /** 정착 제휴(Partner). FORBIDDEN 은 플랫폼·대학 어느 쪽이든 꺼져 있을 때. */
+    @ExceptionHandler(PartnerException.class)
+    public ResponseEntity<ErrorResponse> handlePartnerException(PartnerException ex) {
+        return ResponseEntity.status(resolveStatus(ex.getErrorType()))
+                .body(ErrorResponse.of(resolveCode(PartnerException.class, ex.getErrorType()), ex.getMessage()));
+    }
+
+    /** 상담 이관(Consultation). CONSENT_REQUIRED 는 400, INVALID_STATE 는 409. */
+    @ExceptionHandler(ConsultationException.class)
+    public ResponseEntity<ErrorResponse> handleConsultationException(ConsultationException ex) {
+        HttpStatus status = switch (ex.getErrorType()) {
+            case CONSENT_REQUIRED -> HttpStatus.BAD_REQUEST;
+            case INVALID_STATE -> HttpStatus.CONFLICT;
+            default -> resolveStatus(ex.getErrorType());
+        };
+        return ResponseEntity.status(status)
+                .body(ErrorResponse.of(resolveCode(ConsultationException.class, ex.getErrorType()), ex.getMessage()));
+    }
+
+    /** 학생 문의(Inquiry). RATE_LIMITED(Office 일일 상한)는 429. */
+    @ExceptionHandler(InquiryException.class)
+    public ResponseEntity<ErrorResponse> handleInquiryException(InquiryException ex) {
+        HttpStatus status = ex.getErrorType() == InquiryException.ErrorType.RATE_LIMITED
+                ? HttpStatus.TOO_MANY_REQUESTS
+                : resolveStatus(ex.getErrorType());
+        return ResponseEntity.status(status)
+                .body(ErrorResponse.of(resolveCode(InquiryException.class, ex.getErrorType()), ex.getMessage()));
+    }
+
+    /** 승인 자료(Notice). INVALID_STATE(허용되지 않는 전이)는 409. */
+    @ExceptionHandler(NoticeException.class)
+    public ResponseEntity<ErrorResponse> handleNoticeException(NoticeException ex) {
+        HttpStatus status = ex.getErrorType() == NoticeException.ErrorType.INVALID_STATE
+                ? HttpStatus.CONFLICT
+                : resolveStatus(ex.getErrorType());
+        return ResponseEntity.status(status)
+                .body(ErrorResponse.of(resolveCode(NoticeException.class, ex.getErrorType()), ex.getMessage()));
     }
 
     @ExceptionHandler(VerificationException.class)

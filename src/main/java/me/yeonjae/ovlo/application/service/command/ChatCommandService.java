@@ -16,6 +16,8 @@ import me.yeonjae.ovlo.domain.chat.model.ChatRoomId;
 import me.yeonjae.ovlo.domain.chat.model.ChatRoomType;
 import me.yeonjae.ovlo.domain.member.model.MemberId;
 import org.springframework.dao.DataIntegrityViolationException;
+import me.yeonjae.ovlo.application.service.office.ChatMessageSentEvent;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -29,12 +31,14 @@ public class ChatCommandService implements CreateChatRoomUseCase, SendMessageUse
     private final LoadChatPort loadChatPort;
     private final SaveChatPort saveChatPort;
     private final SaveReadMarkerPort saveReadMarkerPort;
+    private final ApplicationEventPublisher eventPublisher;
 
     public ChatCommandService(LoadChatPort loadChatPort, SaveChatPort saveChatPort,
-                              SaveReadMarkerPort saveReadMarkerPort) {
+                              SaveReadMarkerPort saveReadMarkerPort, ApplicationEventPublisher eventPublisher) {
         this.loadChatPort = loadChatPort;
         this.saveChatPort = saveChatPort;
         this.saveReadMarkerPort = saveReadMarkerPort;
+        this.eventPublisher = eventPublisher;
     }
 
     @Override
@@ -81,6 +85,9 @@ public class ChatCommandService implements CreateChatRoomUseCase, SendMessageUse
             throw new ChatException("채팅방을 찾을 수 없거나 참여자가 아닙니다", ChatException.ErrorType.NOT_FOUND);
         }
 
-        return MessageResult.from(saveChatPort.saveMessage(command.chatRoomId(), command.senderId(), command.content()));
+        MessageResult result = MessageResult.from(saveChatPort.saveMessage(command.chatRoomId(), command.senderId(), command.content()));
+        // 상담방이면 담당자 첫 답변 시각을 기록한다(커밋 뒤, ConsultationEventListener)
+        eventPublisher.publishEvent(new ChatMessageSentEvent(command.chatRoomId(), command.senderId(), result.sentAt()));
+        return result;
     }
 }

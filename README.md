@@ -68,6 +68,8 @@ cp .env.example .env
 # .env를 열어 JWT_SECRET 등 필수 값을 채워주세요
 ```
 
+국제처 파일럿(승인 자료·질문 답변·상담 이관·대시보드) 관련 변수와 운영 점검표는 [docs/intl-office-pilot-runbook.md](docs/intl-office-pilot-runbook.md) 를 본다. 로컬 기본값(`OVLO_LLM_PROVIDER=fake`, `OVLO_SEARCH_PROVIDER=keyword`)은 API 키 없이 뜬다.
+
 ### Docker로 실행
 
 ```bash

@@ -6,6 +6,7 @@ import me.yeonjae.ovlo.application.dto.result.GoogleUserProfile;
 import me.yeonjae.ovlo.application.port.in.auth.GoogleLoginUseCase;
 import me.yeonjae.ovlo.application.port.out.member.LoadMemberPort;
 import me.yeonjae.ovlo.application.port.out.member.SaveMemberPort;
+import me.yeonjae.ovlo.application.port.out.office.LoadOfficeMembershipPort;
 import me.yeonjae.ovlo.application.port.out.auth.TokenStorePort;
 import me.yeonjae.ovlo.application.port.out.oauth.GoogleOAuthPort;
 import me.yeonjae.ovlo.domain.auth.model.AuthSession;
@@ -27,17 +28,20 @@ public class GoogleAuthCommandService implements GoogleLoginUseCase {
     private final SaveMemberPort saveMemberPort;
     private final TokenStorePort tokenStorePort;
     private final JwtTokenProvider jwtTokenProvider;
+    private final LoadOfficeMembershipPort loadOfficeMembershipPort;
 
     public GoogleAuthCommandService(GoogleOAuthPort googleOAuthPort,
                                     LoadMemberPort loadMemberPort,
                                     SaveMemberPort saveMemberPort,
                                     TokenStorePort tokenStorePort,
-                                    JwtTokenProvider jwtTokenProvider) {
+                                    JwtTokenProvider jwtTokenProvider,
+                                    LoadOfficeMembershipPort loadOfficeMembershipPort) {
         this.googleOAuthPort = googleOAuthPort;
         this.loadMemberPort = loadMemberPort;
         this.saveMemberPort = saveMemberPort;
         this.tokenStorePort = tokenStorePort;
         this.jwtTokenProvider = jwtTokenProvider;
+        this.loadOfficeMembershipPort = loadOfficeMembershipPort;
     }
 
     @Override
@@ -76,7 +80,8 @@ public class GoogleAuthCommandService implements GoogleLoginUseCase {
 
         // Google OAuth 유저는 JWT에 ADMIN 권한을 부여하지 않는다.
         // Admin 기능은 SSR 세션 기반(/admin) 전용이며 JWT로는 접근 불가.
-        String accessToken = jwtTokenProvider.generateAccessToken(member.getId(), MemberRole.MEMBER);
+        String accessToken = jwtTokenProvider.generateAccessToken(member.getId(), MemberRole.MEMBER,
+                loadOfficeMembershipPort.findActiveMembership(member.getId()).orElse(null));
         String refreshToken = jwtTokenProvider.generateRefreshToken();
         Instant expiresAt = Instant.now().plus(jwtTokenProvider.refreshTokenTtl());
 

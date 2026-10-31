@@ -265,6 +265,14 @@ export default function RegisterPage() {
 
       <StepIndicator step={step} t={t} />
 
+      <p style={{ margin: '0 0 18px', fontSize: 12, lineHeight: 1.6, color: 'var(--color-text-dim)' }}>
+        {t('register.legal.prefix')}
+        <Link href="/terms" style={{ color: 'var(--color-primary)' }}>{t('legal.terms')}</Link>
+        {t('register.legal.between')}
+        <Link href="/privacy" style={{ color: 'var(--color-primary)' }}>{t('legal.privacy')}</Link>
+        {t('register.legal.suffix')}
+      </p>
+
       {/* ── Step 1: 계정 정보 ─────────────────────────────────────────── */}
       {step === 1 && (
         <form onSubmit={handleNext} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>

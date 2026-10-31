@@ -142,6 +142,22 @@ spec:
             # nginx-ingress 파드의 IP에서 온 요청만 X-Real-IP를 신뢰 (스푸핑 방지).
             # k3s/flannel 기본 파드 CIDR — 운영 환경에서 `kubectl get pods -n kube-system -o wide`로
             # 실제 ingress-nginx 파드 대역을 확인해 필요 시 갱신할 것 (CIDR 표기 지원).
+            # ── 국제처 파일럿(S3~S6). prod 는 OfficePilotConfigGuard 가 anthropic+postgres 를 강제한다 ──
+            - name: OVLO_LLM_PROVIDER
+              value: "anthropic"
+            - name: OVLO_SEARCH_PROVIDER
+              value: "postgres"
+            - name: ANTHROPIC_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: ovlo-secret
+                  key: ANTHROPIC_API_KEY
+            - name: OVLO_LLM_MODEL
+              value: "claude-opus-5-5"
+            - name: OVLO_LLM_EFFORT
+              value: "medium"
+            - name: OVLO_INQUIRY_OFFICE_DAILY_LIMIT
+              value: "500"
             - name: TRUSTED_PROXY_IPS
               value: "127.0.0.1,::1,10.42.0.0/16"
             # ── 아래는 라이브에서 회수한 값이다 (GLOBAL-PIT-083) ──────────────

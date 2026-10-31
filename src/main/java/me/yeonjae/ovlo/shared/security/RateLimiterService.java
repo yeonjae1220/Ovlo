@@ -30,6 +30,8 @@ public class RateLimiterService {
     private final int refreshLimit;
     private final int signupLimit;
     private final int searchLimit;
+    private final int inquiryPerMinute;
+    private final int inquiryPerDay;
     private final int windowSeconds;
 
     public RateLimiterService(
@@ -38,6 +40,8 @@ public class RateLimiterService {
             @Value("${ovlo.rate-limit.refresh-limit:30}") int refreshLimit,
             @Value("${ovlo.rate-limit.signup-limit:5}") int signupLimit,
             @Value("${ovlo.rate-limit.search-limit:100}") int searchLimit,
+            @Value("${ovlo.rate-limit.inquiry-per-minute:5}") int inquiryPerMinute,
+            @Value("${ovlo.rate-limit.inquiry-per-day:50}") int inquiryPerDay,
             @Value("${ovlo.rate-limit.window-seconds:600}") int windowSeconds
     ) {
         this.redisTemplate = redisTemplate;
@@ -45,6 +49,8 @@ public class RateLimiterService {
         this.refreshLimit = refreshLimit;
         this.signupLimit = signupLimit;
         this.searchLimit = searchLimit;
+        this.inquiryPerMinute = inquiryPerMinute;
+        this.inquiryPerDay = inquiryPerDay;
         this.windowSeconds = windowSeconds;
     }
 
@@ -71,8 +77,18 @@ public class RateLimiterService {
         check("rl:search:ip:" + clientIp, searchLimit);
     }
 
+    /** 국제처 질문(LLM 호출) — 회원 기준 분·일 두 창. Office 단위 일일 상한은 유스케이스가 DB 로 센다. */
+    public void checkOfficeInquiryRate(Long memberId) {
+        check("rl:inquiry:min:member:" + memberId, inquiryPerMinute, 60);
+        check("rl:inquiry:day:member:" + memberId, inquiryPerDay, 24 * 60 * 60);
+    }
+
     private void check(String key, int limit) {
-        Long count = redisTemplate.execute(INCREMENT_SCRIPT, List.of(key), String.valueOf(windowSeconds));
+        check(key, limit, windowSeconds);
+    }
+
+    private void check(String key, int limit, int ttlSeconds) {
+        Long count = redisTemplate.execute(INCREMENT_SCRIPT, List.of(key), String.valueOf(ttlSeconds));
         if (count != null && count > limit) {
             throw new TooManyRequestsException("요청이 너무 많습니다. 잠시 후 다시 시도해주세요");
         }
