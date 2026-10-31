@@ -43,7 +43,12 @@ export default function MyUniversityPage() {
         eyebrow={office.officeName}
         title={t('student.notices.title')}
         description={t('student.notices.subtitle', { office: office.officeName })}
-        actions={office.role ? <Link href="/office/notices">{t('office.staffLink')}</Link> : undefined}
+        actions={
+          <span style={{ display: 'inline-flex', gap: 12 }}>
+            {office.verifiedStudent && <Link href="/my-university/ask">{t('ask.link')}</Link>}
+            {office.role && <Link href="/office/notices">{t('office.staffLink')}</Link>}
+          </span>
+        }
       />
 
       {office.pendingInvitation && (

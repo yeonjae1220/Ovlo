@@ -34,5 +34,13 @@
 - 장점: 운영 DB 변경이 Flyway 테이블·인덱스뿐이다. 자료 수정이 즉시 반영된다(재임베딩 없음). 비용은 LLM 호출뿐이다.
 - 단점: 동의어·다른 표현의 질문은 FTS가 놓칠 수 있다. 특히 한국어 원문과 외국어 질문 사이는 번역 색인에 의존한다.
   이를 보완하려고 질문을 한국어로 한 번 번역해 원문 색인도 함께 검색하는 2단계 검색을 S3에서 실험한다(LLM 호출 1회 추가).
+- S3 구현에서 정한 것(2026-10-31):
+  - 질의는 AND 가 아니라 **OR**(`to_tsquery('simple', 'a | b | c')`)이다. 'simple' 구성은 불용어를 빼지 않아 "when does the …" 같은
+    질문이 AND 로는 아무 문서도 못 찾는다. 짧은 기능어 몇 개만 제외하고, 매칭 여부는 `@@` 로 강제한 뒤 `ts_rank` 합으로 정렬한다
+    (`ts_rank` 만으로는 매칭되지 않은 문서도 0 보다 큰 점수를 받는다).
+  - 한국어·일본어·중국어 질문은 띄어쓰기 단위 FTS 가 약하다(조사가 붙은 "신청은"은 "신청"과 다른 토큰). 그래서 PG 어댑터가
+    글자 2개 묶음(bigram) 점수(`KeywordNoticeSearchAdapter`)로 후보를 보강한다. 이 bigram 방식이 기본 구현이기도 하다
+    (`ovlo.search.provider=keyword`, 로컬·테스트).
+  - 두 구현은 `NoticeSearchPort` 뒤에 있고, 최종 근거 자격은 언제나 `Notice.isGroundingEligible` 이 판정한다.
 - 테스트: FTS 어댑터는 Testcontainers PostgreSQL로 "만료 공지 제외", "다른 Office 공지 제외", "번역 stale 제외"를 고정한다.
   후처리 검증은 순수 단위 테스트(후보 밖 인용 → 강등, 인용 0 → NO_GROUNDS, 외부 URL 제거).

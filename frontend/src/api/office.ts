@@ -86,6 +86,43 @@ export interface StudentNotice {
   expiresAt: string
 }
 
+export type InquiryOutcome = 'ANSWERED' | 'NO_GROUNDS' | 'ESCALATED'
+
+export interface Citation {
+  index: number
+  noticeId: number
+  title: string
+  sourceUrl: string | null
+  expiresAt: string | null
+}
+
+/** POST /office/{id}/inquiries */
+export interface AskResult {
+  inquiryId: number
+  outcome: InquiryOutcome
+  lang: NoticeLang
+  /** [N] 인용 번호 포함. NO_GROUNDS 면 null */
+  answerText: string | null
+  citations: Citation[]
+  canEscalate: boolean
+}
+
+/** 담당자 문의 로그 행 (학생 식별 정보 없음) */
+export interface InquiryLog {
+  id: number
+  lang: NoticeLang
+  question: string
+  outcome: InquiryOutcome
+  answerText: string | null
+  citedNoticeIds: number[]
+  candidateCount: number
+  askedAt: string
+  latencyMs: number
+  modelId: string | null
+  helpful: boolean | null
+  feedbackReason: string | null
+}
+
 export interface NoticeRequest {
   category: NoticeCategory
   title: string
@@ -138,7 +175,20 @@ export const officeApi = {
   retranslateNotice: (officeId: number, noticeId: number) =>
     apiClient.post<Notice>(`/office-admin/${officeId}/notices/${noticeId}/retranslate`).then((r) => r.data),
 
+  listInquiries: (officeId: number, outcome?: InquiryOutcome | '', page = 0, size = 20) =>
+    apiClient
+      .get<PageResult<InquiryLog>>(`/office-admin/${officeId}/inquiries`, {
+        params: { outcome: outcome || undefined, page, size },
+      })
+      .then((r) => r.data),
+
   // ── 학생 ─────────────────────────────────────────────────────────────────
+  ask: (officeId: number, question: string, lang: string) =>
+    apiClient.post<AskResult>(`/office/${officeId}/inquiries`, { question, lang }).then((r) => r.data),
+
+  inquiryFeedback: (officeId: number, inquiryId: number, helpful: boolean, reason?: string) =>
+    apiClient.post(`/office/${officeId}/inquiries/${inquiryId}/feedback`, { helpful, reason: reason || null }),
+
   listStudentNotices: (officeId: number, lang: string, category?: NoticeCategory | '') =>
     apiClient
       .get<StudentNotice[]>(`/office/${officeId}/notices`, { params: { lang, category: category || undefined } })

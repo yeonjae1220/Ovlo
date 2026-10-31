@@ -27,6 +27,7 @@ repositories {
 dependencies {
     // ── Web ──────────────────────────────────────────────────────────────────
     implementation 'org.springframework.boot:spring-boot-starter-webmvc'
+    implementation 'com.anthropic:anthropic-java:2.34.0'            // 국제처 안내 LLM (AnswerGenerationPort / TranslationPort)
     implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'   // Admin SSR
     implementation 'org.springframework.boot:spring-boot-starter-websocket'    // Chat (STOMP)
     implementation 'org.springframework.boot:spring-boot-starter-validation'

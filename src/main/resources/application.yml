@@ -87,12 +87,36 @@ ovlo:
     refresh-limit: ${RATE_LIMIT_REFRESH:30}
     signup-limit: ${RATE_LIMIT_SIGNUP:5}
     search-limit: ${RATE_LIMIT_SEARCH:100}
+    # 국제처 질문(LLM 호출) — 회원당 분·일
+    inquiry-per-minute: ${RATE_LIMIT_INQUIRY_PER_MINUTE:5}
+    inquiry-per-day: ${RATE_LIMIT_INQUIRY_PER_DAY:50}
     window-seconds: ${RATE_LIMIT_WINDOW_SECONDS:600}
   auth:
     refresh-reuse:
       # 유예(10초)가 지난 직전 refresh 토큰 재사용(REUSED) 시 세션까지 폐기할지. 기본은 로그만 남긴다 —
       # iOS WebView 쿠키 저장 누락(GLOBAL-PIT-051) 오탐 빈도를 운영 로그로 확인한 뒤 켠다(ADR-0004).
       revoke-session: ${AUTH_REFRESH_REUSE_REVOKE_SESSION:false}
+  # ── 국제처 안내(S2·S3) ────────────────────────────────────────────────
+  llm:
+    # fake: 결정적 가짜(로컬·테스트) · anthropic: Claude API. 운영은 반드시 anthropic 과 ANTHROPIC_API_KEY
+    provider: ${OVLO_LLM_PROVIDER:fake}
+    anthropic:
+      api-key: ${ANTHROPIC_API_KEY:}
+      model: ${OVLO_LLM_MODEL:claude-opus-5-5}
+      # thinking 은 항상 켜져 있고 effort 로만 조절한다 (low|medium|high|xhigh|max)
+      effort: ${OVLO_LLM_EFFORT:medium}
+      max-tokens: ${OVLO_LLM_MAX_TOKENS:2048}
+      timeout-seconds: ${OVLO_LLM_TIMEOUT_SECONDS:90}
+      # 안전 분류기 거부 시 서버측 폴백(fallbacks: "default")
+      server-side-fallback: ${OVLO_LLM_SERVER_SIDE_FALLBACK:true}
+  search:
+    # keyword: DB 무관 토큰 겹침(기본) · postgres: PostgreSQL 전문 검색(ADR-0006). 운영은 postgres
+    provider: ${OVLO_SEARCH_PROVIDER:keyword}
+  office:
+    inquiry-candidate-limit: ${OVLO_INQUIRY_CANDIDATE_LIMIT:8}
+    inquiry-office-daily-limit: ${OVLO_INQUIRY_OFFICE_DAILY_LIMIT:500}
+    notice-expiry-warn-days: ${OVLO_NOTICE_EXPIRY_WARN_DAYS:7}
+    notice-expiry-cron: ${OVLO_NOTICE_EXPIRY_CRON:0 10 0 * * *}
   # 신뢰 프록시 IP 목록 — 이 주소에서 온 요청만 X-Real-IP 헤더를 신뢰
   # Docker 내부 nginx: 172.x.x.x, 로컬 개발: 127.0.0.1/::1
   trusted-proxy-ips: ${TRUSTED_PROXY_IPS:127.0.0.1,::1}

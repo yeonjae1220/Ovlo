@@ -6,6 +6,7 @@ import me.yeonjae.ovlo.domain.chat.exception.ChatException;
 import me.yeonjae.ovlo.domain.follow.exception.FollowException;
 import me.yeonjae.ovlo.domain.media.exception.MediaException;
 import me.yeonjae.ovlo.domain.member.exception.MemberException;
+import me.yeonjae.ovlo.domain.office.exception.InquiryException;
 import me.yeonjae.ovlo.domain.office.exception.NoticeException;
 import me.yeonjae.ovlo.domain.office.exception.OfficeException;
 import me.yeonjae.ovlo.domain.post.exception.PostException;
@@ -88,6 +89,16 @@ public class GlobalExceptionHandler {
                 : resolveStatus(ex.getErrorType());
         return ResponseEntity.status(status)
                 .body(ErrorResponse.of(resolveCode(OfficeException.class, ex.getErrorType()), ex.getMessage()));
+    }
+
+    /** 학생 문의(Inquiry). RATE_LIMITED(Office 일일 상한)는 429. */
+    @ExceptionHandler(InquiryException.class)
+    public ResponseEntity<ErrorResponse> handleInquiryException(InquiryException ex) {
+        HttpStatus status = ex.getErrorType() == InquiryException.ErrorType.RATE_LIMITED
+                ? HttpStatus.TOO_MANY_REQUESTS
+                : resolveStatus(ex.getErrorType());
+        return ResponseEntity.status(status)
+                .body(ErrorResponse.of(resolveCode(InquiryException.class, ex.getErrorType()), ex.getMessage()));
     }
 
     /** 승인 자료(Notice). INVALID_STATE(허용되지 않는 전이)는 409. */

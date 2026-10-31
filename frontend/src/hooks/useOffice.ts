@@ -3,7 +3,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { isAxiosError } from 'axios'
 import { officeApi } from '../api/office'
-import type { NoticeCategory, NoticeLang, NoticeRequest, NoticeStatus } from '../api/office'
+import type { InquiryOutcome, NoticeCategory, NoticeLang, NoticeRequest, NoticeStatus } from '../api/office'
 
 /**
  * 내 국제처. 404(소속 없음)는 "없음"이라는 정상 답이므로 null 로, 그 외 실패는 에러로 둔다
@@ -80,6 +80,27 @@ export function useStudentNotices(officeId: number | undefined, lang: string, ca
   return useQuery({
     queryKey: ['office', officeId, 'student-notices', lang, category],
     queryFn: () => officeApi.listStudentNotices(officeId as number, lang, category),
+    enabled: officeId !== undefined,
+  })
+}
+
+export function useAskQuestion(officeId: number | undefined) {
+  return useMutation({
+    mutationFn: (args: { question: string; lang: string }) => officeApi.ask(officeId as number, args.question, args.lang),
+  })
+}
+
+export function useInquiryFeedback(officeId: number | undefined) {
+  return useMutation({
+    mutationFn: (args: { inquiryId: number; helpful: boolean; reason?: string }) =>
+      officeApi.inquiryFeedback(officeId as number, args.inquiryId, args.helpful, args.reason),
+  })
+}
+
+export function useOfficeInquiries(officeId: number | undefined, outcome: InquiryOutcome | '', page: number) {
+  return useQuery({
+    queryKey: ['office', officeId, 'inquiries', outcome, page],
+    queryFn: () => officeApi.listInquiries(officeId as number, outcome, page),
     enabled: officeId !== undefined,
   })
 }
