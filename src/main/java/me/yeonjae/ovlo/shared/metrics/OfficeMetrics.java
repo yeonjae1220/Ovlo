@@ -21,6 +21,7 @@ import java.time.Duration;
  * ovlo.office.llm.latency        timer    purpose  model
  * ovlo.office.consultation       counter  action=opened|assigned|resolved|closed
  * ovlo.office.partner.click      counter  category=SIM|INSURANCE|HOUSING|PICKUP
+ * ovlo.office.notification       counter  kind=staff_invitation|notice_expiring|consultation_opened|notice_translation_failed  result=ok|error
  * </pre>
  */
 @Component
@@ -60,5 +61,10 @@ public class OfficeMetrics {
 
     public void partnerClick(PartnerCategory category) {
         Counter.builder("ovlo.office.partner.click").tag("category", category.name()).register(registry).increment();
+    }
+
+    /** 알림 메일 결과. error 가 늘면 SMTP 자격증명부터 본다(런북 §7). */
+    public void notification(String kind, String result) {
+        Counter.builder("ovlo.office.notification").tag("kind", kind).tag("result", result).register(registry).increment();
     }
 }

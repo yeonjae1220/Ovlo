@@ -20,6 +20,7 @@ import me.yeonjae.ovlo.domain.chat.model.Message;
 import me.yeonjae.ovlo.domain.chat.model.MessageId;
 import me.yeonjae.ovlo.domain.member.model.MemberId;
 import me.yeonjae.ovlo.domain.office.exception.ConsultationException;
+import me.yeonjae.ovlo.domain.office.exception.OfficeNotificationException;
 import me.yeonjae.ovlo.domain.office.model.Consultation;
 import me.yeonjae.ovlo.domain.office.model.ConsultationStatus;
 import me.yeonjae.ovlo.domain.office.model.Inquiry;
@@ -53,6 +54,7 @@ import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
+import static org.mockito.BDDMockito.willThrow;
 import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -145,6 +147,22 @@ class ConsultationCommandServiceTest {
         assertThat(inquiry.getOutcome()).isEqualTo(InquiryOutcome.ESCALATED);
         verify(saveInquiryPort).save(inquiry);
         verify(notificationPort).sendConsultationOpened(anyList(), eq("국제처"), eq("Visa gia hạn?"));
+    }
+
+    @Test
+    @DisplayName("담당자 알림 메일이 실패해도 상담은 열리고 결과를 돌려준다 (알림은 부수효과)")
+    void openSurvivesMailFailure() {
+        Inquiry inquiry = Inquiry.answered(OFFICE, STUDENT, NoticeLang.VI, "Visa gia hạn?", "Liên hệ [1]", List.of(77L), List.of(77L), NOW, 1, "m");
+        inquiry.assignId(900L);
+        given(loadInquiryPort.findById(900L)).willReturn(Optional.of(inquiry));
+        willThrow(new OfficeNotificationException("consultation_opened", new RuntimeException("535")))
+                .given(notificationPort).sendConsultationOpened(anyList(), any(), any());
+
+        ConsultationResult r = sut.open(new OpenConsultationCommand(OFFICE, STUDENT, 900L, "v1", null));
+
+        assertThat(r.status()).isEqualTo(ConsultationStatus.OPEN);
+        verify(saveConsultationPort).save(any());
+        verify(saveChatPort).saveMessage(ROOM, STUDENT, "Visa gia hạn?");
     }
 
     @Test

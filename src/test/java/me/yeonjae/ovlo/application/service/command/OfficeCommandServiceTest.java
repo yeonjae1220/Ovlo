@@ -19,6 +19,7 @@ import me.yeonjae.ovlo.domain.member.model.Member;
 import me.yeonjae.ovlo.domain.member.model.MemberId;
 import me.yeonjae.ovlo.domain.member.model.Password;
 import me.yeonjae.ovlo.domain.office.exception.OfficeException;
+import me.yeonjae.ovlo.domain.office.exception.OfficeNotificationException;
 import me.yeonjae.ovlo.domain.office.model.Office;
 import me.yeonjae.ovlo.domain.office.model.OfficeId;
 import me.yeonjae.ovlo.domain.office.model.OfficeMembership;
@@ -44,6 +45,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.BDDMockito.given;
+import static org.mockito.BDDMockito.willThrow;
 import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -146,6 +148,22 @@ class OfficeCommandServiceTest {
             assertThat(result.status()).isEqualTo(OfficeStaffStatus.INVITED);
             verify(saveOfficePort).save(office);
             verify(notificationPort).sendStaffInvitation("staff@univ.ac.kr", "국제처", "10");
+        }
+
+        @Test
+        @DisplayName("알림 메일이 실패해도 초대는 저장되고 결과를 돌려준다 (알림은 부수효과)")
+        void inviteSurvivesMailFailure() {
+            Office office = officeWithAdmin(10L);
+            given(loadOfficePort.findById(OFFICE_ID)).willReturn(Optional.of(office));
+            given(loadMemberPort.findByEmail("staff@univ.ac.kr")).willReturn(Optional.of(member(11L, "staff@univ.ac.kr")));
+            willThrow(new OfficeNotificationException("staff_invitation", new RuntimeException("535")))
+                    .given(notificationPort).sendStaffInvitation(any(), any(), any());
+
+            OfficeStaffResult result = sut.invite(new InviteOfficeStaffCommand(OFFICE_ID, "staff@univ.ac.kr",
+                    OfficeRole.OFFICE_STAFF, "10"));
+
+            assertThat(result.status()).isEqualTo(OfficeStaffStatus.INVITED);
+            verify(saveOfficePort).save(office);
         }
 
         @Test

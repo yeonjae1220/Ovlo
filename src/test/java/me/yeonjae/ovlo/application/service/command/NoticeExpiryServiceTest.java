@@ -6,6 +6,7 @@ import me.yeonjae.ovlo.application.port.out.office.LoadOfficePort;
 import me.yeonjae.ovlo.application.port.out.office.OfficeNotificationPort;
 import me.yeonjae.ovlo.application.port.out.office.SaveNoticePort;
 import me.yeonjae.ovlo.domain.office.model.Notice;
+import me.yeonjae.ovlo.domain.office.exception.OfficeNotificationException;
 import me.yeonjae.ovlo.domain.office.model.NoticeCategory;
 import me.yeonjae.ovlo.domain.office.model.NoticeStatus;
 import me.yeonjae.ovlo.domain.office.model.Office;
@@ -31,6 +32,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
+import static org.mockito.BDDMockito.willThrow;
 import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -104,6 +106,20 @@ class NoticeExpiryServiceTest {
         // 두 번째 실행: 포트가 다시 돌려줘도 도메인이 '이미 알림'으로 걸러낸다
         assertThat(sut.warnExpiringSoon()).isZero();
         verify(notificationPort, org.mockito.Mockito.times(1)).sendNoticeExpiringSoon(any(), any(), any(), any());
+    }
+
+    @Test
+    @DisplayName("알림 전송이 실패하면 표시하지 않고 다음 실행에서 재시도한다")
+    void failedWarningIsRetried() {
+        Notice soon = approvedExpiring(10L, LocalDate.of(2027, 3, 20));
+        given(loadNoticePort.findIdsExpiringWithin(TODAY, 7)).willReturn(List.of(10L));
+        given(loadNoticePort.findById(10L)).willReturn(Optional.of(soon));
+        willThrow(new OfficeNotificationException("notice_expiring", new RuntimeException("535")))
+                .given(notificationPort).sendNoticeExpiringSoon(any(), any(), any(), any());
+
+        assertThat(sut.warnExpiringSoon()).isZero();
+        assertThat(soon.getExpiryWarnedAt()).isNull();
+        verify(saveNoticePort, never()).save(any());
     }
 
     @Test

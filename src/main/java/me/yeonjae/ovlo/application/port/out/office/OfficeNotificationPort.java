@@ -3,7 +3,11 @@ package me.yeonjae.ovlo.application.port.out.office;
 import java.time.LocalDate;
 import java.util.List;
 
-/** Office 관련 알림. 구현: LogOfficeNotificationAdapter(기본) / SmtpOfficeNotificationAdapter(spring.mail.host). */
+/**
+ * Office 관련 알림. 구현: LogOfficeNotificationAdapter(기본) / SmtpOfficeNotificationAdapter(spring.mail.host).
+ * 전송 실패는 {@link me.yeonjae.ovlo.domain.office.exception.OfficeNotificationException} — 업무 쓰기를 지켜야 하는
+ * 호출부(초대·상담)는 잡고, 다음 실행에 다시 보내면 되는 호출부(만료 경고)는 전파한다.
+ */
 public interface OfficeNotificationPort {
     void sendStaffInvitation(String toEmail, String officeName, String invitedBy);
 

@@ -21,6 +21,7 @@ import org.springframework.context.ApplicationEventPublisher;
 import me.yeonjae.ovlo.domain.member.model.Member;
 import me.yeonjae.ovlo.domain.member.model.MemberId;
 import me.yeonjae.ovlo.domain.office.exception.OfficeException;
+import me.yeonjae.ovlo.domain.office.exception.OfficeNotificationException;
 import me.yeonjae.ovlo.domain.office.model.Office;
 import me.yeonjae.ovlo.domain.office.model.OfficeMembership;
 import me.yeonjae.ovlo.domain.office.model.OfficeStaff;
@@ -115,7 +116,13 @@ public class OfficeCommandService implements AdministerOfficeUseCase, ManageOffi
                         OfficeException.ErrorType.BAD_REQUEST));
         OfficeStaff invited = office.invite(member.getId().value(), command.role(), command.invitedBy(), clock.instant());
         saveOfficePort.save(office);
-        notificationPort.sendStaffInvitation(member.getEmail().value(), office.getName(), command.invitedBy());
+        try {
+            notificationPort.sendStaffInvitation(member.getEmail().value(), office.getName(), command.invitedBy());
+        } catch (OfficeNotificationException e) {
+            // 초대는 저장됐다 — 담당자는 /my-university 에서 초대를 본다. 메일은 운영이 시크릿을 고친 뒤 다시 보낼 일이다.
+            log.warn("[Office] staff invited but mail failed office={} member={} kind={}",
+                    command.officeId(), member.getId().value(), e.getKind());
+        }
         log.info("[Office] staff invited office={} member={} role={} by={}",
                 command.officeId(), member.getId().value(), command.role(), command.invitedBy());
         return mapper.toStaffResult(invited, member);
