@@ -100,6 +100,7 @@ public class OfficePersistenceAdapter implements LoadOfficePort, SaveOfficePort,
         }
 
         OfficeJpaEntity saved = repository.saveAndFlush(entity);
+        if (office.getId() == null) office.assignId(new OfficeId(saved.getId()));
         return toDomain(saved);
     }
 

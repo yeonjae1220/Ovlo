@@ -55,6 +55,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
     { to: '/boards', label: t('nav.home'), icon: 'home' },
     { to: '/exchange-universities', label: t('nav.exchange'), icon: 'globe' },
     { to: '/chat', label: t('nav.chat'), icon: 'chat' },
+    { to: '/my-university', label: t('nav.myUniversity'), icon: 'globe' },
   ]
 
   const isActive = (path: string) => pathname !== null && (pathname === path || pathname.startsWith(path + '/'))

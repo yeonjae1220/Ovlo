@@ -6,6 +6,7 @@ import me.yeonjae.ovlo.domain.chat.exception.ChatException;
 import me.yeonjae.ovlo.domain.follow.exception.FollowException;
 import me.yeonjae.ovlo.domain.media.exception.MediaException;
 import me.yeonjae.ovlo.domain.member.exception.MemberException;
+import me.yeonjae.ovlo.domain.office.exception.NoticeException;
 import me.yeonjae.ovlo.domain.office.exception.OfficeException;
 import me.yeonjae.ovlo.domain.post.exception.PostException;
 import me.yeonjae.ovlo.domain.university.exception.UniversityException;
@@ -87,6 +88,16 @@ public class GlobalExceptionHandler {
                 : resolveStatus(ex.getErrorType());
         return ResponseEntity.status(status)
                 .body(ErrorResponse.of(resolveCode(OfficeException.class, ex.getErrorType()), ex.getMessage()));
+    }
+
+    /** 승인 자료(Notice). INVALID_STATE(허용되지 않는 전이)는 409. */
+    @ExceptionHandler(NoticeException.class)
+    public ResponseEntity<ErrorResponse> handleNoticeException(NoticeException ex) {
+        HttpStatus status = ex.getErrorType() == NoticeException.ErrorType.INVALID_STATE
+                ? HttpStatus.CONFLICT
+                : resolveStatus(ex.getErrorType());
+        return ResponseEntity.status(status)
+                .body(ErrorResponse.of(resolveCode(NoticeException.class, ex.getErrorType()), ex.getMessage()));
     }
 
     @ExceptionHandler(VerificationException.class)
