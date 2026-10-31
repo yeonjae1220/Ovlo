@@ -26,12 +26,13 @@
 | `OVLO_OFFICE_ALLOW_DEGRADED` | `false` | `true` 면 위 검사를 경고로 낮춘다. 장애 시 임시로만 |
 | `SPRING_MAIL_HOST` 등 4개 | 시크릿 | 없으면 초대·만료 알림이 로그로만 남는다(`LogOfficeNotificationAdapter`) |
 
-`k8s/app.yaml` 에 `OVLO_*` 와 `ANTHROPIC_API_KEY` 가 들어 있다. **이 앱의 CI 는 `kubectl set image` 형이라 매니페스트를 apply 하지 않는다** — env 를 바꾸면 `kubectl diff -f k8s/app.yaml` 로 `-` 줄을 확인한 뒤 수동 apply 한다(GLOBAL-PIT-083).
+`k8s/app.yaml` 에 `OVLO_*` 와 `ANTHROPIC_API_KEY` 가 들어 있지만 **이 앱의 CI 는 `kubectl set image` 형이라 매니페스트를 apply 하지 않는다** (매니페스트 image 가 `:latest` 라 전체 apply 도 금물). 그래서 `deploy.yml` 이 `set image` 직전에 같은 값을 `kubectl set env` 로 넣는다 — 값을 바꾸려면 **k8s/app.yaml 과 deploy.yml 두 곳**을 같이 고친다. 키는 GitHub secret → CI 가 `ovlo-secret` 에 넣는다(아래).
 
 ### 1.2 시크릿 넣기
 
 ```bash
-ssh lenovo 'sudo kubectl -n ovlo create secret generic ovlo-secret --dry-run=client -o yaml --from-literal=ANTHROPIC_API_KEY=... ' # 기존 키를 보존하려면 patch 를 쓴다:
+gh secret set ANTHROPIC_API_KEY --repo yeonjae1220/Ovlo < /path/to/keyfile   # 파이프·파일로만(GLOBAL-PIT-160). 다음 main 배포부터 CI 가 ovlo-secret 에 넣는다
+# 배포 없이 당장 넣어야 하면 수동 patch 도 되지만, CI 가 다음 배포에서 GitHub secret 값으로 덮어쓴다:
 ssh lenovo "sudo kubectl -n ovlo patch secret ovlo-secret -p '{\"stringData\":{\"ANTHROPIC_API_KEY\":\"<키>\"}}'"
 ssh lenovo 'sudo kubectl -n ovlo get secret ovlo-secret -o jsonpath="{.data.ANTHROPIC_API_KEY}" | base64 -d | wc -c'   # 바이트 길이로 확인(GLOBAL-PIT-160)
 ```

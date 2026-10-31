@@ -163,6 +163,20 @@ jobs:
       - name: Apply network policies
         run: sudo kubectl apply -f k8s/network-policy.yaml -n ovlo
 
+      # 국제처 파일럿(S6): prod 는 OfficePilotConfigGuard 가 anthropic 키를 요구한다.
+      # 키가 없는데 저하 운영 허용(repo variable OVLO_OFFICE_ALLOW_DEGRADED=true)도 아니면
+      # 새 파드가 기동 검사에서 죽어 롤아웃이 300s 뒤 실패한다 — 클러스터를 건드리기 전에 여기서 막는다.
+      - name: Preflight office pilot config
+        env:
+          HAS_ANTHROPIC_KEY: ${{ secrets.ANTHROPIC_API_KEY != '' }}
+          OVLO_OFFICE_ALLOW_DEGRADED: ${{ vars.OVLO_OFFICE_ALLOW_DEGRADED }}
+        run: |
+          if [ "${HAS_ANTHROPIC_KEY}" != "true" ] && [ "${OVLO_OFFICE_ALLOW_DEGRADED}" != "true" ]; then
+            echo "::error::GitHub secret ANTHROPIC_API_KEY 가 비어 있다. 키를 넣거나 repo variable OVLO_OFFICE_ALLOW_DEGRADED=true 로 저하 운영을 명시하라 (docs/intl-office-pilot-runbook.md §2)."
+            exit 1
+          fi
+          echo "office pilot: anthropic key=${HAS_ANTHROPIC_KEY}, allow-degraded=${OVLO_OFFICE_ALLOW_DEGRADED:-false}"
+
       - name: Apply k8s secrets
         env:
           POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
@@ -180,6 +194,8 @@ jobs:
           MAIL_USERNAME: ${{ secrets.MAIL_USERNAME }}
           MAIL_PASSWORD: ${{ secrets.MAIL_PASSWORD }}
           MAIL_FROM: ${{ secrets.MAIL_FROM }}
+          # 국제처 파일럿 LLM 키 — 비어 있으면 키 자체를 만들지 않는다(Preflight 가 허용한 저하 운영).
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
         run: |
           # 메일 키는 값이 있을 때만 추가 — 빈 문자열 키를 만들면 spring.mail.host="" 가
           # "설정됨"으로 오판되어 SMTP 어댑터가 빈 호스트로 활성화되는 함정을 막는다.
@@ -188,6 +204,9 @@ jobs:
           [ -n "${MAIL_USERNAME}" ]    && MAIL_ARGS+=(--from-literal=MAIL_USERNAME="${MAIL_USERNAME}")
           [ -n "${MAIL_PASSWORD}" ]    && MAIL_ARGS+=(--from-literal=MAIL_PASSWORD="${MAIL_PASSWORD}")
           [ -n "${MAIL_FROM}" ]        && MAIL_ARGS+=(--from-literal=MAIL_FROM="${MAIL_FROM}")
+          if [ -n "${ANTHROPIC_API_KEY}" ]; then
+            MAIL_ARGS+=(--from-literal=ANTHROPIC_API_KEY="${ANTHROPIC_API_KEY}")
+          fi
 
           sudo kubectl create secret generic ovlo-secret \
             --from-literal=POSTGRES_PASSWORD="${POSTGRES_PASSWORD}" \
@@ -208,6 +227,8 @@ jobs:
           IMAGE_TAG: ${{ needs.build-and-push.outputs.image-tag }}
           FRONTEND_IMAGE_TAG: ${{ needs.build-and-push-frontend.outputs.image-tag }}
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          HAS_ANTHROPIC_KEY: ${{ secrets.ANTHROPIC_API_KEY != '' }}
+          OVLO_OFFICE_ALLOW_DEGRADED: ${{ vars.OVLO_OFFICE_ALLOW_DEGRADED }}
         run: |
           set -e
 
@@ -215,6 +236,20 @@ jobs:
           sudo k3s ctr images pull \
             --user "yeonjae1220:${GH_TOKEN}" \
             ghcr.io/yeonjae1220/ovlo:${IMAGE_TAG}
+
+          # 국제처 파일럿 env (k8s/app.yaml 과 같은 값). 이 CI 는 매니페스트를 apply 하지 않으므로
+          # set image 와 같은 결로 set env 로 넣는다 — 값이 같으면 롤아웃이 일어나지 않는다.
+          sudo kubectl set env deployment/app -n ovlo \
+            OVLO_LLM_PROVIDER=anthropic \
+            OVLO_SEARCH_PROVIDER=postgres \
+            OVLO_LLM_MODEL=claude-opus-5-5 \
+            OVLO_LLM_EFFORT=medium \
+            OVLO_INQUIRY_OFFICE_DAILY_LIMIT=500 \
+            OVLO_OFFICE_ALLOW_DEGRADED="${OVLO_OFFICE_ALLOW_DEGRADED:-false}"
+          if [ "${HAS_ANTHROPIC_KEY}" = "true" ]; then
+            sudo kubectl set env deployment/app -n ovlo \
+              --from=secret/ovlo-secret --keys=ANTHROPIC_API_KEY
+          fi
 
           sudo kubectl set image deployment/app \
             app=ghcr.io/yeonjae1220/ovlo:${IMAGE_TAG} \
