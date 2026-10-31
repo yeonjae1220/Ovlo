@@ -79,6 +79,21 @@ def f1_everywhere(rep, claims):
     return rep, claims
 
 
+def foreign_price(tag):
+    def m(rep, claims):
+        for lang in rep:
+            rep[lang]["body"] = rep[lang]["body"].replace("## ", "USD 1,400 dorm.\n\n## ", 1)
+        claim = {"section": "Housing", "claim": "Dorm fee USD 1,400 per semester.", "sources": [tag],
+                 "quote": "Dormitory fee: USD 1,400 per semester"}
+        return rep, claims + json.dumps(claim) + "\n"
+    return m
+
+
+def ko_plain(rep, claims):
+    rep["ko"]["body"] = rep["ko"]["body"].replace("## ", "교환학생은 기숙사에 산다. 학기는 3월에 시작한다. 수업은 영어로 한다.\n\n## ", 1)
+    return rep, claims
+
+
 TMP.mkdir(exist_ok=True)
 results = [
     run(70, lambda r, c: (r, c), "clean_copy", False),
@@ -92,6 +107,10 @@ results = [
     run(70, trad_zh, "zh_traditional_chars", True),
     run(70, bogus_tag, "claim_bogus_source_tag", True),
     run(70, f1_everywhere, "F4_formula1_is_not_a_visa_term", False),
+    run(70, body_sub("de", "Sie ", "du "), "de_informal_du_rejected", True),
+    run(70, ko_plain, "ko_plain_register_rejected", True),
+    run(70, foreign_price("O1"), "official_page_foreign_price_allowed", False),
+    run(70, foreign_price("V1"), "video_foreign_price_rejected", True),
 ]
 print(f"{sum(results)}/{len(results)} passed")
 shutil.rmtree(TMP, ignore_errors=True)

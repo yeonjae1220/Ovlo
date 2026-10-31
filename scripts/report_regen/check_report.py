@@ -25,6 +25,14 @@ CARD_MAX = 60
 TRADITIONAL_ONLY = set("學國際語體與為們這個來時會對說關開門東車長點發經過還進動現華區機場術書畫歷愛讓聽雙寫驗變觀實業產務費價買賣錢銀運連達選邊間問題頁館韓臺灣寶電話號碼網絡圖認識請應該當專課與")
 RE_SCRIPT_REQUIRED = {"ko": a.RE_HANGUL, "ja": a.RE_KANA, "zh": a.RE_HAN}
 MIN_SCRIPT_CHARS = 300
+# register (SPEC "Style and consistency"): generated guides are polite/formal in every language
+RE_CITATION = re.compile(r"\s*[\[［]\d+(?:\s*[,，、\-–]\s*\d+)*[\]］]")
+RE_KO_PLAIN = re.compile(r"(?<!니)(?<![요죠])다[.!]|[해야지어]\.(?=\s|$)")
+RE_JA_SENT = re.compile(r"[^。\n]+。")
+RE_JA_POLITE = re.compile(r"(です|ます|ません|でした|ました|ください|でしょう|ましょう)[」』）)]*。$")
+RE_JA_PLAIN = re.compile(r"(である|だ|だった|する|した|ある|いる|ない|なる|できる|れる)[」』）)]*。$")
+RE_INFORMAL = {"de": re.compile(r"\b(?:[Dd]u|[Dd]ich|[Dd]ir|[Dd]ein\w*)\b"),
+               "fr": re.compile(r"\b(?:[Tt]u|[Tt]oi|[Tt]on|[Tt]es)\b")}
 RE_QUOTED = re.compile(r'"[^"\n]{8,}"|“[^”\n]{8,}”|«[^»\n]{8,}»|„[^“\n]{8,}“|「[^」\n]{8,}」')
 
 
@@ -74,6 +82,35 @@ def content_text(content):
     return json.dumps({k: v for k, v in (content or {}).items() if k != "sources"}, ensure_ascii=False)
 
 
+def register_issues(lang, text):
+    """(count, examples) of sentences not in the polite/formal register required by SPEC."""
+    text = RE_CITATION.sub("", RE_QUOTED.sub(" ", text))
+    if lang == "ko":
+        hits = [text[max(0, m.start() - 12):m.end()] for m in RE_KO_PLAIN.finditer(text)]
+    elif lang == "ja":
+        hits = [x.strip()[-14:] for x in RE_JA_SENT.findall(text)
+                if RE_JA_PLAIN.search(x.strip()) and not RE_JA_POLITE.search(x.strip())]
+    elif lang in RE_INFORMAL:
+        hits = [m.group(0) for m in RE_INFORMAL[lang].finditer(text)]
+    else:
+        hits = []
+    return len(hits), hits[:3]
+
+
+def read_claims(path):
+    claims, bad = [], []
+    if not path.exists():
+        return claims, bad
+    for i, line in enumerate(path.read_text(encoding="utf-8").splitlines()):
+        if not line.strip():
+            continue
+        try:
+            claims.append(json.loads(line))
+        except json.JSONDecodeError as ex:
+            bad.append(f"claims.jsonl line {i + 1}: invalid JSON ({ex})")
+    return claims, bad
+
+
 def check(p):
     rid = p.parent.name
     rep = json.loads(p.read_text(encoding="utf-8"))
@@ -89,9 +126,12 @@ def check(p):
     facts = json.loads(facts_path.read_text(encoding="utf-8")) if facts_path.exists() else {}
     if not facts:
         W(f"no country_facts/{cc}.json")
-    # official foreign-currency amounts: (currency family, value) pairs from country_facts only
-    official = {(fam, v) for c, v, *_ in a.money_tokens(json.dumps(facts, ensure_ascii=False))
-                for fam in a.cur_family(c).split("|")}
+    # official foreign-currency amounts: (currency family, value) pairs stated in country_facts or quoted
+    # verbatim from an official page (claim sourced by an O tag) — e.g. a dorm fee a university lists in USD
+    claims, bad_claim_lines = read_claims(p.parent / "claims.jsonl")
+    official_text = json.dumps(facts, ensure_ascii=False) + "\n" + "\n".join(
+        str(c.get("quote") or "") for c in claims if any(re.fullmatch(r"O\d+", str(t)) for t in c.get("sources") or []))
+    official = {(fam, v) for c, v, *_ in a.money_tokens(official_text) for fam in a.cur_family(c).split("|")}
 
     for lang in LANGS:
         if not isinstance(rep.get(lang), dict):
@@ -171,6 +211,13 @@ def check(p):
                 if m and cc not in valid:
                     E(f"{lang} {field}: visa term {m.group(0)!r} invalid for {cc}")
 
+        n_informal, examples = register_issues(lang, (rep[lang].get("summary") or "") + "\n" + main_text(body)
+                                               + "\n" + content_text(rep[lang].get("content") or {}))
+        if n_informal >= {"ko": 3, "ja": 5}.get(lang, 1):
+            E(f"{lang}: {n_informal} informal markers, guides must be polite (SPEC register): {examples}")
+        elif n_informal:
+            W(f"{lang}: {n_informal} possibly informal markers: {examples}")
+
         # the text really is in the target language
         if lang in RE_SCRIPT_REQUIRED and len(RE_SCRIPT_REQUIRED[lang].findall(main_text(body))) < MIN_SCRIPT_CHARS:
             E(f"{lang}: body has fewer than {MIN_SCRIPT_CHARS} {lang} script characters — not translated?")
@@ -228,14 +275,8 @@ def check(p):
     log = log_path.read_text(encoding="utf-8") if log_path.exists() else ""
     if not log:
         E("research_log.md missing")
-    claims = []
-    for i, line in enumerate(claims_path.read_text(encoding="utf-8").splitlines()):
-        if not line.strip():
-            continue
-        try:
-            claims.append(json.loads(line))
-        except json.JSONDecodeError as ex:
-            E(f"claims.jsonl line {i + 1}: invalid JSON ({ex})")
+    for msg in bad_claim_lines:
+        E(msg)
     for i, c in enumerate(claims):
         srcs = c.get("sources") or []
         if not srcs:
