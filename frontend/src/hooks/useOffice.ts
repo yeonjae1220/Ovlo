@@ -53,7 +53,7 @@ export function useOfficeNotice(officeId: number | undefined, noticeId: number |
   })
 }
 
-function useNoticeMutation<TArgs>(officeId: number | undefined, fn: (officeId: number, args: TArgs) => Promise<unknown>) {
+function useNoticeMutation<TArgs, TResult>(officeId: number | undefined, fn: (officeId: number, args: TArgs) => Promise<TResult>) {
   const qc = useQueryClient()
   return useMutation({
     mutationFn: (args: TArgs) => fn(officeId as number, args),
@@ -62,27 +62,27 @@ function useNoticeMutation<TArgs>(officeId: number | undefined, fn: (officeId: n
 }
 
 export function useRegisterNotice(officeId: number | undefined) {
-  return useNoticeMutation<NoticeRequest>(officeId, (id, req) => officeApi.registerNotice(id, req))
+  return useNoticeMutation(officeId, (id, req: NoticeRequest) => officeApi.registerNotice(id, req))
 }
 
 export function useUpdateNotice(officeId: number | undefined) {
-  return useNoticeMutation<{ noticeId: number; req: NoticeRequest }>(officeId, (id, a) => officeApi.updateNotice(id, a.noticeId, a.req))
+  return useNoticeMutation(officeId, (id, a: { noticeId: number; req: NoticeRequest }) => officeApi.updateNotice(id, a.noticeId, a.req))
 }
 
 export function useApproveNotice(officeId: number | undefined) {
-  return useNoticeMutation<number>(officeId, (id, noticeId) => officeApi.approveNotice(id, noticeId))
+  return useNoticeMutation(officeId, (id, noticeId: number) => officeApi.approveNotice(id, noticeId))
 }
 
 export function useArchiveNotice(officeId: number | undefined) {
-  return useNoticeMutation<number>(officeId, (id, noticeId) => officeApi.archiveNotice(id, noticeId))
+  return useNoticeMutation(officeId, (id, noticeId: number) => officeApi.archiveNotice(id, noticeId))
 }
 
 export function useReviewTranslation(officeId: number | undefined) {
-  return useNoticeMutation<{ noticeId: number; lang: NoticeLang }>(officeId, (id, a) => officeApi.reviewTranslation(id, a.noticeId, a.lang))
+  return useNoticeMutation(officeId, (id, a: { noticeId: number; lang: NoticeLang }) => officeApi.reviewTranslation(id, a.noticeId, a.lang))
 }
 
 export function useRetranslateNotice(officeId: number | undefined) {
-  return useNoticeMutation<number>(officeId, (id, noticeId) => officeApi.retranslateNotice(id, noticeId))
+  return useNoticeMutation(officeId, (id, noticeId: number) => officeApi.retranslateNotice(id, noticeId))
 }
 
 export function useStudentNotices(officeId: number | undefined, lang: string, category: NoticeCategory | '') {
