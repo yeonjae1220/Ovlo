@@ -118,6 +118,14 @@ ovlo:
     notice-expiry-warn-days: ${OVLO_NOTICE_EXPIRY_WARN_DAYS:7}
     notice-expiry-cron: ${OVLO_NOTICE_EXPIRY_CRON:0 10 0 * * *}
     consultation-auto-close-cron: ${OVLO_CONSULTATION_AUTO_CLOSE_CRON:0 20 0 * * *}
+    # prod 에서 fake LLM·keyword 검색이면 기동을 막는다(OfficePilotConfigGuard). 의도적 저하 운영에만 true
+    allow-degraded: ${OVLO_OFFICE_ALLOW_DEGRADED:false}
+    # 파일럿 시드 — 기동 시 1회, 대학에 Office 가 없을 때만 만든다(멱등). 운영에선 켠 뒤 바로 끈다
+    pilot-seed:
+      enabled: ${OVLO_PILOT_SEED_ENABLED:false}
+      university-id: ${OVLO_PILOT_SEED_UNIVERSITY_ID:0}
+      office-name: ${OVLO_PILOT_SEED_OFFICE_NAME:파일럿 대학 국제처}
+      admin-email: ${OVLO_PILOT_SEED_ADMIN_EMAIL:}
   # 신뢰 프록시 IP 목록 — 이 주소에서 온 요청만 X-Real-IP 헤더를 신뢰
   # Docker 내부 nginx: 172.x.x.x, 로컬 개발: 127.0.0.1/::1
   trusted-proxy-ips: ${TRUSTED_PROXY_IPS:127.0.0.1,::1}
@@ -252,7 +260,8 @@ management:
   endpoints:
     web:
       exposure:
-        include: health
+        # prometheus·metrics 는 SecurityConfig 에서 ADMIN 전용(/actuator/** → hasAuthority ADMIN)
+        include: health,metrics,prometheus
   endpoint:
     health:
       show-details: never

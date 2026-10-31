@@ -163,7 +163,8 @@ class OfficeDashboardApiSecurityTest {
                 .willThrow(new OfficeException("소속 아님", OfficeException.ErrorType.FORBIDDEN));
         given(studentPartnerUseCase.forStudent(OFFICE_ID, MEMBER_ID))
                 .willReturn(List.of(new PartnerCardResult(1L, PartnerCategory.SIM, "KT", null)));
-        given(studentPartnerUseCase.click(OFFICE_ID, 1L, MEMBER_ID)).willReturn("https://kt.example/ovlo");
+        given(studentPartnerUseCase.click(OFFICE_ID, 1L, MEMBER_ID))
+                .willReturn(new StudentPartnerUseCase.ClickResult("https://kt.example/ovlo", PartnerCategory.SIM));
 
         mockMvc.perform(get("/api/v1/office/8/partners").header("Authorization", token))
                 .andExpect(status().isForbidden());

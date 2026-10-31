@@ -26,9 +26,11 @@ public class StudentInquiryApiController {
     private final AskQuestionUseCase askQuestionUseCase;
     private final GiveInquiryFeedbackUseCase feedbackUseCase;
     private final RateLimiterService rateLimiter;
+    private final me.yeonjae.ovlo.shared.metrics.OfficeMetrics metrics;
 
     public StudentInquiryApiController(AskQuestionUseCase askQuestionUseCase, GiveInquiryFeedbackUseCase feedbackUseCase,
-                                       RateLimiterService rateLimiter) {
+                                       RateLimiterService rateLimiter, me.yeonjae.ovlo.shared.metrics.OfficeMetrics metrics) {
+        this.metrics = metrics;
         this.askQuestionUseCase = askQuestionUseCase;
         this.feedbackUseCase = feedbackUseCase;
         this.rateLimiter = rateLimiter;
@@ -40,7 +42,9 @@ public class StudentInquiryApiController {
                                          @AuthenticationPrincipal Long memberId) {
         rateLimiter.checkOfficeInquiryRate(memberId);
         NoticeLang lang = NoticeLang.fromCode(request.lang()).orElse(NoticeLang.KO);
+        long started = System.nanoTime();
         AskResult result = askQuestionUseCase.ask(new AskQuestionCommand(officeId, memberId, request.question(), lang));
+        metrics.inquiry(result.outcome(), (System.nanoTime() - started) / 1_000_000);
         return ResponseEntity.status(HttpStatus.CREATED).body(result);
     }
 

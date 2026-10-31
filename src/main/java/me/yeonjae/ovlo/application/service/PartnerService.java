@@ -81,14 +81,14 @@ public class PartnerService implements ManagePartnerUseCase, StudentPartnerUseCa
     }
 
     @Override
-    public String click(Long officeId, Long partnerId, Long memberId) {
+    public ClickResult click(Long officeId, Long partnerId, Long memberId) {
         Office office = studentAccessPolicy.assertMember(memberId, officeId);
         Partner p = require(partnerId);
         if (!p.isEnabled() || !office.isPartnerEnabled(p.getCategory())) {
             throw new PartnerException("이 대학에서는 제공하지 않는 제휴입니다", PartnerException.ErrorType.FORBIDDEN);
         }
         savePartnerPort.recordClick(partnerId, officeId, memberId, clock.instant());
-        return p.getTargetUrl();
+        return new ClickResult(p.getTargetUrl(), p.getCategory());
     }
 
     private Partner require(Long partnerId) {

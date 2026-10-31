@@ -91,7 +91,7 @@ class PartnerServiceTest {
         given(loadPartnerPort.findById(3L)).willReturn(Optional.of(partner(3, PartnerCategory.HOUSING, true, 0)));
         given(loadPartnerPort.findById(9L)).willReturn(Optional.empty());
 
-        assertThat(service.click(OFFICE, 1L, MEMBER)).isEqualTo("https://p1");
+        assertThat(service.click(OFFICE, 1L, MEMBER).url()).isEqualTo("https://p1");
         verify(savePartnerPort).recordClick(1L, OFFICE, MEMBER, NOW);
 
         assertThatThrownBy(() -> service.click(OFFICE, 2L, MEMBER)).isInstanceOf(PartnerException.class)

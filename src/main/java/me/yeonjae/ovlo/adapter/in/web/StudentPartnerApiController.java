@@ -21,9 +21,11 @@ import java.util.Map;
 public class StudentPartnerApiController {
 
     private final StudentPartnerUseCase useCase;
+    private final me.yeonjae.ovlo.shared.metrics.OfficeMetrics metrics;
 
-    public StudentPartnerApiController(StudentPartnerUseCase useCase) {
+    public StudentPartnerApiController(StudentPartnerUseCase useCase, me.yeonjae.ovlo.shared.metrics.OfficeMetrics metrics) {
         this.useCase = useCase;
+        this.metrics = metrics;
     }
 
     @Operation(summary = "이 대학이 켠 분류의 제휴 카드 (유심→보험→숙소→픽업 순)")
@@ -36,6 +38,8 @@ public class StudentPartnerApiController {
     @PostMapping("/{partnerId}/click")
     public ResponseEntity<Map<String, String>> click(@PathVariable Long officeId, @PathVariable Long partnerId,
                                                      @AuthenticationPrincipal Long memberId) {
-        return ResponseEntity.ok(Map.of("url", useCase.click(officeId, partnerId, memberId)));
+        StudentPartnerUseCase.ClickResult result = useCase.click(officeId, partnerId, memberId);
+        metrics.partnerClick(result.category());
+        return ResponseEntity.ok(Map.of("url", result.url()));
     }
 }

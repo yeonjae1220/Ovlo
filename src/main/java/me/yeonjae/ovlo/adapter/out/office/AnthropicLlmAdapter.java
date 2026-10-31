@@ -66,7 +66,10 @@ public class AnthropicLlmAdapter implements AnswerGenerationPort, TranslationPor
     private final long maxTokens;
     private final boolean serverSideFallback;
 
-    public AnthropicLlmAdapter(@Value("${ovlo.llm.anthropic.api-key:}") String apiKey,
+    private final me.yeonjae.ovlo.shared.metrics.OfficeMetrics metrics;
+
+    public AnthropicLlmAdapter(me.yeonjae.ovlo.shared.metrics.OfficeMetrics metrics,
+                               @Value("${ovlo.llm.anthropic.api-key:}") String apiKey,
                                @Value("${ovlo.llm.anthropic.model:claude-opus-5-5}") String model,
                                @Value("${ovlo.llm.anthropic.effort:medium}") String effort,
                                @Value("${ovlo.llm.anthropic.max-tokens:2048}") long maxTokens,
@@ -79,6 +82,7 @@ public class AnthropicLlmAdapter implements AnswerGenerationPort, TranslationPor
                 .apiKey(apiKey)
                 .timeout(Duration.ofSeconds(timeoutSeconds))
                 .build();
+        this.metrics = metrics;
         this.model = model;
         this.effort = effort;
         this.maxTokens = maxTokens;
@@ -146,6 +150,7 @@ public class AnthropicLlmAdapter implements AnswerGenerationPort, TranslationPor
             message = client.beta().messages().create(builder.build());
         } catch (AnthropicException e) {
             log.warn("[LLM] {} failed model={}: {}", purpose, model, e.toString());
+            metrics.llmCall(purpose, model, "error", 0, 0, (System.nanoTime() - started) / 1_000_000);
             throw e;
         }
         long ms = (System.nanoTime() - started) / 1_000_000;
@@ -160,6 +165,7 @@ public class AnthropicLlmAdapter implements AnswerGenerationPort, TranslationPor
         long out = message.usage().outputTokens();
         String usedModel = message.model().toString();
         log.info("[LLM] {} model={} stop={} in={} out={} ms={}", purpose, usedModel, stopReason, in, out, ms);
+        metrics.llmCall(purpose, usedModel, refused ? "refused" : "ok", in, out, ms);
         if (refused) {
             message.stopDetails().ifPresent(d -> log.warn("[LLM] {} refused: {}", purpose, d));
         }

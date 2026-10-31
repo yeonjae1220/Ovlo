@@ -31,10 +31,13 @@ public class StudentConsultationApiController {
     private final ManageConsultationUseCase manageUseCase;
     private final GetConsultationQuery getQuery;
     private final GetConsultationTranscriptQuery transcriptQuery;
+    private final me.yeonjae.ovlo.shared.metrics.OfficeMetrics metrics;
 
     public StudentConsultationApiController(OpenConsultationUseCase openUseCase, ManageConsultationUseCase manageUseCase,
-                                            GetConsultationQuery getQuery, GetConsultationTranscriptQuery transcriptQuery) {
+                                            GetConsultationQuery getQuery, GetConsultationTranscriptQuery transcriptQuery,
+                                           me.yeonjae.ovlo.shared.metrics.OfficeMetrics metrics) {
         this.openUseCase = openUseCase;
+        this.metrics = metrics;
         this.manageUseCase = manageUseCase;
         this.getQuery = getQuery;
         this.transcriptQuery = transcriptQuery;
@@ -44,6 +47,7 @@ public class StudentConsultationApiController {
     @PostMapping
     public ResponseEntity<ConsultationResult> open(@PathVariable Long officeId, @Valid @RequestBody OpenConsultationRequest request,
                                                    @AuthenticationPrincipal Long memberId) {
+        metrics.consultation("opened");
         ConsultationResult result = openUseCase.open(new OpenConsultationCommand(officeId, memberId, request.inquiryId(),
                 request.consentVersion(), request.message()));
         return ResponseEntity.status(HttpStatus.CREATED).body(result);

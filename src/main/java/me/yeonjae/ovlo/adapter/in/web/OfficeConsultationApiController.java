@@ -34,10 +34,13 @@ public class OfficeConsultationApiController {
     private final ManageConsultationUseCase manageUseCase;
     private final GetConsultationTranscriptQuery transcriptQuery;
     private final OfficeAccessPolicy accessPolicy;
+    private final me.yeonjae.ovlo.shared.metrics.OfficeMetrics metrics;
 
     public OfficeConsultationApiController(GetConsultationQuery getQuery, ManageConsultationUseCase manageUseCase,
-                                           GetConsultationTranscriptQuery transcriptQuery, OfficeAccessPolicy accessPolicy) {
+                                           GetConsultationTranscriptQuery transcriptQuery, OfficeAccessPolicy accessPolicy,
+                                          me.yeonjae.ovlo.shared.metrics.OfficeMetrics metrics) {
         this.getQuery = getQuery;
+        this.metrics = metrics;
         this.manageUseCase = manageUseCase;
         this.transcriptQuery = transcriptQuery;
         this.accessPolicy = accessPolicy;
@@ -68,6 +71,7 @@ public class OfficeConsultationApiController {
     public ResponseEntity<ConsultationResult> assign(@PathVariable Long officeId, @PathVariable Long consultationId,
                                                      @AuthenticationPrincipal Long memberId, Authentication authentication) {
         accessPolicy.assertStaff(OfficePrincipal.membershipOrNull(authentication), officeId);
+        metrics.consultation("assigned");
         return ResponseEntity.ok(manageUseCase.assign(new ConsultationActionCommand(officeId, consultationId, memberId)));
     }
 
@@ -76,6 +80,7 @@ public class OfficeConsultationApiController {
     public ResponseEntity<ConsultationResult> resolve(@PathVariable Long officeId, @PathVariable Long consultationId,
                                                       @AuthenticationPrincipal Long memberId, Authentication authentication) {
         accessPolicy.assertStaff(OfficePrincipal.membershipOrNull(authentication), officeId);
+        metrics.consultation("resolved");
         return ResponseEntity.ok(manageUseCase.resolve(new ConsultationActionCommand(officeId, consultationId, memberId)));
     }
 

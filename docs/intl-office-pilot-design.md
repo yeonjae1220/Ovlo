@@ -356,7 +356,7 @@ TDD. 각 스프린트는 도메인 테스트 → 유스케이스 테스트(Mocki
 | S3 질문·답변 | `Inquiry`, V36, FTS 검색 어댑터, `AnswerGenerationPort` + Fake, 인용 검증 후처리, 요청 제한, 학생 질문 화면·피드백 | 후보 0건→NO_GROUNDS · 인용이 후보 밖→NO_GROUNDS 강등 · 만료 공지는 후보에서 제외 · 다른 Office 공지 섞이지 않음 · 429 |
 | S4 상담 이관 | `Consultation`, V37, 동의 필수 생성, GROUP 채팅방 연결, 배정/해결/종료, 메시지 번역, 담당자 받은함·학생 상담 화면, 이메일 알림 | 동의 없이 생성 400 · 상태 전이 · 담당자 REMOVED 시 방에서 제거 · 번역 실패 시 원문 유지 |
 | S5 대시보드·제휴 (구현됨) | 지표 집계 쿼리(`LoadOfficeStatsPort`), 반복 문의 1차 그룹(정규화 완전 일치, `InquiryClustering`), CSV, `Partner`·클릭, V38(`partner`·`partner_click`·`office.enabled_partner_categories`), 대학별 on/off, 제휴 카드 | 집계 수치 고정 데이터 검증(PG 통합) · 끈 분류 미노출 · 클릭 집계 후 URL 반환 |
-| S6 파일럿 준비 | 운영 설정(모델·상한·키), 메트릭 대시보드, 시드(파일럿 Office), 운영 점검표 | 보안 통합 테스트 전체 회귀 |
+| S6 파일럿 준비 (구현됨) | 운영 설정(`k8s/app.yaml` OVLO_*·ANTHROPIC_API_KEY, prod 기동 검사 `OfficePilotConfigGuard`), Micrometer 메트릭 `ovlo.office.*`(+prometheus 엔드포인트, ADMIN 전용), 시드 `PilotSeedRunner`(멱등), 운영 런북 [intl-office-pilot-runbook.md](intl-office-pilot-runbook.md) | 보안 통합 테스트 전체 회귀(556건) |
 
 S1~S3가 끝나면 국제처에 **자료 등록 + 질문 데모**를 보여 줄 수 있다. S4까지가 파일럿 최소 범위, S5는 파일럿 중 추가해도 된다.
 
