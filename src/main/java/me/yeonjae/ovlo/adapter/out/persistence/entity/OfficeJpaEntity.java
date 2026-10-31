@@ -25,6 +25,10 @@ public class OfficeJpaEntity {
     @Column(nullable = false, length = 20)
     private String status;
 
+    /** 켜진 제휴 분류, 쉼표 구분 (예: SIM,INSURANCE). 비어 있으면 null. */
+    @Column(name = "enabled_partner_categories", length = 200)
+    private String enabledPartnerCategories;
+
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)
     private Instant createdAt;
@@ -52,6 +56,8 @@ public class OfficeJpaEntity {
     public void setName(String name) { this.name = name; }
     public String getStatus() { return status; }
     public void setStatus(String status) { this.status = status; }
+    public String getEnabledPartnerCategories() { return enabledPartnerCategories; }
+    public void setEnabledPartnerCategories(String v) { this.enabledPartnerCategories = v; }
     public Instant getCreatedAt() { return createdAt; }
     public void setCreatedAt(Instant createdAt) { this.createdAt = createdAt; }
     public List<OfficeStaffJpaEntity> getStaff() { return staff; }

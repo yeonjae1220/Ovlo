@@ -10,6 +10,7 @@ import me.yeonjae.ovlo.domain.office.exception.ConsultationException;
 import me.yeonjae.ovlo.domain.office.exception.InquiryException;
 import me.yeonjae.ovlo.domain.office.exception.NoticeException;
 import me.yeonjae.ovlo.domain.office.exception.OfficeException;
+import me.yeonjae.ovlo.domain.office.exception.PartnerException;
 import me.yeonjae.ovlo.domain.post.exception.PostException;
 import me.yeonjae.ovlo.domain.university.exception.UniversityException;
 import me.yeonjae.ovlo.domain.verification.exception.VerificationException;
@@ -90,6 +91,13 @@ public class GlobalExceptionHandler {
                 : resolveStatus(ex.getErrorType());
         return ResponseEntity.status(status)
                 .body(ErrorResponse.of(resolveCode(OfficeException.class, ex.getErrorType()), ex.getMessage()));
+    }
+
+    /** 정착 제휴(Partner). FORBIDDEN 은 플랫폼·대학 어느 쪽이든 꺼져 있을 때. */
+    @ExceptionHandler(PartnerException.class)
+    public ResponseEntity<ErrorResponse> handlePartnerException(PartnerException ex) {
+        return ResponseEntity.status(resolveStatus(ex.getErrorType()))
+                .body(ErrorResponse.of(resolveCode(PartnerException.class, ex.getErrorType()), ex.getMessage()));
     }
 
     /** 상담 이관(Consultation). CONSENT_REQUIRED 는 400, INVALID_STATE 는 409. */

@@ -154,6 +154,43 @@ export interface TranscriptMessage {
   sentAt: string
 }
 
+export type PartnerCategory = 'SIM' | 'INSURANCE' | 'HOUSING' | 'PICKUP'
+export const PARTNER_CATEGORIES: PartnerCategory[] = ['SIM', 'INSURANCE', 'HOUSING', 'PICKUP']
+
+/** 학생 제휴 카드 — 목적지 URL 은 클릭 API 가 돌려준다 */
+export interface PartnerCard {
+  id: number
+  category: PartnerCategory
+  name: string
+  description: string | null
+}
+
+export interface RepeatedQuestion {
+  sample: string
+  count: number
+}
+
+export interface OfficeDashboard {
+  from: string
+  to: string
+  inquiries: { total: number; answered: number; noGrounds: number; escalated: number; answerRate: number | null }
+  feedback: { helpful: number; unhelpful: number; helpfulRate: number | null }
+  consultations: {
+    open: number
+    inProgress: number
+    resolved: number
+    closed: number
+    avgFirstReplyMinutes: number | null
+    avgResolveHours: number | null
+  }
+  notices: { approved: number; draft: number; expiringSoon: Array<{ id: number; title: string; expiresAt: string }> }
+  partnerClicks: Partial<Record<PartnerCategory, number>>
+  repeatedQuestions: RepeatedQuestion[]
+  noGroundsQuestions: RepeatedQuestion[]
+}
+
+export type ExportKind = 'inquiries' | 'consultations' | 'notices'
+
 export interface NoticeRequest {
   category: NoticeCategory
   title: string
@@ -230,7 +267,36 @@ export const officeApi = {
   staffTranscript: (officeId: number, id: number, lang: string) =>
     apiClient.get<TranscriptMessage[]>(`/office-admin/${officeId}/consultations/${id}/messages`, { params: { lang } }).then((r) => r.data),
 
+  dashboard: (officeId: number, from?: string, to?: string) =>
+    apiClient
+      .get<OfficeDashboard>(`/office-admin/${officeId}/dashboard`, { params: { from: from || undefined, to: to || undefined } })
+      .then((r) => r.data),
+
+  exportCsv: (officeId: number, kind: ExportKind, from?: string, to?: string) =>
+    apiClient
+      .get<Blob>(`/office-admin/${officeId}/export/${kind}.csv`, {
+        params: { from: from || undefined, to: to || undefined },
+        responseType: 'blob',
+      })
+      .then((r) => r.data),
+
+  partnerSettings: (officeId: number) =>
+    apiClient
+      .get<{ enabledCategories: PartnerCategory[] }>(`/office-admin/${officeId}/settings/partners`)
+      .then((r) => r.data.enabledCategories),
+
+  updatePartnerSettings: (officeId: number, enabledCategories: PartnerCategory[]) =>
+    apiClient
+      .put<{ enabledCategories: PartnerCategory[] }>(`/office-admin/${officeId}/settings/partners`, { enabledCategories })
+      .then((r) => r.data.enabledCategories),
+
   // ── 학생 ─────────────────────────────────────────────────────────────────
+  studentPartners: (officeId: number) =>
+    apiClient.get<PartnerCard[]>(`/office/${officeId}/partners`).then((r) => r.data),
+
+  clickPartner: (officeId: number, partnerId: number) =>
+    apiClient.post<{ url: string }>(`/office/${officeId}/partners/${partnerId}/click`).then((r) => r.data.url),
+
   openConsultation: (officeId: number, body: { inquiryId?: number | null; consentVersion: string; message?: string | null }) =>
     apiClient.post<Consultation>(`/office/${officeId}/consultations`, body).then((r) => r.data),
 

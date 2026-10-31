@@ -249,7 +249,7 @@ PC 우선. 접근은 OFFICE_STAFF 권한이 있는 회원만(layout에서 `/api/
 - 카드마다 "제휴 · Ovlo가 수수료를 받을 수 있습니다" 문구를 i18n 키로 **항상** 표시한다. 끌 수 없다.
 - 공지 본문·자동 답변 본문에는 제휴 링크를 넣지 않는다(프롬프트·후처리에서 Partner URL 차단).
 - 대학이 끈 분류는 그 대학 학생에게 보이지 않는다.
-- 클릭은 서버 리다이렉트(`GET /api/v1/partners/{id}/go`)로 집계한 뒤 이동한다. 개인 식별은 memberId만, 외부에 넘기지 않는다.
+- 클릭은 `POST /api/v1/office/{officeId}/partners/{id}/click` 이 집계한 뒤 목적지 URL 을 돌려주고 화면이 새 탭으로 연다(S5 구현). 설계 초안의 서버 302 리다이렉트는 Bearer 인증이라 `<a href>` 로 못 쓴다. 카드 응답에는 목적지 URL 이 없다. 개인 식별은 memberId만 `partner_click` 에 남고 외부에 넘기지 않는다.
 
 ---
 
@@ -320,7 +320,9 @@ API 키는 환경 변수(`ANTHROPIC_API_KEY`)로만 주입하고 기동 시 존�
 | POST `/office/{officeId}/inquiries/{id}/feedback` | 👍/👎 |
 | POST `/office/{officeId}/consultations` | 상담 요청(동의 포함) |
 | GET `/office/{officeId}/consultations` · PATCH `.../{id}/close` | 내 상담, 확인 종료 |
-| GET `/partners?officeId` · GET `/partners/{id}/go` | 제휴 목록, 클릭 집계 후 리다이렉트 |
+| GET `/office/{officeId}/partners` · POST `/office/{officeId}/partners/{id}/click` | 제휴 카드(대학이 켠 분류만), 클릭 집계 후 목적지 URL 반환 |
+| GET `/office-admin/{officeId}/dashboard?from&to` · GET `/office-admin/{officeId}/export/{inquiries,consultations,notices}.csv` · GET/PUT `/office-admin/{officeId}/settings/partners` | 대시보드(§5.4)·CSV(BOM, 학생 식별 없음)·제휴 분류 on/off(PUT 은 OFFICE_ADMIN) |
+| `/api/v1/admin/partners` · `/admin/partners` | 플랫폼 관리자 제휴 등록·수정·켜기/끄기 (REST + Thymeleaf) |
 
 **담당자** (`/office-admin/{officeId}/...`, OFFICE_STAFF 이상)
 
@@ -353,7 +355,7 @@ TDD. 각 스프린트는 도메인 테스트 → 유스케이스 테스트(Mocki
 | S2 승인 자료 | `Notice`·번역, V35, 등록/승인/보관/수정→DRAFT, 만료 스케줄러, `TranslationPort` + Fake, 담당자 공지 화면, 학생 공지 화면 | 상태 전이 전수 · `isGroundingEligible` 경계(만료일 당일, stale 번역) · 스케줄러 건별 트랜잭션(한 건 실패가 다른 건을 막지 않음) |
 | S3 질문·답변 | `Inquiry`, V36, FTS 검색 어댑터, `AnswerGenerationPort` + Fake, 인용 검증 후처리, 요청 제한, 학생 질문 화면·피드백 | 후보 0건→NO_GROUNDS · 인용이 후보 밖→NO_GROUNDS 강등 · 만료 공지는 후보에서 제외 · 다른 Office 공지 섞이지 않음 · 429 |
 | S4 상담 이관 | `Consultation`, V37, 동의 필수 생성, GROUP 채팅방 연결, 배정/해결/종료, 메시지 번역, 담당자 받은함·학생 상담 화면, 이메일 알림 | 동의 없이 생성 400 · 상태 전이 · 담당자 REMOVED 시 방에서 제거 · 번역 실패 시 원문 유지 |
-| S5 대시보드·제휴 | 지표 집계 쿼리, 반복 문의 1차 그룹, CSV, `Partner`·클릭, V38, 대학별 on/off, 제휴 카드 | 집계 수치 고정 데이터 검증 · 끈 분류 미노출 · 리다이렉트 집계 |
+| S5 대시보드·제휴 (구현됨) | 지표 집계 쿼리(`LoadOfficeStatsPort`), 반복 문의 1차 그룹(정규화 완전 일치, `InquiryClustering`), CSV, `Partner`·클릭, V38(`partner`·`partner_click`·`office.enabled_partner_categories`), 대학별 on/off, 제휴 카드 | 집계 수치 고정 데이터 검증(PG 통합) · 끈 분류 미노출 · 클릭 집계 후 URL 반환 |
 | S6 파일럿 준비 | 운영 설정(모델·상한·키), 메트릭 대시보드, 시드(파일럿 Office), 운영 점검표 | 보안 통합 테스트 전체 회귀 |
 
 S1~S3가 끝나면 국제처에 **자료 등록 + 질문 데모**를 보여 줄 수 있다. S4까지가 파일럿 최소 범위, S5는 파일럿 중 추가해도 된다.

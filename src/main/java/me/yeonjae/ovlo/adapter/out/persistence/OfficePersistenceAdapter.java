@@ -14,6 +14,7 @@ import me.yeonjae.ovlo.domain.office.model.OfficeRole;
 import me.yeonjae.ovlo.domain.office.model.OfficeStaff;
 import me.yeonjae.ovlo.domain.office.model.OfficeStaffStatus;
 import me.yeonjae.ovlo.domain.office.model.OfficeStatus;
+import me.yeonjae.ovlo.domain.office.model.PartnerCategory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Component;
@@ -78,6 +79,8 @@ public class OfficePersistenceAdapter implements LoadOfficePort, SaveOfficePort,
         entity.setGlobalUnivId(office.getGlobalUnivId());
         entity.setName(office.getName());
         entity.setStatus(office.getStatus().name());
+        entity.setEnabledPartnerCategories(office.getEnabledPartnerCategories().isEmpty() ? null
+                : office.getEnabledPartnerCategories().stream().map(Enum::name).sorted().collect(Collectors.joining(",")));
         if (entity.getId() == null) {
             entity.setCreatedAt(office.getCreatedAt());
         }
@@ -110,7 +113,10 @@ public class OfficePersistenceAdapter implements LoadOfficePort, SaveOfficePort,
                         OfficeStaffStatus.valueOf(s.getStatus()), s.getInvitedBy(), s.getInvitedAt(),
                         s.getAcceptedAt(), s.getRemovedAt()))
                 .toList();
+        java.util.Set<PartnerCategory> partners = e.getEnabledPartnerCategories() == null ? java.util.Set.of()
+                : java.util.Arrays.stream(e.getEnabledPartnerCategories().split(",")).map(String::trim)
+                        .filter(s -> !s.isEmpty()).map(PartnerCategory::valueOf).collect(Collectors.toSet());
         return Office.restore(new OfficeId(e.getId()), e.getGlobalUnivId(), e.getName(),
-                OfficeStatus.valueOf(e.getStatus()), e.getCreatedAt(), staff);
+                OfficeStatus.valueOf(e.getStatus()), e.getCreatedAt(), staff, partners);
     }
 }

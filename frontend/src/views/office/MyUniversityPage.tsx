@@ -47,6 +47,7 @@ export default function MyUniversityPage() {
           <span style={{ display: 'inline-flex', gap: 12 }}>
             {office.verifiedStudent && <Link href="/my-university/ask">{t('ask.link')}</Link>}
             {office.verifiedStudent && <Link href="/my-university/consultations">{t('consult.mine')}</Link>}
+            {office.verifiedStudent && <Link href="/my-university/arrival">{t('student.arrival.link')}</Link>}
             {office.role && <Link href="/office/notices">{t('office.staffLink')}</Link>}
           </span>
         }

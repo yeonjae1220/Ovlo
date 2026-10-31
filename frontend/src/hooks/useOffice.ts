@@ -3,7 +3,16 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { isAxiosError } from 'axios'
 import { officeApi } from '../api/office'
-import type { ConsultationStatus, InquiryOutcome, NoticeCategory, NoticeLang, NoticeRequest, NoticeStatus } from '../api/office'
+import type {
+  ConsultationStatus,
+  ExportKind,
+  InquiryOutcome,
+  NoticeCategory,
+  NoticeLang,
+  NoticeRequest,
+  NoticeStatus,
+  PartnerCategory,
+} from '../api/office'
 
 /**
  * 내 국제처. 404(소속 없음)는 "없음"이라는 정상 답이므로 null 로, 그 외 실패는 에러로 둔다
@@ -179,5 +188,73 @@ export function useResolveConsultation(officeId: number | undefined) {
   return useMutation({
     mutationFn: (id: number) => officeApi.resolveConsultation(officeId as number, id),
     onSuccess: () => qc.invalidateQueries({ queryKey: ['office', officeId] }),
+  })
+}
+
+// ── 대시보드·설정 (S5) ──────────────────────────────────────────────────
+
+export function useOfficeDashboard(officeId: number | undefined, from: string, to: string) {
+  return useQuery({
+    queryKey: ['office', officeId, 'dashboard', from, to],
+    queryFn: () => officeApi.dashboard(officeId as number, from, to),
+    enabled: officeId !== undefined,
+  })
+}
+
+/** CSV 를 받아 브라우저 다운로드로 넘긴다. Bearer 인증이라 <a href> 로는 못 받는다. */
+export function useExportCsv(officeId: number | undefined) {
+  return useMutation({
+    mutationFn: async ({ kind, from, to }: { kind: ExportKind; from?: string; to?: string }) => {
+      const blob = await officeApi.exportCsv(officeId as number, kind, from, to)
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = `ovlo-${kind}.csv`
+      document.body.appendChild(a)
+      a.click()
+      a.remove()
+      URL.revokeObjectURL(url)
+    },
+  })
+}
+
+export function usePartnerSettings(officeId: number | undefined) {
+  return useQuery({
+    queryKey: ['office', officeId, 'settings', 'partners'],
+    queryFn: () => officeApi.partnerSettings(officeId as number),
+    enabled: officeId !== undefined,
+  })
+}
+
+export function useUpdatePartnerSettings(officeId: number | undefined) {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: (enabled: PartnerCategory[]) => officeApi.updatePartnerSettings(officeId as number, enabled),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['office', officeId, 'settings'] }),
+  })
+}
+
+export function useStudentPartners(officeId: number | undefined) {
+  return useQuery({
+    queryKey: ['office', officeId, 'partners'],
+    queryFn: () => officeApi.studentPartners(officeId as number),
+    enabled: officeId !== undefined,
+  })
+}
+
+/** 클릭을 집계한 뒤 새 탭으로 연다. 팝업 차단을 피하려고 탭을 먼저 열고 URL 을 채운다. */
+export function useClickPartner(officeId: number | undefined) {
+  return useMutation({
+    mutationFn: async (partnerId: number) => {
+      const tab = window.open('', '_blank', 'noopener,noreferrer')
+      try {
+        const url = await officeApi.clickPartner(officeId as number, partnerId)
+        if (tab) tab.location.href = url
+        else window.location.assign(url)
+      } catch (e) {
+        tab?.close()
+        throw e
+      }
+    },
   })
 }

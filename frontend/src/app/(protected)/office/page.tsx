@@ -1,7 +1,7 @@
 'use client'
 
-import OfficeNoticesPage from '@/views/office/OfficeNoticesPage'
+import OfficeDashboardPage from '@/views/office/OfficeDashboardPage'
 
 export default function Page() {
-  return <OfficeNoticesPage />
+  return <OfficeDashboardPage />
 }

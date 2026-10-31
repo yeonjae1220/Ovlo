@@ -45,6 +45,42 @@ class OfficeTest {
     }
 
     @Nested
+    @DisplayName("partner settings")
+    class PartnerSettings {
+        @Test
+        @DisplayName("기본은 전부 꺼져 있고, 켠 분류만 노출된다")
+        void defaultsOffAndToggles() {
+            Office office = Office.create(UNIV, "국제처", NOW);
+            assertThat(office.getEnabledPartnerCategories()).isEmpty();
+
+            office.setPartnerEnabled(PartnerCategory.SIM, true);
+            office.setPartnerEnabled(PartnerCategory.INSURANCE, true);
+            office.setPartnerEnabled(PartnerCategory.SIM, false);
+
+            assertThat(office.isPartnerEnabled(PartnerCategory.INSURANCE)).isTrue();
+            assertThat(office.isPartnerEnabled(PartnerCategory.SIM)).isFalse();
+            assertThat(office.getEnabledPartnerCategories()).containsExactly(PartnerCategory.INSURANCE);
+        }
+
+        @Test
+        @DisplayName("정지된 Office 는 제휴 설정을 바꿀 수 없다")
+        void suspendedCannotChange() {
+            Office office = Office.create(UNIV, "국제처", NOW);
+            office.suspend();
+            assertThatThrownBy(() -> office.setPartnerEnabled(PartnerCategory.SIM, true))
+                    .isInstanceOf(OfficeException.class);
+        }
+
+        @Test
+        @DisplayName("restore 로 읽은 설정이 그대로 유지된다")
+        void restoreKeepsSettings() {
+            Office office = Office.restore(new OfficeId(1L), UNIV, "국제처", OfficeStatus.ACTIVE, NOW,
+                    java.util.List.of(), java.util.Set.of(PartnerCategory.HOUSING, PartnerCategory.PICKUP));
+            assertThat(office.getEnabledPartnerCategories()).containsExactlyInAnyOrder(PartnerCategory.HOUSING, PartnerCategory.PICKUP);
+        }
+    }
+
+    @Nested
     @DisplayName("invite / accept")
     class InviteAccept {
         @Test

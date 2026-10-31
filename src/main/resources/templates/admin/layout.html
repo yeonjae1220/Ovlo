@@ -185,6 +185,9 @@
     <a th:href="@{/admin/offices}" th:class="${activePage == 'offices'} ? 'active' : ''">
       <span class="nav-icon">◆</span> 국제처 테넌트
     </a>
+    <a th:href="@{/admin/partners}" th:class="${activePage == 'partners'} ? 'active' : ''">
+      <span class="nav-icon">★</span> 정착 제휴
+    </a>
   </nav>
   <div class="sidebar-footer">
     <!-- MEDIUM-5 fix: GET 로그아웃 → POST form (CSRF 공격으로 강제 로그아웃 방지) -->

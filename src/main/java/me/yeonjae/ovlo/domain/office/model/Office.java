@@ -5,6 +5,7 @@ import me.yeonjae.ovlo.domain.office.exception.OfficeException;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -25,26 +26,31 @@ public class Office {
     private OfficeStatus status;
     private final Instant createdAt;
     private final List<OfficeStaff> staff;
+    /** 이 대학 학생에게 보여 줄 제휴 분류. 기본 전부 꺼짐(설계 §4.1) — 국제처가 켜기 전에는 노출하지 않는다. */
+    private final EnumSet<PartnerCategory> enabledPartnerCategories;
 
     private Office(OfficeId id, Long globalUnivId, String name, OfficeStatus status,
-                   Instant createdAt, List<OfficeStaff> staff) {
+                   Instant createdAt, List<OfficeStaff> staff, java.util.Set<PartnerCategory> enabledPartnerCategories) {
         this.id = id;
         this.globalUnivId = globalUnivId;
         this.name = name;
         this.status = status;
         this.createdAt = createdAt;
         this.staff = new ArrayList<>(staff);
+        this.enabledPartnerCategories = enabledPartnerCategories.isEmpty()
+                ? EnumSet.noneOf(PartnerCategory.class) : EnumSet.copyOf(enabledPartnerCategories);
     }
 
     public static Office create(Long globalUnivId, String name, Instant now) {
         Objects.requireNonNull(globalUnivId, "globalUnivId는 필수입니다");
         Objects.requireNonNull(now, "now는 필수입니다");
-        return new Office(null, globalUnivId, requireName(name), OfficeStatus.PILOT, now, List.of());
+        return new Office(null, globalUnivId, requireName(name), OfficeStatus.PILOT, now, List.of(), java.util.Set.of());
     }
 
     public static Office restore(OfficeId id, Long globalUnivId, String name, OfficeStatus status,
-                                 Instant createdAt, List<OfficeStaff> staff) {
-        return new Office(id, globalUnivId, name, status, createdAt, staff);
+                                 Instant createdAt, List<OfficeStaff> staff,
+                                 java.util.Set<PartnerCategory> enabledPartnerCategories) {
+        return new Office(id, globalUnivId, name, status, createdAt, staff, enabledPartnerCategories);
     }
 
     private static String requireName(String name) {
@@ -147,6 +153,21 @@ public class Office {
 
     public void activate() {
         this.status = OfficeStatus.ACTIVE;
+    }
+
+    /** 제휴 분류 노출 on/off. 정지된 Office 는 설정 변경 불가. */
+    public void setPartnerEnabled(PartnerCategory category, boolean enabled) {
+        assertNotSuspended();
+        java.util.Objects.requireNonNull(category, "category는 필수입니다");
+        if (enabled) enabledPartnerCategories.add(category); else enabledPartnerCategories.remove(category);
+    }
+
+    public boolean isPartnerEnabled(PartnerCategory category) {
+        return enabledPartnerCategories.contains(category);
+    }
+
+    public java.util.Set<PartnerCategory> getEnabledPartnerCategories() {
+        return Collections.unmodifiableSet(enabledPartnerCategories);
     }
 
     public void rename(String name) {

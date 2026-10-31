@@ -9,6 +9,10 @@ import me.yeonjae.ovlo.application.dto.command.IssueManualVerificationCommand;
 import me.yeonjae.ovlo.application.port.in.office.AdministerOfficeUseCase;
 import me.yeonjae.ovlo.application.port.in.office.GetOfficeQuery;
 import me.yeonjae.ovlo.application.port.in.office.ManageOfficeStaffUseCase;
+import me.yeonjae.ovlo.application.port.in.office.ManagePartnerUseCase;
+import me.yeonjae.ovlo.application.dto.command.UpsertPartnerCommand;
+import me.yeonjae.ovlo.domain.office.exception.PartnerException;
+import me.yeonjae.ovlo.domain.office.model.PartnerCategory;
 import me.yeonjae.ovlo.domain.office.exception.OfficeException;
 import me.yeonjae.ovlo.domain.office.model.OfficeRole;
 import me.yeonjae.ovlo.application.service.admin.AdminService;
@@ -41,6 +45,7 @@ public class AdminPageController {
     private final AdministerOfficeUseCase administerOfficeUseCase;
     private final ManageOfficeStaffUseCase manageOfficeStaffUseCase;
     private final GetOfficeQuery getOfficeQuery;
+    private final ManagePartnerUseCase managePartnerUseCase;
 
     @GetMapping({"", "/", "/dashboard"})
     public String dashboard(Model model) {
@@ -250,6 +255,45 @@ public class AdminPageController {
         administerOfficeUseCase.suspend(id);
         redirectAttributes.addFlashAttribute("successMessage", "국제처를 정지했습니다.");
         return "redirect:/admin/offices";
+    }
+
+    // ── 정착 제휴 ─────────────────────────────────────────────────────────
+
+    @GetMapping("/partners")
+    public String partners(Model model) {
+        model.addAttribute("partners", managePartnerUseCase.findAll());
+        return "admin/partners";
+    }
+
+    @PostMapping("/partners")
+    public String createPartner(@RequestParam PartnerCategory category,
+                                @RequestParam String name,
+                                @RequestParam String targetUrl,
+                                @RequestParam(required = false) String description,
+                                @RequestParam(defaultValue = "0") int sortOrder,
+                                RedirectAttributes redirectAttributes) {
+        try {
+            var created = managePartnerUseCase.create(new UpsertPartnerCommand(category, name, description, targetUrl, sortOrder));
+            redirectAttributes.addFlashAttribute("successMessage",
+                    "제휴를 등록했습니다: " + created.name() + " (id " + created.id() + "). 켜기 전까지 학생에게 보이지 않습니다.");
+        } catch (PartnerException | IllegalArgumentException e) {
+            redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
+        }
+        return "redirect:/admin/partners";
+    }
+
+    @PostMapping("/partners/{id}/enable")
+    public String enablePartner(@PathVariable Long id, RedirectAttributes redirectAttributes) {
+        managePartnerUseCase.setEnabled(id, true);
+        redirectAttributes.addFlashAttribute("successMessage", "제휴를 켰습니다.");
+        return "redirect:/admin/partners";
+    }
+
+    @PostMapping("/partners/{id}/disable")
+    public String disablePartner(@PathVariable Long id, RedirectAttributes redirectAttributes) {
+        managePartnerUseCase.setEnabled(id, false);
+        redirectAttributes.addFlashAttribute("successMessage", "제휴를 껐습니다.");
+        return "redirect:/admin/partners";
     }
 
     @PostMapping("/offices/{id}/activate")
