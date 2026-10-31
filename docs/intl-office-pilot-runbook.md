@@ -24,7 +24,7 @@
 | `OVLO_NOTICE_EXPIRY_CRON` | `0 10 0 * * *` | 만료 처리(매일 00:10 KST 가 아니라 **서버 시간**) |
 | `OVLO_CONSULTATION_AUTO_CLOSE_CRON` | `0 20 0 * * *` | 해결 7일 뒤 자동 종료 |
 | `OVLO_OFFICE_ALLOW_DEGRADED` | `false` | `true` 면 위 검사를 경고로 낮춘다. 장애 시 임시로만 |
-| `SPRING_MAIL_HOST` 등 4개 | 시크릿 | 없으면 초대·만료 알림이 로그로만 남는다(`LogOfficeNotificationAdapter`) |
+| `SPRING_MAIL_HOST` 등 4개 | 시크릿 | 없으면 초대·만료 알림이 로그로만 남는다(`LogOfficeNotificationAdapter`). 있는데 인증이 틀리면 **메일만 실패하고 초대·상담은 저장된다**(만료 경고는 다음 배치 재시도) — ERROR 로그 + `ovlo_office_notification_total{result="error"}` |
 
 `k8s/app.yaml` 에 `OVLO_*` 와 `ANTHROPIC_API_KEY` 가 들어 있지만 **이 앱의 CI 는 `kubectl set image` 형이라 매니페스트를 apply 하지 않는다** (매니페스트 image 가 `:latest` 라 전체 apply 도 금물). 그래서 `deploy.yml` 이 `set image` 직전에 같은 값을 `kubectl set env` 로 넣는다 — 값을 바꾸려면 **k8s/app.yaml 과 deploy.yml 두 곳**을 같이 고친다. 키는 GitHub secret → CI 가 `ovlo-secret` 에 넣는다(아래).
 
@@ -70,6 +70,7 @@ ssh lenovo 'sudo kubectl -n ovlo logs deploy/app --since=5m | grep -E "\[office\
 1. 대학 id 를 `/admin/universities` 에서 확인한다.
 2. 국제처 관리자가 될 사람이 **먼저 회원 가입**한다(학교 이메일 인증까지는 불필요).
 3. 아래 env 를 켜고 재기동 → 로그에 `[seed] Office 생성 ...` → **바로 끈다**(멱등이지만 켜둘 이유가 없다).
+   시드가 중간에 죽었으면(Loki `|= "[seed]"` 와 `Application run failed` 로 확인) 고친 뒤 **다시 켜면 없는 것만 이어서 만든다**(Office → 초대 → 자료 순). 2026-10-31 첫 시드는 SMTP 535 로 초대에서 죽어 Office·제휴만 남았었다.
 
 ```
 OVLO_PILOT_SEED_ENABLED=true
@@ -122,6 +123,7 @@ OVLO_PILOT_SEED_ADMIN_EMAIL=<가입한 이메일>
 | `ovlo_office_llm_tokens_total` | purpose, direction, model | 비용 추정: 입력·출력 토큰 × 단가 |
 | `ovlo_office_consultation_total` | action | opened 대비 resolved |
 | `ovlo_office_partner_click_total` | category | |
+| `ovlo_office_notification_total` | kind, result | `result=error` 가 생기면 메일 자격증명(아래 §7) |
 
 로그 필터(Loki): `{namespace="ovlo"} |= "[LLM]"` — 호출마다 `model= stop= in= out= ms=` 한 줄. `stop=refusal` 이 반복되면 프롬프트·자료를 본다.
 
@@ -147,6 +149,7 @@ OVLO_PILOT_SEED_ADMIN_EMAIL=<가입한 이메일>
 | 번역이 안 채워짐 | 비동기 리스너 예외 | 로그 `NoticeTranslationEventListener`, "재번역" 버튼 |
 | 담당자가 403 | 초대 수락 뒤 재로그인 안 함, Office SUSPENDED | 재로그인 / `/admin/offices` 상태 |
 | 학생이 403 | 그 대학 활성 인증 자격 없음 | `/admin/verifications`, 학교 이메일 재인증 |
+| 초대·상담 메일이 안 옴, 로그 `알림 메일 발송 실패 ... 535` | Gmail 앱 비밀번호 폐기·오타(`MAIL_PASSWORD`) | Google 계정 → 앱 비밀번호 재발급 → `gh secret set MAIL_PASSWORD --repo yeonjae1220/Ovlo` (파이프로) → 다음 배포에서 반영. 초대·상담은 이미 저장돼 있어 재시도 불필요(담당자는 화면에서 본다). 만료 경고만 다음 배치가 다시 보낸다 |
 | 기동 실패 `운영 설정이 잘못됐습니다` | env 누락 | 1.1. 급하면 `OVLO_OFFICE_ALLOW_DEGRADED=true` 로 띄우되 fake 답이 나간다는 뜻이므로 질문 화면을 닫을 것 |
 
 롤백: 이전 이미지로 `kubectl rollout undo deploy/app -n ovlo`. V34~V38 은 추가 전용(테이블·컬럼 추가)이라 구 이미지도 뜬다.

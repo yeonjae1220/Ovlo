@@ -6,8 +6,10 @@ import me.yeonjae.ovlo.application.dto.command.NoticeActionCommand;
 import me.yeonjae.ovlo.application.dto.command.RegisterNoticeCommand;
 import me.yeonjae.ovlo.application.dto.command.UpsertPartnerCommand;
 import me.yeonjae.ovlo.application.dto.result.NoticeResult;
+import me.yeonjae.ovlo.application.dto.result.NoticeSummaryResult;
 import me.yeonjae.ovlo.application.dto.result.OfficeResult;
 import me.yeonjae.ovlo.application.port.in.office.AdministerOfficeUseCase;
+import me.yeonjae.ovlo.application.port.in.office.GetNoticeQuery;
 import me.yeonjae.ovlo.application.port.in.office.ManageNoticeUseCase;
 import me.yeonjae.ovlo.application.port.in.office.ManageOfficeStaffUseCase;
 import me.yeonjae.ovlo.application.port.in.office.ManagePartnerUseCase;
@@ -15,7 +17,10 @@ import me.yeonjae.ovlo.application.port.out.member.LoadMemberPort;
 import me.yeonjae.ovlo.application.port.out.office.LoadOfficePort;
 import me.yeonjae.ovlo.domain.member.model.Member;
 import me.yeonjae.ovlo.domain.office.model.NoticeCategory;
+import me.yeonjae.ovlo.domain.office.model.NoticeStatus;
+import me.yeonjae.ovlo.domain.office.model.Office;
 import me.yeonjae.ovlo.domain.office.model.OfficeRole;
+import me.yeonjae.ovlo.domain.office.model.OfficeStaffStatus;
 import me.yeonjae.ovlo.domain.office.model.PartnerCategory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,18 +28,22 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Component;
 
 import java.time.Clock;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 /**
  * 파일럿 시드(설계 S6). OVLO_PILOT_SEED_ENABLED=true 로 한 번 기동하면
  * 대학 1곳에 Office · 샘플 승인 자료 3건(KO, 승인됨 → 번역 비동기) · 제휴 4건(꺼짐)을 만든다.
- * 멱등: 그 대학에 Office 가 이미 있으면 아무것도 하지 않는다. 제휴는 플랫폼 공통이라 하나라도 있으면 건너뛴다.
+ * 멱등·재개 가능: Office·관리자 초대·샘플 자료(제목 단위, DRAFT 면 승인만)를 각각 '없을 때만' 만든다 — 이전 시드가
+ * 중간에 죽었으면(2026-10-31 SMTP 535 로 초대에서 실패) 다시 켜면 거기서부터 이어진다. 제휴는 플랫폼 공통이라 하나라도 있으면 건너뛴다.
  * 기존 유스케이스만 호출하므로 화면에서 만든 것과 같은 상태다. 실패는 삼키지 않는다 — 기동이 멈추는 편이 낫다.
  */
 @Component
@@ -43,10 +52,13 @@ public class PilotSeedRunner implements ApplicationRunner {
 
     private static final Logger log = LoggerFactory.getLogger(PilotSeedRunner.class);
     static final ZoneId OFFICE_ZONE = ZoneId.of("Asia/Seoul");
+    static final String SAMPLE_PREFIX = "[예시] ";
+    private static final int SAMPLE_SCAN_LIMIT = 200;
 
     private final AdministerOfficeUseCase administerOffice;
     private final ManageOfficeStaffUseCase manageStaff;
     private final ManageNoticeUseCase manageNotice;
+    private final GetNoticeQuery noticeQuery;
     private final ManagePartnerUseCase managePartner;
     private final LoadOfficePort loadOfficePort;
     private final LoadMemberPort loadMemberPort;
@@ -56,7 +68,7 @@ public class PilotSeedRunner implements ApplicationRunner {
     private final String adminEmail;
 
     public PilotSeedRunner(AdministerOfficeUseCase administerOffice, ManageOfficeStaffUseCase manageStaff,
-                           ManageNoticeUseCase manageNotice, ManagePartnerUseCase managePartner,
+                           ManageNoticeUseCase manageNotice, GetNoticeQuery noticeQuery, ManagePartnerUseCase managePartner,
                            LoadOfficePort loadOfficePort, LoadMemberPort loadMemberPort, Clock clock,
                            @Value("${ovlo.office.pilot-seed.university-id:0}") long universityId,
                            @Value("${ovlo.office.pilot-seed.office-name:파일럿 대학 국제처}") String officeName,
@@ -64,6 +76,7 @@ public class PilotSeedRunner implements ApplicationRunner {
         this.administerOffice = administerOffice;
         this.manageStaff = manageStaff;
         this.manageNotice = manageNotice;
+        this.noticeQuery = noticeQuery;
         this.managePartner = managePartner;
         this.loadOfficePort = loadOfficePort;
         this.loadMemberPort = loadMemberPort;
@@ -79,12 +92,16 @@ public class PilotSeedRunner implements ApplicationRunner {
             throw new IllegalStateException("OVLO_PILOT_SEED_UNIVERSITY_ID 가 필요합니다 (global_universities.id)");
         }
         seedPartners();
-        if (loadOfficePort.findByUniversityId(universityId).isPresent()) {
-            log.info("[seed] 대학 {} 에 Office 가 이미 있어 건너뜁니다", universityId);
-            return;
+        Optional<Office> existing = loadOfficePort.findByUniversityId(universityId);
+        Long officeId;
+        if (existing.isPresent()) {
+            officeId = existing.get().getId().value();
+            log.info("[seed] 대학 {} 에 Office(id={}) 가 이미 있어 초대·자료만 확인합니다", universityId, officeId);
+        } else {
+            OfficeResult office = administerOffice.create(new CreateOfficeCommand(universityId, officeName));
+            officeId = office.id();
+            log.info("[seed] Office 생성 id={} name={}", office.id(), office.name());
         }
-        OfficeResult office = administerOffice.create(new CreateOfficeCommand(universityId, officeName));
-        log.info("[seed] Office 생성 id={} name={}", office.id(), office.name());
 
         Optional<Member> admin = adminEmail.isEmpty() ? Optional.empty() : loadMemberPort.findByEmail(adminEmail);
         if (admin.isEmpty()) {
@@ -92,8 +109,21 @@ public class PilotSeedRunner implements ApplicationRunner {
             return;
         }
         Long adminId = admin.get().getId().value();
-        manageStaff.invite(new InviteOfficeStaffCommand(office.id(), adminEmail, OfficeRole.OFFICE_ADMIN, "seed"));
-        seedNotices(office.id(), adminId);
+
+        // REMOVED 는 담당자가 아니다 — Office.invite 가 재초대로 처리한다
+        boolean alreadyStaff = existing.flatMap(o -> o.findStaff(adminId))
+                .filter(s -> s.getStatus() != OfficeStaffStatus.REMOVED).isPresent();
+        if (alreadyStaff) {
+            log.info("[seed] 회원 {} 은 이미 담당자(초대됨/활동)라 초대를 건너뜁니다", adminId);
+        } else {
+            manageStaff.invite(new InviteOfficeStaffCommand(officeId, adminEmail, OfficeRole.OFFICE_ADMIN, "seed"));
+        }
+
+        Map<String, NoticeSummaryResult> samplesPresent = existing.isEmpty() ? Map.of()
+                : noticeQuery.findForStaff(officeId, null, null, PageRequest.of(0, SAMPLE_SCAN_LIMIT)).getContent().stream()
+                        .filter(n -> n.title().startsWith(SAMPLE_PREFIX))
+                        .collect(Collectors.toMap(NoticeSummaryResult::title, n -> n, (a, b) -> a));
+        seedNotices(officeId, adminId, samplesPresent);
     }
 
     private void seedPartners() {
@@ -110,7 +140,8 @@ public class PilotSeedRunner implements ApplicationRunner {
         log.info("[seed] 제휴 {}건 등록(꺼짐) — /admin/partners 에서 실제 링크로 바꾸고 켠다", partners.size());
     }
 
-    private void seedNotices(Long officeId, Long createdBy) {
+    /** 제목이 같은 샘플이 있으면 건너뛰고, DRAFT 로 남아 있으면 승인만 한다 — 중간에 죽은 시드를 마저 끝내기 위해. */
+    private void seedNotices(Long officeId, Long createdBy, Map<String, NoticeSummaryResult> present) {
         LocalDate today = LocalDate.now(clock.withZone(OFFICE_ZONE));
         String term = today.getYear() + "-" + (today.getMonthValue() <= 6 ? "1" : "2");
         LocalDate until = today.plusMonths(4);
@@ -124,10 +155,22 @@ public class PilotSeedRunner implements ApplicationRunner {
                 new RegisterNoticeCommand(officeId, NoticeCategory.INSURANCE, "[예시] 유학생 건강보험 가입",
                         "외국인 유학생은 입국 뒤 국민건강보험에 당연가입됩니다. 보험료 감면은 학교에서 일괄 신청합니다.",
                         null, List.of(), term, today, until, createdBy));
+        int created = 0, approvedOnly = 0;
         for (RegisterNoticeCommand cmd : notices) {
-            NoticeResult n = manageNotice.register(cmd);
-            manageNotice.approve(new NoticeActionCommand(officeId, n.id(), "seed:" + createdBy));
+            NoticeSummaryResult have = present.get(cmd.title());
+            if (have == null) {
+                NoticeResult n = manageNotice.register(cmd);
+                manageNotice.approve(new NoticeActionCommand(officeId, n.id(), "seed:" + createdBy));
+                created++;
+            } else if (have.status() == NoticeStatus.DRAFT) {
+                manageNotice.approve(new NoticeActionCommand(officeId, have.id(), "seed:" + createdBy));
+                approvedOnly++;
+            }
         }
-        log.info("[seed] 샘플 승인 자료 {}건 — 제목에 [예시] 가 붙어 있으니 실제 자료로 바꾼다", notices.size());
+        if (created + approvedOnly == 0) {
+            log.info("[seed] 샘플 자료 {}건이 이미 있어 건너뜁니다", notices.size());
+        } else {
+            log.info("[seed] 샘플 승인 자료 {}건 생성, {}건 승인만 — 제목에 [예시] 가 붙어 있으니 실제 자료로 바꾼다", created, approvedOnly);
+        }
     }
 }

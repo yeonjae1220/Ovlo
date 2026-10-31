@@ -23,6 +23,7 @@ class OfficeMetricsTest {
         m.llmCall("translate", null, "error", 0, 0, 90);
         m.consultation("opened");
         m.partnerClick(PartnerCategory.SIM);
+        m.notification("staff_invitation", "error");
 
         assertThat(registry.get("ovlo.office.inquiry").tag("outcome", "ANSWERED").counter().count()).isEqualTo(2);
         assertThat(registry.get("ovlo.office.inquiry.latency").tag("outcome", "ANSWERED").timer().count()).isEqualTo(2);
@@ -31,5 +32,6 @@ class OfficeMetricsTest {
         assertThat(registry.find("ovlo.office.llm.tokens").tag("purpose", "translate").counter()).isNull();
         assertThat(registry.get("ovlo.office.consultation").tag("action", "opened").counter().count()).isEqualTo(1);
         assertThat(registry.get("ovlo.office.partner.click").tag("category", "SIM").counter().count()).isEqualTo(1);
+        assertThat(registry.get("ovlo.office.notification").tag("kind", "staff_invitation").tag("result", "error").counter().count()).isEqualTo(1);
     }
 }

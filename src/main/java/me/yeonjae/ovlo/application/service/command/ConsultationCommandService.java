@@ -20,6 +20,7 @@ import me.yeonjae.ovlo.domain.chat.model.ChatRoomId;
 import me.yeonjae.ovlo.domain.chat.model.ChatRoomType;
 import me.yeonjae.ovlo.domain.member.model.MemberId;
 import me.yeonjae.ovlo.domain.office.exception.ConsultationException;
+import me.yeonjae.ovlo.domain.office.exception.OfficeNotificationException;
 import me.yeonjae.ovlo.domain.office.exception.OfficeException;
 import me.yeonjae.ovlo.domain.office.model.Consultation;
 import me.yeonjae.ovlo.domain.office.model.Inquiry;
@@ -123,7 +124,13 @@ public class ConsultationCommandService implements OpenConsultationUseCase, Mana
 
         List<String> emails = loadMemberPort.findAllByIds(staffIds.stream().map(MemberId::new).toList()).stream()
                 .map(m -> m.getEmail().value()).toList();
-        notificationPort.sendConsultationOpened(emails, office.getName(), question);
+        try {
+            notificationPort.sendConsultationOpened(emails, office.getName(), question);
+        } catch (OfficeNotificationException e) {
+            // 상담은 열렸다 — 받은함에 보인다. 메일만 실패.
+            log.warn("[Consultation] opened but mail failed office={} consultation={} kind={}",
+                    c.officeId(), saved.getId(), e.getKind());
+        }
         log.info("[Consultation] opened office={} consultation={} room={} inquiry={} consent={}", c.officeId(),
                 saved.getId(), room.getId().value(), c.inquiryId(), c.consentVersion());
         return toResult(saved);
