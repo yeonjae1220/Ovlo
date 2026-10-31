@@ -57,6 +57,19 @@ public class SmtpOfficeNotificationAdapter implements OfficeNotificationPort {
     }
 
     @Override
+    public void sendConsultationOpened(List<String> toEmails, String officeName, String question) {
+        if (toEmails.isEmpty()) return;
+        send(toEmails, "[Ovlo] 새 상담 요청: " + officeName, """
+                학생이 담당자 상담을 요청했습니다.
+
+                질문: %s
+
+                담당자 화면의 받은함에서 "맡기"를 누르면 상담방에서 답할 수 있습니다. 학생 메시지는 한국어로 번역되어 함께 보입니다.
+                %s/office/consultations
+                """.formatted(question, appBaseUrl));
+    }
+
+    @Override
     public void sendNoticeTranslationFailed(List<String> toEmails, String officeName, String noticeTitle,
                                             List<String> failedLangs) {
         if (toEmails.isEmpty()) return;

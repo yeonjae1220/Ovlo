@@ -47,6 +47,7 @@ export default function OfficeNoticesPage() {
         description={t('office.notices.subtitle')}
         actions={
           <>
+            <Link href="/office/consultations">{t('office.consultations.link')}</Link>
             <Link href="/office/inquiries">{t('office.inquiries.link')}</Link>
             <Button variant="primary" icon="+" onClick={() => setShowForm((v) => !v)}>
               {t('office.notices.new')}

@@ -4,9 +4,11 @@ import { useState } from 'react'
 import Link from 'next/link'
 import { isAxiosError } from 'axios'
 import { useI18n } from '../../i18n/I18nProvider'
-import { useAskQuestion, useInquiryFeedback, useMyOffice } from '../../hooks/useOffice'
+import { useRouter } from 'next/navigation'
+import { useAskQuestion, useInquiryFeedback, useMyOffice, useOpenConsultation } from '../../hooks/useOffice'
+import ConsentDialog from './ConsentDialog'
 import type { AskResult } from '../../api/office'
-import { Badge, Button, Card, EmptyState, PageHeader, QueryErrorNotice, SkeletonLines, TextAreaField } from '../../components/ui'
+import { Button, Card, EmptyState, PageHeader, QueryErrorNotice, SkeletonLines, TextAreaField } from '../../components/ui'
 import { formatDate, noticeLangOf } from './noticeUi'
 
 /** 답변 본문의 [N] 을 출처 번호 링크로 바꾼다. */
@@ -43,8 +45,11 @@ export default function AskPage() {
   const office = myOffice.data ?? null
   const officeId = office && office.verifiedStudent ? office.officeId : undefined
 
+  const router = useRouter()
   const ask = useAskQuestion(officeId)
   const feedback = useInquiryFeedback(officeId)
+  const openConsultation = useOpenConsultation(officeId)
+  const [consentOpen, setConsentOpen] = useState(false)
   const [question, setQuestion] = useState('')
   const [result, setResult] = useState<AskResult | null>(null)
   const [feedbackSent, setFeedbackSent] = useState(false)
@@ -138,9 +143,27 @@ export default function AskPage() {
                 </>
               )
             )}
-            {result.canEscalate && <Badge tone="neutral">{t('ask.escalateSoon')}</Badge>}
+            {result.canEscalate && (
+              <Button variant="secondary" style={{ marginLeft: 'auto' }} onClick={() => setConsentOpen(true)}>
+                {t('consult.escalate')}
+              </Button>
+            )}
           </div>
         </Card>
+      )}
+
+      {consentOpen && result && (
+        <ConsentDialog
+          pending={openConsultation.isPending}
+          error={openConsultation.isError ? errorMessage(openConsultation.error) : null}
+          onDecline={() => setConsentOpen(false)}
+          onAgree={(version) =>
+            openConsultation.mutate(
+              { inquiryId: result.inquiryId, consentVersion: version },
+              { onSuccess: (c) => router.push(`/my-university/consultations/${c.id}`) },
+            )
+          }
+        />
       )}
     </div>
   )

@@ -6,6 +6,7 @@ import me.yeonjae.ovlo.domain.chat.exception.ChatException;
 import me.yeonjae.ovlo.domain.follow.exception.FollowException;
 import me.yeonjae.ovlo.domain.media.exception.MediaException;
 import me.yeonjae.ovlo.domain.member.exception.MemberException;
+import me.yeonjae.ovlo.domain.office.exception.ConsultationException;
 import me.yeonjae.ovlo.domain.office.exception.InquiryException;
 import me.yeonjae.ovlo.domain.office.exception.NoticeException;
 import me.yeonjae.ovlo.domain.office.exception.OfficeException;
@@ -89,6 +90,18 @@ public class GlobalExceptionHandler {
                 : resolveStatus(ex.getErrorType());
         return ResponseEntity.status(status)
                 .body(ErrorResponse.of(resolveCode(OfficeException.class, ex.getErrorType()), ex.getMessage()));
+    }
+
+    /** 상담 이관(Consultation). CONSENT_REQUIRED 는 400, INVALID_STATE 는 409. */
+    @ExceptionHandler(ConsultationException.class)
+    public ResponseEntity<ErrorResponse> handleConsultationException(ConsultationException ex) {
+        HttpStatus status = switch (ex.getErrorType()) {
+            case CONSENT_REQUIRED -> HttpStatus.BAD_REQUEST;
+            case INVALID_STATE -> HttpStatus.CONFLICT;
+            default -> resolveStatus(ex.getErrorType());
+        };
+        return ResponseEntity.status(status)
+                .body(ErrorResponse.of(resolveCode(ConsultationException.class, ex.getErrorType()), ex.getMessage()));
     }
 
     /** 학생 문의(Inquiry). RATE_LIMITED(Office 일일 상한)는 429. */

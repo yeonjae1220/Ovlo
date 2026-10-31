@@ -29,6 +29,11 @@ public class LogOfficeNotificationAdapter implements OfficeNotificationPort {
     }
 
     @Override
+    public void sendConsultationOpened(List<String> toEmails, String officeName, String question) {
+        log.info("[EMAIL:CONSULTATION_OPENED] to={} office={} question=\"{}\" (LOG adapter)", toEmails, officeName, question);
+    }
+
+    @Override
     public void sendNoticeTranslationFailed(List<String> toEmails, String officeName, String noticeTitle,
                                             List<String> failedLangs) {
         log.warn("[EMAIL:NOTICE_TRANSLATION_FAILED] to={} office={} notice=\"{}\" langs={} (LOG adapter)",

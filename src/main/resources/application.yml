@@ -117,6 +117,7 @@ ovlo:
     inquiry-office-daily-limit: ${OVLO_INQUIRY_OFFICE_DAILY_LIMIT:500}
     notice-expiry-warn-days: ${OVLO_NOTICE_EXPIRY_WARN_DAYS:7}
     notice-expiry-cron: ${OVLO_NOTICE_EXPIRY_CRON:0 10 0 * * *}
+    consultation-auto-close-cron: ${OVLO_CONSULTATION_AUTO_CLOSE_CRON:0 20 0 * * *}
   # 신뢰 프록시 IP 목록 — 이 주소에서 온 요청만 X-Real-IP 헤더를 신뢰
   # Docker 내부 nginx: 172.x.x.x, 로컬 개발: 127.0.0.1/::1
   trusted-proxy-ips: ${TRUSTED_PROXY_IPS:127.0.0.1,::1}

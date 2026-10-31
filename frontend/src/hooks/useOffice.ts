@@ -3,7 +3,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { isAxiosError } from 'axios'
 import { officeApi } from '../api/office'
-import type { InquiryOutcome, NoticeCategory, NoticeLang, NoticeRequest, NoticeStatus } from '../api/office'
+import type { ConsultationStatus, InquiryOutcome, NoticeCategory, NoticeLang, NoticeRequest, NoticeStatus } from '../api/office'
 
 /**
  * 내 국제처. 404(소속 없음)는 "없음"이라는 정상 답이므로 null 로, 그 외 실패는 에러로 둔다
@@ -102,5 +102,82 @@ export function useOfficeInquiries(officeId: number | undefined, outcome: Inquir
     queryKey: ['office', officeId, 'inquiries', outcome, page],
     queryFn: () => officeApi.listInquiries(officeId as number, outcome, page),
     enabled: officeId !== undefined,
+  })
+}
+
+// ── 상담 이관 ────────────────────────────────────────────────────────────────
+
+export function useOpenConsultation(officeId: number | undefined) {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: (body: { inquiryId?: number | null; consentVersion: string; message?: string | null }) =>
+      officeApi.openConsultation(officeId as number, body),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['office', officeId, 'my-consultations'] }),
+  })
+}
+
+export function useMyConsultations(officeId: number | undefined) {
+  return useQuery({
+    queryKey: ['office', officeId, 'my-consultations'],
+    queryFn: () => officeApi.myConsultations(officeId as number),
+    enabled: officeId !== undefined,
+  })
+}
+
+export function useMyConsultation(officeId: number | undefined, id: number | undefined) {
+  return useQuery({
+    queryKey: ['office', officeId, 'my-consultation', id],
+    queryFn: () => officeApi.myConsultation(officeId as number, id as number),
+    enabled: officeId !== undefined && id !== undefined,
+  })
+}
+
+export function useCloseConsultation(officeId: number | undefined) {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: (id: number) => officeApi.closeConsultation(officeId as number, id),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['office', officeId] }),
+  })
+}
+
+/** 상담 대화(번역 병기). 열린 상담은 15초마다 다시 읽는다. */
+export function useTranscript(officeId: number | undefined, id: number | undefined, lang: string, staff: boolean, active: boolean) {
+  return useQuery({
+    queryKey: ['office', officeId, staff ? 'staff-transcript' : 'my-transcript', id, lang],
+    queryFn: () => (staff ? officeApi.staffTranscript(officeId as number, id as number, lang) : officeApi.myTranscript(officeId as number, id as number, lang)),
+    enabled: officeId !== undefined && id !== undefined,
+    refetchInterval: active ? 15000 : false,
+  })
+}
+
+export function useOfficeConsultations(officeId: number | undefined, status: ConsultationStatus | '', page: number) {
+  return useQuery({
+    queryKey: ['office', officeId, 'consultations', status, page],
+    queryFn: () => officeApi.listConsultations(officeId as number, status, page),
+    enabled: officeId !== undefined,
+  })
+}
+
+export function useStaffConsultation(officeId: number | undefined, id: number | undefined) {
+  return useQuery({
+    queryKey: ['office', officeId, 'consultation', id],
+    queryFn: () => officeApi.getStaffConsultation(officeId as number, id as number),
+    enabled: officeId !== undefined && id !== undefined,
+  })
+}
+
+export function useAssignConsultation(officeId: number | undefined) {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: (id: number) => officeApi.assignConsultation(officeId as number, id),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['office', officeId] }),
+  })
+}
+
+export function useResolveConsultation(officeId: number | undefined) {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: (id: number) => officeApi.resolveConsultation(officeId as number, id),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['office', officeId] }),
   })
 }

@@ -38,6 +38,7 @@ class ChatCommandServiceTest {
     @Mock LoadChatPort loadChatPort;
     @Mock SaveChatPort saveChatPort;
     @Mock SaveReadMarkerPort saveReadMarkerPort;
+    @Mock org.springframework.context.ApplicationEventPublisher eventPublisher;
 
     @InjectMocks
     ChatCommandService service;

@@ -16,6 +16,8 @@ import me.yeonjae.ovlo.application.port.out.office.OfficeNotificationPort;
 import me.yeonjae.ovlo.application.port.out.office.SaveOfficePort;
 import me.yeonjae.ovlo.application.port.out.university.LoadUniversityPort;
 import me.yeonjae.ovlo.application.service.office.OfficeResultMapper;
+import me.yeonjae.ovlo.application.service.office.OfficeStaffRemovedEvent;
+import org.springframework.context.ApplicationEventPublisher;
 import me.yeonjae.ovlo.domain.member.model.Member;
 import me.yeonjae.ovlo.domain.member.model.MemberId;
 import me.yeonjae.ovlo.domain.office.exception.OfficeException;
@@ -49,12 +51,13 @@ public class OfficeCommandService implements AdministerOfficeUseCase, ManageOffi
     private final OfficeNotificationPort notificationPort;
     private final TokenStorePort tokenStorePort;
     private final OfficeResultMapper mapper;
+    private final ApplicationEventPublisher eventPublisher;
     private final Clock clock;
 
     public OfficeCommandService(LoadOfficePort loadOfficePort, SaveOfficePort saveOfficePort,
                                 LoadUniversityPort loadUniversityPort, LoadMemberPort loadMemberPort,
                                 OfficeNotificationPort notificationPort, TokenStorePort tokenStorePort,
-                                OfficeResultMapper mapper, Clock clock) {
+                                OfficeResultMapper mapper, ApplicationEventPublisher eventPublisher, Clock clock) {
         this.loadOfficePort = loadOfficePort;
         this.saveOfficePort = saveOfficePort;
         this.loadUniversityPort = loadUniversityPort;
@@ -62,6 +65,7 @@ public class OfficeCommandService implements AdministerOfficeUseCase, ManageOffi
         this.notificationPort = notificationPort;
         this.tokenStorePort = tokenStorePort;
         this.mapper = mapper;
+        this.eventPublisher = eventPublisher;
         this.clock = clock;
     }
 
@@ -133,6 +137,8 @@ public class OfficeCommandService implements AdministerOfficeUseCase, ManageOffi
         office.remove(command.memberId(), clock.instant());
         saveOfficePort.save(office);
         tokenStorePort.delete(new MemberId(command.memberId()));
+        // 커밋 뒤 열린 상담방에서 뺀다(ConsultationEventListener)
+        eventPublisher.publishEvent(new OfficeStaffRemovedEvent(command.officeId(), command.memberId()));
         log.info("[Office] staff removed office={} member={}", command.officeId(), command.memberId());
     }
 

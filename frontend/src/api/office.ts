@@ -123,6 +123,37 @@ export interface InquiryLog {
   feedbackReason: string | null
 }
 
+export type ConsultationStatus = 'OPEN' | 'IN_PROGRESS' | 'RESOLVED' | 'CLOSED'
+
+export interface Consultation {
+  id: number
+  officeId: number
+  status: ConsultationStatus
+  inquiryId: number | null
+  question: string
+  answerText: string | null
+  lang: NoticeLang
+  verifiedStudent: boolean
+  chatRoomId: number
+  assignedStaffMemberId: number | null
+  assignedStaffNickname: string | null
+  consentVersion: string
+  openedAt: string
+  firstStaffReplyAt: string | null
+  resolvedAt: string | null
+  closedAt: string | null
+}
+
+export interface TranscriptMessage {
+  messageId: number
+  senderId: number
+  fromStaff: boolean
+  content: string
+  translatedText: string | null
+  translationFailed: boolean
+  sentAt: string
+}
+
 export interface NoticeRequest {
   category: NoticeCategory
   title: string
@@ -182,7 +213,39 @@ export const officeApi = {
       })
       .then((r) => r.data),
 
+  listConsultations: (officeId: number, status?: ConsultationStatus | '', page = 0, size = 20) =>
+    apiClient
+      .get<PageResult<Consultation>>(`/office-admin/${officeId}/consultations`, { params: { status: status || undefined, page, size } })
+      .then((r) => r.data),
+
+  getStaffConsultation: (officeId: number, id: number) =>
+    apiClient.get<Consultation>(`/office-admin/${officeId}/consultations/${id}`).then((r) => r.data),
+
+  assignConsultation: (officeId: number, id: number) =>
+    apiClient.post<Consultation>(`/office-admin/${officeId}/consultations/${id}/assign`).then((r) => r.data),
+
+  resolveConsultation: (officeId: number, id: number) =>
+    apiClient.post<Consultation>(`/office-admin/${officeId}/consultations/${id}/resolve`).then((r) => r.data),
+
+  staffTranscript: (officeId: number, id: number, lang: string) =>
+    apiClient.get<TranscriptMessage[]>(`/office-admin/${officeId}/consultations/${id}/messages`, { params: { lang } }).then((r) => r.data),
+
   // ── 학생 ─────────────────────────────────────────────────────────────────
+  openConsultation: (officeId: number, body: { inquiryId?: number | null; consentVersion: string; message?: string | null }) =>
+    apiClient.post<Consultation>(`/office/${officeId}/consultations`, body).then((r) => r.data),
+
+  myConsultations: (officeId: number) =>
+    apiClient.get<Consultation[]>(`/office/${officeId}/consultations`).then((r) => r.data),
+
+  myConsultation: (officeId: number, id: number) =>
+    apiClient.get<Consultation>(`/office/${officeId}/consultations/${id}`).then((r) => r.data),
+
+  closeConsultation: (officeId: number, id: number) =>
+    apiClient.patch<Consultation>(`/office/${officeId}/consultations/${id}/close`).then((r) => r.data),
+
+  myTranscript: (officeId: number, id: number, lang: string) =>
+    apiClient.get<TranscriptMessage[]>(`/office/${officeId}/consultations/${id}/messages`, { params: { lang } }).then((r) => r.data),
+
   ask: (officeId: number, question: string, lang: string) =>
     apiClient.post<AskResult>(`/office/${officeId}/inquiries`, { question, lang }).then((r) => r.data),
 

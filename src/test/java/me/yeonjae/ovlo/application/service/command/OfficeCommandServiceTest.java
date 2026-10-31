@@ -61,6 +61,7 @@ class OfficeCommandServiceTest {
     @Mock LoadMemberPort loadMemberPort;
     @Mock OfficeNotificationPort notificationPort;
     @Mock TokenStorePort tokenStorePort;
+    @Mock org.springframework.context.ApplicationEventPublisher eventPublisher;
 
     private OfficeCommandService sut;
 
@@ -68,7 +69,7 @@ class OfficeCommandServiceTest {
     void setUp() {
         OfficeResultMapper mapper = new OfficeResultMapper(loadUniversityPort, loadMemberPort);
         sut = new OfficeCommandService(loadOfficePort, saveOfficePort, loadUniversityPort, loadMemberPort,
-                notificationPort, tokenStorePort, mapper, Clock.fixed(NOW, ZoneOffset.UTC));
+                notificationPort, tokenStorePort, mapper, eventPublisher, Clock.fixed(NOW, ZoneOffset.UTC));
         lenient().when(saveOfficePort.save(any(Office.class))).thenAnswer(inv -> {
             Office o = inv.getArgument(0);
             if (o.getId() == null) o.assignId(new OfficeId(OFFICE_ID));
