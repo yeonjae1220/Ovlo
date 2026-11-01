@@ -187,6 +187,7 @@ jobs:
           CORS_ALLOWED_ORIGINS: ${{ secrets.CORS_ALLOWED_ORIGINS }}
           ADMIN_EMAIL: ${{ secrets.ADMIN_EMAIL }}
           ADMIN_PASSWORD_BCRYPT: ${{ secrets.ADMIN_PASSWORD_BCRYPT }}
+          ADMIN_ADDITIONAL_ACCOUNTS: ${{ secrets.ADMIN_ADDITIONAL_ACCOUNTS }}
           CONSOLE_INTERNAL_TOKEN: ${{ secrets.CONSOLE_INTERNAL_TOKEN }}
           LAB_FEEDBACK_TOKEN: ${{ secrets.LAB_FEEDBACK_TOKEN }}
           # 이메일(SMTP) — 미설정 시 빈 문자열. 아래에서 비어있지 않을 때만 시크릿에 추가한다.
@@ -217,6 +218,7 @@ jobs:
             --from-literal=CORS_ALLOWED_ORIGINS="${CORS_ALLOWED_ORIGINS}" \
             --from-literal=ADMIN_EMAIL="${ADMIN_EMAIL}" \
             --from-literal=ADMIN_PASSWORD_BCRYPT="${ADMIN_PASSWORD_BCRYPT}" \
+            --from-literal=ADMIN_ADDITIONAL_ACCOUNTS="${ADMIN_ADDITIONAL_ACCOUNTS}" \
             --from-literal=CONSOLE_INTERNAL_TOKEN="${CONSOLE_INTERNAL_TOKEN}" \
             --from-literal=LAB_FEEDBACK_TOKEN="${LAB_FEEDBACK_TOKEN}" \
             "${MAIL_ARGS[@]}" \
