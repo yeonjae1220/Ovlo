@@ -86,7 +86,9 @@ public class ConsultationCommandService implements OpenConsultationUseCase, Mana
     @Transactional
     public ConsultationResult open(OpenConsultationCommand c) {
         Office office = accessPolicy.assertMember(c.memberId(), c.officeId());
-        List<Long> staffIds = office.activeStaff().stream().map(OfficeStaff::getMemberId).toList();
+        // 묻는 사람이 그 국제처 담당자이기도 하면(근로 학생 등) 받는 쪽에서 뺀다 — 참여자가 겹치면 PK 중복 409 (2026-11-02)
+        List<Long> staffIds = office.activeStaff().stream().map(OfficeStaff::getMemberId)
+                .filter(id -> !id.equals(c.memberId())).toList();
         if (staffIds.isEmpty()) {
             throw new ConsultationException("이 국제처에는 아직 활동 중인 담당자가 없어 상담을 전달할 수 없습니다",
                     ConsultationException.ErrorType.BAD_REQUEST);
