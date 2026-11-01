@@ -65,6 +65,14 @@ public class SecurityConfig {
     @Value("${admin.password.bcrypt}")
     private String adminPasswordBcrypt;
 
+    /**
+     * 추가 admin 계정 목록 — {@code 아이디:BCrypt,아이디:BCrypt} 형식(선택).
+     * k8s Secret ADMIN_ADDITIONAL_ACCOUNTS 에서 주입. 비어 있으면 기본 admin 하나만 쓴다.
+     * BCrypt 해시에는 {@code ,}·{@code :} 가 없으므로 구분자로 안전하다.
+     */
+    @Value("${admin.additional-accounts:}")
+    private String adminAdditionalAccounts;
+
     /** 콘솔 집계용 서비스 토큰 — 미설정 시 /api/internal/** 전부 차단(fail-closed) */
     @Value("${console.internal-token:}")
     private String consoleInternalToken;
@@ -99,20 +107,72 @@ public class SecurityConfig {
             throw new IllegalStateException(
                     "[Admin] ADMIN_EMAIL 기본값이 운영 환경에서 사용되었습니다. ADMIN_EMAIL을 실제 값으로 설정하세요.");
         }
-        if (adminPasswordBcrypt == null
-                || adminPasswordBcrypt.contains("placeholder")
-                || adminPasswordBcrypt.length() < 60
-                || (!adminPasswordBcrypt.startsWith("$2a$")
-                    && !adminPasswordBcrypt.startsWith("$2b$")
-                    && !adminPasswordBcrypt.startsWith("$2y$"))) {
-            throw new IllegalStateException(
-                    "[Admin] ADMIN_PASSWORD_BCRYPT가 유효한 BCrypt 해시가 아닙니다.");
+        validateBcryptHash(adminPasswordBcrypt, "ADMIN_PASSWORD_BCRYPT");
+        List<AdminAccount> additional = parseAdditionalAccounts();
+        for (AdminAccount account : additional) {
+            validateBcryptHash(account.bcrypt(), "ADMIN_ADDITIONAL_ACCOUNTS(" + account.username() + ")");
         }
-        if (KNOWN_TEST_HASHES.contains(adminPasswordBcrypt)) {
-            throw new IllegalStateException(
-                    "[Admin] ADMIN_PASSWORD_BCRYPT가 공개된 테스트 해시입니다. 운영 환경에서 사용할 수 없습니다.");
+        log.info("[Admin] admin 계정 설정이 유효합니다: email={}, 추가 계정={}",
+                adminEmail, additional.stream().map(AdminAccount::username).toList());
+    }
+
+    /** GLOBAL-PIT-006: 접두만 보지 않고 placeholder 포함·60자 미만·공개 테스트 해시를 모두 거부한다. */
+    private static void validateBcryptHash(String hash, String label) {
+        if (hash == null
+                || hash.contains("placeholder")
+                || hash.length() < 60
+                || (!hash.startsWith("$2a$")
+                    && !hash.startsWith("$2b$")
+                    && !hash.startsWith("$2y$"))) {
+            throw new IllegalStateException("[Admin] " + label + "가 유효한 BCrypt 해시가 아닙니다.");
         }
-        log.info("[Admin] admin 계정 설정이 유효합니다: email={}", adminEmail);
+        if (KNOWN_TEST_HASHES.contains(hash)) {
+            throw new IllegalStateException(
+                    "[Admin] " + label + "가 공개된 테스트 해시입니다. 운영 환경에서 사용할 수 없습니다.");
+        }
+    }
+
+    /** 추가 admin 계정 한 건 — 아이디와 BCrypt 해시. */
+    record AdminAccount(String username, String bcrypt) {}
+
+    /**
+     * {@code ADMIN_ADDITIONAL_ACCOUNTS} 를 파싱한다. 형식이 깨지면 기동을 막는다(fail-fast) —
+     * 조용히 건너뛰면 "계정을 넣었는데 로그인이 안 된다"가 배포 뒤에야 드러난다.
+     * 아이디는 기본 admin·다른 추가 계정과 대소문자 무시로 겹칠 수 없다
+     * (InMemoryUserDetailsManager 가 소문자 키로 저장하므로 뒤의 것이 앞의 것을 덮는다).
+     */
+    List<AdminAccount> parseAdditionalAccounts() {
+        if (adminAdditionalAccounts == null || adminAdditionalAccounts.isBlank()) {
+            return List.of();
+        }
+        java.util.Set<String> seen = new java.util.HashSet<>();
+        if (adminEmail != null) {
+            seen.add(adminEmail.trim().toLowerCase(java.util.Locale.ROOT));
+        }
+        java.util.List<AdminAccount> accounts = new java.util.ArrayList<>();
+        for (String raw : adminAdditionalAccounts.split(",")) {
+            String entry = raw.trim();
+            if (entry.isEmpty()) {
+                continue;
+            }
+            int sep = entry.indexOf(':');
+            if (sep <= 0 || sep == entry.length() - 1) {
+                throw new IllegalStateException(
+                        "[Admin] ADMIN_ADDITIONAL_ACCOUNTS 형식이 잘못되었습니다. '아이디:BCrypt,아이디:BCrypt' 로 적으세요.");
+            }
+            String username = entry.substring(0, sep).trim();
+            String bcrypt = entry.substring(sep + 1).trim();
+            if (username.isEmpty() || username.chars().anyMatch(Character::isWhitespace)) {
+                throw new IllegalStateException(
+                        "[Admin] ADMIN_ADDITIONAL_ACCOUNTS 의 아이디가 비어 있거나 공백을 포함합니다.");
+            }
+            if (!seen.add(username.toLowerCase(java.util.Locale.ROOT))) {
+                throw new IllegalStateException(
+                        "[Admin] ADMIN_ADDITIONAL_ACCOUNTS 의 아이디가 중복됩니다: " + username);
+            }
+            accounts.add(new AdminAccount(username, bcrypt));
+        }
+        return List.copyOf(accounts);
     }
 
     private boolean isProd() {
@@ -126,12 +186,21 @@ public class SecurityConfig {
 
     @Bean
     public UserDetailsService adminUserDetailsService() {
-        var admin = User.builder()
+        java.util.List<org.springframework.security.core.userdetails.UserDetails> users =
+                new java.util.ArrayList<>();
+        users.add(User.builder()
                 .username(adminEmail)
                 .password(adminPasswordBcrypt)
                 .authorities("ADMIN")
-                .build();
-        return new InMemoryUserDetailsManager(admin);
+                .build());
+        for (AdminAccount account : parseAdditionalAccounts()) {
+            users.add(User.builder()
+                    .username(account.username())
+                    .password(account.bcrypt())
+                    .authorities("ADMIN")
+                    .build());
+        }
+        return new InMemoryUserDetailsManager(users);
     }
 
     @Bean

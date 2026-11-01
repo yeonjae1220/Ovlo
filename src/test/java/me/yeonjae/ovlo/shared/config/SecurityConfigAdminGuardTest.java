@@ -3,6 +3,10 @@ package me.yeonjae.ovlo.shared.config;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.core.env.Environment;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -39,6 +43,14 @@ class SecurityConfigAdminGuardTest {
             "$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2uheWG/igi.";
 
     private void validate(String activeProfile, String email, String bcrypt) {
+        validate(activeProfile, email, bcrypt, null);
+    }
+
+    private void validate(String activeProfile, String email, String bcrypt, String additional) {
+        configWith(activeProfile, email, bcrypt, additional).validateAdminCredentials();
+    }
+
+    private SecurityConfig configWith(String activeProfile, String email, String bcrypt, String additional) {
         SecurityConfig config =
                 mock(SecurityConfig.class, withSettings().defaultAnswer(CALLS_REAL_METHODS));
         Environment environment = mock(Environment.class);
@@ -47,8 +59,8 @@ class SecurityConfigAdminGuardTest {
         ReflectionTestUtils.setField(config, "environment", environment);
         ReflectionTestUtils.setField(config, "adminEmail", email);
         ReflectionTestUtils.setField(config, "adminPasswordBcrypt", bcrypt);
-
-        config.validateAdminCredentials();
+        ReflectionTestUtils.setField(config, "adminAdditionalAccounts", additional);
+        return config;
     }
 
     @Test
@@ -148,5 +160,77 @@ class SecurityConfigAdminGuardTest {
         assertThatThrownBy(() -> validate("prod", VALID_EMAIL, KNOWN_TEST_HASH))
                 .isInstanceOf(IllegalStateException.class)
                 .hasMessageContaining("공개된 테스트 해시입니다");
+    }
+
+    // ── 추가 admin 계정(ADMIN_ADDITIONAL_ACCOUNTS) ──────────────────────────────
+
+    @Test
+    @DisplayName("추가 계정이 비어 있거나 null 이면 기본 admin 하나만 등록된다")
+    void emptyAdditionalAccountsKeepsOnlyPrimaryAdmin() {
+        for (String additional : new String[]{null, "", "  "}) {
+            SecurityConfig config = configWith("prod", VALID_EMAIL, VALID_HASH, additional);
+            assertThatCode(config::validateAdminCredentials).doesNotThrowAnyException();
+            assertThat(config.parseAdditionalAccounts()).isEmpty();
+            UserDetailsService service = config.adminUserDetailsService();
+            assertThat(service.loadUserByUsername(VALID_EMAIL).getPassword()).isEqualTo(VALID_HASH);
+            assertThatThrownBy(() -> service.loadUserByUsername("admin0807"))
+                    .isInstanceOf(UsernameNotFoundException.class);
+        }
+    }
+
+    @Test
+    @DisplayName("'아이디:BCrypt,아이디:BCrypt' 를 파싱해 기본 admin 과 함께 ADMIN 권한으로 등록한다")
+    void registersAdditionalAccountsAlongsidePrimaryAdmin() {
+        String second = "$2b$10$" + "y".repeat(53);
+        String third = "$2y$10$" + "z".repeat(53);
+        SecurityConfig config = configWith("prod", VALID_EMAIL, VALID_HASH,
+                " admin0807:" + second + " , ops:" + third + ",");
+
+        assertThatCode(config::validateAdminCredentials).doesNotThrowAnyException();
+        assertThat(config.parseAdditionalAccounts())
+                .extracting(SecurityConfig.AdminAccount::username)
+                .containsExactly("admin0807", "ops");
+
+        UserDetailsService service = config.adminUserDetailsService();
+        assertThat(service.loadUserByUsername(VALID_EMAIL).getPassword()).isEqualTo(VALID_HASH);
+        UserDetails sibling = service.loadUserByUsername("admin0807");
+        assertThat(sibling.getPassword()).isEqualTo(second);
+        assertThat(sibling.getAuthorities()).extracting(GrantedAuthority::getAuthority).containsExactly("ADMIN");
+        assertThat(service.loadUserByUsername("ops").getPassword()).isEqualTo(third);
+    }
+
+    @Test
+    @DisplayName("추가 계정의 해시도 같은 가드를 탄다 — placeholder·짧은 해시·공개 테스트 해시 모두 막힌다")
+    void additionalAccountHashesGoThroughSameGuard() {
+        assertThatThrownBy(() -> validate("prod", VALID_EMAIL, VALID_HASH, "admin0807:plain-password"))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessageContaining("ADMIN_ADDITIONAL_ACCOUNTS(admin0807)")
+                .hasMessageContaining("유효한 BCrypt 해시가 아닙니다");
+        assertThatThrownBy(() -> validate("prod", VALID_EMAIL, VALID_HASH, "admin0807:" + KNOWN_TEST_HASH))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessageContaining("공개된 테스트 해시입니다");
+    }
+
+    @Test
+    @DisplayName("구분자가 없거나 아이디·해시가 비면 기동을 막는다 — 조용히 건너뛰지 않는다")
+    void rejectsMalformedAdditionalAccountEntries() {
+        for (String broken : new String[]{"admin0807", ":" + VALID_HASH, "admin0807:", "ad min:" + VALID_HASH}) {
+            assertThatThrownBy(() -> validate("prod", VALID_EMAIL, VALID_HASH, broken))
+                    .as("entry=%s", broken)
+                    .isInstanceOf(IllegalStateException.class)
+                    .hasMessageContaining("ADMIN_ADDITIONAL_ACCOUNTS");
+        }
+    }
+
+    @Test
+    @DisplayName("기본 admin 이나 다른 추가 계정과 아이디가(대소문자 무시) 겹치면 막는다 — 뒤의 것이 앞을 덮지 않게")
+    void rejectsDuplicateUsernames() {
+        assertThatThrownBy(() -> validate("prod", VALID_EMAIL, VALID_HASH, "Admin@MUNGJI.com:" + VALID_HASH))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessageContaining("중복");
+        assertThatThrownBy(() -> validate("prod", VALID_EMAIL, VALID_HASH,
+                "admin0807:" + VALID_HASH + ",ADMIN0807:" + VALID_HASH))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessageContaining("중복");
     }
 }

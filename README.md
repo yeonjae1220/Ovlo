@@ -93,6 +93,8 @@ export JAVA_HOME=/Library/Java/JavaVirtualMachines/jdk-21.jdk/Contents/Home   # 
 export JWT_SECRET=$(openssl rand -base64 32)
 export ADMIN_EMAIL=admin@dev.test                     # .local·.example.com 도메인은 거부됨
 export ADMIN_PASSWORD_BCRYPT=$(htpasswd -bnBC 10 "" '<로컬 admin 비밀번호>' | tr -d ':\n')
+# (선택) 추가 admin 계정 — "아이디:BCrypt,아이디:BCrypt". 운영은 GitHub Secret ADMIN_ADDITIONAL_ACCOUNTS 로 주입
+# export ADMIN_ADDITIONAL_ACCOUNTS="admin2:$(htpasswd -bnBC 10 "" '<비밀번호>' | tr -d ':\n')"
 docker run -d --rm --name ovlo-redis -p 127.0.0.1:6379:6379 redis:7-alpine   # 이미 있으면 생략
 ```
 
