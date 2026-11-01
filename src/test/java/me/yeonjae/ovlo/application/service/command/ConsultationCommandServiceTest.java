@@ -166,6 +166,39 @@ class ConsultationCommandServiceTest {
     }
 
     @Test
+    @DisplayName("전달한 학생이 그 국제처 담당자이기도 하면 채팅방 참여자에 한 번만 넣고 본인에게는 알리지 않는다 (2026-11-02 운영 409)")
+    void openWhenStudentIsAlsoStaff() {
+        given(accessPolicy.assertMember(STAFF_A, OFFICE)).willReturn(office);
+        Inquiry inquiry = Inquiry.noGrounds(OFFICE, STAFF_A, NoticeLang.KO, "학식 메뉴?", List.of(), NOW, 1, "m");
+        inquiry.assignId(901L);
+        given(loadInquiryPort.findById(901L)).willReturn(Optional.of(inquiry));
+
+        ConsultationResult r = sut.open(new OpenConsultationCommand(OFFICE, STAFF_A, 901L, "v1", null));
+
+        assertThat(r.status()).isEqualTo(ConsultationStatus.OPEN);
+        ArgumentCaptor<ChatRoom> room = ArgumentCaptor.forClass(ChatRoom.class);
+        verify(saveChatPort).save(room.capture());
+        assertThat(room.getValue().getParticipants()).containsExactly(new MemberId(STAFF_A), new MemberId(STAFF_B));
+        verify(loadMemberPort).findAllByIds(List.of(new MemberId(STAFF_B)));
+    }
+
+    @Test
+    @DisplayName("묻는 사람 말고 활동 담당자가 없으면(혼자 담당하는 국제처) 방을 만들지 않고 BAD_REQUEST")
+    void openWhenAskerIsTheOnlyStaff() {
+        Office solo = Office.create(268L, "1인 국제처", NOW);
+        solo.assignId(new OfficeId(7L));
+        solo.invite(STAFF_A, OfficeRole.OFFICE_ADMIN, "admin", NOW);
+        solo.accept(STAFF_A, NOW);
+        given(accessPolicy.assertMember(STAFF_A, 7L)).willReturn(solo);
+
+        assertThatThrownBy(() -> sut.open(new OpenConsultationCommand(7L, STAFF_A, null, "v1", "도와주세요")))
+                .isInstanceOf(ConsultationException.class)
+                .extracting(e -> ((ConsultationException) e).getErrorType())
+                .isEqualTo(ConsultationException.ErrorType.BAD_REQUEST);
+        verify(saveChatPort, never()).save(any(ChatRoom.class));
+    }
+
+    @Test
     @DisplayName("동의 버전이 없으면 CONSENT_REQUIRED 이고 아무것도 만들지 않는다; 활동 담당자가 없으면 BAD_REQUEST")
     void consentAndStaffRequired() {
         assertThatThrownBy(() -> sut.open(new OpenConsultationCommand(OFFICE, STUDENT, null, "", "도와주세요")))
