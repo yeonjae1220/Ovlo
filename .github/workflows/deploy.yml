@@ -244,6 +244,8 @@ jobs:
             OVLO_SEARCH_PROVIDER=postgres \
             OVLO_LLM_MODEL=claude-opus-5-5 \
             OVLO_LLM_EFFORT=medium \
+            OVLO_LLM_BASE_URL=https://api.bizrouter.ai \
+            OVLO_LLM_SERVER_SIDE_FALLBACK=false \
             OVLO_INQUIRY_OFFICE_DAILY_LIMIT=500 \
             OVLO_OFFICE_ALLOW_DEGRADED="${OVLO_OFFICE_ALLOW_DEGRADED:-false}"
           if [ "${HAS_ANTHROPIC_KEY}" = "true" ]; then
