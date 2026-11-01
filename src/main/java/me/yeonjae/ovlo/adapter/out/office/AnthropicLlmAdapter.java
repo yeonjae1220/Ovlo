@@ -48,6 +48,9 @@ public class AnthropicLlmAdapter implements AnswerGenerationPort, TranslationPor
                individual decision, say that the international office must decide and suggest contacting them.
             6. Do not include URLs or contact details that are not in the notices.
             7. If the notices do not contain the information needed, reply with exactly: NO_GROUNDS
+            8. Write plain text only, because the answer is shown as-is without markdown rendering. Do not use markdown
+               emphasis (** or __ or *), headings (#), tables, links or code formatting. A simple list with lines that
+               start with "- " is fine.
             """;
 
     private static final String TRANSLATE_SYSTEM = """
