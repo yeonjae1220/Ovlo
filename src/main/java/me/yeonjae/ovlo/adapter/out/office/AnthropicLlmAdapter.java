@@ -70,6 +70,7 @@ public class AnthropicLlmAdapter implements AnswerGenerationPort, TranslationPor
 
     public AnthropicLlmAdapter(me.yeonjae.ovlo.shared.metrics.OfficeMetrics metrics,
                                @Value("${ovlo.llm.anthropic.api-key:}") String apiKey,
+                               @Value("${ovlo.llm.anthropic.base-url:}") String baseUrl,
                                @Value("${ovlo.llm.anthropic.model:claude-opus-5-5}") String model,
                                @Value("${ovlo.llm.anthropic.effort:medium}") String effort,
                                @Value("${ovlo.llm.anthropic.max-tokens:2048}") long maxTokens,
@@ -78,16 +79,21 @@ public class AnthropicLlmAdapter implements AnswerGenerationPort, TranslationPor
         if (apiKey == null || apiKey.isBlank()) {
             throw new IllegalStateException("ovlo.llm.provider=anthropic 이면 ANTHROPIC_API_KEY 가 필요합니다");
         }
-        this.client = AnthropicOkHttpClient.builder()
+        AnthropicOkHttpClient.Builder clientBuilder = AnthropicOkHttpClient.builder()
                 .apiKey(apiKey)
-                .timeout(Duration.ofSeconds(timeoutSeconds))
-                .build();
+                .timeout(Duration.ofSeconds(timeoutSeconds));
+        // 비우면 SDK 기본(api.anthropic.com). Messages 호환 게이트웨이를 쓸 때만 그 주소를 넣는다
+        if (baseUrl != null && !baseUrl.isBlank()) {
+            clientBuilder.baseUrl(baseUrl);
+        }
+        this.client = clientBuilder.build();
         this.metrics = metrics;
         this.model = model;
         this.effort = effort;
         this.maxTokens = maxTokens;
         this.serverSideFallback = serverSideFallback;
-        log.info("[LLM] Anthropic adapter model={} effort={} maxTokens={} fallback={}", model, effort, maxTokens, serverSideFallback);
+        log.info("[LLM] Anthropic adapter model={} effort={} maxTokens={} fallback={} baseUrl={}", model, effort, maxTokens,
+                serverSideFallback, baseUrl == null || baseUrl.isBlank() ? "default" : baseUrl);
     }
 
     // ── AnswerGenerationPort ─────────────────────────────────────────────────

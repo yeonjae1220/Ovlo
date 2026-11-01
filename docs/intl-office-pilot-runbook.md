@@ -15,6 +15,8 @@
 | `ANTHROPIC_API_KEY` | 시크릿 `ovlo-secret/ANTHROPIC_API_KEY` | 비어 있으면 기동 실패 |
 | `OVLO_LLM_MODEL` | `claude-opus-5-5` | 답변·번역 모두 같은 모델 |
 | `OVLO_LLM_EFFORT` | `medium` | thinking 은 항상 켜져 있고 effort 로만 조절 |
+| `OVLO_LLM_BASE_URL` | `https://api.bizrouter.ai` | 키가 BizRouter 발급이라 그 게이트웨이로 보낸다. 비우면 `api.anthropic.com`. 이 키를 공식 주소로 보내면 401. BizRouter 콘솔의 키 허용 IP 에 lenovo 공인 IP(`/32`)가 있어야 한다 — 집 IP 가 바뀌면 그 칸도 고친다 |
+| `OVLO_LLM_SERVER_SIDE_FALLBACK` | `false` | BizRouter 는 `fallbacks` 를 400 으로 거절한다. Anthropic 직결로 돌아가면 `true` |
 | `OVLO_LLM_MAX_TOKENS` | `2048` | |
 | `OVLO_LLM_TIMEOUT_SECONDS` | `90` | |
 | `OVLO_SEARCH_PROVIDER` | `postgres` | `keyword` 면 prod 기동이 막힌다 |

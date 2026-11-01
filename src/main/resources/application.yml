@@ -102,12 +102,14 @@ ovlo:
     provider: ${OVLO_LLM_PROVIDER:fake}
     anthropic:
       api-key: ${ANTHROPIC_API_KEY:}
+      # 비우면 api.anthropic.com. Messages 호환 게이트웨이(예: https://api.bizrouter.ai)를 쓸 때만 넣는다
+      base-url: ${OVLO_LLM_BASE_URL:}
       model: ${OVLO_LLM_MODEL:claude-opus-5-5}
       # thinking 은 항상 켜져 있고 effort 로만 조절한다 (low|medium|high|xhigh|max)
       effort: ${OVLO_LLM_EFFORT:medium}
       max-tokens: ${OVLO_LLM_MAX_TOKENS:2048}
       timeout-seconds: ${OVLO_LLM_TIMEOUT_SECONDS:90}
-      # 안전 분류기 거부 시 서버측 폴백(fallbacks: "default")
+      # 안전 분류기 거부 시 서버측 폴백(fallbacks: "default"). Anthropic 직결 전용 — 게이트웨이는 400 으로 거절할 수 있다
       server-side-fallback: ${OVLO_LLM_SERVER_SIDE_FALLBACK:true}
   search:
     # keyword: DB 무관 토큰 겹침(기본) · postgres: PostgreSQL 전문 검색(ADR-0006). 운영은 postgres

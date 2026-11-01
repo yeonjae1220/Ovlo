@@ -156,6 +156,11 @@ spec:
               value: "claude-opus-5-5"
             - name: OVLO_LLM_EFFORT
               value: "medium"
+            # 키는 BizRouter(Messages 호환 게이트웨이) 발급이다. 게이트웨이는 fallbacks 파라미터를 400 으로 거절한다
+            - name: OVLO_LLM_BASE_URL
+              value: "https://api.bizrouter.ai"
+            - name: OVLO_LLM_SERVER_SIDE_FALLBACK
+              value: "false"
             - name: OVLO_INQUIRY_OFFICE_DAILY_LIMIT
               value: "500"
             - name: TRUSTED_PROXY_IPS
