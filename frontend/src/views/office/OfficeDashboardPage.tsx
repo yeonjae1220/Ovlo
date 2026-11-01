@@ -10,10 +10,13 @@ import { formatDate } from './noticeUi'
 
 const EXPORT_KINDS: ExportKind[] = ['inquiries', 'consultations', 'notices']
 
+// 서버가 기간을 국제처 시간대(Asia/Seoul)로 자른다. toISOString 은 UTC 날짜라 한국 00~09시에는
+// '오늘'이 어제로 잡혀 오늘 들어온 질문이 빠졌다(2026-11-02 운영 스모크)
+const OFFICE_TIME_ZONE = 'Asia/Seoul'
+
 function isoDaysAgo(days: number): string {
-  const d = new Date()
-  d.setDate(d.getDate() - days)
-  return d.toISOString().slice(0, 10)
+  const d = new Date(Date.now() - days * 24 * 60 * 60 * 1000)
+  return new Intl.DateTimeFormat('en-CA', { timeZone: OFFICE_TIME_ZONE }).format(d)
 }
 
 function percent(rate: number | null, na: string): string {
