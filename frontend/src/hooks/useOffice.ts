@@ -242,11 +242,16 @@ export function useStudentPartners(officeId: number | undefined) {
   })
 }
 
-/** 클릭을 집계한 뒤 새 탭으로 연다. 팝업 차단을 피하려고 탭을 먼저 열고 URL 을 채운다. */
+/**
+ * 클릭을 집계한 뒤 새 탭으로 연다. 팝업 차단을 피하려고 탭을 먼저 열고 URL 을 채운다.
+ * features 에 noopener 를 넣으면 window.open 이 항상 null 을 돌려줘(명세) 빈 탭이 남고 원래 화면이
+ * 제휴 사이트로 넘어갔다(2026-11-02 운영 스모크) — 탭을 받은 뒤 opener 를 직접 끊는다.
+ */
 export function useClickPartner(officeId: number | undefined) {
   return useMutation({
     mutationFn: async (partnerId: number) => {
-      const tab = window.open('', '_blank', 'noopener,noreferrer')
+      const tab = window.open('', '_blank')
+      if (tab) tab.opener = null
       try {
         const url = await officeApi.clickPartner(officeId as number, partnerId)
         if (tab) tab.location.href = url
