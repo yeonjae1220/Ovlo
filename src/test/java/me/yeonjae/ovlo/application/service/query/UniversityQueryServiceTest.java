@@ -1,6 +1,8 @@
 package me.yeonjae.ovlo.application.service.query;
 
+import me.yeonjae.ovlo.application.dto.command.SearchGlobalUniversityCommand;
 import me.yeonjae.ovlo.application.dto.command.SearchUniversityCommand;
+import me.yeonjae.ovlo.application.dto.result.GlobalUniversityResult;
 import me.yeonjae.ovlo.application.dto.result.PageResult;
 import me.yeonjae.ovlo.application.dto.result.UniversityResult;
 import me.yeonjae.ovlo.application.port.out.university.LoadUniversityPort;
@@ -20,6 +22,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -27,6 +30,8 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.eq;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
 
 @ExtendWith(MockitoExtension.class)
 class UniversityQueryServiceTest {
@@ -68,6 +73,41 @@ class UniversityQueryServiceTest {
                 new GeoLocation(37.5665, 126.9390),
                 "https://www.yonsei.ac.kr",
                 "yonsei.ac.kr");
+    }
+
+    @Nested
+    @DisplayName("본교 선택 검색(/global-universities)")
+    class GlobalSearch {
+
+        @Test
+        @DisplayName("표시 언어를 주면 그 언어 이름을 localName 에 싣고, 없는 대학은 null 로 둔다")
+        void shouldFillLocalNameForLang() {
+            given(searchUniversityPort.search("대", null, 0, 20)).willReturn(List.of(snu, yonsei));
+            given(searchUniversityPort.count("대", null)).willReturn(2L);
+            given(searchUniversityPort.findLocalizedNames(List.of(1L, 2L), "ja"))
+                    .willReturn(Map.of(1L, "ソウル大学校"));
+
+            PageResult<GlobalUniversityResult> result = universityQueryService.search(
+                    new SearchGlobalUniversityCommand("대", null, "ja", 0, 20));
+
+            assertThat(result.content()).extracting(GlobalUniversityResult::localName)
+                    .containsExactly("ソウル大学校", null);
+            assertThat(result.content().get(0).nameEn()).isEqualTo("Seoul National University");
+        }
+
+        @Test
+        @DisplayName("영문 UI 나 언어 미지정이면 이름 조회를 하지 않고 localName 을 비운다")
+        void shouldSkipLookupForEnglish() {
+            given(searchUniversityPort.search("Seoul", null, 0, 20)).willReturn(List.of(snu));
+            given(searchUniversityPort.count("Seoul", null)).willReturn(1L);
+
+            for (String lang : new String[] {"en", "EN", null, " "}) {
+                PageResult<GlobalUniversityResult> result = universityQueryService.search(
+                        new SearchGlobalUniversityCommand("Seoul", null, lang, 0, 20));
+                assertThat(result.content().get(0).localName()).as(String.valueOf(lang)).isNull();
+            }
+            verify(searchUniversityPort, never()).findLocalizedNames(anyCollection(), anyString());
+        }
     }
 
     @Nested

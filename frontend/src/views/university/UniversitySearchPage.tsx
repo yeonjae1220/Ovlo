@@ -13,10 +13,10 @@ const C = {
 }
 
 export default function UniversitySearchPage() {
-  const { t } = useI18n()
+  const { t, language } = useI18n()
   const [keyword, setKeyword] = useState('')
   const [countryCode, setCountryCode] = useState('')
-  const { data: universities, isLoading, isError, refetch } = useUniversitySearch(keyword, countryCode || undefined)
+  const { data: universities, isLoading, isError, refetch } = useUniversitySearch(keyword, countryCode || undefined, language)
 
   return (
     <div>
@@ -50,6 +50,9 @@ export default function UniversitySearchPage() {
         {universities?.map((u) => (
           <li key={u.id} style={{ padding: 12, borderBottom: `1px solid ${C.border}` }}>
             <strong>{u.name}</strong>
+            {u.localName && u.localName !== u.name && (
+              <span style={{ marginLeft: 8, color: C.muted }}>{u.localName}</span>
+            )}
             <span style={{ marginLeft: 8, color: C.muted }}>{u.countryCode} · {u.city}</span>
           </li>
         ))}

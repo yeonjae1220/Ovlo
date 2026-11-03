@@ -9,6 +9,7 @@ import { useRegister } from '../../hooks/useAuth'
 import { useUniversitySearch } from '../../hooks/useUniversity'
 import { useNicknameAvailability } from '../../hooks/useMember'
 import { useI18n } from '../../i18n/I18nProvider'
+import { useDebounce } from '../../hooks/useDebounce'
 import { SUPPORTED_UI_LANGUAGES, LANGUAGE_LABELS } from '../../i18n/messages'
 import type { MessageKey } from '../../i18n/messages'
 import { Brand } from '../../components/ui/Brand'
@@ -196,7 +197,8 @@ export default function RegisterPage() {
   const [passwordFocused, setPasswordFocused] = useState(false)
 
   const register = useRegister()
-  const { data: universities } = useUniversitySearch(uniQuery)
+  const debouncedUniQuery = useDebounce(uniQuery.trim(), 300)
+  const { data: universities } = useUniversitySearch(debouncedUniQuery, undefined, language)
   const { data: nicknameCheck } = useNicknameAvailability(step === 1 ? form.nickname : '')
   const nicknameAvailable = form.nickname.length >= 2 && nicknameCheck?.available === true
   const nicknameTaken = form.nickname.length >= 2 && nicknameCheck?.available === false

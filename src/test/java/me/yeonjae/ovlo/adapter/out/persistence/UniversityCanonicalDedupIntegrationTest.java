@@ -89,6 +89,7 @@ class UniversityCanonicalDedupIntegrationTest {
         jdbc.update("DELETE FROM university_report");
         jdbc.update("DELETE FROM exchange_universities");
         jdbc.update("DELETE FROM global_university_names");
+        jdbc.update("DELETE FROM global_university_aliases");
         jdbc.update("UPDATE global_universities SET canonical_id = NULL");
         jdbc.update("DELETE FROM global_universities");
 
@@ -188,8 +189,10 @@ class UniversityCanonicalDedupIntegrationTest {
     void catalogSearchByHiddenNameFindsCanonical() {
         jdbc.update("INSERT INTO global_university_names (global_univ_id, lang, name) VALUES (?, 'nl', ?)",
                 hiddenId, "Katholieke Hogeschool Leuven-oud");
+        jdbc.update("INSERT INTO global_university_aliases (global_univ_id, alias) VALUES (?, ?)",
+                hiddenId, "루벤가톨릭대");
 
-        for (String keyword : new String[] {"Katholieke", "Hogeschool Leuven-oud"}) {
+        for (String keyword : new String[] {"Katholieke", "Hogeschool Leuven-oud", "루벤가톨릭대"}) {
             var page = catalogQuery.search(new SearchUniversityCatalogCommand(keyword, null, null, 0, 20));
             assertThat(page.content())
                     .as(keyword)

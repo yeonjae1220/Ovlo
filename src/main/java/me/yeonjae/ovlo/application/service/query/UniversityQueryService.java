@@ -17,6 +17,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * 단일 대학 카탈로그 조회/검색 서비스 (global_universities 백킹).
@@ -53,9 +54,20 @@ public class UniversityQueryService
                 command.keyword(), command.countryCode(), offset, command.size());
         long total = searchUniversityPort.count(command.keyword(), command.countryCode());
 
-        List<GlobalUniversityResult> content =
-                universities.stream().map(GlobalUniversityResult::from).toList();
+        Map<Long, String> localNames = localizedNames(universities, command.lang());
+        List<GlobalUniversityResult> content = universities.stream()
+                .map(u -> GlobalUniversityResult.from(u, localNames.get(u.getId().value())))
+                .toList();
         return PageResult.of(content, total, command.page(), command.size());
+    }
+
+    /** 영문 UI 는 name_en 이 곧 표시명이라 조회를 건너뛴다. */
+    private Map<Long, String> localizedNames(List<University> universities, String lang) {
+        if (universities.isEmpty() || lang == null || lang.isBlank() || "en".equalsIgnoreCase(lang.trim())) {
+            return Map.of();
+        }
+        List<Long> ids = universities.stream().map(u -> u.getId().value()).toList();
+        return searchUniversityPort.findLocalizedNames(ids, lang);
     }
 
     @Override
