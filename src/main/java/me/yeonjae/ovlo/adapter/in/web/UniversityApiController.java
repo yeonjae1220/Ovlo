@@ -57,19 +57,21 @@ public class UniversityApiController {
     @Operation(
             summary = "통합 대학 카탈로그 검색",
             description = "콘텐츠(리포트/후기)를 보유한 대학을 이름(한/영/현지어)·국가코드로 검색. "
-                    + "결과의 hasReport/hasReviews 플래그로 상세 라우팅을 결정한다."
+                    + "결과의 hasReport/hasReviews 플래그로 상세 라우팅을 결정한다. "
+                    + "lang(UI 언어 코드)을 주면 nameLocal 에 그 언어의 대학명을 채운다(없으면 null)."
     )
     @GetMapping("/catalog")
     public ResponseEntity<PageResult<UniversityCatalogResult>> searchCatalog(
             @RequestParam(required = false) @Size(max = 100) String keyword,
             @RequestParam(required = false) @Size(max = 2) String countryCode,
+            @RequestParam(required = false) @Size(max = 5) String lang,
             @RequestParam(defaultValue = "0") @Min(0) int page,
             @RequestParam(defaultValue = "20") @Min(1) @Max(100) int size,
             HttpServletRequest httpRequest
     ) {
         rateLimiterService.checkSearchRate(clientIpResolver.resolve(httpRequest));
         return ResponseEntity.ok(searchCatalogQuery.search(
-                new SearchUniversityCatalogCommand(keyword, countryCode, page, size)));
+                new SearchUniversityCatalogCommand(keyword, countryCode, lang, page, size)));
     }
 
     @Operation(

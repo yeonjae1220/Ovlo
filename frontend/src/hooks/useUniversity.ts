@@ -27,10 +27,10 @@ export function useGlobalUniversitySearch(keyword: string, countryCode?: string)
   })
 }
 
-export function useUniversityCatalogSearch(keyword: string, countryCode?: string, page = 0, size = 20) {
+export function useUniversityCatalogSearch(keyword: string, countryCode?: string, page = 0, size = 20, lang?: string) {
   return useQuery({
-    queryKey: ['university-catalog', 'search', keyword, countryCode, page, size],
-    queryFn: () => universityCatalogApi.search(keyword || undefined, countryCode || undefined, page, size),
+    queryKey: ['university-catalog', 'search', keyword, countryCode, page, size, lang],
+    queryFn: () => universityCatalogApi.search(keyword || undefined, countryCode || undefined, page, size, lang),
     enabled: keyword.trim().length >= 1 || (!!countryCode && countryCode.length >= 1),
   })
 }

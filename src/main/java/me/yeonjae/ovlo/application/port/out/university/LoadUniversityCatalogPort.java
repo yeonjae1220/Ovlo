@@ -13,7 +13,11 @@ import java.util.List;
  */
 public interface LoadUniversityCatalogPort {
 
-    List<CatalogRow> search(String keyword, String countryCode, int offset, int limit);
+    /**
+     * @param lang 표시 언어 코드(ko/en/ja/…). 행의 {@code nameLocal} 을 이 언어의 이름으로 채운다.
+     *             없는 언어면 null 로 둔다(호출자가 영문으로 폴백).
+     */
+    List<CatalogRow> search(String keyword, String countryCode, String lang, int offset, int limit);
 
     long count(String keyword, String countryCode);
 
@@ -21,6 +25,7 @@ public interface LoadUniversityCatalogPort {
 
     /**
      * 카탈로그 한 행. 리뷰 집계 전 상태(globalUnivId/exchangeUnivId/reportId + 표시 정보).
+     * {@code nameLocal} 은 요청한 표시 언어의 이름(없으면 null).
      */
     record CatalogRow(
             Long globalUnivId,
@@ -28,6 +33,7 @@ public interface LoadUniversityCatalogPort {
             Long reportId,
             String nameEn,
             String nameKo,
+            String nameLocal,
             String country,
             String countryCode,
             String city

@@ -9,6 +9,7 @@ import me.yeonjae.ovlo.domain.university.model.University;
 public record GlobalUniversityResult(
         Long id,
         String nameEn,
+        String localName,
         String country,
         String countryEn,
         String countryCode,
@@ -21,6 +22,7 @@ public record GlobalUniversityResult(
         return new GlobalUniversityResult(
                 u.getId().value(),
                 u.getName(),
+                u.getLocalName(),
                 u.getCountry(),
                 u.getCountryEn(),
                 u.getCountryCode() != null ? u.getCountryCode().value() : null,

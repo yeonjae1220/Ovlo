@@ -259,6 +259,8 @@ export interface UniversityCatalogItem {
   reportId?: number | null
   nameEn: string
   nameKo?: string | null
+  /** 요청한 표시 언어(lang)의 대학명. 그 언어 이름이 없으면 null → nameEn 으로 폴백 */
+  nameLocal?: string | null
   country?: string | null
   countryCode?: string | null
   city?: string | null

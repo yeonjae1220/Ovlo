@@ -34,14 +34,14 @@ class UniversityCatalogQueryServiceTest {
     @DisplayName("리포트만 보유한 대학은 hasReport=true, hasReviews=false 로 매핑된다")
     void shouldMap_reportOnly() {
         CatalogRow row = new CatalogRow(10L, null, 100L,
-                "Seoul National University", "서울대학교", "대한민국", "KR", "Seoul");
-        given(loadCatalogPort.search(eq("서울"), isNull(), eq(0), eq(20))).willReturn(List.of(row));
+                "Seoul National University", "서울대학교", null, "대한민국", "KR", "Seoul");
+        given(loadCatalogPort.search(eq("서울"), isNull(), isNull(), eq(0), eq(20))).willReturn(List.of(row));
         given(loadCatalogPort.count(eq("서울"), isNull())).willReturn(1L);
         // exchangeUnivId 가 없으므로 빈 리스트로 집계 조회
         given(loadExchangePort.countReviewsByUniversityIds(eq(List.of()))).willReturn(Map.of());
 
         PageResult<UniversityCatalogResult> page =
-                service.search(new SearchUniversityCatalogCommand("서울", null, 0, 20));
+                service.search(new SearchUniversityCatalogCommand("서울", null, null, 0, 20));
 
         assertThat(page.content()).hasSize(1);
         UniversityCatalogResult r = page.content().get(0);
@@ -57,13 +57,13 @@ class UniversityCatalogQueryServiceTest {
     @DisplayName("후기만 보유한 대학은 hasReviews=true 이고 리뷰 집계가 채워진다")
     void shouldMap_reviewsOnly() {
         CatalogRow row = new CatalogRow(20L, 200L, null,
-                "Tokyo University", "도쿄대학교", "일본", "JP", "Tokyo");
-        given(loadCatalogPort.search(isNull(), eq("JP"), eq(0), eq(20))).willReturn(List.of(row));
+                "Tokyo University", "도쿄대학교", null, "일본", "JP", "Tokyo");
+        given(loadCatalogPort.search(isNull(), eq("JP"), isNull(), eq(0), eq(20))).willReturn(List.of(row));
         given(loadCatalogPort.count(isNull(), eq("JP"))).willReturn(1L);
         given(loadExchangePort.countReviewsByUniversityIds(eq(List.of(200L)))).willReturn(Map.of(200L, 7L));
 
         PageResult<UniversityCatalogResult> page =
-                service.search(new SearchUniversityCatalogCommand(null, "JP", 0, 20));
+                service.search(new SearchUniversityCatalogCommand(null, "JP", null, 0, 20));
 
         UniversityCatalogResult r = page.content().get(0);
         assertThat(r.exchangeUnivId()).isEqualTo(200L);
@@ -76,19 +76,37 @@ class UniversityCatalogQueryServiceTest {
     @DisplayName("리포트와 후기를 모두 보유하면 두 플래그가 모두 true 다")
     void shouldMap_both() {
         CatalogRow row = new CatalogRow(30L, 300L, 301L,
-                "ETH Zurich", "취리히공대", "스위스", "CH", "Zurich");
-        given(loadCatalogPort.search(isNull(), isNull(), eq(0), eq(20))).willReturn(List.of(row));
+                "ETH Zurich", "취리히공대", null, "스위스", "CH", "Zurich");
+        given(loadCatalogPort.search(isNull(), isNull(), isNull(), eq(0), eq(20))).willReturn(List.of(row));
         given(loadCatalogPort.count(isNull(), isNull())).willReturn(1L);
         given(loadExchangePort.countReviewsByUniversityIds(eq(List.of(300L)))).willReturn(Map.of(300L, 2L));
 
         PageResult<UniversityCatalogResult> page =
-                service.search(new SearchUniversityCatalogCommand(null, null, 0, 20));
+                service.search(new SearchUniversityCatalogCommand(null, null, null, 0, 20));
 
         UniversityCatalogResult r = page.content().get(0);
         assertThat(r.hasReport()).isTrue();
         assertThat(r.hasReviews()).isTrue();
         assertThat(r.reportId()).isEqualTo(301L);
         assertThat(r.reviewCount()).isEqualTo(2L);
+    }
+
+    @Test
+    @DisplayName("표시 언어(lang)를 포트에 넘기고 그 언어 이름(nameLocal)을 결과에 싣는다")
+    void shouldPassLangAndMapNameLocal() {
+        CatalogRow row = new CatalogRow(10L, null, 100L,
+                "Seoul National University", "서울대학교", "ソウル大学校", "대한민국", "KR", "Seoul");
+        given(loadCatalogPort.search(eq("Seoul"), isNull(), eq("ja"), eq(0), eq(20))).willReturn(List.of(row));
+        given(loadCatalogPort.count(eq("Seoul"), isNull())).willReturn(1L);
+        given(loadExchangePort.countReviewsByUniversityIds(eq(List.of()))).willReturn(Map.of());
+
+        PageResult<UniversityCatalogResult> page =
+                service.search(new SearchUniversityCatalogCommand("Seoul", null, "ja", 0, 20));
+
+        UniversityCatalogResult r = page.content().get(0);
+        assertThat(r.nameLocal()).isEqualTo("ソウル大学校");
+        assertThat(r.nameKo()).isEqualTo("서울대학교");
+        assertThat(r.nameEn()).isEqualTo("Seoul National University");
     }
 
     @Test
@@ -108,12 +126,12 @@ class UniversityCatalogQueryServiceTest {
     @Test
     @DisplayName("페이징 메타데이터(totalPages/hasNext)가 올바르게 계산된다")
     void shouldComputePaging() {
-        given(loadCatalogPort.search(isNull(), isNull(), eq(0), eq(20))).willReturn(List.of());
+        given(loadCatalogPort.search(isNull(), isNull(), isNull(), eq(0), eq(20))).willReturn(List.of());
         given(loadCatalogPort.count(isNull(), isNull())).willReturn(45L);
         given(loadExchangePort.countReviewsByUniversityIds(eq(List.of()))).willReturn(Map.of());
 
         PageResult<UniversityCatalogResult> page =
-                service.search(new SearchUniversityCatalogCommand(null, null, 0, 20));
+                service.search(new SearchUniversityCatalogCommand(null, null, null, 0, 20));
 
         assertThat(page.totalElements()).isEqualTo(45L);
         assertThat(page.totalPages()).isEqualTo(3);

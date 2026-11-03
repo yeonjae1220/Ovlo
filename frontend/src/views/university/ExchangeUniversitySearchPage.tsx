@@ -9,6 +9,7 @@ import {
 import { useDebounce } from '../../hooks/useDebounce'
 import { useI18n } from '../../i18n/I18nProvider'
 import type { UniversityCatalogItem } from '../../types'
+import { resolveUniversityDisplayName } from '../../utils/universityDisplayName'
 import { Badge, Button, Card, EmptyState, PageHeader, QueryErrorNotice, SearchBox, SelectField, SkeletonLines } from '../../components/ui'
 
 const PAGE_SIZE = 20
@@ -42,7 +43,8 @@ export default function ExchangeUniversitySearchPage() {
     debouncedQuery,
     countryCode,
     page,
-    PAGE_SIZE
+    PAGE_SIZE,
+    language
   )
   const universities = isError ? [] : pageData?.content ?? []
   const hasSearched = !!(debouncedQuery || countryCode)
@@ -134,7 +136,9 @@ export default function ExchangeUniversitySearchPage() {
       )}
 
       <ul className="exchange-results-grid">
-        {universities.map((u) => (
+        {universities.map((u) => {
+          const { primary, secondary } = resolveUniversityDisplayName(u, language)
+          return (
           <li key={`${u.globalUnivId ?? 'g'}-${u.exchangeUnivId ?? 'e'}-${u.reportId ?? 'r'}`}>
             <Card
               interactive
@@ -144,10 +148,10 @@ export default function ExchangeUniversitySearchPage() {
               <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, alignItems: 'flex-start' }}>
                 <div style={{ minWidth: 0 }}>
                   <div style={{ fontWeight: 900, fontSize: 17, lineHeight: 1.35, color: C.text, overflowWrap: 'anywhere' }}>
-                    {u.nameKo || u.nameEn}
+                    {primary}
                   </div>
-                  {u.nameKo && u.nameEn && (
-                    <div style={{ fontSize: 13, color: C.muted, marginTop: 4, overflowWrap: 'anywhere' }}>{u.nameEn}</div>
+                  {secondary && (
+                    <div style={{ fontSize: 13, color: C.muted, marginTop: 4, overflowWrap: 'anywhere' }}>{secondary}</div>
                   )}
                 </div>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 6, alignItems: 'flex-end', flexShrink: 0 }}>
@@ -175,7 +179,8 @@ export default function ExchangeUniversitySearchPage() {
               </div>
             </Card>
           </li>
-        ))}
+          )
+        })}
       </ul>
 
       {pageData && pageData.totalElements > 0 && (

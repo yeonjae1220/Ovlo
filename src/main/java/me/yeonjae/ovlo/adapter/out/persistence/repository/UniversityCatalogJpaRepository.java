@@ -74,8 +74,21 @@ public interface UniversityCatalogJpaRepository extends JpaRepository<GlobalUniv
                                       AND hn.name ILIKE '%' || :keyword || '%')))))
             """;
 
+    /**
+     * 표시 언어 이름. ko 는 통합 한글명(name_ko), en 은 영문명, 그 외는 다국어 이름 테이블에서
+     * 그 언어 라벨을 찾는다. 없으면 NULL — 호출자가 영문으로 폴백한다.
+     */
+    String NAME_LOCAL = """
+            CASE WHEN :lang = 'ko' THEN t.name_ko
+                 WHEN :lang = 'en' THEN t.name_en
+                 ELSE (SELECT gn.name FROM global_university_names gn
+                       WHERE gn.global_univ_id = t.global_univ_id AND gn.lang = :lang LIMIT 1)
+            END
+            """;
+
     @Query(value = "SELECT t.global_univ_id, t.exchange_univ_id, t.report_id, "
-            + "t.name_en, t.name_ko, t.country, t.country_code, t.city "
+            + "t.name_en, t.name_ko, " + NAME_LOCAL + " AS name_local, "
+            + "t.country, t.country_code, t.city "
             + "FROM (" + CONTENT_SET + ") t "
             + "WHERE " + KEYWORD_MATCH
             + "  AND (:countryCode IS NULL OR t.country_code = :countryCode) "
@@ -88,6 +101,7 @@ public interface UniversityCatalogJpaRepository extends JpaRepository<GlobalUniv
             nativeQuery = true)
     List<Object[]> search(@Param("keyword") String keyword,
                           @Param("countryCode") String countryCode,
+                          @Param("lang") String lang,
                           @Param("limit") int limit,
                           @Param("offset") int offset);
 

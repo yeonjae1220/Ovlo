@@ -37,7 +37,7 @@ public class UniversityCatalogQueryService implements SearchUniversityCatalogQue
     public PageResult<UniversityCatalogResult> search(SearchUniversityCatalogCommand command) {
         int offset = command.page() * command.size();
         List<CatalogRow> rows = loadCatalogPort.search(
-                command.keyword(), command.countryCode(), offset, command.size());
+                command.keyword(), command.countryCode(), command.lang(), offset, command.size());
 
         List<Long> exchangeIds = rows.stream()
                 .map(CatalogRow::exchangeUnivId)
@@ -67,6 +67,7 @@ public class UniversityCatalogQueryService implements SearchUniversityCatalogQue
                 row.reportId(),
                 row.nameEn(),
                 row.nameKo(),
+                row.nameLocal(),
                 row.country(),
                 row.countryCode(),
                 row.city(),
