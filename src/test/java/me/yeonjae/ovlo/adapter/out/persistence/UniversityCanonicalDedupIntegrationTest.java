@@ -125,7 +125,7 @@ class UniversityCanonicalDedupIntegrationTest {
     @Test
     @DisplayName("통합 카탈로그에서 숨김 행이 빠진다")
     void catalogExcludesHidden() {
-        var page = catalogQuery.search(new SearchUniversityCatalogCommand("Leuven", null, 0, 20));
+        var page = catalogQuery.search(new SearchUniversityCatalogCommand("Leuven", null, null, 0, 20));
         assertThat(page.content())
                 .extracting(UniversityCatalogResult::globalUnivId)
                 .containsExactly(canonicalId);
@@ -190,7 +190,7 @@ class UniversityCanonicalDedupIntegrationTest {
                 hiddenId, "Katholieke Hogeschool Leuven-oud");
 
         for (String keyword : new String[] {"Katholieke", "Hogeschool Leuven-oud"}) {
-            var page = catalogQuery.search(new SearchUniversityCatalogCommand(keyword, null, 0, 20));
+            var page = catalogQuery.search(new SearchUniversityCatalogCommand(keyword, null, null, 0, 20));
             assertThat(page.content())
                     .as(keyword)
                     .extracting(UniversityCatalogResult::globalUnivId)

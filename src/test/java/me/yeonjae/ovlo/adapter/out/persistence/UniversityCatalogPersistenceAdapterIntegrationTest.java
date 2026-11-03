@@ -158,6 +158,27 @@ class UniversityCatalogPersistenceAdapterIntegrationTest {
     }
 
     @Test
+    @DisplayName("표시 언어(lang)에 따라 nameLocal 이 그 언어 이름으로 채워지고, 없으면 null 로 영문 폴백을 맡긴다")
+    void nameLocalFollowsDisplayLang() {
+        insertGlobalName(bothGlobalId, "ja", "ミュンヘン工科大学");
+
+        // ko: 통합 한글명(name_ko) — exchange.name_ko 우선, 없으면 local_name
+        assertThat(find(bothGlobalId, "ko").nameLocal()).isEqualTo("뮌헨공과대학교");
+        assertThat(find(reportOnlyGlobalId, "ko").nameLocal()).isEqualTo("서울대학교");
+        // en: 영문명 그대로
+        assertThat(find(bothGlobalId, "en").nameLocal()).isEqualTo("Technische Universitaet Muenchen");
+        // ja: 다국어 이름 테이블의 라벨, 라벨이 없는 대학은 null
+        assertThat(find(bothGlobalId, "ja").nameLocal()).isEqualTo("ミュンヘン工科大学");
+        assertThat(find(reportOnlyGlobalId, "ja").nameLocal()).isNull();
+        // lang 생략 → 영문
+        assertThat(find(bothGlobalId, null).nameLocal()).isEqualTo("Technische Universitaet Muenchen");
+        // orphan(글로벌 미연결) 행도 ko/en 은 채워지고 그 외 언어는 null
+        UniversityCatalogResult orphanJa = search("교토", null, "ja").get(0);
+        assertThat(orphanJa.nameLocal()).isNull();
+        assertThat(search("교토", null, "ko").get(0).nameLocal()).isEqualTo("교토대학교");
+    }
+
+    @Test
     @DisplayName("countryCode로 필터링된다")
     void countryFilter() {
         List<UniversityCatalogResult> jp = search(null, "JP");
@@ -178,13 +199,21 @@ class UniversityCatalogPersistenceAdapterIntegrationTest {
     // ── helpers ──────────────────────────────────────────────────────────────
 
     private List<UniversityCatalogResult> search(String keyword, String countryCode) {
+        return search(keyword, countryCode, null);
+    }
+
+    private List<UniversityCatalogResult> search(String keyword, String countryCode, String lang) {
         PageResult<UniversityCatalogResult> page =
-                catalogQuery.search(new SearchUniversityCatalogCommand(keyword, countryCode, 0, 50));
+                catalogQuery.search(new SearchUniversityCatalogCommand(keyword, countryCode, lang, 0, 50));
         return page.content();
     }
 
     private UniversityCatalogResult find(Long globalUnivId) {
-        return search(null, null).stream()
+        return find(globalUnivId, null);
+    }
+
+    private UniversityCatalogResult find(Long globalUnivId, String lang) {
+        return search(null, null, lang).stream()
                 .filter(r -> globalUnivId.equals(r.globalUnivId()))
                 .findFirst().orElseThrow();
     }

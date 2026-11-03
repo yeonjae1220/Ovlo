@@ -20,9 +20,13 @@ public class UniversityCatalogPersistenceAdapter implements LoadUniversityCatalo
         this.repository = repository;
     }
 
+    /** 표시 언어를 안 주면 영문 — 네이티브 쿼리의 CASE 비교에 null 이 들어가지 않게 한다. */
+    private static final String DEFAULT_LANG = "en";
+
     @Override
-    public List<CatalogRow> search(String keyword, String countryCode, int offset, int limit) {
-        return repository.search(blankToNull(keyword), blankToNull(countryCode), limit, offset)
+    public List<CatalogRow> search(String keyword, String countryCode, String lang, int offset, int limit) {
+        String displayLang = blankToNull(lang) == null ? DEFAULT_LANG : lang.trim().toLowerCase();
+        return repository.search(blankToNull(keyword), blankToNull(countryCode), displayLang, limit, offset)
                 .stream()
                 .map(UniversityCatalogPersistenceAdapter::toRow)
                 .toList();
@@ -43,7 +47,7 @@ public class UniversityCatalogPersistenceAdapter implements LoadUniversityCatalo
                 .toList();
     }
 
-    /** 컬럼 순서: global_univ_id, exchange_univ_id, report_id, name_en, name_ko, country, country_code, city */
+    /** 컬럼 순서: global_univ_id, exchange_univ_id, report_id, name_en, name_ko, name_local, country, country_code, city */
     private static CatalogRow toRow(Object[] r) {
         return new CatalogRow(
                 toLong(r[0]),
@@ -53,7 +57,8 @@ public class UniversityCatalogPersistenceAdapter implements LoadUniversityCatalo
                 (String) r[4],
                 (String) r[5],
                 (String) r[6],
-                (String) r[7]
+                (String) r[7],
+                (String) r[8]
         );
     }
 

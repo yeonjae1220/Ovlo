@@ -27,6 +27,7 @@ export interface UniversityReportDetail {
 interface GlobalUniversityItem {
   id: number
   nameEn: string
+  localName?: string | null
   countryCode?: string
   city?: string
 }
@@ -42,6 +43,7 @@ export const globalUniversityApi = {
         r.data.content.map((u) => ({
           id: u.id,
           name: u.nameEn,
+          localName: u.localName ?? '',
           countryCode: u.countryCode ?? '',
           city: u.city ?? '',
         }))
@@ -83,14 +85,18 @@ export const universityReportApi = {
       .then((r) => r.data),
 }
 
-/** 통합 대학 카탈로그 — 콘텐츠(리포트/후기) 보유 대학을 한/영/현지어·국가코드로 검색 */
+/**
+ * 통합 대학 카탈로그 — 콘텐츠(리포트/후기) 보유 대학을 한/영/현지어·국가코드로 검색.
+ * lang(UI 언어)을 주면 각 행의 nameLocal 에 그 언어의 대학명이 실린다.
+ */
 export const universityCatalogApi = {
-  search: (keyword?: string, countryCode?: string, page = 0, size = 20) =>
+  search: (keyword?: string, countryCode?: string, page = 0, size = 20, lang?: string) =>
     apiClient
       .get<PageResult<UniversityCatalogItem>>('/universities/catalog', {
         params: {
           keyword: keyword || undefined,
           countryCode: countryCode || undefined,
+          lang: lang || undefined,
           page,
           size,
         },

@@ -11,6 +11,9 @@ package me.yeonjae.ovlo.application.dto.result;
  *   <li>{@code hasReport}  → /university-reports/{reportId} (집계 가이드, 우선)</li>
  *   <li>{@code hasReviews} → /exchange-universities/{exchangeUnivId} (영상 후기)</li>
  * </ul>
+ *
+ * <p>{@code nameLocal} 은 요청한 표시 언어({@code lang})의 대학명이다. 그 언어 이름이 없으면
+ * null 이며, 프론트는 {@code nameEn} 으로 폴백한다 — 한 목록 안에서 언어가 섞이지 않게.</p>
  */
 public record UniversityCatalogResult(
         Long globalUnivId,
@@ -18,6 +21,7 @@ public record UniversityCatalogResult(
         Long reportId,
         String nameEn,
         String nameKo,
+        String nameLocal,
         String country,
         String countryCode,
         String city,

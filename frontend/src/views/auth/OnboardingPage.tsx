@@ -178,7 +178,12 @@ export default function OnboardingPage() {
                       onClick={() => { setSelectedUniId(Number(u.id)); setSelectedUniName(u.name); setUniQuery('') }}
                       style={{ padding: '9px 12px', cursor: 'pointer', borderBottom: '1px solid var(--color-border)', fontSize: 14, display: 'flex', justifyContent: 'space-between', alignItems: 'center', color: 'var(--color-text)' }}
                     >
-                      <span>{u.name}</span>
+                      <span style={{ minWidth: 0 }}>
+                          {u.name}
+                          {u.localName && u.localName !== u.name && (
+                            <span style={{ display: 'block', color: 'var(--color-text-muted)', fontSize: 12 }}>{u.localName}</span>
+                          )}
+                        </span>
                       <span style={{ color: 'var(--color-text-muted)', fontSize: 12 }}>{u.countryCode} · {u.city}</span>
                     </li>
                   ))}
