@@ -4,6 +4,7 @@ import { useState, type FormEvent } from 'react'
 import { useGlobalUniversitySearch } from '../../hooks/useUniversity'
 import { useCompleteOnboarding } from '../../hooks/useAuth'
 import { useI18n } from '../../i18n/I18nProvider'
+import { useDebounce } from '../../hooks/useDebounce'
 import { SUPPORTED_UI_LANGUAGES, LANGUAGE_LABELS } from '../../i18n/messages'
 
 const DEGREE_TYPES = [
@@ -44,7 +45,8 @@ export default function OnboardingPage() {
   const [formError, setFormError]             = useState('')
 
   const completeOnboarding = useCompleteOnboarding()
-  const { data: universities } = useGlobalUniversitySearch(uniQuery)
+  const debouncedUniQuery = useDebounce(uniQuery.trim(), 300)
+  const { data: universities } = useGlobalUniversitySearch(debouncedUniQuery, undefined, language)
 
   const set = (key: keyof FormData) =>
     (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {

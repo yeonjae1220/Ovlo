@@ -11,20 +11,16 @@ export function useUniversityCatalogCountries() {
   })
 }
 
-export function useUniversitySearch(keyword: string, countryCode?: string) {
+export function useUniversitySearch(keyword: string, countryCode?: string, lang?: string) {
   return useQuery({
-    queryKey: ['global-universities', 'search', keyword, countryCode],
-    queryFn: () => globalUniversityApi.search(keyword, countryCode),
+    queryKey: ['global-universities', 'search', keyword, countryCode, lang],
+    queryFn: () => globalUniversityApi.search(keyword, countryCode, 0, 20, lang),
     enabled: keyword.length >= 1,
   })
 }
 
-export function useGlobalUniversitySearch(keyword: string, countryCode?: string) {
-  return useQuery({
-    queryKey: ['global-universities', 'search', keyword, countryCode],
-    queryFn: () => globalUniversityApi.search(keyword, countryCode),
-    enabled: keyword.length >= 1,
-  })
+export function useGlobalUniversitySearch(keyword: string, countryCode?: string, lang?: string) {
+  return useUniversitySearch(keyword, countryCode, lang)
 }
 
 export function useUniversityCatalogSearch(keyword: string, countryCode?: string, page = 0, size = 20, lang?: string) {

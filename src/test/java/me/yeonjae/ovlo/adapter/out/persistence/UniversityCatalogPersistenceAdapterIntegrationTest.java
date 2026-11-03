@@ -73,6 +73,7 @@ class UniversityCatalogPersistenceAdapterIntegrationTest {
         jdbc.update("DELETE FROM university_report");
         jdbc.update("DELETE FROM exchange_universities");
         jdbc.update("DELETE FROM global_university_names");
+        jdbc.update("DELETE FROM global_university_aliases");
         jdbc.update("DELETE FROM global_universities");
 
         reportOnlyGlobalId = insertGlobal("Seoul National University", "서울대학교", "대한민국", "KR", "Seoul");
@@ -176,6 +177,18 @@ class UniversityCatalogPersistenceAdapterIntegrationTest {
         UniversityCatalogResult orphanJa = search("교토", null, "ja").get(0);
         assertThat(orphanJa.nameLocal()).isNull();
         assertThat(search("교토", null, "ko").get(0).nameLocal()).isEqualTo("교토대학교");
+    }
+
+    @Test
+    @DisplayName("별칭(약어·옛 이름)으로 카탈로그를 검색한다")
+    void aliasMatches() {
+        jdbc.update("INSERT INTO global_university_aliases (global_univ_id, alias) VALUES (?, ?)", bothGlobalId, "뮌헨공대");
+
+        assertThat(search("뮌헨공대", null))
+                .extracting(UniversityCatalogResult::globalUnivId).containsExactly(bothGlobalId);
+        assertThat(catalogQuery.search(new SearchUniversityCatalogCommand("뮌헨공대", null, null, 0, 50)).totalElements())
+                .isEqualTo(1L);
+        assertThat(search("없는별칭", null)).isEmpty();
     }
 
     @Test

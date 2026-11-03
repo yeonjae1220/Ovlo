@@ -9,7 +9,10 @@ import me.yeonjae.ovlo.domain.university.model.University;
 import me.yeonjae.ovlo.domain.university.model.UniversityId;
 import org.springframework.stereotype.Component;
 
+import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 /**
@@ -50,6 +53,20 @@ public class UniversityPersistenceAdapter
     @Override
     public long count(String keyword, String countryCode) {
         return repository.countSearch(blankToNull(keyword), blankToNull(countryCode));
+    }
+
+    @Override
+    public Map<Long, String> findLocalizedNames(Collection<Long> ids, String lang) {
+        if (ids == null || ids.isEmpty() || lang == null || lang.isBlank()) {
+            return Map.of();
+        }
+        Map<Long, String> names = new HashMap<>();
+        for (Object[] row : repository.findLocalizedNames(ids, lang.trim().toLowerCase())) {
+            if (row[1] != null) {
+                names.put(((Number) row[0]).longValue(), (String) row[1]);
+            }
+        }
+        return Map.copyOf(names);
     }
 
     @Override

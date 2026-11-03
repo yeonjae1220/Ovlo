@@ -5,6 +5,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
@@ -17,8 +18,9 @@ public interface GlobalUniversityJpaRepository extends JpaRepository<GlobalUnive
     /**
      * 본교 선택 검색의 키워드 조건(행 별칭 g). 영문명뿐 아니라 현지어명(local_name)·
      * 다국어 이름(global_university_names)·연결된 교환대학의 한글명(exchange_universities.name_ko)
-     * 으로도 찾는다 — 회원가입·온보딩에서 "서울대"처럼 모국어로 쳐도 나오게.
-     * 숨긴 중복 행(canonical_id 보유)의 이름이 맞으면 그 대표 행을 돌려준다.
+     * ·별칭(global_university_aliases: 연대·부산외대 같은 약어, 옛 이름)으로도 찾는다 —
+     * 회원가입·온보딩에서 "서울대"처럼 모국어로 쳐도 나오게.
+     * 숨긴 중복 행(canonical_id 보유)의 이름·별칭이 맞으면 그 대표 행을 돌려준다.
      */
     String KEYWORD_MATCH = """
             (:keyword IS NULL
@@ -27,6 +29,9 @@ public interface GlobalUniversityJpaRepository extends JpaRepository<GlobalUnive
              OR EXISTS (SELECT 1 FROM global_university_names gn
                         WHERE gn.global_univ_id = g.id
                           AND gn.name ILIKE '%' || :keyword || '%')
+             OR EXISTS (SELECT 1 FROM global_university_aliases ga
+                        WHERE ga.global_univ_id = g.id
+                          AND ga.alias ILIKE '%' || :keyword || '%')
              OR EXISTS (SELECT 1 FROM exchange_universities e
                         WHERE e.global_univ_id = g.id
                           AND e.name_ko ILIKE '%' || :keyword || '%')
@@ -36,7 +41,10 @@ public interface GlobalUniversityJpaRepository extends JpaRepository<GlobalUnive
                                 OR h.local_name ILIKE '%' || :keyword || '%'
                                 OR EXISTS (SELECT 1 FROM global_university_names hn
                                            WHERE hn.global_univ_id = h.id
-                                             AND hn.name ILIKE '%' || :keyword || '%'))))
+                                             AND hn.name ILIKE '%' || :keyword || '%')
+                                OR EXISTS (SELECT 1 FROM global_university_aliases ha
+                                           WHERE ha.global_univ_id = h.id
+                                             AND ha.alias ILIKE '%' || :keyword || '%'))))
             """;
 
     /**
@@ -63,6 +71,23 @@ public interface GlobalUniversityJpaRepository extends JpaRepository<GlobalUnive
             + "  AND (:countryCode IS NULL OR g.country_code = :countryCode)",
             nativeQuery = true)
     long countSearch(@Param("keyword") String keyword, @Param("countryCode") String countryCode);
+
+    /**
+     * 표시 언어의 대학명 — 다국어 이름 테이블의 그 언어 라벨, ko 는 없으면 연결 교환대학 한글명.
+     * 컬럼 순서: id, name(없으면 NULL). 본교 선택 드롭다운의 보조 표기용.
+     */
+    @Query(value = """
+            SELECT g.id,
+                   COALESCE((SELECT gn.name FROM global_university_names gn
+                             WHERE gn.global_univ_id = g.id AND gn.lang = :lang LIMIT 1),
+                            CASE WHEN :lang = 'ko' THEN
+                                 (SELECT e.name_ko FROM exchange_universities e
+                                  WHERE e.global_univ_id = g.id AND e.name_ko IS NOT NULL LIMIT 1)
+                            END)
+            FROM global_universities g
+            WHERE g.id IN (:ids)
+            """, nativeQuery = true)
+    List<Object[]> findLocalizedNames(@Param("ids") Collection<Long> ids, @Param("lang") String lang);
 
     /**
      * 이메일 도메인으로 대학 역조회 (학교 이메일 검증용).

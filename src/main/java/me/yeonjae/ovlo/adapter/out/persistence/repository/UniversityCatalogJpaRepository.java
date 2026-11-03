@@ -54,8 +54,9 @@ public interface UniversityCatalogJpaRepository extends JpaRepository<GlobalUniv
             """;
 
     /**
-     * 키워드 조건(행 별칭 t). 이름·한글명·다국어 이름에 더해, 이 대학으로 숨겨진 중복 행
-     * (canonical_id = t.global_univ_id)의 옛 이름·다국어 이름도 본다 — 숨긴 행 이름으로 찾아도 대표 행이 나오게.
+     * 키워드 조건(행 별칭 t). 이름·한글명·다국어 이름·별칭(약어·옛 이름)에 더해, 이 대학으로 숨겨진
+     * 중복 행(canonical_id = t.global_univ_id)의 옛 이름·다국어 이름·별칭도 본다 — 숨긴 행 이름으로
+     * 찾아도 대표 행이 나오게.
      */
     String KEYWORD_MATCH = """
             (:keyword IS NULL
@@ -66,12 +67,19 @@ public interface UniversityCatalogJpaRepository extends JpaRepository<GlobalUniv
                   WHERE gn.global_univ_id = t.global_univ_id
                     AND gn.name ILIKE '%' || :keyword || '%'))
              OR (t.global_univ_id IS NOT NULL AND EXISTS (
+                  SELECT 1 FROM global_university_aliases ga
+                  WHERE ga.global_univ_id = t.global_univ_id
+                    AND ga.alias ILIKE '%' || :keyword || '%'))
+             OR (t.global_univ_id IS NOT NULL AND EXISTS (
                   SELECT 1 FROM global_universities h
                   WHERE h.canonical_id = t.global_univ_id
                     AND (h.name_en ILIKE '%' || :keyword || '%'
                          OR EXISTS (SELECT 1 FROM global_university_names hn
                                     WHERE hn.global_univ_id = h.id
-                                      AND hn.name ILIKE '%' || :keyword || '%')))))
+                                      AND hn.name ILIKE '%' || :keyword || '%')
+                         OR EXISTS (SELECT 1 FROM global_university_aliases ha
+                                    WHERE ha.global_univ_id = h.id
+                                      AND ha.alias ILIKE '%' || :keyword || '%')))))
             """;
 
     /**

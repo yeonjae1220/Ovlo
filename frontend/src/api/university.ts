@@ -32,12 +32,15 @@ interface GlobalUniversityItem {
   city?: string
 }
 
-/** global_universities 테이블 (10,150개) — 회원가입/온보딩 대학 선택용 */
+/**
+ * global_universities 테이블 (10,150개) — 회원가입/온보딩 대학 선택용.
+ * lang(UI 언어)을 주면 각 행의 localName 에 그 언어의 대학명이 실린다(없으면 빈 문자열).
+ */
 export const globalUniversityApi = {
-  search: (keyword: string, countryCode?: string, page = 0, size = 20) =>
+  search: (keyword: string, countryCode?: string, page = 0, size = 20, lang?: string) =>
     apiClient
       .get<PageResult<GlobalUniversityItem>>('/global-universities', {
-        params: { keyword, countryCode, page, size },
+        params: { keyword, countryCode, lang: lang || undefined, page, size },
       })
       .then((r) =>
         r.data.content.map((u) => ({
