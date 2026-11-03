@@ -254,6 +254,10 @@ jobs:
             sudo kubectl set env deployment/app -n ovlo \
               --from=secret/ovlo-secret --keys=ANTHROPIC_API_KEY
           fi
+          # 추가 admin 계정 — k8s/app.yaml 에는 optional secretKeyRef 로 적혀 있지만 이 CI 는
+          # 매니페스트를 apply 하지 않으므로(위 주석) set env 로 넣어야 운영 Deployment 에 반영된다.
+          sudo kubectl set env deployment/app -n ovlo \
+            --from=secret/ovlo-secret --keys=ADMIN_ADDITIONAL_ACCOUNTS
 
           sudo kubectl set image deployment/app \
             app=ghcr.io/yeonjae1220/ovlo:${IMAGE_TAG} \

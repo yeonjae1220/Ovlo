@@ -1,6 +1,7 @@
 package me.yeonjae.ovlo.shared.config;
 
 import jakarta.annotation.PostConstruct;
+import jakarta.servlet.DispatcherType;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
 import me.yeonjae.ovlo.shared.security.AdminAuthenticationFailureHandler;
@@ -316,6 +317,9 @@ public class SecurityConfig {
                                 .policyDirectives("default-src 'self'; frame-ancestors 'self'"))
                 )
                 .authorizeHttpRequests(auth -> auth
+                        // GLOBAL-PIT-156: sendError() 로 인한 /error ERROR 디스패치가 아래 catch-all 에
+                        // 다시 걸리면 admin 체인의 403(CSRF)·400 이 전부 401 로 위장된다.
+                        .dispatcherTypeMatchers(DispatcherType.ERROR).permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/v1/members").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/v1/auth/login").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/v1/auth/refresh").permitAll()
