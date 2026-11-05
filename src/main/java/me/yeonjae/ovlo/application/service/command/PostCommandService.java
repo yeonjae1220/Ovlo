@@ -9,6 +9,7 @@ import me.yeonjae.ovlo.application.dto.command.UnreactToPostCommand;
 import me.yeonjae.ovlo.application.dto.command.UpdatePostCommand;
 import me.yeonjae.ovlo.application.dto.result.CommentResult;
 import me.yeonjae.ovlo.application.dto.result.PostResult;
+import me.yeonjae.ovlo.application.dto.result.VerificationStatusResult;
 import me.yeonjae.ovlo.application.port.in.post.CreateCommentUseCase;
 import me.yeonjae.ovlo.application.port.in.post.CreatePostUseCase;
 import me.yeonjae.ovlo.application.port.in.post.DeleteCommentUseCase;
@@ -19,7 +20,9 @@ import me.yeonjae.ovlo.application.port.in.verification.GetMyVerificationStatusQ
 import me.yeonjae.ovlo.application.port.out.board.LoadBoardPort;
 import me.yeonjae.ovlo.application.port.out.post.LoadPostPort;
 import me.yeonjae.ovlo.application.port.out.post.SavePostPort;
+import me.yeonjae.ovlo.domain.board.model.Board;
 import me.yeonjae.ovlo.domain.board.model.BoardId;
+import me.yeonjae.ovlo.domain.board.model.LocationScope;
 import me.yeonjae.ovlo.domain.member.model.MemberId;
 import me.yeonjae.ovlo.domain.post.exception.PostException;
 import me.yeonjae.ovlo.domain.verification.model.TrustLevel;
@@ -27,6 +30,7 @@ import me.yeonjae.ovlo.domain.post.model.CommentId;
 import me.yeonjae.ovlo.domain.post.model.Post;
 import me.yeonjae.ovlo.domain.post.model.PostId;
 import me.yeonjae.ovlo.domain.post.model.ReactionType;
+import me.yeonjae.ovlo.domain.university.model.UniversityId;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -53,7 +57,7 @@ public class PostCommandService
     @Override
     public PostResult create(CreatePostCommand command) {
         BoardId boardId = new BoardId(command.boardId());
-        enforceTrustGate(boardId, command.authorId());
+        loadBoardPort.findById(boardId).ifPresent(board -> enforcePostingGates(board, command.authorId()));
         Post post = Post.create(
                 boardId,
                 new MemberId(command.authorId()),
@@ -64,23 +68,60 @@ public class PostCommandService
     }
 
     /**
-     * 게시판이 작성 최소 신뢰 등급을 요구하면 작성자의 TrustLevel을 검사한다.
-     * 게시판이 없거나(검증은 Post 생성에 위임) 요구 등급이 UNVERIFIED면 게이트 없음.
+     * 글쓰기 게이트. 게시판이 없으면 게이트 없음(존재 검증은 Post 생성·FK에 위임).
+     * <ol>
+     *   <li>트러스트 게이트 — 게시판 {@code minTrustLevel} 이상의 {@link TrustLevel}</li>
+     *   <li>소속 게이트 — UNIVERSITY 범위면 그 대학의 활성 인증 자격 보유</li>
+     * </ol>
+     * 둘 다 필요 없으면 인증 현황 조회를 생략하고, 필요하면 한 번만 조회해 두 게이트가 공유한다.
      */
-    private void enforceTrustGate(BoardId boardId, Long authorId) {
-        loadBoardPort.findById(boardId).ifPresent(board -> {
-            TrustLevel required = TrustLevel.parseOrUnverified(board.getMinTrustLevel());
-            if (required == TrustLevel.UNVERIFIED) {
-                return;
-            }
-            TrustLevel authorTrust = TrustLevel.parseOrUnverified(
-                    getMyVerificationStatusQuery.getByMemberId(authorId).trustLevel());
-            if (!authorTrust.atLeast(required)) {
-                throw new PostException(
-                        "이 게시판에 글을 쓰려면 " + required.name() + " 이상의 인증이 필요합니다",
-                        PostException.ErrorType.FORBIDDEN);
-            }
-        });
+    private void enforcePostingGates(Board board, Long authorId) {
+        TrustLevel required = TrustLevel.parseOrUnverified(board.getMinTrustLevel());
+        boolean universityScoped = board.getScope() == LocationScope.UNIVERSITY;
+        if (required == TrustLevel.UNVERIFIED && !universityScoped) {
+            return;
+        }
+        VerificationStatusResult status = getMyVerificationStatusQuery.getByMemberId(authorId);
+        requireTrust(required, status);
+        if (universityScoped) {
+            requireUniversityMembership(board, status);
+        }
+    }
+
+    /** 댓글 게이트 — 소속 게이트만 적용한다(트러스트 게이트는 기존대로 글쓰기 전용). */
+    private void enforceCommentGates(Board board, Long authorId) {
+        if (board.getScope() != LocationScope.UNIVERSITY) {
+            return;
+        }
+        requireUniversityMembership(board, getMyVerificationStatusQuery.getByMemberId(authorId));
+    }
+
+    private static void requireTrust(TrustLevel required, VerificationStatusResult status) {
+        TrustLevel authorTrust = TrustLevel.parseOrUnverified(status.trustLevel());
+        if (!authorTrust.atLeast(required)) {
+            throw new PostException(
+                    "이 게시판에 글을 쓰려면 " + required.name() + " 이상의 인증이 필요합니다",
+                    PostException.ErrorType.FORBIDDEN);
+        }
+    }
+
+    /**
+     * UNIVERSITY 범위 게시판 소속 검사: 작성자가 게시판 대학의 <b>활성</b> 인증 자격
+     * ({@code VerificationCredential.isActive()}, {@code verifiedUniversities}에 그것만 담긴다)을 가져야 한다.
+     *
+     * <p>회원 프로필의 {@code homeUniversityId}는 가입·온보딩에서 본인이 고른 자기 신고값이라
+     * 소속 근거로 치지 않는다 — 인정하면 아무 대학이나 골라 그 게시판에 쓸 수 있어 이 게이트가 무의미해진다
+     * (docs/adr/0005). 게시판 대학이 비어 있으면(데이터 오류) 열지 않고 닫는다.
+     */
+    private static void requireUniversityMembership(Board board, VerificationStatusResult status) {
+        UniversityId boardUniversity = board.getUniversityId();
+        boolean member = boardUniversity != null && status.verifiedUniversities().stream()
+                .anyMatch(v -> boardUniversity.value().equals(v.universityId()));
+        if (!member) {
+            throw new PostException(
+                    "이 게시판은 해당 대학 인증을 마친 회원만 글과 댓글을 쓸 수 있습니다",
+                    PostException.ErrorType.FORBIDDEN);
+        }
     }
 
     @Override
@@ -96,6 +137,8 @@ public class PostCommandService
     @Override
     public CommentResult createComment(CreateCommentCommand command) {
         Post post = loadPostOrThrow(command.postId());
+        loadBoardPort.findById(post.getBoardId())
+                .ifPresent(board -> enforceCommentGates(board, command.authorId()));
         var comment = post.addComment(new MemberId(command.authorId()), command.content());
         savePostPort.save(post);
         return CommentResult.from(comment);
