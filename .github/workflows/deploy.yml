@@ -44,6 +44,9 @@ jobs:
       - name: Build and test with Gradle
         run: ./gradlew build --no-daemon
 
+      - name: Test reaction concurrency with PostgreSQL
+        run: ./gradlew integrationTest --tests '*PostReactionConcurrencyIntegrationTest' --no-daemon
+
   build-and-push:
     name: Build and Push Backend Docker Image
     runs-on: ubuntu-latest
