@@ -1,5 +1,5 @@
 """Regression tests for check_report.py: each attack must be rejected, the clean copy must pass.
-Usage: python3 -I gate_regression.py  (uses out/70 and out/59 as fixtures; writes under _gate_tests/)"""
+Usage: python3 -I gate_regression.py  (uses out/70, out/59 and out/920 as fixtures; writes under _gate_tests/)"""
 import copy, json, re, shutil, subprocess, sys
 from pathlib import Path
 
@@ -111,6 +111,8 @@ results = [
     run(70, ko_plain, "ko_plain_register_rejected", True),
     run(70, foreign_price("O1"), "official_page_foreign_price_allowed", False),
     run(70, foreign_price("V1"), "video_foreign_price_rejected", True),
+    run(70, body_sub("en", "## ", "Exchange students enter on a J-1 visa.\n\n## "), "us_visa_term_outside_us_rejected", True),
+    run(920, lambda r, c: (r, c), "us_visa_term_in_puerto_rico_allowed", False),
 ]
 print(f"{sum(results)}/{len(results)} passed")
 shutil.rmtree(TMP, ignore_errors=True)
