@@ -1,5 +1,7 @@
 # 학교·개인 캘린더 1차
 
+화면 사용 순서는 [사용 가이드](guides/calendar-user-guide.md), 쉬운 설명과 그림은 [PDF 안내서](guides/ovlo-calendar-guide-ko.pdf)를 참고하세요.
+
 ## 이용 경로
 
 - `/register`: 일반 회원 / 학교 담당자 가입 선택.
