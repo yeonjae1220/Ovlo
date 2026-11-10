@@ -83,4 +83,21 @@ class GoogleAuthCommandServiceTest {
                 List.of(), List.of(), List.of(),
                 MemberRole.MEMBER);
     }
+
+    @Test
+    void universityStaffReceivesUnivTokenWhileAdminRemainsSessionOnlyAtGoogleLogin() {
+        for (MemberRole role : List.of(MemberRole.UNIV, MemberRole.ADMIN)) {
+            Member member = googleMember(new MemberId(4L));
+            member.updateRole(role);
+            given(googleOAuthPort.getUserProfile("code", "https://ovlo.test/cb"))
+                    .willReturn(new GoogleUserProfile("g@example.com", "구글", null, "google-1"));
+            given(loadMemberPort.findByEmail("g@example.com")).willReturn(Optional.of(member));
+            MemberRole expected = role == MemberRole.UNIV ? MemberRole.UNIV : MemberRole.MEMBER;
+            given(jwtTokenProvider.generateAccessToken(member.getId(), expected, null)).willReturn("access-" + role);
+            given(jwtTokenProvider.generateRefreshToken()).willReturn("refresh");
+            given(jwtTokenProvider.refreshTokenTtl()).willReturn(Duration.ofDays(30));
+            var result = sut.loginWithGoogle(new GoogleLoginCommand("code", "https://ovlo.test/cb"));
+            assertThat(result.accessToken()).isEqualTo("access-" + role);
+        }
+    }
 }

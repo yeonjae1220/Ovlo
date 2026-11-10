@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:replace="~{admin/layout :: layout(~{::body}, '학교 일정 · 담당자', 'calendar')}" lang="ko">
+<body>
+<style>
+ .calendar-form { display:grid; grid-template-columns:repeat(auto-fit,minmax(240px,1fr)); gap:14px; }
+ .calendar-form label { display:flex; flex-direction:column; gap:5px; }
+ .calendar-form input,.calendar-form select,.calendar-form textarea { padding:10px; background:var(--surface-2); color:var(--text); border:1px solid var(--border); border-radius:5px; }
+ .calendar-section { margin-bottom:24px; padding:20px; }
+ .calendar-event { padding:16px 0; border-bottom:1px solid var(--border); }
+</style>
+<p th:if="${error}" th:text="${error}" role="alert" style="color:var(--danger)"></p>
+<p th:if="${success}" th:text="${success}" role="status" style="color:var(--success)"></p>
+<section class="card calendar-section">
+ <h2>학교 담당자 신청</h2>
+ <p>학교 공식 연락처 등으로 담당자임을 확인한 뒤 승인하세요. 승인은 UNIV 역할과 신청 학교의 일정 관리 권한을 부여합니다.</p>
+ <form method="get" th:action="@{/admin/calendar}">
+  <select name="status" aria-label="신청 상태"><option th:each="s : ${ {'PENDING','APPROVED','REJECTED','REVOKED'} }" th:value="${s}" th:text="${s}" th:selected="${s == status}"></option></select>
+  <button class="btn btn-ghost" type="submit">조회</button>
+ </form>
+ <p th:if="${applications.isEmpty()}">신청이 없습니다.</p>
+ <article class="calendar-event" th:each="a : ${applications}">
+  <strong th:text="${a.universityName()}"></strong> · <span th:text="${a.applicantName()}"></span> · <span th:text="${a.department()}"></span>
+  <p th:text="${a.contactEmail()}"></p><p th:text="${a.message()}"></p>
+  <p th:text="${a.reviewNote()}"></p>
+  <form th:if="${a.status() == 'PENDING' or a.status() == 'APPROVED'}" method="post" th:action="@{/admin/calendar/applications/{id}(id=${a.id()})}">
+   <input type="hidden" name="version" th:value="${a.version()}"/>
+   <label>확인 근거 / 사유 <input name="note" required maxlength="2000" placeholder="공식 연락처 확인 내용"/></label>
+   <button th:if="${a.status() == 'PENDING'}" name="action" value="approve" class="btn btn-primary">승인·학교 배정</button>
+   <button th:if="${a.status() == 'PENDING'}" name="action" value="reject" class="btn btn-ghost">반려</button>
+   <button th:if="${a.status() == 'APPROVED'}" name="action" value="revoke" class="btn btn-warning">학교 권한 해제</button>
+  </form>
+ </article>
+ <a th:if="${page > 0}" th:href="@{/admin/calendar(status=${status},page=${page - 1})}">이전</a>
+ <a th:if="${applications.size() == 30}" th:href="@{/admin/calendar(status=${status},page=${page + 1})}">다음</a>
+</section>
+<section class="card calendar-section">
+ <h2>학교 공식 일정 대리 등록</h2>
+ <p>공식 홈페이지 공지를 요약해 등록하세요. 학생에게 ‘Ovlo 등록 · 학교 공식 공지 참고’로 표시됩니다. 출처 링크는 자동으로 수집·갱신하지 않습니다.</p>
+ <form method="get" th:action="@{/admin/calendar}">
+  <label>학교 검색 <input name="q" th:value="${q}" maxlength="100" required/></label><button class="btn btn-ghost">검색</button>
+ </form>
+ <ul><li th:each="s : ${schools}"><a th:href="@{/admin/calendar(schoolId=${s.id()},month=${month})}" th:text="${s.name()}"></a></li></ul>
+ <div th:if="${schoolId != null}">
+  <form method="get" th:action="@{/admin/calendar}"><input type="hidden" name="schoolId" th:value="${schoolId}"/>
+   <label>조회 월 <input type="month" name="month" th:value="${month}" required/></label><button class="btn btn-ghost">조회</button></form>
+  <h3 th:text="${form['id'] != null} ? '일정 수정' : '새 일정 초안'"></h3>
+  <form method="post" th:action="@{/admin/calendar/events}" class="calendar-form">
+   <input type="hidden" name="schoolId" th:value="${schoolId}"/><input type="hidden" name="month" th:value="${month}"/>
+   <input type="hidden" name="id" th:value="${form['id']}"/><input type="hidden" name="version" th:value="${form['version']}"/>
+   <label>제목 <input name="title" th:value="${form['title']}" maxlength="200" required/></label>
+   <label>분류 <select name="category"><option th:each="c : ${ {'ADMINISTRATION','ACADEMIC','EVENT','OTHER'} }" th:value="${c}" th:text="${c}" th:selected="${c == form['category']}"></option></select></label>
+   <label>일정 종류 <select name="allDay"><option value="true" th:selected="${form['allDay'] == 'true'}">종일</option><option value="false" th:selected="${form['allDay'] == 'false'}">시간 지정</option></select></label>
+   <label>기준 시간대 (IANA) <input name="timeZone" th:value="${form['timeZone']}" required placeholder="Europe/Paris" maxlength="100"/></label>
+   <label>종일 시작일 <input type="date" name="startDate" th:value="${form['startDate']}"/></label>
+   <label>종일 마지막 날 (포함) <input type="date" name="endDate" th:value="${form['endDate']}"/></label>
+   <label>시작 시각 (위 시간대) <input type="datetime-local" name="startsAt" th:value="${form['startsAt']}"/></label>
+   <label>종료 시각 (위 시간대) <input type="datetime-local" name="endsAt" th:value="${form['endsAt']}"/></label>
+   <label>신청 마감 시각 (선택) <input type="datetime-local" name="deadlineAt" th:value="${form['deadlineAt']}"/></label>
+   <label>장소 <input name="location" th:value="${form['location']}" maxlength="300"/></label>
+   <label>대상 안내 <input name="audience" th:value="${form['audience']}" maxlength="500"/></label>
+   <label>신청 링크 <input type="url" name="actionUrl" th:value="${form['actionUrl']}" maxlength="2000"/></label>
+   <label>공식 출처 링크 <input type="url" name="sourceUrl" th:value="${form['sourceUrl']}" maxlength="2000" required/></label>
+   <label>출처 확인일 <input type="date" name="sourceCheckedOn" th:value="${form['sourceCheckedOn']}" th:max="${today}" required/></label>
+   <label>안내 요약 <textarea name="description" th:text="${form['description']}" maxlength="10000" rows="4"></textarea></label>
+   <div><button class="btn btn-primary">저장</button> <a th:href="@{/admin/calendar(schoolId=${schoolId},month=${month})}">새 초안</a></div>
+  </form>
+  <h3>선택한 학교의 일정 · 중복 여부를 확인하세요</h3>
+  <p th:if="${events.isEmpty()}">이 기간에 등록된 일정이 없습니다.</p>
+  <article class="calendar-event" th:each="e : ${events}">
+   <strong th:text="${e.details().title()}"></strong> · <span th:text="${e.universityName()}"></span> · <span th:text="${e.status()}"></span>
+   <p th:text="${e.details().period().allDay() ? e.details().period().startDate() + ' ~ ' + e.details().period().endDate().minusDays(1) : e.details().period().startsAt() + ' ~ ' + e.details().period().endsAt()}"></p>
+   <p th:if="${e.source() != null}"><a th:href="${e.source().url()}" target="_blank" rel="noopener noreferrer">공식 출처</a> · 확인일 <span th:text="${e.source().checkedOn()}"></span>
+    <strong th:if="${e.source().checkedOn().isBefore(reviewBefore)}" style="color:var(--danger)">출처 재확인 필요</strong></p>
+   <a th:if="${e.status().name() != 'CANCELLED'}" th:href="@{/admin/calendar(schoolId=${schoolId},month=${month},edit=${e.id()})}">수정</a>
+   <form method="post" th:action="@{/admin/calendar/events/{id}/status(id=${e.id()})}">
+    <input type="hidden" name="schoolId" th:value="${schoolId}"/><input type="hidden" name="month" th:value="${month}"/><input type="hidden" name="version" th:value="${e.version()}"/>
+    <button th:if="${e.status().name() == 'DRAFT'}" name="action" value="publish" class="btn btn-primary">게시</button>
+    <button th:if="${e.status().name() == 'DRAFT'}" name="action" value="delete" class="btn btn-ghost">초안 삭제</button>
+    <button th:if="${e.status().name() == 'PUBLISHED'}" name="action" value="cancel" class="btn btn-warning">행사 취소</button>
+   </form>
+  </article>
+ </div>
+</section>
+</body></html>
