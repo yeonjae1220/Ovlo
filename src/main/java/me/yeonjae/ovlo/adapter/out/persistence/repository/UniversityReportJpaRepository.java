@@ -18,7 +18,8 @@ public interface UniversityReportJpaRepository extends JpaRepository<UniversityR
             SELECT r.* FROM university_report r
             WHERE r.status = 'PUBLISHED'
               AND NOT EXISTS (SELECT 1 FROM global_universities h
-                              WHERE h.id = r.global_univ_id AND h.canonical_id IS NOT NULL)
+                              WHERE h.id = r.global_univ_id
+                                AND (h.canonical_id IS NOT NULL OR h.inactive_reason IS NOT NULL))
               AND (:keyword IS NULL OR :keyword = ''
                    OR r.global_univ_id IN (
                        SELECT COALESCE(canonical_id, id) FROM global_universities
@@ -37,7 +38,8 @@ public interface UniversityReportJpaRepository extends JpaRepository<UniversityR
             SELECT COUNT(*) FROM university_report r
             WHERE r.status = 'PUBLISHED'
               AND NOT EXISTS (SELECT 1 FROM global_universities h
-                              WHERE h.id = r.global_univ_id AND h.canonical_id IS NOT NULL)
+                              WHERE h.id = r.global_univ_id
+                                AND (h.canonical_id IS NOT NULL OR h.inactive_reason IS NOT NULL))
               AND (:keyword IS NULL OR :keyword = ''
                    OR r.global_univ_id IN (
                        SELECT COALESCE(canonical_id, id) FROM global_universities

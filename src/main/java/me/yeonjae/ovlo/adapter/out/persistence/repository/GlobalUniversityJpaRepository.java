@@ -48,11 +48,11 @@ public interface GlobalUniversityJpaRepository extends JpaRepository<GlobalUnive
             """;
 
     /**
-     * 본교 선택 검색. 중복으로 숨긴 행(canonical_id 보유)은 제외하되,
+     * 본교 선택 검색. 중복으로 숨긴 행(canonical_id 보유)과 비활성 행(inactive_reason 보유)은 제외하되,
      * 숨긴 행의 옛 이름이 키워드에 맞으면 그 대표 행을 돌려준다.
      */
     @Query(value = "SELECT g.* FROM global_universities g "
-            + "WHERE g.canonical_id IS NULL "
+            + "WHERE g.canonical_id IS NULL AND g.inactive_reason IS NULL "
             + "  AND " + KEYWORD_MATCH
             + "  AND (:countryCode IS NULL OR g.country_code = :countryCode) "
             + "ORDER BY g.name_en "
@@ -66,7 +66,7 @@ public interface GlobalUniversityJpaRepository extends JpaRepository<GlobalUnive
     );
 
     @Query(value = "SELECT COUNT(*) FROM global_universities g "
-            + "WHERE g.canonical_id IS NULL "
+            + "WHERE g.canonical_id IS NULL AND g.inactive_reason IS NULL "
             + "  AND " + KEYWORD_MATCH
             + "  AND (:countryCode IS NULL OR g.country_code = :countryCode)",
             nativeQuery = true)

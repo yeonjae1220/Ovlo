@@ -41,6 +41,13 @@ public class GlobalUniversityJpaEntity {
     @Column(name = "canonical_id")
     private Long canonicalId;
 
+    /**
+     * 폐교·인가취소처럼 이어 줄 대표 행이 없는데 숨겨야 하는 행의 사유 코드 (V42). NULL 이면 활성.
+     * 조회 쿼리가 canonical_id 와 함께 이 값으로 숨긴 행을 거른다.
+     */
+    @Column(name = "inactive_reason", length = 50)
+    private String inactiveReason;
+
     public GlobalUniversityJpaEntity() {}
 
     public Long getId()          { return id; }
@@ -55,4 +62,5 @@ public class GlobalUniversityJpaEntity {
     public Double getLatitude()  { return latitude; }
     public Double getLongitude() { return longitude; }
     public Long getCanonicalId() { return canonicalId; }
+    public String getInactiveReason() { return inactiveReason; }
 }

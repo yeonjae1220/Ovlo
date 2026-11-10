@@ -39,6 +39,7 @@ public interface UniversityCatalogJpaRepository extends JpaRepository<GlobalUniv
                    LIMIT 1
             ) eu ON true
             WHERE gu.canonical_id IS NULL
+              AND gu.inactive_reason IS NULL
               AND (r.id IS NOT NULL OR eu.id IS NOT NULL)
             UNION ALL
             SELECT NULL              AS global_univ_id,
