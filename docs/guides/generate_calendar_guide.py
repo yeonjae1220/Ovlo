@@ -1,4 +1,4 @@
-"""Rebuild the guide's PNG diagrams and 12-page PDF with real UI captures (Python 3, Pillow, ReportLab).
+"""Rebuild the guide's PNG diagrams and 14-page PDF with real UI captures (Python 3, Pillow, ReportLab).
 
 Run from any directory: python docs/guides/generate_calendar_guide.py
 Set OVLO_GUIDE_FONT_REGULAR / OVLO_GUIDE_FONT_BOLD to Korean TrueType fonts.
@@ -131,7 +131,7 @@ def para(text,x,y,w,size=11.5,bold=False,color=INK,maxh=None,leading=None):
 def begin(n,title,subtitle):
     c.setFillColor(HexColor(BG));c.rect(0,0,W,H,fill=1,stroke=0)
     para('OVLO  /  처음 사용하는 사람을 위한 안내',42,30,460,9,True,TEAL)
-    para(f'{n:02d} / 12',510,30,55,9,True,MUTED)
+    para(f'{n:02d} / 14',510,30,55,9,True,MUTED)
     para(title,42,66,510,25,True,maxh=90,leading=35)
     para(subtitle,42,145,510,11,color=MUTED,maxh=40)
 
@@ -244,6 +244,33 @@ link('내 캘린더 열기','https://ovlo.mungji.com/calendar',42,758,170)
 link('기능 PR #66 / 검증 근거','https://github.com/yeonjae1220/Ovlo/pull/66',220,758,190)
 link('수정 PR #67','https://github.com/yeonjae1220/Ovlo/pull/67',435,758,120)
 end(12)
+
+begin(13,'달력 전체 화면도 확인해요','달력 보기에서는 날짜별 학교 일정과 개인 일정을 함께 확인할 수 있어요.')
+shot('08-student-calendar.png',190,maxh=550)
+caption('실제 학생 캘린더의 월간 달력 전체 영역. 촬영용 예시 데이터입니다.',752)
+end(13)
+
+begin(14,'바로 열어 보는 참고 URL','주소를 클릭하면 해당 화면이나 참고 문서를 열 수 있습니다.')
+references=[
+ ('회원가입 유형 선택','https://ovlo.mungji.com/register'),
+ ('학교 담당자 가입','https://ovlo.mungji.com/register/university'),
+ ('담당자 신청·승인 상태 확인 (로그인 필요)','https://ovlo.mungji.com/university-account'),
+ ('학교 일정 관리 (승인된 담당자)','https://ovlo.mungji.com/calendar/manage'),
+ ('학생 캘린더·개인 일정 (로그인 필요)','https://ovlo.mungji.com/calendar'),
+ ('관리자 로그인 (운영진)','https://ovlo.mungji.com/admin/login'),
+ ('담당자 승인·공식 출처 대리 등록 (운영진)','https://ovlo.mungji.com/admin/calendar'),
+ ('프로젝트 사용 가이드·전체 캡처','https://github.com/yeonjae1220/Ovlo/blob/main/docs/guides/calendar-user-guide.md'),
+ ('기능·권한·API 설계 문서','https://github.com/yeonjae1220/Ovlo/blob/main/docs/calendar.md'),
+ ('위키의 캘린더·학교 가입 설명','https://github.com/yeonjae1220/llm-wiki/blob/main/Projects/Ovlo/features/calendar-and-university-registration.md'),
+]
+y=192
+for label,url in references:
+    para(label,42,y,511,10.5,True,maxh=20)
+    bottom=para(f'<link href="{url}" color="{TEAL}"><u>{url}</u></link>',42,y+20,511,9,maxh=35,leading=13)
+    y=bottom+14
+para('가입 → 승인 → 일정 저장·게시 → 학생 구독·확인은 3~8쪽을 참고하세요. 화면 속 example.invalid는 예시 주소이며 실제 학교 공지 링크가 아닙니다.',42,739,511,10,maxh=42)
+end(14)
+
 c.save()
 shutil.copy2(pdf,HERE/pdf.name)
 print('Created',pdf)
