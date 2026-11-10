@@ -1,6 +1,8 @@
 # Ovlo 캘린더·학교 담당자 사용 가이드
 
-학교 소식과 개인 일정을 한곳에서 확인하는 방법을 설명합니다. 2026-11-10 한국어 화면 기준이며, 그림은 실제 버튼명과 동작을 반영한 **안내용 도식**입니다. 실제 화면 캡처가 아니며 예시 일정은 공식 공지가 아닙니다.
+학교 소식과 개인 일정을 한곳에서 확인하는 방법을 설명합니다. 2026-11-10 한국어 화면 기준입니다. **안내용 도식**과 **실제 운영 서비스 화면 캡처**를 함께 제공합니다. 12쪽 PDF에는 가입·승인·게시·구독·개인 일정·대리 등록 과정을 실제 화면 12장과 함께 담았습니다.
+
+화면 속 학교·계정·일정은 가이드 촬영용 테스트 데이터이며 실제 학교나 공식 공지가 아닙니다. 비밀번호 입력 전 가입 화면을 촬영했고, 관리자 신청 목록은 촬영용 신청 1건만 포함했습니다. 촬영 후 테스트 데이터와 임시 관리자 접근을 정리·복구했습니다. 캡처는 실제 브라우저 화면이며 API 응답이나 화면 문구를 대체하지 않았습니다. [촬영·정리 확인 정보](assets/calendar/screenshots/capture-info.json)
 
 - [쉬운 설명 PDF 내려받기](ovlo-calendar-guide-ko.pdf)
 - [기능·권한·API 설계 문서](../calendar.md)
@@ -41,6 +43,10 @@
 
 이미 계정이 있다면 새 계정을 만들지 않고 [담당자 신청·상태 확인](https://ovlo.mungji.com/university-account)에서 신청합니다. 반려·권한 해제 시 사유를 확인한 뒤 같은 화면에서 다시 신청할 수 있습니다.
 
+![실제 회원가입 유형 선택](assets/calendar/screenshots/01-signup-choice.png)
+
+![실제 학교 담당자 신청서 입력 영역](assets/calendar/screenshots/02-staff-registration-form.png)
+
 ## 2. 운영진의 담당자 승인
 
 1. [관리자 로그인](https://ovlo.mungji.com/admin/login) 후 **학교 일정 · 담당자** 메뉴를 엽니다.
@@ -50,6 +56,10 @@
 5. 담당자는 신청 화면에서 **새로고침 → 승인됨 → 학교 일정 관리하기**로 이동합니다.
 
 승인은 역할과 학교 배정을 함께 처리합니다. 회원 역할만 `UNIV`로 바꾸면 관리 학교가 생기지 않습니다. 거절은 **반려**, 이미 승인한 담당자의 권한 회수는 `APPROVED` 목록의 **학교 권한 해제**를 사용합니다.
+
+![실제 운영진 승인 버튼과 확인 사유](assets/calendar/screenshots/03-admin-approval.png)
+
+![실제 담당자 승인 결과](assets/calendar/screenshots/04-approval-result.png)
 
 ## 3. 학교 일정 작성·게시
 
@@ -65,6 +75,10 @@
 입력 예시(실제 공지가 아님): 제목 ‘비자 연장 서류 접수’, 분류 ‘행정 · 비자’, 일정 종류 ‘종일’, 시작일 11월 20일, 마지막 날 11월 22일. **마지막 날 (포함)**에는 실제 마지막 날짜를 넣으면 됩니다. 하루 일정은 시작일과 마지막 날을 같은 날짜로 입력합니다.
 
 게시 후에는 **수정**으로 변경할 수 있습니다. 행사가 취소되면 **행사 취소**를 눌러 학생에게 취소 상태를 알립니다. 초안은 **삭제**할 수 있습니다. 게시한 일정의 수정·취소는 학생이 다음에 조회할 때 반영됩니다.
+
+![실제 학교 일정 편집 주요 항목](assets/calendar/screenshots/05-event-main-fields.png)
+
+![실제 초안 선택과 게시 버튼](assets/calendar/screenshots/06-draft-and-publish.png)
 
 ## 4. 학생의 학교 일정 확인
 
@@ -85,6 +99,12 @@
 
 신청이 필요한 행사는 상세의 **신청 · 관련 페이지 ↗**를 이용합니다. 캘린더에서 일정을 보는 것만으로 신청이 완료되지는 않습니다.
 
+![실제 학교 구독 영역](assets/calendar/screenshots/07-school-subscription.png)
+
+![실제 학생 캘린더 달력 보기](assets/calendar/screenshots/08-student-calendar.png)
+
+![실제 학생 캘린더 목록과 상세](assets/calendar/screenshots/13-student-calendar-list.png)
+
 ## 5. 개인 일정 추가·수정·삭제
 
 1. [내 캘린더](https://ovlo.mungji.com/calendar)에서 **+ 개인 일정**을 누릅니다.
@@ -93,6 +113,8 @@
 4. 일정 목록에서 선택한 뒤 **수정** 또는 **삭제**를 사용합니다.
 
 예: 대사관 방문, 서류 준비, 친구와 약속. 학교 일정과 같은 캘린더에 보여도 개인 일정은 다른 사람에게 공유되지 않습니다.
+
+![실제 개인 일정 입력 양식](assets/calendar/screenshots/14-personal-event-editor.png)
 
 ## 6. 운영진의 공식 출처 기반 대리 등록
 
@@ -109,6 +131,12 @@
 관리자 화면의 분류: `ADMINISTRATION` = 행정·비자, `ACADEMIC` = 학사, `EVENT` = 행사, `OTHER` = 기타.
 
 학생에게는 **Ovlo 등록 · 학교 공식 공지 참고**로 표시되고, 상세의 **학교 공식 출처 ↗**로 원문을 볼 수 있습니다. 링크를 넣는다고 내용이 자동 수집되거나 갱신되지는 않습니다. 변경 공지가 있으면 운영진이 직접 수정하며, **출처 재확인 필요** 안내가 보이면 원문을 확인한 뒤 내용과 확인일을 갱신합니다.
+
+![실제 운영진의 출처 기반 대리 등록 양식](assets/calendar/screenshots/10-admin-curated-editor.png)
+
+![실제 학생 화면의 공식 출처 표시](assets/calendar/screenshots/11-curated-source-display.png)
+
+[모바일 캘린더 실제 화면](assets/calendar/screenshots/12-student-mobile.png)도 확인할 수 있습니다. 화면의 example.invalid 주소는 촬영용 예시이며, 실제 등록 시에는 학교 공식 공지 URL을 입력해야 합니다.
 
 ## 이번에 함께 고친 좋아요 문제
 

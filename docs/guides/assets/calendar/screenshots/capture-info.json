@@ -1,0 +1,16 @@
+{
+  "capturedAt": "2026-11-10T13:22:57.643Z",
+  "site": "https://ovlo.mungji.com",
+  "environment": "production",
+  "data": "Synthetic guide-only school, users and events; removed after capture.",
+  "screenshots": "Native browser captures, selected page regions; no mocked API or replaced UI text.",
+  "credentials": "Registration screenshot taken before entering the password.",
+  "applicationVersion": "sha-5ee7680",
+  "cleanupVerified": true,
+  "cleanupChecks": [
+    "Temporary admin configuration restored to exact original value",
+    "Temporary admin login rejected after successful rollout",
+    "Generated members, school and school events remaining: 0",
+    "Public register page HTTP 200"
+  ]
+}
