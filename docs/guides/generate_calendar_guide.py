@@ -1,11 +1,12 @@
-"""Rebuild the guide's PNG diagrams and 6-page PDF (Python 3, Pillow, ReportLab).
+"""Rebuild the guide's PNG diagrams and 12-page PDF with real UI captures (Python 3, Pillow, ReportLab).
 
 Run from any directory: python docs/guides/generate_calendar_guide.py
 Set OVLO_GUIDE_FONT_REGULAR / OVLO_GUIDE_FONT_BOLD to Korean TrueType fonts.
 Windows defaults: C:/Windows/Fonts/malgun.ttf and malgunbd.ttf.
 Outputs: sibling assets/calendar/*.png, sibling ovlo-calendar-guide-ko.pdf,
          project output/pdf/ovlo-calendar-guide-ko.pdf.
-Diagrams are explanatory artwork, not screenshots or real university notices.
+Diagrams are explanatory artwork. Existing screenshots are native production captures
+with synthetic guide-only data; this script neither captures nor edits the UI images.
 """
 from pathlib import Path
 import os
@@ -130,20 +131,20 @@ def para(text,x,y,w,size=11.5,bold=False,color=INK,maxh=None,leading=None):
 def begin(n,title,subtitle):
     c.setFillColor(HexColor(BG));c.rect(0,0,W,H,fill=1,stroke=0)
     para('OVLO  /  처음 사용하는 사람을 위한 안내',42,30,460,9,True,TEAL)
-    para(f'{n:02d} / 06',510,30,55,9,True,MUTED)
+    para(f'{n:02d} / 12',510,30,55,9,True,MUTED)
     para(title,42,66,510,25,True,maxh=90,leading=35)
     para(subtitle,42,145,510,11,color=MUTED,maxh=40)
 
 def end(n):
     c.setStrokeColor(HexColor(LINE));c.line(42,48,W-42,48)
     c.setFont('Guide',8);c.setFillColor(HexColor(MUTED))
-    c.drawString(42,32,'2026-11-10 화면 기준 | 그림은 실제 화면 캡처가 아닌 안내용 도식입니다.')
+    c.drawString(42,32,'2026-11-10 | 도식은 설명용 · 실제 화면은 안내용 테스트 데이터로 촬영')
     c.drawRightString(W-42,32,str(n));c.showPage()
 
 def art(name,y,h):c.drawImage(str(ASSETS/name),42,H-y-h,width=511,height=h,mask='auto')
 def panel(title,body,x,y,w,h,fill=WHITE,size=11.5):
     rect(x,y,w,h,fill);para(title,x+18,y+16,w-36,14,True,maxh=45)
-    para(body,x+18,y+58,w-36,size,maxh=h-73)
+    para(body,x+18,y+(48 if h<125 else 58),w-36,size,maxh=h-(60 if h<125 else 73))
 def link(label,url,x,y,w=500):
     para(f'<link href="{url}" color="{TEAL}"><u>{label}</u></link>',x,y,w,10.5)
 
@@ -159,34 +160,90 @@ panel('학생이 먼저 구독해 두어도 괜찮아요','학교 일정이 <b>�
 link('학교 담당자 신청·상태 확인','https://ovlo.mungji.com/university-account',42,735)
 end(2)
 
-begin(3,'학교 담당자 신청과 승인','신청만으로 학교 대표 권한이 생기지는 않아요. 운영진이 확인한 뒤 승인합니다.')
-panel('학교 담당자: 가입하고 신청하기','<b>1.</b> 회원가입에서 <b>학교 담당자 가입</b>을 선택해요.<br/><b>2.</b> 이름·닉네임·학교 업무 이메일·비밀번호를 입력해요.<br/><b>3.</b> 학교를 검색해 선택하고 부서·담당 업무·공식 안내를 적어요.<br/><b>4.</b> <b>계정 만들고 담당자 신청</b>을 눌러요.<br/><b>5.</b> 로그인 후 <b>내 신청 내역</b>에서 결과를 확인해요.',42,200,511,230,WHITE)
-panel('운영진: 소속을 확인하고 승인하기','<b>1.</b> 관리자 로그인 후 <b>학교 일정 · 담당자</b>를 열어요.<br/><b>2.</b> 신청 상태 <b>PENDING → 조회</b>로 신청을 찾아요.<br/><b>3.</b> 공식 직원 안내·연락처로 소속과 업무 권한을 확인해요.<br/><b>4.</b> <b>확인 근거 / 사유</b>를 쓰고 <b>승인·학교 배정</b>을 눌러요.',42,450,511,205,CORAL)
-para('기존 계정이 있으면 로그인 후 신청하면 됩니다. 담당자는 승인 뒤 <b>새로고침 → 승인됨 → 학교 일정 관리하기</b>로 이동하세요. 반려되면 사유를 확인하고 다시 신청할 수 있어요.',42,680,511,11.5,maxh=75)
+
+def shot(name,y,maxh=500,w=511,x=42):
+    path=ASSETS/'screenshots'/name
+    iw,ih=Image.open(path).size
+    scale=min(w/iw,maxh/ih)
+    dw,dh=iw*scale,ih*scale
+    c.drawImage(str(path),x+(w-dw)/2,H-y-dh,width=dw,height=dh,mask='auto')
+    return y+dh
+def caption(text,y):
+    para(text,42,y,511,9,color=MUTED,maxh=34)
+
+begin(3,'가입할 때, 학교 담당자를 선택해요','학교 담당자 계정도 같은 회원가입 화면에서 시작합니다.')
+shot('01-signup-choice.png',195,maxh=330)
+caption('실제 회원가입 화면. 학교 담당자 가입 버튼을 누르세요.',535)
+panel('학교 담당자 가입으로 들어가기','<b>1.</b> 아래 회원가입 링크를 열어요.<br/><b>2.</b> <b>학교 담당자 가입</b>을 선택해요.<br/><b>3.</b> 다음 쪽의 신청서를 작성해요. 이미 계정이 있다면 로그인 후 담당자 신청 화면을 이용하세요.',42,575,511,150,WHITE)
+link('회원가입 화면 열기','https://ovlo.mungji.com/register',42,747)
 end(3)
 
-begin(4,'저장한 다음, 게시까지!','담당자는 게시하고 학생은 구독해요. 개인 일정은 저장하면 바로 표시됩니다.')
-panel('학교 담당자','<b>학교 일정 관리</b>에서 학교를 선택해요.<br/><br/><b>+ 학교 일정</b>으로 제목·분류·기간 등을 입력해요.<br/><br/><b>저장</b>하면 초안이에요. 목록에서 일정을 선택하고 <b>게시</b>까지 눌러요.',42,200,247,260,BLUE,11.5)
-panel('학생','<b>캘린더 → 학교 구독</b>을 열어요.<br/><br/>학교를 검색·선택하고 <b>이 학교 구독</b>을 눌러요.<br/><br/>조회 월을 맞추고 일정 목록에서 항목을 눌러 상세 내용을 봐요.',306,200,247,260,GREEN,11.5)
-panel('예시: 서류 접수 기간과 나의 방문 일정','학교가 11월 20일부터 22일까지 접수한다면 종일 일정의 <b>시작일은 20일, 마지막 날은 22일</b>로 입력해요. 예시이며 실제 공지가 아닙니다.<br/><br/>학생은 <b>+ 개인 일정</b>으로 방문 날짜를 따로 추가할 수 있어요. 개인 일정은 상세의 <b>수정·삭제</b>로 관리하고 다른 사람에게 공개되지 않아요.',42,480,511,180,WHITE)
-para('<b>일정이 안 보이면:</b> 게시 여부 → 학교 구독 → 조회 월·선택 날짜·필터를 확인하세요. 게시된 행사가 취소되면 담당자가 <b>행사 취소</b>로 알려줄 수 있어요.',42,682,511,11.5,maxh=75)
+begin(4,'담당자 정보와 학교를 입력해요','신청서를 제출하면 검토 대기 상태가 됩니다. 승인 전에도 일반 회원 기능은 사용할 수 있어요.')
+shot('02-staff-registration-form.png',195,maxh=465)
+caption('실제 신청서의 입력 영역. 비밀번호를 입력하기 전에 촬영했습니다.',670)
+para('<b>학교 검색 → 검색 결과 선택 → 부서·담당 업무 입력 → 계정 만들고 담당자 신청</b> 순서예요. 실제 신청에는 학교 업무 이메일과 확인 가능한 공식 안내를 적으세요. 화면의 학교·이메일은 촬영용 예시입니다.',42,703,511,11,maxh=75)
 end(4)
 
-begin(5,'공식 공지를 대신 등록하려면','학교 담당자가 가입하지 않았어도 운영진이 학교 공식 공지를 확인해 등록할 수 있어요.')
-panel('운영진의 대리 등록 순서','<b>1.</b> 관리자 <b>학교 일정 · 담당자</b> 메뉴를 열어요.<br/><b>2.</b> <b>학교 공식 일정 대리 등록</b>에서 학교를 검색·선택해요.<br/><b>3.</b> 조회 월과 기존 일정을 확인하고 새 초안을 작성해요.<br/><b>4.</b> <b>공식 출처 링크</b>와 <b>출처 확인일</b>을 꼭 입력해요.<br/><b>5.</b> <b>저장 → 게시</b>한 뒤 학생 화면에서도 확인해요.',42,200,511,235,CORAL)
-panel('출처에는 무엇을 넣나요?','<b>공식 출처 링크:</b> 학교 공식 홈페이지의 해당 공지 주소<br/><b>출처 확인일:</b> 원문을 실제 확인한 날짜<br/>원문의 내용을 읽고 필요한 안내를 짧게 요약해 주세요.',42,455,511,145,WHITE)
-panel('학생에게는 이렇게 보여요','<b>Ovlo 등록 · 학교 공식 공지 참고</b>로 구분됩니다.<br/>상세의 <b>학교 공식 출처 ↗</b>를 누르면 원문을 볼 수 있어요.',42,620,511,115,GREEN)
-para('링크를 넣어도 자동 수집·갱신되지는 않아요. 변경 공지가 나오면 운영진이 수정해야 합니다.',42,746,511,10.5,maxh=35)
+begin(5,'운영진이 확인하고 승인해요','공식 직원 안내나 연락처로 소속과 업무 권한을 확인한 뒤 승인합니다.')
+para('<b>운영진:</b> 관리자 로그인 → 학교 일정 · 담당자 → PENDING 조회 → 확인 근거 / 사유 입력 → <b>승인·학교 배정</b>',42,195,511,11.5,maxh=65)
+shot('03-admin-approval.png',270,maxh=100)
+caption('운영진 화면의 촬영용 신청 1건. 다른 신청자의 정보는 포함하지 않았습니다.',370)
+para('<b>학교 담당자:</b> 내 신청 내역에서 <b>새로고침</b>을 누른 뒤 아래처럼 승인됨 상태인지 확인해요.',42,419,511,11.5,maxh=50)
+shot('04-approval-result.png',485,maxh=165)
+caption('승인된 신청과 학교 일정 관리하기 링크가 표시됩니다.',662)
+para('<b>학교 일정 관리하기</b>로 이동하세요. 역할을 UNIV로만 바꾸면 관리 학교가 생기지 않아요. 승인 시 학교 배정까지 함께 처리해야 합니다.',42,710,511,11,maxh=60)
 end(5)
 
-begin(6,'좋아요도 한 번만 정확하게','같은 요청이 동시에 들어오는 상황을 고쳐 숫자가 틀어지지 않도록 했어요.')
+begin(6,'학교 일정을 작성해요','관리 학교를 고른 뒤 + 학교 일정으로 새 일정을 만듭니다.')
+shot('05-event-main-fields.png',195,maxh=250)
+caption('실제 일정 편집 화면의 주요 입력 항목. 같은 편집 양식으로 새 일정을 작성합니다.',450)
+panel('제목과 기간부터 입력하세요','<b>1.</b> 제목과 분류, 종일 / 시간 지정 여부를 선택해요.<br/><b>2.</b> 기준 시간대와 시작일·마지막 날을 확인해요.<br/><b>3.</b> 아래쪽의 장소·대상·설명·신청 링크도 필요하면 입력해요.<br/><b>4.</b> 입력을 마치면 맨 아래 <b>저장</b>을 눌러요.',42,495,511,185,BLUE)
+para('하루 일정은 시작일과 마지막 날을 같은 날짜로 입력해요. 11월 20~22일 일정이라면 <b>마지막 날 (포함)</b>은 22일입니다. 실제 공지가 아닌 입력 예시예요.',42,708,511,11,maxh=60)
+end(6)
+
+begin(7,'담당자는 게시, 학생은 구독!','저장된 학교 일정은 초안이에요. 게시해야 구독한 학생에게 보입니다.')
+shot('06-draft-and-publish.png',195,maxh=235)
+caption('담당자 화면: 일정 목록에서 초안을 선택한 뒤 오른쪽 아래 게시를 누릅니다.',440)
+para('<b>학생:</b> 캘린더 → 학교 구독 → 학교 검색·선택 → <b>이 학교 구독</b>',42,490,511,11.5,maxh=45)
+shot('07-school-subscription.png',540,maxh=160)
+caption('학생 화면: 선택한 학교를 구독하는 영역입니다.',712)
+para('프로필에 학교를 입력하는 것과 캘린더 구독은 별개예요.',42,750,511,11,maxh=30)
+end(7)
+
+begin(8,'학생에게 이렇게 보여요','학교 일정, 운영진의 대리 등록 일정, 나만의 개인 일정을 함께 볼 수 있어요.')
+shot('13-student-calendar-list.png',195,maxh=430)
+caption('실제 학생 캘린더의 목록 보기. 일정을 누르면 상세 정보가 열립니다.',638)
+panel('일정이 안 보이면 여기부터','<b>게시 여부 → 학교 구독 → 조회 월·선택 날짜·필터</b>를 확인하세요. 달력 보기와 목록 보기를 바꿀 수 있고, 모바일은 목록 중심으로 확인합니다.',42,665,511,113,GREEN,10.5)
+end(8)
+
+begin(9,'개인 일정은 나만 볼 수 있어요','+ 개인 일정에서 입력하고 저장하면 바로 내 캘린더에 표시됩니다.')
+shot('14-personal-event-editor.png',195,maxh=420)
+caption('실제 개인 일정 입력 화면. 이 입력 예시는 추가 저장하지 않았습니다.',627)
+panel('학교 일정과 구분해서 기억하세요','개인 일정은 따로 게시할 필요가 없어요. 목록에서 선택한 뒤 <b>수정·삭제</b>로 관리합니다. <b>개인 · 나만 보기</b>로 표시되며 학교 담당자와 운영진에게도 공개되지 않아요.',42,665,511,113,GREEN,10.5)
+end(9)
+
+begin(10,'운영진이 공식 공지를 대신 등록해요','학교 담당자가 없어도 가능해요. 학교를 선택하고 원문을 확인한 뒤 작성합니다.')
+shot('10-admin-curated-editor.png',190,maxh=490)
+caption('실제 관리자 입력 화면. example.invalid 주소와 내용은 촬영용 예시입니다.',692)
+para('<b>공식 출처 링크</b>에는 실제 학교 공지 주소를, <b>출처 확인일</b>에는 원문을 확인한 날짜를 넣어요. 둘 다 필수예요. <b>저장 → 게시</b> 후 학생 화면에서 확인하세요.',42,728,511,10.5,maxh=52)
+end(10)
+
+begin(11,'학생은 출처를 확인할 수 있어요','운영진이 대신 등록한 일정에는 등록 주체와 공식 출처가 표시됩니다.')
+shot('11-curated-source-display.png',195,maxh=250,w=300,x=42)
+shot('12-student-mobile.png',195,maxh=420,w=180,x=373)
+para('왼쪽: 실제 대리 등록 일정의 상세.<br/>오른쪽: 실제 모바일 캘린더.',42,450,300,9,color=MUTED,maxh=40)
+para('<b>Ovlo 등록 · 학교 공식 공지 참고</b> 표시로 학교 담당자의 직접 등록과 구분해요.<br/><br/><b>학교 공식 출처 ↗</b>에서 원문을 확인하세요. 이 가이드의 주소는 실제 공지가 아닌 예시입니다.',42,510,300,11,maxh=135)
+panel('출처 링크가 자동 갱신을 뜻하지는 않아요','새 공지가 나오면 운영진이 원문을 다시 확인하고 내용·확인일을 수정해야 해요. 참가 신청이 필요한 일정은 상세의 신청 링크에서 따로 신청하세요.',42,665,511,113,WHITE,10.5)
+end(11)
+
+begin(12,'좋아요도 한 번만 정확하게','같은 요청이 동시에 들어오는 상황을 고쳐 숫자가 틀어지지 않도록 했어요.')
 art('reaction-fix.png',195,319.4)
 para('같은 표를 두 번 세지 않도록 고친 거예요. 실제로 반응을 바꾼 요청만 숫자를 조정하고, 중복 요청은 충돌로 처리해요. 이 상황을 확인하는 자동 검사도 추가했어요.',42,535,511,12,maxh=85)
 panel('현재 제공하는 범위','학교·개인 일정, 담당자 승인, 출처 기반 대리 등록을 이용할 수 있어요. 푸시 알림·반복 일정·외부 달력 연동·자동 공지 수집은 아직 제공하지 않아요.',42,635,511,110,WHITE,11)
 link('내 캘린더 열기','https://ovlo.mungji.com/calendar',42,758,170)
 link('기능 PR #66 / 검증 근거','https://github.com/yeonjae1220/Ovlo/pull/66',220,758,190)
 link('수정 PR #67','https://github.com/yeonjae1220/Ovlo/pull/67',435,758,120)
-end(6)
+end(12)
 c.save()
 shutil.copy2(pdf,HERE/pdf.name)
 print('Created',pdf)
