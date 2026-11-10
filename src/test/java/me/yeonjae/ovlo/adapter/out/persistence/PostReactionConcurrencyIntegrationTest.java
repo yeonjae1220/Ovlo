@@ -4,6 +4,7 @@ import me.yeonjae.ovlo.application.dto.command.ReactToPostCommand;
 import me.yeonjae.ovlo.application.dto.command.UnreactToPostCommand;
 import me.yeonjae.ovlo.application.port.in.post.ReactToPostUseCase;
 import me.yeonjae.ovlo.domain.post.exception.PostException;
+import me.yeonjae.ovlo.domain.post.model.PostId;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Tag;
@@ -13,6 +14,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.testcontainers.containers.PostgreSQLContainer;
@@ -22,17 +24,21 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CyclicBarrier;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.doAnswer;
 
 /**
  * 좋아요(반응) 동시성 통합 테스트 — 실 PostgreSQL(Testcontainers) + Flyway.
  *
  * <p><b>A안</b>: 반응은 회원 1명당 {@code post_reaction} 1행({@code (post_id, member_id)} PK)으로
- * idempotent 하게 관리된다. 서로 다른 회원의 동시 좋아요는 서로 다른 행을 건드리므로 애초에 충돌하지
+ * 관리되며 중복 요청은 CONFLICT로 거절한다. 서로 다른 회원의 동시 좋아요는 서로 다른 행을 건드리므로 애초에 충돌하지
  * 않고, 유일하게 공유되는 비정규화 카운트는 {@code UPDATE post SET like_count = like_count + :delta}
  * 원자 증감으로 갱신한다. 따라서 @Version 낙관적 락이나 재시도 데코레이터 없이도 동시 좋아요가 모두
  * 보존되고 카운트가 정확히 수렴해야 한다.
@@ -63,6 +69,9 @@ class PostReactionConcurrencyIntegrationTest {
 
     @Autowired
     private JdbcTemplate jdbc;
+
+    @MockitoSpyBean
+    private PostPersistenceAdapter persistence;
 
     private Long postId;
 
@@ -194,6 +203,108 @@ class PostReactionConcurrencyIntegrationTest {
         // 데이터 정합: PK 무결성으로 반응은 1행, like_count 는 정확히 1 (중복 증가 없음)
         assertThat(reactionRowCount("LIKE")).as("반응 행은 정확히 1개").isEqualTo(1);
         assertThat(likeCount()).as("like_count 는 정확히 1 (중복 증가 없음)").isEqualTo(1);
+    }
+
+    @Test
+    @DisplayName("도메인 조회 후 다른 요청이 좋아요를 커밋해도 늦은 중복 요청은 409로 거절한다")
+    void duplicateCommittedAfterDomainReadIsRejected() throws Exception {
+        CountDownLatch snapshotRead = new CountDownLatch(1);
+        CountDownLatch competingRequestCommitted = new CountDownLatch(1);
+        AtomicBoolean firstRead = new AtomicBoolean(true);
+        doAnswer(invocation -> {
+            Object snapshot = invocation.callRealMethod();
+            if (firstRead.getAndSet(false)) {
+                snapshotRead.countDown();
+                assertThat(competingRequestCommitted.await(30, TimeUnit.SECONDS)).isTrue();
+            }
+            return snapshot;
+        }).when(persistence).findById(new PostId(postId));
+
+        try (ExecutorService pool = Executors.newSingleThreadExecutor()) {
+            Future<Throwable> delayed = pool.submit(() -> captureFailure(() ->
+                    reactToPostUseCase.react(new ReactToPostCommand(postId, 2000L, "LIKE"))));
+            try {
+                assertThat(snapshotRead.await(30, TimeUnit.SECONDS)).isTrue();
+                reactToPostUseCase.react(new ReactToPostCommand(postId, 2000L, "LIKE"));
+            } finally {
+                competingRequestCommitted.countDown();
+            }
+            assertThat(delayed.get(30, TimeUnit.SECONDS))
+                    .isInstanceOfSatisfying(PostException.class, e ->
+                            assertThat(e.getErrorType()).isEqualTo(PostException.ErrorType.CONFLICT));
+        }
+        assertThat(reactionRowCount("LIKE")).isEqualTo(1);
+        assertThat(likeCount()).isEqualTo(1);
+    }
+
+    @Test
+    @DisplayName("같은 반응을 읽은 두 요청이 동시에 전환해도 행과 카운트는 한 번만 변경된다")
+    void concurrentSwitchesFromSameSnapshotAdjustCountsOnce() throws Exception {
+        reactToPostUseCase.react(new ReactToPostCommand(postId, 2000L, "LIKE"));
+        List<Throwable> outcomes = raceAfterDomainRead(() ->
+                reactToPostUseCase.react(new ReactToPostCommand(postId, 2000L, "DISLIKE")));
+        assertThat(likeCount()).isZero();
+        assertThat(dislikeCount()).isEqualTo(1);
+        assertThat(reactionRowCount("LIKE")).isZero();
+        assertThat(reactionRowCount("DISLIKE")).isEqualTo(1);
+        assertOneSuccessAndConflict(outcomes);
+    }
+
+    @Test
+    @DisplayName("같은 반응을 읽은 두 취소 요청은 카운트를 한 번만 감소시킨다")
+    void concurrentRemovalsFromSameSnapshotAdjustCountsOnce() throws Exception {
+        reactToPostUseCase.react(new ReactToPostCommand(postId, 2000L, "LIKE"));
+        List<Throwable> outcomes = raceAfterDomainRead(() ->
+                reactToPostUseCase.unreact(new UnreactToPostCommand(postId, 2000L)));
+        assertThat(likeCount()).isZero();
+        assertThat(reactionRowCount("LIKE")).isZero();
+        assertOneSuccessAndConflict(outcomes);
+    }
+
+    @Test
+    @DisplayName("같은 반응의 전환과 취소가 경합해도 저장된 행과 두 카운트가 일치한다")
+    void concurrentSwitchAndRemovalKeepCountsConsistent() throws Exception {
+        reactToPostUseCase.react(new ReactToPostCommand(postId, 2000L, "LIKE"));
+        List<Throwable> outcomes = raceAfterDomainRead(
+                () -> reactToPostUseCase.react(new ReactToPostCommand(postId, 2000L, "DISLIKE")),
+                () -> reactToPostUseCase.unreact(new UnreactToPostCommand(postId, 2000L)));
+        assertOneSuccessAndConflict(outcomes);
+        assertThat(likeCount()).isZero();
+        assertThat(dislikeCount()).isBetween(0L, 1L);
+        assertThat(likeCount()).isEqualTo(reactionRowCount("LIKE"));
+        assertThat(dislikeCount()).isEqualTo(reactionRowCount("DISLIKE"));
+    }
+
+    private List<Throwable> raceAfterDomainRead(Runnable action) throws Exception {
+        return raceAfterDomainRead(action, action);
+    }
+
+    private List<Throwable> raceAfterDomainRead(Runnable firstAction, Runnable secondAction) throws Exception {
+        CyclicBarrier snapshotsRead = new CyclicBarrier(2);
+        doAnswer(invocation -> {
+            Object snapshot = invocation.callRealMethod();
+            snapshotsRead.await(30, TimeUnit.SECONDS);
+            return snapshot;
+        }).when(persistence).findById(new PostId(postId));
+        try (ExecutorService pool = Executors.newFixedThreadPool(2)) {
+            Future<Throwable> first = pool.submit(() -> captureFailure(firstAction));
+            Future<Throwable> second = pool.submit(() -> captureFailure(secondAction));
+            List<Throwable> outcomes = new ArrayList<>();
+            outcomes.add(first.get(30, TimeUnit.SECONDS));
+            outcomes.add(second.get(30, TimeUnit.SECONDS));
+            return outcomes;
+        }
+    }
+
+    private static Throwable captureFailure(Runnable action) {
+        try { action.run(); return null; }
+        catch (RuntimeException e) { return e; }
+    }
+
+    private static void assertOneSuccessAndConflict(List<Throwable> outcomes) {
+        assertThat(outcomes.stream().filter(java.util.Objects::isNull).count()).isEqualTo(1);
+        assertThat(outcomes.stream().filter(java.util.Objects::nonNull).toList())
+                .singleElement().satisfies(e -> assertThat(is409Mappable(e)).isTrue());
     }
 
     /** 409(CONFLICT)로 매핑되는 실패인지 — PK 위반(DataIntegrityViolation) 또는 도메인 CONFLICT. */
