@@ -233,7 +233,7 @@ def _visa_code(code):
     return re.compile(rf"(?<![\w-]){code}(?![\w-]){_VISA_CTX}|{_VISA_WORDS}[^\n]{{0,25}}?(?<![\w-]){code}(?![\w-])")
 VISA_COUNTRY = [  # (compiled pattern, countries where it is valid)
     (_visa_code(r"D-?[24](?:-\d+)?"), {"KR"}),
-    (_visa_code(r"[FJ]-?1"), {"US"}),
+    (_visa_code(r"[FJ]-?1"), {"US", "PR"}),  # Puerto Rico is US territory: same F-1/J-1 visas
     (re.compile(r"\bTier 4\b|Student Route|Student visa \(UK\)"), {"GB"}),
     (_visa_code(r"X[12]"), {"CN"}),
     (re.compile(r"College Student visa"), {"JP"}),

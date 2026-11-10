@@ -185,7 +185,7 @@ END $$;""",
         f" (SELECT count(*) FROM university_report WHERE avg_rating IS NOT NULL OR recommend_ratio IS NOT NULL) AS ratings_left,"
         f" (SELECT string_agg(id || ':' || status, ',') FROM university_report WHERE id IN ({','.join(map(str, unpublish)) or 'NULL'})) AS unpublished;",
         # the DB quality trigger (V28–V30) records script-mix defects; show what it flagged for the new rows
-        f"SELECT report_id, lang, defects FROM report_quality_issue WHERE report_id IN ({','.join(map(str, pilot))}) ORDER BY 1, 2;",
+        f"SELECT report_id, lang, defects FROM report_quality_issue WHERE report_id IN ({','.join(map(str, pilot)) or 'NULL'}) ORDER BY 1, 2;",
     ]
     out = Path(args.out_dir)
     out.mkdir(parents=True, exist_ok=True)
