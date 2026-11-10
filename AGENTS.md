@@ -8,13 +8,13 @@
 - PostgreSQL 16 + JPA + Spring Data + QueryDSL 5
 - Redis 7 (JWT 세션 + 캐싱)
 - Lombok, SpringDoc OpenAPI (Swagger UI)
-- Docker Compose 배포
+- Docker 이미지 + GitHub Actions → Kubernetes 운영 배포
 - OTEL + Grafana 모니터링, K6 성능 테스트
 
 ## 베이스 패키지
 `me.yeonjae.ovlo` (build.gradle group = 'me.yeonjae')
 
-## 도메인 목록 (8개 Bounded Context)
+## 도메인 목록 (11개 Bounded Context)
 | 도메인 | 책임 |
 |--------|------|
 | `member` | 회원 신원·프로필 관리 |
@@ -25,6 +25,40 @@
 | `follow` | 팔로잉/팔로워 관계 |
 | `media` | 파일 업로드·HEIC 변환·스토리지 |
 | `chat` | DM·그룹채팅 (WebSocket STOMP) |
+| `calendar` | 학교·개인 일정, 학교 구독, 담당자 신청·승인·학교 배정 |
+| `office` | 국제처 운영, 담당자 소속, 공지·문의·상담·제휴 |
+| `verification` | 학교 이메일 등 인증 수단·상태와 신뢰 등급 |
+
+## 회원 역할과 학교 담당자 권한
+
+`MemberRole`은 `MEMBER / UNIV / ADMIN`이다.
+
+| 역할 | 캘린더 권한 |
+|------|-------------|
+| `MEMBER` | 학교 구독·게시 일정 조회, 본인 개인 일정 관리, 학교 담당자 신청 |
+| `UNIV` | 일반 회원 기능 + **배정된 학교**의 일정 관리 |
+| `ADMIN` | 학교 담당자 심사·배정 해제, 학교 일정 관리·공식 출처 기반 대리 등록 |
+
+- 공개 가입은 모두 `MEMBER`로 시작한다. 학교 담당자 가입은 계정과 `PENDING` 신청을 같은 트랜잭션에서 생성한다.
+- 운영진이 공식 연락처 등으로 확인한 뒤 승인하면 `MEMBER → UNIV` 변경과 학교 배정을 함께 저장한다. 기존 회원도 신청할 수 있다.
+- `UNIV` 역할만으로 학교 관리 권한이 생기지 않는다. 학교 프로필·학교 이메일·구독도 관리 권한을 부여하지 않는다.
+- 학교 일정 변경은 DB의 현재 회원 상태·역할·배정을 확인한다. JWT만 믿지 않으며, 마지막 배정을 해제해도 역할은 `UNIV`로 남지만 해당 학교 관리 권한은 사라진다.
+- 개인 일정은 소유 회원 조건으로 조회·변경·삭제한다. `ADMIN`도 타인의 개인 일정에 접근할 수 없다.
+- `/admin/**`는 별도 관리자 세션 인증·CSRF 보호를 사용한다. 회원 JWT의 역할과 관리자 화면 인증을 혼동하지 않는다.
+- 국제처의 `OfficeRole` (`OFFICE_ADMIN / OFFICE_STAFF`) 및 소속 권한은 `MemberRole`·캘린더 학교 배정과 별도다.
+
+## 캘린더 설계와 불변식
+
+상세: [`docs/calendar.md`](docs/calendar.md).
+
+- `UniversityEvent`, `PersonalEvent`, `UniversityApplication`은 엔티티, `EventPeriod`, `EventDetails`, `EventSource`는 불변 값 객체다.
+- 학교 일정과 개인 일정은 별도 저장하고 조회 시 합친다. 학교 일정을 학생별로 복사하지 않는다.
+- 학교 일정 상태는 `DRAFT / PUBLISHED / CANCELLED`다. 구독 학생에게 게시·취소 상태를 표시하고 초안은 담당자·운영진만 조회한다. 게시된 일정은 삭제 대신 취소한다.
+- 담당자 등록은 `UNIVERSITY`, 운영진 대리 등록은 `OVLO_CURATED`다. 대리 등록에는 HTTP(S) 출처 URL과 확인일이 필수이며, 등록 경로·최초 작성자는 서버에서 설정하고 수정 시 보존한다.
+- 출처 URL은 링크로만 사용한다. 공식성은 운영진이 확인하며 자동 수집·자동 갱신은 구현하지 않았다.
+- 종일 일정은 `LocalDate`, 시간 지정 일정은 `Instant` + IANA 시간대다. 종료는 미포함이며, UI의 종일 마지막 날(포함)을 API 전송 시 변환한다. 모호하거나 존재하지 않는 DST 현지 시각은 거부한다.
+- 일정 편집·상태 변경·삭제와 신청 심사는 `version`으로 경합을 검사하고 오래된 버전은 409로 거절한다. 학교 일정 변경·담당자 심사는 같은 트랜잭션에서 감사 기록을 남긴다.
+- 캘린더 스키마는 `V41__calendar_and_university_applications.sql`이다. 기존 V34는 Office 마이그레이션이므로 수정하거나 번호를 재사용하지 않는다.
 
 ## 패키지 구조 규칙
 ```
@@ -55,14 +89,22 @@ adapter/out ← application/port/out ← domain
 ```
 
 ## 핵심 설계 결정
-- **좋아요/싫어요 동시성**: Optimistic Lock (`@Version`) → 트래픽 증가 시 Redis counter 교체
+- **좋아요/싫어요 동시성**: 회원별 반응 행의 명시적 INSERT·조건부 UPDATE/DELETE + 같은 트랜잭션의 카운트 원자 증감. 아래 규칙을 따른다.
 - **StoragePort**: `LocalStorageAdapter` (Phase 1) → `S3StorageAdapter` (Phase 2) 인터페이스 교체
 - **TokenStorePort**: `RedisTokenAdapter` 구현 (JWT Refresh Token 저장)
 - **HEIC 변환**: TwelveMonkeys ImageIO 라이브러리
 - **채팅**: STOMP over WebSocket, 추후 Redis Pub/Sub 브로커로 확장
 - **DB 마이그레이션**: Flyway (V1__, V2__,... + R__seed_universities.sql)
 
-## TDD 구현 순서
+### 좋아요/싫어요 저장 규칙
+
+- `post_reaction`의 `(post_id, member_id)` PK로 회원별 반응을 관리한다. 신규 반응은 명시적 INSERT로 저장한다. 복합 ID의 JPA `save()`/`merge()`로 대체하지 않는다.
+- 전환·취소는 이전 반응 타입을 조건으로 UPDATE/DELETE하며, **변경 행 수가 1인 요청만** 카운트를 조정한다. 카운트는 `count = count + delta`로 갱신한다.
+- 도메인 사전 조회만으로 경합을 막을 수 없다. 저장 단계에서도 동일 반응은 409, 조건부 변경 경합은 409, 존재하지 않는 반응 취소는 404로 처리한다. 중복 키 예외를 잡아 성공으로 넘기지 않는다.
+- `PostJpaEntity`의 `@Version`은 유지되지만 반응 동시성은 위 조건부 DML로 처리한다. 전체 게시글 저장으로 반응 행을 덮어쓰거나 Redis counter·낙관적 락 재시도를 현재 구현으로 가정하지 않는다.
+- `PostReactionConcurrencyIntegrationTest`는 실제 PostgreSQL에서 중복·전환·취소 경합과 행/카운트 일치를 검증하며 PR·배포 CI에서 실행한다. 정확히 한 요청만 성공한다는 중복 요청 검증을 완화하지 않는다.
+
+## 초기 TDD 구현 순서
 1. member → 2. auth → 3. university → 4. board → 5. post(동시성) → 6. media → 7. follow → 8. chat
 
 ## 도메인 설계 시 /domain-modeling 스킬 활용
@@ -74,8 +116,17 @@ adapter/out ← application/port/out ← domain
 grep -r "jakarta.persistence" src/main/java/me/yeonjae/ovlo/domain/
 grep -r "JpaRepository" src/main/java/me/yeonjae/ovlo/application/service/
 
-# 전체 테스트
+# 일반 테스트 (integration 태그 제외)
 ./gradlew test
+
+# 전체 통합 테스트 (Docker 필요, PostgreSQL/Testcontainers 포함)
+./gradlew integrationTest
+
+# 좋아요 동시성 회귀 테스트 (PR·배포 CI에서도 실행)
+./gradlew integrationTest --tests '*PostReactionConcurrencyIntegrationTest'
+
+# 캘린더 날짜·시간대·DST 유틸리티 검증
+cd frontend && node scripts/test-calendar.cjs
 
 # Swagger UI
 http://localhost:8080/swagger-ui.html
@@ -87,6 +138,7 @@ http://localhost:8080/swagger-ui.html
 
 > 상세 문서: [`docs/frontend-security.md`](docs/frontend-security.md), [`docs/frontend-architecture.md`](docs/frontend-architecture.md)
 > 백엔드 보안 아키텍처: [`docs/backend-security.md`](docs/backend-security.md)
+> 캘린더·학교 담당자 가입: [`docs/calendar.md`](docs/calendar.md)
 
 **스택**: Next.js 15, React 19, TypeScript, Zustand, TanStack Query, axios
 
@@ -94,7 +146,10 @@ http://localhost:8080/swagger-ui.html
 | 그룹 | 경로 | 설명 |
 |------|------|------|
 | `(main)` | `/exchange-universities`, `/university-reports` | AppLayout, 공개 |
-| `(protected)` | `/boards`, `/posts`, `/chat`, `/profile`, `/follow` | 인증 필요, hydrated 후 redirect |
+| `(protected)` | `/boards`, `/posts`, `/chat`, `/profile`, `/follow`, `/my-university`, `/calendar`, `/calendar/manage`, `/university-account` | 인증 필요, hydrated 후 redirect |
+| 공개 가입 | `/register`, `/register/member`, `/register/university` | 가입 유형 선택, 일반 회원 가입, 학교 담당자 가입·신청 |
+
+`/admin/calendar`는 Next.js 라우트가 아닌 백엔드 관리자 화면이며 담당자 심사와 공식 출처 기반 대리 등록을 제공한다.
 
 ### 인증 핵심 패턴
 - `accessToken`: Zustand 메모리 전용 (localStorage 저장 안 함)
