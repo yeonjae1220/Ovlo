@@ -73,6 +73,20 @@ public class Member {
         return member;
     }
 
+    /** School staff have no student major/grade; approval grants UNIV separately. */
+    public static Member createUniversityApplicant(String nickname, String name, Email email, Password password, UniversityId school) {
+        if (nickname == null || nickname.isBlank() || name == null || name.isBlank())
+            throw new IllegalArgumentException("이름과 닉네임은 필수입니다");
+        Objects.requireNonNull(email); Objects.requireNonNull(password); Objects.requireNonNull(school);
+        if (password.hashedValue() == null || password.hashedValue().isBlank()) throw new IllegalArgumentException("비밀번호는 필수입니다");
+        Member member = new Member();
+        member.nickname = nickname; member.name = name; member.email = email; member.password = password;
+        member.provider = OAuthProvider.LOCAL; member.homeUniversityId = school;
+        member.status = MemberStatus.ACTIVE; member.role = MemberRole.MEMBER;
+        member.universityExperiences = new ArrayList<>(); member.languageSkills = new ArrayList<>(); member.contactInfos = new ArrayList<>();
+        return member;
+    }
+
     public static Member createWithOAuth(String nickname, String name,
                                          Email email, OAuthProvider provider, String providerId) {
         Objects.requireNonNull(nickname, "닉네임은 null일 수 없습니다");

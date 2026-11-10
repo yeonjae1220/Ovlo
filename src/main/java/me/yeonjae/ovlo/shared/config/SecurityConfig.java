@@ -320,7 +320,7 @@ public class SecurityConfig {
                         // GLOBAL-PIT-156: sendError() 로 인한 /error ERROR 디스패치가 아래 catch-all 에
                         // 다시 걸리면 admin 체인의 403(CSRF)·400 이 전부 401 로 위장된다.
                         .dispatcherTypeMatchers(DispatcherType.ERROR).permitAll()
-                        .requestMatchers(HttpMethod.POST, "/api/v1/members").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/v1/members", "/api/v1/members/university-registration").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/v1/auth/login").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/v1/auth/refresh").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/v1/auth/google").permitAll()

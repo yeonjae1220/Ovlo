@@ -10,9 +10,10 @@ import { Brand } from '../ui/Brand'
 import { ThemeToggle } from '../ui/ThemeToggle'
 import { UiLanguageSwitcher } from '../ui/UiLanguageSwitcher'
 
-type NavIconName = 'home' | 'globe' | 'chat' | 'profile'
+type NavIconName = 'home' | 'globe' | 'chat' | 'profile' | 'calendar'
 
 function NavIcon({ name }: { name: NavIconName }) {
+  if (name === 'calendar') return <svg aria-hidden="true" width="19" height="19" viewBox="0 0 24 24" fill="none"><rect x="4" y="5" width="16" height="16" rx="2" stroke="currentColor" strokeWidth="1.8"/><path d="M8 3v4M16 3v4M4 10h16M8 14h3M13 14h3M8 17h3" stroke="currentColor" strokeWidth="1.8"/></svg>
   if (name === 'home') {
     return (
       <svg aria-hidden="true" width="19" height="19" viewBox="0 0 24 24" fill="none">
@@ -46,7 +47,7 @@ function NavIcon({ name }: { name: NavIconName }) {
 }
 
 export default function AppLayout({ children }: { children: ReactNode }) {
-  const { t } = useI18n()
+  const { t, language } = useI18n()
   const { currentUser } = useAuthStore()
   const pathname = usePathname()
   const userLabel = currentUser?.nickname ?? currentUser?.name ?? t('nav.profile')
@@ -55,6 +56,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
     { to: '/boards', label: t('nav.home'), icon: 'home' },
     { to: '/exchange-universities', label: t('nav.exchange'), icon: 'globe' },
     { to: '/chat', label: t('nav.chat'), icon: 'chat' },
+    { to: '/calendar', label: language === 'ko' ? '캘린더' : 'Calendar', icon: 'calendar' },
     { to: '/my-university', label: t('nav.myUniversity'), icon: 'globe' },
   ]
 

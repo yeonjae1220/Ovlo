@@ -33,6 +33,17 @@ import java.util.Map;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
+    @ExceptionHandler(me.yeonjae.ovlo.domain.calendar.exception.CalendarStateException.class)
+    public ResponseEntity<ErrorResponse> handleCalendarState(me.yeonjae.ovlo.domain.calendar.exception.CalendarStateException ex) {
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(ErrorResponse.of("CALENDAR_STATE_CONFLICT", ex.getMessage()));
+    }
+
+    @ExceptionHandler(me.yeonjae.ovlo.domain.calendar.exception.CalendarException.class)
+    public ResponseEntity<ErrorResponse> handleCalendarException(me.yeonjae.ovlo.domain.calendar.exception.CalendarException ex) {
+        return ResponseEntity.status(resolveStatus(ex.getErrorType()))
+                .body(ErrorResponse.of("CALENDAR_" + ex.getErrorType(), ex.getMessage()));
+    }
+
     private static final Logger log = LoggerFactory.getLogger(GlobalExceptionHandler.class);
 
     @ExceptionHandler(MemberException.class)

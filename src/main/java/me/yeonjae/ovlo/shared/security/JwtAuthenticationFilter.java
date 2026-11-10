@@ -53,6 +53,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
             List<GrantedAuthority> authorities = new ArrayList<>();
             authorities.add(new SimpleGrantedAuthority(role == MemberRole.ADMIN ? "ADMIN" : "ROLE_USER"));
+            if (role == MemberRole.UNIV) authorities.add(new SimpleGrantedAuthority("UNIV"));
             membership.ifPresent(m -> {
                 authorities.add(new SimpleGrantedAuthority(OFFICE_STAFF_AUTHORITY));
                 if (m.isAdmin()) authorities.add(new SimpleGrantedAuthority(OFFICE_ADMIN_AUTHORITY));

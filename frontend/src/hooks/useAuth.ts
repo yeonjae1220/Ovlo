@@ -20,7 +20,8 @@ export function useLogin() {
       setAccessToken(token.accessToken)
       const user = await memberApi.getById(String(token.memberId))
       setAuth(token.accessToken, user)
-      router.push('/boards')
+      const next = new URLSearchParams(window.location.search).get('next')
+      router.push(next === '/university-account' ? next : '/boards')
     },
   })
 }

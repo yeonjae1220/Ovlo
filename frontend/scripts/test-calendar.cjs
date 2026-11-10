@@ -1,0 +1,26 @@
+// Small, dependency-free behavior checks against the actual TypeScript date utilities.
+const assert = require('node:assert/strict')
+const fs = require('node:fs')
+const path = require('node:path')
+const Module = require('node:module')
+const ts = require('typescript')
+const filename = path.join(__dirname, '../src/views/calendar/calendarDates.ts')
+const compiled = ts.transpileModule(fs.readFileSync(filename, 'utf8'), { compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2020 } })
+const loaded = new Module(filename, module)
+loaded._compile(compiled.outputText, filename)
+const { addDays, toInstant, localTime, occursOn } = loaded.exports
+assert.equal(addDays('2028-02-28', 1), '2028-02-29')
+assert.equal(addDays('2026-12-31', 1), '2027-01-01')
+assert.equal(toInstant('2026-03-01T09:00', 'Asia/Seoul'), '2026-03-01T00:00:00.000Z')
+assert.equal(toInstant('2026-07-01T09:00', 'America/New_York'), '2026-07-01T13:00:00.000Z')
+assert.equal(localTime('2026-03-01T00:00:00Z', 'Asia/Seoul'), '2026-03-01T09:00')
+assert.throws(() => toInstant('2026-03-08T02:30', 'America/New_York'))
+assert.throws(() => toInstant('2026-11-01T01:30', 'America/New_York'))
+assert.throws(() => toInstant('2026-03-01T09:00', 'unknown'))
+const allDay = { details: { period: { allDay: true, startDate: '2026-03-01', endDate: '2026-03-03', timeZone: 'Asia/Seoul' } } }
+assert.equal(occursOn(allDay, '2026-03-01', 'America/Los_Angeles'), true)
+assert.equal(occursOn(allDay, '2026-03-03', 'America/Los_Angeles'), false)
+const midnightEnd = { details: { period: { allDay: false, startsAt: '2026-03-01T10:00:00Z', endsAt: '2026-03-02T00:00:00Z' } } }
+assert.equal(occursOn(midnightEnd, '2026-03-01', 'UTC'), true)
+assert.equal(occursOn(midnightEnd, '2026-03-02', 'UTC'), false)
+console.log('Calendar date checks: 12 passed')

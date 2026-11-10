@@ -1,0 +1,62 @@
+.cal-page { color:var(--color-text); padding-bottom:32px; }
+.cal-page h1 { font-size:clamp(26px,4vw,38px); margin:6px 0; letter-spacing:-.04em; }
+.cal-page h2 { font-size:19px; margin:0 0 14px; }
+.cal-heading { display:flex; justify-content:space-between; gap:20px; align-items:center; margin:22px 0; flex-wrap:wrap; }
+.cal-heading p,.cal-hint { color:var(--color-text-muted); font-size:13px; }
+.cal-eyebrow { font-size:11px; letter-spacing:.16em; font-weight:700; color:var(--color-accent); }
+.cal-page button,.cal-page input,.cal-page select,.cal-page textarea { font:inherit; color:var(--color-text); background:var(--color-input-bg); border:1px solid var(--color-border-strong); border-radius:8px; padding:9px 12px; }
+.cal-page button { cursor:pointer; font-size:13px; }
+.cal-page button:disabled { opacity:.5; cursor:default; }
+.cal-page button:hover:not(:disabled) { border-color:var(--color-accent); }
+.cal-page :is(button,a,input,select,textarea):focus-visible { outline:2px solid var(--color-accent); outline-offset:3px; }
+.cal-page a { color:var(--color-accent); }
+.cal-page label { display:flex; flex-direction:column; gap:7px; font-size:13px; font-weight:600; }
+.cal-page input,.cal-page textarea { min-width:0; width:100%; box-sizing:border-box; }
+.cal-page .cal-primary { background:var(--color-accent-strong); color:var(--color-on-accent); border-color:transparent; font-weight:700; }
+.cal-panel { border:1px solid var(--color-border); border-radius:16px; padding:22px; background:var(--color-surface); margin-bottom:20px; min-width:0; }
+.cal-row,.cal-toolbar,.cal-actions { display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
+.cal-row,.cal-toolbar { justify-content:space-between; }
+.cal-row h2 { margin:0; }
+.cal-actions a { font-size:13px; }
+.cal-form { display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-top:18px; }
+.cal-wide { grid-column:1/-1; }
+.cal-editor { border-color:var(--color-accent); }
+.cal-error { color:var(--color-danger); padding:12px; background:var(--color-surface-soft); border-radius:8px; }
+.cal-status { color:var(--color-success); font-size:13px; }
+.cal-grid { display:grid; grid-template-columns:repeat(7,minmax(0,1fr)); }
+.cal-weekdays { text-align:center; font-size:12px; color:var(--color-text-muted); padding:12px 0; }
+.cal-page .cal-day { min-height:105px; border-radius:0; border-color:var(--color-border); padding:8px; text-align:left; display:flex; flex-direction:column; align-items:stretch; gap:4px; overflow:hidden; }
+.cal-day>span:first-child { font-size:12px; }
+.cal-day-out { opacity:.45; }
+.cal-page .cal-day-selected { outline:2px solid var(--color-accent); outline-offset:-2px; background:var(--color-surface-soft); }
+.cal-day-today>span:first-child { color:var(--color-accent); font-weight:800; }
+.cal-dot-event { font-size:10px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; border-left:3px solid var(--color-accent); background:var(--color-surface-soft); padding:2px 4px; border-radius:3px; }
+.cal-dot-event.cal-personal { border-left-color:var(--color-success); }
+.cal-columns { display:grid; grid-template-columns:1fr 1fr; gap:20px; align-items:start; }
+.cal-columns>.cal-agenda:only-child { grid-column:1/-1; }
+.cal-page .cal-agenda-item { width:100%; display:flex; flex-direction:column; align-items:flex-start; text-align:left; gap:5px; padding:16px 12px; margin-top:12px; border-left:3px solid var(--color-accent); background:transparent; }
+.cal-page .cal-agenda-personal { border-left-color:var(--color-success); }
+.cal-agenda-item small { color:var(--color-text-muted); }
+.cal-cancelled { text-decoration:line-through; opacity:.6; }
+.cal-detail h2 { margin-top:20px; }
+.cal-description { white-space:pre-wrap; overflow-wrap:anywhere; }
+.cal-badge { font-size:11px; background:var(--color-surface-soft); padding:5px 9px; border-radius:20px; }
+.cal-empty { padding:30px 10px; text-align:center; color:var(--color-text-muted); }
+.cal-school-picker { margin:16px 0; max-width:600px; }
+.cal-school-picker ul { list-style:none; padding:0; max-height:240px; overflow:auto; }
+.cal-school-picker li button { width:100%; text-align:left; margin-top:4px; }
+.cal-chips { display:flex; flex-wrap:wrap; gap:8px; margin:12px 0; }
+.cal-sr { position:absolute; width:1px; height:1px; padding:0; overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0; }
+.cal-signup { max-width:720px; margin:40px auto; padding:0 20px; }
+.cal-signup-choices { display:grid; grid-template-columns:1fr 1fr; gap:16px; margin:24px 0; }
+.cal-signup-choice { display:flex; flex-direction:column; gap:8px; padding:24px; border:1px solid var(--color-border); border-radius:16px; text-decoration:none; background:var(--color-surface); }
+.cal-signup-choice strong { font-size:20px; }
+.cal-signup-choice span { color:var(--color-text-muted); font-size:14px; }
+@media(max-width:720px) {
+ .cal-grid-wrap,.cal-view-toggle { display:none; }
+ .cal-columns,.cal-form,.cal-signup-choices { grid-template-columns:1fr; }
+ .cal-panel { padding:16px; }
+ .cal-heading { align-items:flex-start; }
+ .cal-toolbar { align-items:flex-start; gap:16px; }
+ .cal-toolbar input[type=month] { width:180px; }
+}

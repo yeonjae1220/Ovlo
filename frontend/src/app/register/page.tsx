@@ -1,7 +1,7 @@
 'use client'
 
-import RegisterPage from '@/views/auth/RegisterPage'
+import SignupChoicePage from '@/views/auth/SignupChoicePage'
 
 export default function Page() {
-  return <RegisterPage />
+  return <SignupChoicePage />
 }

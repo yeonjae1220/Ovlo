@@ -20,7 +20,7 @@ export interface CompleteOnboardingRequest {
 
 // ─── Member ─────────────────────────────────────────────────────────────────
 export type MemberStatus = 'ACTIVE' | 'WITHDRAWN' | 'PENDING_ONBOARDING'
-export type MemberRole = 'MEMBER' | 'ADMIN'
+export type MemberRole = 'MEMBER' | 'UNIV' | 'ADMIN'
 export type DegreeType = 'BACHELOR' | 'MASTER' | 'DOCTOR'
 export type GradeLevel = 'FRESHMAN' | 'SOPHOMORE' | 'JUNIOR' | 'SENIOR' | 'GRADUATE'
 

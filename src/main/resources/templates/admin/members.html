@@ -57,9 +57,12 @@
             <!-- 역할 변경 -->
             <form class="inline-form" th:action="@{/admin/members/{id}/role(id=${m.id()})}" method="post">
               <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
-              <input type="hidden" name="role" th:value="${m.role().name() == 'ADMIN'} ? 'MEMBER' : 'ADMIN'"/>
-              <button type="submit" class="btn btn-ghost btn-sm"
-                      th:text="${m.role().name() == 'ADMIN'} ? '↓ MEMBER' : '↑ ADMIN'">변경</button>
+              <select name="role" aria-label="회원 역할">
+                <option th:each="role : ${T(me.yeonjae.ovlo.domain.member.model.MemberRole).values()}"
+                        th:value="${role.name()}" th:text="${role.name()}" th:selected="${role == m.role()}"></option>
+              </select>
+              <button type="submit" class="btn btn-ghost btn-sm">역할 변경</button>
+              <a th:href="@{/admin/calendar}">학교 담당자 승인·배정</a>
             </form>
             <!-- 정지 / 해제 -->
             <form th:if="${m.status().name() != 'SUSPENDED'}" class="inline-form"
