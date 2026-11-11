@@ -32,13 +32,16 @@ public class ChatCommandService implements CreateChatRoomUseCase, SendMessageUse
     private final SaveChatPort saveChatPort;
     private final SaveReadMarkerPort saveReadMarkerPort;
     private final ApplicationEventPublisher eventPublisher;
+    private final me.yeonjae.ovlo.application.port.out.chat.ChatMessagePolicyPort messagePolicy;
 
     public ChatCommandService(LoadChatPort loadChatPort, SaveChatPort saveChatPort,
-                              SaveReadMarkerPort saveReadMarkerPort, ApplicationEventPublisher eventPublisher) {
+                              SaveReadMarkerPort saveReadMarkerPort, ApplicationEventPublisher eventPublisher,
+                              me.yeonjae.ovlo.application.port.out.chat.ChatMessagePolicyPort messagePolicy) {
         this.loadChatPort = loadChatPort;
         this.saveChatPort = saveChatPort;
         this.saveReadMarkerPort = saveReadMarkerPort;
         this.eventPublisher = eventPublisher;
+        this.messagePolicy = messagePolicy;
     }
 
     @Override
@@ -85,6 +88,7 @@ public class ChatCommandService implements CreateChatRoomUseCase, SendMessageUse
             throw new ChatException("채팅방을 찾을 수 없거나 참여자가 아닙니다", ChatException.ErrorType.NOT_FOUND);
         }
 
+        messagePolicy.requireMessageAllowed(command.chatRoomId());
         MessageResult result = MessageResult.from(saveChatPort.saveMessage(command.chatRoomId(), command.senderId(), command.content()));
         // 상담방이면 담당자 첫 답변 시각을 기록한다(커밋 뒤, ConsultationEventListener)
         eventPublisher.publishEvent(new ChatMessageSentEvent(command.chatRoomId(), command.senderId(), result.sentAt()));

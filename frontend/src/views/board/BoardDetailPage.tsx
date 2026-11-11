@@ -15,7 +15,7 @@ const C = {
 }
 
 export default function BoardDetailPage() {
-  const { t } = useI18n()
+  const { t, language } = useI18n()
   const params = useParams()
   const id = params?.id as string | undefined
   const { data: board, isLoading: boardLoading, isError: boardError, refetch: refetchBoard } = useBoard(id!)
@@ -36,6 +36,7 @@ export default function BoardDetailPage() {
         description={board.description ?? `${board.category} · ${board.scope}`}
         actions={
           <>
+            {board.category === 'TRADE' && <LinkButton href="/marketplace" variant="primary">{language === 'ko' ? '중고거래' : 'Marketplace'}</LinkButton>}
             <Button onClick={() => subscribe.mutate(id!)} variant="secondary">{t('board.subscribe')}</Button>
             <Button onClick={() => unsubscribe.mutate(id!)} variant="ghost">{t('board.unsubscribe')}</Button>
             {currentUser && (

@@ -83,6 +83,13 @@ public class RateLimiterService {
         check("rl:inquiry:day:member:" + memberId, inquiryPerDay, 24 * 60 * 60);
     }
 
+    public void checkMarketplaceWriteRate(Long member) { check("rl:market:write:" + member, 30, 600); }
+    public void checkMarketplaceUploadRate(Long member) { check("rl:market:photo:" + member, 80, 3600); }
+    public void checkMarketplaceTranslationRate(Long member) {
+        check("rl:market:translate:min:" + member, 10, 60);
+        check("rl:market:translate:day:" + member, 100, 86400);
+    }
+
     private void check(String key, int limit) {
         check(key, limit, windowSeconds);
     }

@@ -20,6 +20,10 @@ env:
   REGISTRY: ghcr.io
   IMAGE_NAME: ghcr.io/yeonjae1220/ovlo
 
+concurrency:
+  group: ovlo-${{ github.event_name == 'pull_request' && github.ref || 'production' }}
+  cancel-in-progress: false
+
 jobs:
   build-and-test:
     name: Build and Test
@@ -47,11 +51,29 @@ jobs:
       - name: Test reaction concurrency with PostgreSQL
         run: ./gradlew integrationTest --tests '*PostReactionConcurrencyIntegrationTest' --no-daemon
 
+      - name: Test marketplace lifecycle with PostgreSQL
+        run: ./gradlew integrationTest --tests '*MarketplaceIntegrationTest' --no-daemon
+
+  frontend-check:
+    name: Frontend build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - run: npm ci
+        working-directory: frontend
+      - run: npm run build
+        working-directory: frontend
+
   build-and-push:
     name: Build and Push Backend Docker Image
     runs-on: ubuntu-latest
-    needs: build-and-test
-    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+    needs: [build-and-test, frontend-check]
+    if: (github.event_name == 'push' || github.event_name == 'workflow_dispatch') && github.ref == 'refs/heads/main'
     permissions:
       contents: read
       packages: write
@@ -107,8 +129,8 @@ jobs:
   build-and-push-frontend:
     name: Build and Push Frontend Docker Image
     runs-on: ubuntu-latest
-    needs: build-and-test
-    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+    needs: [build-and-test, frontend-check]
+    if: (github.event_name == 'push' || github.event_name == 'workflow_dispatch') && github.ref == 'refs/heads/main'
     permissions:
       contents: read
       packages: write
@@ -155,7 +177,7 @@ jobs:
     # self-hosted runner가 lenovo에서 직접 실행 — SSH 불필요
     runs-on: [self-hosted, homelab]
     needs: [build-and-push, build-and-push-frontend]
-    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+    if: (github.event_name == 'push' || github.event_name == 'workflow_dispatch') && github.ref == 'refs/heads/main'
 
     steps:
       - name: Checkout

@@ -38,6 +38,7 @@ class ChatCommandServiceTest {
     @Mock LoadChatPort loadChatPort;
     @Mock SaveChatPort saveChatPort;
     @Mock SaveReadMarkerPort saveReadMarkerPort;
+    @Mock me.yeonjae.ovlo.application.port.out.chat.ChatMessagePolicyPort messagePolicy;
     @Mock org.springframework.context.ApplicationEventPublisher eventPublisher;
 
     @InjectMocks

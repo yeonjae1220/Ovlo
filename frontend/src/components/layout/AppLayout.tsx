@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import type { ReactNode } from 'react'
+import { useState, type ReactNode } from 'react'
 import { useAuthStore } from '../../store/authStore'
 import { useI18n } from '../../i18n/I18nProvider'
 import { Avatar } from '../ui'
@@ -10,9 +10,10 @@ import { Brand } from '../ui/Brand'
 import { ThemeToggle } from '../ui/ThemeToggle'
 import { UiLanguageSwitcher } from '../ui/UiLanguageSwitcher'
 
-type NavIconName = 'home' | 'globe' | 'chat' | 'profile' | 'calendar'
+type NavIconName = 'home' | 'globe' | 'chat' | 'profile' | 'calendar' | 'market'
 
 function NavIcon({ name }: { name: NavIconName }) {
+  if (name === 'market') return <svg aria-hidden="true" width="19" height="19" viewBox="0 0 24 24" fill="none"><path d="M4 8h16l-1 13H5L4 8ZM8 8V6a4 4 0 0 1 8 0v2" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round"/></svg>
   if (name === 'calendar') return <svg aria-hidden="true" width="19" height="19" viewBox="0 0 24 24" fill="none"><rect x="4" y="5" width="16" height="16" rx="2" stroke="currentColor" strokeWidth="1.8"/><path d="M8 3v4M16 3v4M4 10h16M8 14h3M13 14h3M8 17h3" stroke="currentColor" strokeWidth="1.8"/></svg>
   if (name === 'home') {
     return (
@@ -50,10 +51,12 @@ export default function AppLayout({ children }: { children: ReactNode }) {
   const { t, language } = useI18n()
   const { currentUser } = useAuthStore()
   const pathname = usePathname()
+  const [moreOpen, setMoreOpen] = useState(false)
   const userLabel = currentUser?.nickname ?? currentUser?.name ?? t('nav.profile')
 
   const navItems: Array<{ to: string; label: string; icon: NavIconName }> = [
     { to: '/boards', label: t('nav.home'), icon: 'home' },
+    { to: '/marketplace', label: language === 'ko' ? '중고거래' : 'Market', icon: 'market' },
     { to: '/exchange-universities', label: t('nav.exchange'), icon: 'globe' },
     { to: '/chat', label: t('nav.chat'), icon: 'chat' },
     { to: '/calendar', label: language === 'ko' ? '캘린더' : 'Calendar', icon: 'calendar' },
@@ -102,21 +105,21 @@ export default function AppLayout({ children }: { children: ReactNode }) {
       </main>
 
       <nav className="app-nav-mobile" aria-label="Primary">
-        {navItems.map(({ to, label, icon }) => (
+        {navItems.filter(({ to }) => ['/boards', '/marketplace', '/chat', '/calendar'].includes(to)).map(({ to, label, icon }) => (
           <Link key={to} href={to} className={isActive(to) ? 'app-mobile-link app-mobile-link--active' : 'app-mobile-link'}>
             <NavIcon name={icon} />
             <span>{label}</span>
           </Link>
         ))}
-        {currentUser && (
-          <Link
-            href={`/profile/${currentUser.id}`}
-            className={isActive(`/profile/${currentUser.id}`) ? 'app-mobile-link app-mobile-link--active' : 'app-mobile-link'}
-          >
-            <NavIcon name="profile" />
-            <span>{t('nav.profile')}</span>
-          </Link>
-        )}
+        <div className="app-mobile-more" onKeyDown={event => { if (event.key === 'Escape') setMoreOpen(false) }}>
+          <button type="button" className="app-mobile-link" aria-expanded={moreOpen} aria-controls="mobile-more-links" onClick={() => setMoreOpen(open => !open)}>
+            <NavIcon name="profile"/><span>{language === 'ko' ? '더보기' : 'More'}</span>
+          </button>
+          {moreOpen && <div id="mobile-more-links" className="app-mobile-more__links">
+            {navItems.filter(({ to }) => ['/exchange-universities', '/my-university'].includes(to)).map(({to,label}) => <Link key={to} href={to} onClick={() => setMoreOpen(false)}>{label}</Link>)}
+            {currentUser && <Link href={`/profile/${currentUser.id}`} onClick={() => setMoreOpen(false)}>{t('nav.profile')}</Link>}
+          </div>}
+        </div>
       </nav>
     </div>
   )
