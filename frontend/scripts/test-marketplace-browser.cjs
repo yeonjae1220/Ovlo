@@ -28,7 +28,7 @@ const item={id:42,sellerId:1,sellerName:'Campus seller',universityName:'Paris Un
     uploaded++;return json({id:`00000000-0000-0000-0000-${String(uploaded).padStart(12,'0')}`},201)
    }
    if(u.pathname.includes('/marketplace/photos/'))return route.fulfill({contentType:'image/png',body:image})
-   if(u.pathname.includes('/translations/'))return failTranslation?json({message:'Translation unavailable'},503):json({listingId:42,version:0,language:'en',title:'Kitchen bundle — returning home',description:'Pots and plates. Microwave excluded.',machineTranslated:true})
+   if(u.pathname.includes('/translations/'))return failTranslation?json({message:'Translation unavailable'},503):json({listingId:42,version:0,language:'en',title:'Kitchen bundle — returning home marketqa1111093027',description:'Pots and plates. Microwave excluded.',machineTranslated:true})
    if(u.pathname.endsWith('/marketplace/42'))return json(saved?{...item,details:saved}:item)
    if(u.pathname.endsWith('/marketplace') && request.method()==='POST'){saved=request.postDataJSON();return json({...item,details:saved},201)}
    if(u.pathname.endsWith('/marketplace'))return json({content:[item],hasNext:false})
@@ -69,7 +69,8 @@ const item={id:42,sellerId:1,sellerName:'Campus seller',universityName:'Paris Un
   assert.equal(saved.location.universityId,1);assert.deepEqual(saved.tags,['RETURN_HOME']);assert.equal(saved.photoIds[0],'00000000-0000-0000-0000-000000000002')
   await page.getByLabel('게시글 번역',{exact:true}).selectOption('en')
   await page.getByRole('button',{name:'게시글 번역',exact:true}).click()
-  await page.getByRole('heading',{name:'Kitchen bundle — returning home'}).waitFor()
+  await page.getByRole('heading',{name:'Kitchen bundle — returning home marketqa1111093027'}).waitFor()
+  assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false,'Long translated title must wrap within the mobile viewport')
   await page.getByRole('button',{name:'원문 보기'}).click()
   await page.getByRole('heading',{name:'귀국 정리 모두 무료'}).waitFor()
   failTranslation=true;await page.getByLabel('게시글 번역',{exact:true}).selectOption('fr')
