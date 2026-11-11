@@ -1,0 +1,8 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>중고거래 신고 관리</title></head>
+<body><main><a href="/admin">관리자 홈</a><h1>중고거래 신고 관리</h1><p>최근 신고 100건. 숨김·복구는 감사 기록에 남습니다.</p>
+<p th:if="${success}" th:text="${success}"></p><p role="alert" th:if="${error}" th:text="${error}"></p>
+<table><thead><tr><th>상품</th><th>신고 사유</th><th>상태</th><th>조치</th></tr></thead><tbody><tr th:each="r : ${reports}">
+<td th:text="${r.title}"></td><td th:text="${r.reason}"></td><td th:text="${r.hidden ? '숨김' : '표시'}"></td>
+<td><form th:action="@{/admin/marketplace/{id}(id=${r.listingId})}" method="post"><input type="hidden" name="version" th:value="${r.version}"><input type="hidden" name="hidden" th:value="${!r.hidden}"><button th:text="${r.hidden ? '복구' : '숨기기'}"></button></form></td>
+</tr></tbody></table></main></body></html>

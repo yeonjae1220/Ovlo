@@ -2,7 +2,7 @@ package me.yeonjae.ovlo.domain.chat.exception;
 
 public class ChatException extends RuntimeException {
 
-    public enum ErrorType { NOT_FOUND, CONFLICT, BAD_REQUEST }
+    public enum ErrorType { NOT_FOUND, CONFLICT, BAD_REQUEST, FORBIDDEN }
 
     private final ErrorType errorType;
 

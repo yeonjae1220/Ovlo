@@ -33,6 +33,17 @@ import java.util.Map;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
+    @ExceptionHandler(me.yeonjae.ovlo.domain.marketplace.exception.MarketplaceException.class)
+    public ResponseEntity<ErrorResponse> handleMarketplace(me.yeonjae.ovlo.domain.marketplace.exception.MarketplaceException ex) {
+        HttpStatus status = switch(ex.kind()) {
+            case NOT_FOUND -> HttpStatus.NOT_FOUND;
+            case FORBIDDEN -> HttpStatus.FORBIDDEN;
+            case CONFLICT -> HttpStatus.CONFLICT;
+            case UNAVAILABLE -> HttpStatus.SERVICE_UNAVAILABLE;
+        };
+        return ResponseEntity.status(status).body(ErrorResponse.of("MARKETPLACE_" + ex.kind(), ex.getMessage()));
+    }
+
     @ExceptionHandler(me.yeonjae.ovlo.domain.calendar.exception.CalendarStateException.class)
     public ResponseEntity<ErrorResponse> handleCalendarState(me.yeonjae.ovlo.domain.calendar.exception.CalendarStateException ex) {
         return ResponseEntity.status(HttpStatus.CONFLICT).body(ErrorResponse.of("CALENDAR_STATE_CONFLICT", ex.getMessage()));

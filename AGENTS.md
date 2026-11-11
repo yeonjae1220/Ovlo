@@ -14,7 +14,7 @@
 ## 베이스 패키지
 `me.yeonjae.ovlo` (build.gradle group = 'me.yeonjae')
 
-## 도메인 목록 (11개 Bounded Context)
+## 도메인 목록 (12개 Bounded Context)
 | 도메인 | 책임 |
 |--------|------|
 | `member` | 회원 신원·프로필 관리 |
@@ -28,6 +28,12 @@
 | `calendar` | 학교·개인 일정, 학교 구독, 담당자 신청·승인·학교 배정 |
 | `office` | 국제처 운영, 담당자 소속, 공지·문의·상담·제휴 |
 | `verification` | 학교 이메일 등 인증 수단·상태와 신뢰 등급 |
+| `marketplace` | 학교·지역 중고거래, 묶음·나눔, 요청 통화, 게시글 번역·상품별 문의 |
+
+중고거래 설계·검증: [`docs/marketplace.md`](docs/marketplace.md). 일반 `Post`와 별도 저장하며
+상황 태그·거래 위치·카테고리를 구분한다. 요청 통화는 거래 국가와 독립적이다.
+상품 쓰기는 `version`, 번역 캐시는 상품 ID·버전·목표 언어로 관리한다. 스키마는 V43이며
+게시글·사진 접근에는 현재 회원 상태·차단·운영자 숨김 여부를 적용한다.
 
 ## 회원 역할과 학교 담당자 권한
 
@@ -146,7 +152,7 @@ http://localhost:8080/swagger-ui.html
 | 그룹 | 경로 | 설명 |
 |------|------|------|
 | `(main)` | `/exchange-universities`, `/university-reports` | AppLayout, 공개 |
-| `(protected)` | `/boards`, `/posts`, `/chat`, `/profile`, `/follow`, `/my-university`, `/calendar`, `/calendar/manage`, `/university-account` | 인증 필요, hydrated 후 redirect |
+| `(protected)` | `/boards`, `/posts`, `/marketplace`, `/chat`, `/profile`, `/follow`, `/my-university`, `/calendar`, `/calendar/manage`, `/university-account` | 인증 필요, hydrated 후 redirect |
 | 공개 가입 | `/register`, `/register/member`, `/register/university` | 가입 유형 선택, 일반 회원 가입, 학교 담당자 가입·신청 |
 
 `/admin/calendar`는 Next.js 라우트가 아닌 백엔드 관리자 화면이며 담당자 심사와 공식 출처 기반 대리 등록을 제공한다.
