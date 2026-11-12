@@ -4,11 +4,12 @@ import me.yeonjae.ovlo.domain.marketplace.model.*;
 import me.yeonjae.ovlo.domain.media.model.StoragePath;
 import me.yeonjae.ovlo.application.dto.command.MarketplaceSearch;
 import me.yeonjae.ovlo.application.dto.result.ListingTranslation;
+import me.yeonjae.ovlo.application.dto.result.ListingResult;
 import java.util.*;
 
 public interface MarketplaceStore {
     Optional<Listing> find(long id, boolean lock);
-    List<Listing> search(long actor, MarketplaceSearch search);
+    List<ListingResult> search(long actor, MarketplaceSearch search);
     Listing save(Listing listing, long expectedVersion);
     record Photo(UUID id, long owner, StoragePath path) {}
     void addPhoto(Photo photo);

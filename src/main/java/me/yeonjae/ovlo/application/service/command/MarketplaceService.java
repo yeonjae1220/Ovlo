@@ -45,7 +45,8 @@ public class MarketplaceService implements MarketplaceUseCase {
     }
     private Listing load(long id,boolean lock) { return store.find(id,lock).orElseThrow(()->new MarketplaceException(NOT_FOUND,"Listing not found")); }
     private void visible(Listing l,long actor) {
-        if(l.deleted() || (l.hidden() && l.sellerId()!=actor) || store.blocked(actor,l.sellerId())) throw new MarketplaceException(NOT_FOUND,"Listing not found");
+        boolean activeSeller=members.findById(new MemberId(l.sellerId())).map(m->m.getStatus().isActive()).orElse(false);
+        if(!activeSeller || l.deleted() || (l.hidden() && l.sellerId()!=actor) || store.blocked(actor,l.sellerId())) throw new MarketplaceException(NOT_FOUND,"Listing not found");
     }
     private ListingResult result(Listing l) {
         String name=members.findById(new MemberId(l.sellerId())).map(Member::getNickname).orElse("Member");
@@ -63,7 +64,7 @@ public class MarketplaceService implements MarketplaceUseCase {
         active(actor);
         if(search.page()<0 || search.page()>1000) throw new IllegalArgumentException("Invalid page");
         var rows=store.search(actor,search);
-        return new ListingPage(rows.stream().limit(20).map(this::result).toList(),rows.size()>20);
+        return new ListingPage(rows.stream().limit(20).toList(),rows.size()>20);
     }
     @Override @Transactional(readOnly=true) public ListingResult get(long actor,long id) { active(actor); var l=load(id,false); visible(l,actor); return result(l); }
     @Override public ListingResult create(long actor,ListingDetails details) {

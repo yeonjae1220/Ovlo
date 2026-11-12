@@ -21,6 +21,11 @@ spring:
       - org.springdoc.core.configuration.SpringDocConfiguration
       - org.springdoc.webmvc.core.configuration.SpringDocWebMvcConfiguration
 
+ovlo:
+  marketplace:
+    photos:
+      cleanup-enabled: false # Cleanup is exercised explicitly, never by wall-clock timing in tests.
+
 jwt:
   secret: dGVzdC1zZWNyZXQta2V5LXRoYXQtaXMtbG9uZy1lbm91Z2gtZm9yLUhTMjU2
   access-token-ttl-minutes: 15

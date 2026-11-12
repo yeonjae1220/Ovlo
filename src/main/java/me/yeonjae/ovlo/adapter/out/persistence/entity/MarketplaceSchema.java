@@ -6,7 +6,7 @@ import java.time.*;
 import java.util.UUID;
 import java.io.Serializable;
 
-/** Hibernate schema metadata for H2 local/test profiles. Production DDL is owned by Flyway V43.
+/** Hibernate schema metadata for H2 local/test profiles. Production DDL is owned by Flyway V43/V45.
  * MarketplacePersistenceAdapter performs explicit, version-conditional writes through JDBC. */
 @Entity @Table(name="marketplace_listing")
 class MarketplaceListingSchema {
@@ -40,6 +40,9 @@ class MarketplacePhotoSchema {
     @Column(name="storage_path",columnDefinition="text",nullable=false) String path;
     @Column(name="storage_type",length=20,nullable=false) String type;
     @Column(name="created_at",columnDefinition="timestamp with time zone default current_timestamp") Instant createdAt;
+    @Column(name="orphaned_at",columnDefinition="timestamp with time zone default current_timestamp") Instant orphanedAt;
+    @Column(name="deletion_pending",nullable=false,columnDefinition="boolean default false") boolean deletionPending;
+    @Column(name="cleanup_retry_at") Instant cleanupRetryAt;
 }
 @Entity @Table(name="marketplace_listing_photo",uniqueConstraints=@UniqueConstraint(columnNames={"listing_id","position"}))
 class MarketplaceListingPhotoSchema {
@@ -70,5 +73,14 @@ class MarketplaceTranslationSchema {
     @Id @Column(length=2) String language;
     @Column(columnDefinition="text",nullable=false) String title;
     @Column(columnDefinition="text",nullable=false) String description;
+    public record Key(Long listing,Long version,String language) implements Serializable {}
+}
+@Entity @Table(name="marketplace_translation_lease") @IdClass(MarketplaceTranslationLeaseSchema.Key.class)
+class MarketplaceTranslationLeaseSchema {
+    @Id @Column(name="listing_id") Long listing;
+    @Id Long version;
+    @Id @Column(length=2) String language;
+    UUID owner;
+    @Column(name="expires_at") Instant expiresAt;
     public record Key(Long listing,Long version,String language) implements Serializable {}
 }
