@@ -13,6 +13,8 @@ import java.util.Optional;
 
 public interface OfficeConsultationJpaRepository extends JpaRepository<OfficeConsultationJpaEntity, Long> {
 
+    Optional<OfficeConsultationJpaEntity> findFirstByInquiryIdOrderByIdAsc(Long inquiryId);
+
     Optional<OfficeConsultationJpaEntity> findByChatRoomId(Long chatRoomId);
 
     @Query(value = """

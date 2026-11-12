@@ -1,11 +1,12 @@
 'use client'
 
+import { formatDateTime } from './officeFormatting'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useI18n } from '../../i18n/I18nProvider'
 import { useMyConsultations, useMyOffice } from '../../hooks/useOffice'
 import { Card, EmptyState, PageHeader, QueryErrorNotice, SkeletonLines } from '../../components/ui'
-import { ConsultationStatusBadge, formatDateTime } from './consultationUi'
+import { ConsultationStatusBadge } from './consultationUi'
 
 export default function MyConsultationsPage() {
   const { t } = useI18n()

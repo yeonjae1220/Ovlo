@@ -8,6 +8,8 @@ import me.yeonjae.ovlo.adapter.in.web.dto.request.InquiryFeedbackRequest;
 import me.yeonjae.ovlo.application.dto.command.AskQuestionCommand;
 import me.yeonjae.ovlo.application.dto.command.InquiryFeedbackCommand;
 import me.yeonjae.ovlo.application.dto.result.AskResult;
+import me.yeonjae.ovlo.application.dto.result.InquiryConversationResult;
+import me.yeonjae.ovlo.application.port.in.office.GetInquiryConversationQuery;
 import me.yeonjae.ovlo.application.port.in.office.AskQuestionUseCase;
 import me.yeonjae.ovlo.application.port.in.office.GiveInquiryFeedbackUseCase;
 import me.yeonjae.ovlo.domain.office.model.NoticeLang;
@@ -23,14 +25,17 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/api/v1/office/{officeId}/inquiries")
 public class StudentInquiryApiController {
 
+    private final GetInquiryConversationQuery conversations;
     private final AskQuestionUseCase askQuestionUseCase;
     private final GiveInquiryFeedbackUseCase feedbackUseCase;
     private final RateLimiterService rateLimiter;
     private final me.yeonjae.ovlo.shared.metrics.OfficeMetrics metrics;
 
     public StudentInquiryApiController(AskQuestionUseCase askQuestionUseCase, GiveInquiryFeedbackUseCase feedbackUseCase,
-                                       RateLimiterService rateLimiter, me.yeonjae.ovlo.shared.metrics.OfficeMetrics metrics) {
+                                       RateLimiterService rateLimiter, me.yeonjae.ovlo.shared.metrics.OfficeMetrics metrics,
+                                       GetInquiryConversationQuery conversations) {
         this.metrics = metrics;
+        this.conversations = conversations;
         this.askQuestionUseCase = askQuestionUseCase;
         this.feedbackUseCase = feedbackUseCase;
         this.rateLimiter = rateLimiter;
@@ -43,9 +48,15 @@ public class StudentInquiryApiController {
         rateLimiter.checkOfficeInquiryRate(memberId);
         NoticeLang lang = NoticeLang.fromCode(request.lang()).orElse(NoticeLang.KO);
         long started = System.nanoTime();
-        AskResult result = askQuestionUseCase.ask(new AskQuestionCommand(officeId, memberId, request.question(), lang));
+        AskResult result = askQuestionUseCase.ask(new AskQuestionCommand(officeId, memberId, request.question(), lang, request.previousInquiryId()));
         metrics.inquiry(result.outcome(), (System.nanoTime() - started) / 1_000_000);
         return ResponseEntity.status(HttpStatus.CREATED).body(result);
+    }
+
+    @GetMapping("/{inquiryId}/conversation")
+    public ResponseEntity<InquiryConversationResult> conversation(
+            @PathVariable Long officeId, @PathVariable Long inquiryId, @AuthenticationPrincipal Long memberId) {
+        return ResponseEntity.ok(conversations.conversation(officeId, memberId, inquiryId));
     }
 
     @Operation(summary = "답변 피드백 👍/👎 (본인 문의만)")

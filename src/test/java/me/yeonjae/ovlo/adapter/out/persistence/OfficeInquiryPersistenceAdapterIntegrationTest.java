@@ -132,4 +132,39 @@ class OfficeInquiryPersistenceAdapterIntegrationTest {
         assertThat(searchAdapter.findCandidates(officeId, NoticeLang.EN, "extend stay immigration", TODAY, 8))
                 .extracting(Notice::getId).containsExactly(visa.getId());
     }
+
+    @Test void concurrentContinuationsAppendExactlyOneWithoutLosingPreviousTurn() throws Exception {
+        Inquiry first = adapter.save(Inquiry.noGrounds(officeId, memberId, NoticeLang.KO, "first", List.of(), NOW, 0, null));
+        var ready = new java.util.concurrent.CountDownLatch(2);
+        var start = new java.util.concurrent.CountDownLatch(1);
+        try (var pool = java.util.concurrent.Executors.newVirtualThreadPerTaskExecutor()) {
+            java.util.concurrent.Callable<Boolean> append = () -> {
+                Inquiry next = Inquiry.noGrounds(officeId, memberId, NoticeLang.KO, "next", List.of(), NOW, 0, null).following(first);
+                ready.countDown();
+                if (!start.await(10, java.util.concurrent.TimeUnit.SECONDS)) throw new AssertionError("start timed out");
+                try { adapter.save(next); return true; }
+                catch (me.yeonjae.ovlo.domain.office.exception.InquiryException e) {
+                    assertThat(e.getErrorType()).isEqualTo(me.yeonjae.ovlo.domain.office.exception.InquiryException.ErrorType.CONFLICT);
+                    return false;
+                }
+            };
+            var a = pool.submit(append); var b = pool.submit(append);
+            assertThat(ready.await(10, java.util.concurrent.TimeUnit.SECONDS)).isTrue(); start.countDown();
+            assertThat(List.of(a.get(15, java.util.concurrent.TimeUnit.SECONDS), b.get(15, java.util.concurrent.TimeUnit.SECONDS)))
+                    .containsExactlyInAnyOrder(true, false);
+        }
+        Inquiry child = adapter.findByPreviousInquiryId(first.getId()).orElseThrow();
+        assertThat(adapter.findById(child.getId()).orElseThrow().getPreviousInquiryId()).isEqualTo(first.getId());
+        assertThat(adapter.findById(first.getId()).orElseThrow().getQuestion()).isEqualTo("first");
+        assertThat(jdbc.queryForObject("SELECT count(*) FROM office_inquiry WHERE previous_inquiry_id = ?", Long.class, first.getId())).isEqualTo(1);
+    }
+
+    @Test void handoffDuringGenerationRejectsLateAiReply() {
+        Inquiry first = adapter.save(Inquiry.noGrounds(officeId, memberId, NoticeLang.KO, "first", List.of(), NOW, 0, null));
+        Inquiry lateReply = Inquiry.noGrounds(officeId, memberId, NoticeLang.KO, "next", List.of(), NOW, 0, null).following(first);
+        first.markEscalated(); adapter.save(first);
+        org.assertj.core.api.Assertions.assertThatThrownBy(() -> adapter.save(lateReply)).hasMessageContaining("상담");
+        assertThat(adapter.findByPreviousInquiryId(first.getId())).isEmpty();
+    }
+
 }

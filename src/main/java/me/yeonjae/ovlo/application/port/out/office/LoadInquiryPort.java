@@ -11,6 +11,9 @@ import java.util.Optional;
 
 public interface LoadInquiryPort {
     Optional<Inquiry> findById(Long inquiryId);
+    /** Caller must hold a transaction; serializes continuation and handoff. */
+    Optional<Inquiry> findByIdForUpdate(Long inquiryId);
+    Optional<Inquiry> findByPreviousInquiryId(Long previousInquiryId);
 
     /** outcome·from·to 는 null 이면 필터하지 않는다. */
     Page<Inquiry> findByOffice(Long officeId, InquiryOutcome outcome, Instant from, Instant to, Pageable pageable);

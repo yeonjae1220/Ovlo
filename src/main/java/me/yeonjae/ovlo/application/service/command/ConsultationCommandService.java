@@ -15,6 +15,8 @@ import me.yeonjae.ovlo.application.port.out.office.OfficeNotificationPort;
 import me.yeonjae.ovlo.application.port.out.office.SaveConsultationPort;
 import me.yeonjae.ovlo.application.port.out.office.SaveInquiryPort;
 import me.yeonjae.ovlo.application.service.office.StudentOfficeAccessPolicy;
+import me.yeonjae.ovlo.application.service.office.InquiryHistory;
+import me.yeonjae.ovlo.domain.office.model.ConsultationConsent;
 import me.yeonjae.ovlo.domain.chat.model.ChatRoom;
 import me.yeonjae.ovlo.domain.chat.model.ChatRoomId;
 import me.yeonjae.ovlo.domain.chat.model.ChatRoomType;
@@ -86,6 +88,7 @@ public class ConsultationCommandService implements OpenConsultationUseCase, Mana
     @Transactional
     public ConsultationResult open(OpenConsultationCommand c) {
         Office office = accessPolicy.assertMember(c.memberId(), c.officeId());
+        ConsultationConsent.textFor(c.consentVersion());
         // 묻는 사람이 그 국제처 담당자이기도 하면(근로 학생 등) 받는 쪽에서 뺀다 — 참여자가 겹치면 PK 중복 409 (2026-11-02)
         List<Long> staffIds = office.activeStaff().stream().map(OfficeStaff::getMemberId)
                 .filter(id -> !id.equals(c.memberId())).toList();
@@ -95,12 +98,27 @@ public class ConsultationCommandService implements OpenConsultationUseCase, Mana
         }
 
         Optional<Inquiry> inquiry = c.inquiryId() == null ? Optional.empty()
-                : loadInquiryPort.findById(c.inquiryId()).filter(i -> i.getOfficeId().equals(c.officeId()));
+                : loadInquiryPort.findByIdForUpdate(c.inquiryId()).filter(i -> i.getOfficeId().equals(c.officeId()));
         if (c.inquiryId() != null && inquiry.isEmpty()) {
             throw new ConsultationException("문의를 찾을 수 없습니다: id=" + c.inquiryId(), ConsultationException.ErrorType.NOT_FOUND);
         }
         if (inquiry.isPresent() && !inquiry.get().isOwnedBy(c.memberId())) {
             throw new ConsultationException("본인의 문의만 전달할 수 있습니다", ConsultationException.ErrorType.FORBIDDEN);
+        }
+        String transcript = null;
+        if (inquiry.isPresent()) {
+            // Same row lock is used when saving a continuation. A retry returns the original consultation.
+            Optional<Consultation> existing = loadConsultationPort.findFirstByInquiryId(c.inquiryId());
+            if (existing.isPresent()) return toResult(existing.get());
+            if (loadInquiryPort.findByPreviousInquiryId(c.inquiryId()).isPresent())
+                throw InquiryHistory.conflict("새 질문이 있습니다. 최신 대화를 확인한 뒤 전달해 주세요");
+            inquiry.get().assertCanContinue();
+            if (inquiry.get().getPreviousInquiryId() != null && !"v2".equals(c.consentVersion())) {
+                throw new ConsultationException("대화 전달 동의를 다시 확인해 주세요", ConsultationException.ErrorType.CONSENT_REQUIRED);
+            }
+            if ("v2".equals(c.consentVersion())) {
+                transcript = InquiryHistory.transcript(InquiryHistory.load(loadInquiryPort, c.officeId(), c.memberId(), c.inquiryId()));
+            }
         }
         String question = inquiry.map(Inquiry::getQuestion).orElseGet(() -> requireText(c.message()));
         String answer = inquiry.map(Inquiry::getAnswerText).orElse(null);
@@ -116,7 +134,7 @@ public class ConsultationCommandService implements OpenConsultationUseCase, Mana
 
         Instant now = clock.instant();
         Consultation consultation = Consultation.open(c.officeId(), c.memberId(), inquiry.map(Inquiry::getId).orElse(null),
-                c.consentVersion(), new Consultation.SharedContext(question, answer, lang, true), room.getId().value(), now);
+                c.consentVersion(), new Consultation.SharedContext(question, answer, lang, true, transcript), room.getId().value(), now);
         Consultation saved = saveConsultationPort.save(consultation);
 
         inquiry.ifPresent(i -> {

@@ -1,5 +1,6 @@
 'use client'
 
+import { formatDateTime } from './officeFormatting'
 import { Badge, Card } from '../../components/ui'
 import type { ConsultationStatus, TranscriptMessage } from '../../api/office'
 import { useI18n } from '../../i18n/I18nProvider'
@@ -8,13 +9,6 @@ export function ConsultationStatusBadge({ status }: { status: ConsultationStatus
   const { t } = useI18n()
   const tone = status === 'OPEN' ? 'warning' : status === 'IN_PROGRESS' ? 'info' : status === 'RESOLVED' ? 'success' : 'neutral'
   return <Badge tone={tone}>{t(`consult.status.${status}`)}</Badge>
-}
-
-export function formatDateTime(value: string | null | undefined): string {
-  if (!value) return ''
-  const d = new Date(value)
-  if (Number.isNaN(d.getTime())) return value
-  return new Intl.DateTimeFormat(undefined, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }).format(d)
 }
 
 /** 대화 목록. 상대방 메시지는 번역을 앞에, 원문을 접은 글씨로 함께 보여 준다. */

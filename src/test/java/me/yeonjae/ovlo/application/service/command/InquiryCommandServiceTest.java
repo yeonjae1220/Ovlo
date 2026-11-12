@@ -194,4 +194,89 @@ class InquiryCommandServiceTest {
         assertThatThrownBy(() -> sut.feedback(new InquiryFeedbackCommand(99L, 900L, MEMBER, true, null)))
                 .isInstanceOf(InquiryException.class);
     }
+
+    @Test void followUpUsesSavedHistoryForSearchAndPrompt() {
+        Inquiry previous = Inquiry.answered(OFFICE, MEMBER, NoticeLang.KO, "기숙사 신청은 언제까지?", "2월 10일까지 [1]",
+                List.of(77L), List.of(77L), NOW, 0, "test");
+        previous.assignId(100L);
+        given(loadInquiryPort.findById(100L)).willReturn(Optional.of(previous));
+        given(searchPort.findCandidates(eq(OFFICE), eq(NoticeLang.KO), anyString(), eq(TODAY), anyInt())).willReturn(List.of(dorm));
+        given(answerPort.answer(any())).willReturn(new AnswerGenerationPort.Result("공지 확인 [1]", "test", 1, 1, false));
+        sut.ask(new AskQuestionCommand(OFFICE, MEMBER, "어디서 신청해?", NoticeLang.KO, 100L));
+        verify(searchPort).findCandidates(OFFICE, NoticeLang.KO, "기숙사 신청은 언제까지? 어디서 신청해?", TODAY, 8);
+        ArgumentCaptor<AnswerGenerationPort.Request> request = ArgumentCaptor.forClass(AnswerGenerationPort.Request.class);
+        verify(answerPort).answer(request.capture());
+        assertThat(request.getValue().history()).containsExactly(new AnswerGenerationPort.Turn(previous.getQuestion(), previous.getAnswerText()));
+        ArgumentCaptor<Inquiry> saved = ArgumentCaptor.forClass(Inquiry.class);
+        verify(saveInquiryPort).save(saved.capture());
+        assertThat(saved.getValue().getPreviousInquiryId()).isEqualTo(100L);
+    }
+
+    @Test void foreignHistoryIsRejectedBeforeSearchingOrCallingLlm() {
+        Inquiry foreign = Inquiry.noGrounds(OFFICE, 999L, NoticeLang.KO, "private", List.of(), NOW, 0, null);
+        foreign.assignId(100L);
+        given(loadInquiryPort.findById(100L)).willReturn(Optional.of(foreign));
+        assertThatThrownBy(() -> sut.ask(new AskQuestionCommand(OFFICE, MEMBER, "이어서", NoticeLang.KO, 100L)))
+                .isInstanceOfSatisfying(InquiryException.class, e -> assertThat(e.getErrorType()).isEqualTo(InquiryException.ErrorType.NOT_FOUND));
+        verify(answerPort, never()).answer(any());
+        verify(searchPort, never()).findCandidates(any(), any(), any(), any(), anyInt());
+    }
+
+    @Test void oldAnswerIsNotEvidenceWhenCurrentDocumentsAreMissing() {
+        Inquiry previous = Inquiry.answered(OFFICE, MEMBER, NoticeLang.KO, "기숙사 신청", "old fact [1]",
+                List.of(77L), List.of(77L), NOW, 0, "test");
+        previous.assignId(100L);
+        given(loadInquiryPort.findById(100L)).willReturn(Optional.of(previous));
+        given(searchPort.findCandidates(any(), any(), anyString(), any(), anyInt())).willReturn(List.of());
+        AskResult result = sut.ask(new AskQuestionCommand(OFFICE, MEMBER, "그럼 어디서?", NoticeLang.KO, 100L));
+        assertThat(result.outcome()).isEqualTo(InquiryOutcome.NO_GROUNDS);
+        assertThat(result.canEscalate()).isTrue();
+        verify(answerPort, never()).answer(any());
+    }
+
+    @Test void alreadyContinuedTurnCannotForkOrOverwriteHistory() {
+        Inquiry previous = Inquiry.noGrounds(OFFICE, MEMBER, NoticeLang.KO, "기숙사", List.of(), NOW, 0, null);
+        previous.assignId(100L);
+        given(loadInquiryPort.findById(100L)).willReturn(Optional.of(previous));
+        given(loadInquiryPort.findByPreviousInquiryId(100L)).willReturn(Optional.of(previous));
+        assertThatThrownBy(() -> sut.ask(new AskQuestionCommand(OFFICE, MEMBER, "이어서", NoticeLang.KO, 100L)))
+                .isInstanceOfSatisfying(InquiryException.class, e -> assertThat(e.getErrorType()).isEqualTo(InquiryException.ErrorType.CONFLICT));
+        verify(answerPort, never()).answer(any());
+    }
+
+
+    @Test void historyLimitPreventsUnboundedPromptAndConversation() {
+        Inquiry previous = null;
+        for (long id = 1; id <= 20; id++) {
+            Inquiry turn = Inquiry.noGrounds(OFFICE, MEMBER, NoticeLang.KO, "question " + id, List.of(), NOW, 0, null);
+            if (previous != null) turn.following(previous);
+            turn.assignId(id);
+            given(loadInquiryPort.findById(id)).willReturn(Optional.of(turn));
+            previous = turn;
+        }
+        assertThatThrownBy(() -> sut.ask(new AskQuestionCommand(OFFICE, MEMBER, "next", NoticeLang.KO, 20L)))
+                .isInstanceOfSatisfying(InquiryException.class, e -> assertThat(e.getErrorType()).isEqualTo(InquiryException.ErrorType.CONFLICT));
+        verify(answerPort, never()).answer(any());
+        verify(saveInquiryPort, never()).save(any());
+    }
+
+    @Test void promptsContainOnlySixRecentBoundedTurns() {
+        Inquiry previous = null;
+        for (long id = 1; id <= 8; id++) {
+            Inquiry turn = Inquiry.answered(OFFICE, MEMBER, NoticeLang.KO, "question " + id,
+                    "x".repeat(4000) + " [1]", List.of(77L), List.of(77L), NOW, 0, "test");
+            if (previous != null) turn.following(previous);
+            turn.assignId(id);
+            given(loadInquiryPort.findById(id)).willReturn(Optional.of(turn));
+            previous = turn;
+        }
+        given(searchPort.findCandidates(any(), any(), anyString(), any(), anyInt())).willReturn(List.of(dorm));
+        given(answerPort.answer(any())).willReturn(new AnswerGenerationPort.Result("NO_GROUNDS", "test", 1, 1, false));
+        sut.ask(new AskQuestionCommand(OFFICE, MEMBER, "next", NoticeLang.KO, 8L));
+        ArgumentCaptor<AnswerGenerationPort.Request> request = ArgumentCaptor.forClass(AnswerGenerationPort.Request.class);
+        verify(answerPort).answer(request.capture());
+        assertThat(request.getValue().history()).hasSize(6);
+        assertThat(request.getValue().history().getFirst().question()).isEqualTo("question 3");
+        assertThat(request.getValue().history()).allSatisfy(t -> assertThat(t.answer()).hasSize(2000));
+    }
 }

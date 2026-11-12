@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import Link from 'next/link'
 import { useI18n } from '../../i18n/I18nProvider'
 import { useMyOffice, usePartnerSettings, useUpdatePartnerSettings } from '../../hooks/useOffice'
@@ -17,11 +17,10 @@ export default function OfficeSettingsPage() {
 
   const settings = usePartnerSettings(officeId)
   const update = useUpdatePartnerSettings(officeId)
-  const [enabled, setEnabled] = useState<PartnerCategory[]>([])
-
-  useEffect(() => {
-    if (settings.data) setEnabled(settings.data)
-  }, [settings.data])
+  const [draft, setDraft] = useState<{ officeId: number | undefined; source: PartnerCategory[]; enabled: PartnerCategory[] } | null>(null)
+  // A new server snapshot (or another office) replaces the draft without an effect-driven render.
+  const enabled = draft && draft.officeId === officeId && draft.source === settings.data
+    ? draft.enabled : settings.data ?? []
 
   if (myOffice.isLoading) return <SkeletonLines count={4} />
   if (myOffice.isError) return <QueryErrorNotice onRetry={() => myOffice.refetch()} />
@@ -34,8 +33,10 @@ export default function OfficeSettingsPage() {
     )
   }
 
-  const toggle = (c: PartnerCategory) =>
-    setEnabled((prev) => (prev.includes(c) ? prev.filter((x) => x !== c) : [...prev, c]))
+  const toggle = (c: PartnerCategory) => {
+    if (!settings.data) return
+    setDraft({ officeId, source: settings.data, enabled: enabled.includes(c) ? enabled.filter(x => x !== c) : [...enabled, c] })
+  }
 
   return (
     <div style={{ maxWidth: 760, margin: '0 auto', display: 'flex', flexDirection: 'column', gap: 16 }}>

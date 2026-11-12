@@ -32,7 +32,7 @@ class ConsultationTest {
 
         Consultation c = open();
         assertThat(c.getStatus()).isEqualTo(ConsultationStatus.OPEN);
-        assertThat(c.getConsentVersion()).isEqualTo("v1");
+        assertThat(c.getConsentVersion()).isEqualTo("v2");
         assertThat(c.getConsentText()).contains("국제처 담당자에게 전달");
         assertThat(c.getChatRoomId()).isEqualTo(300L);
         assertThat(c.getInquiryId()).isEqualTo(900L);

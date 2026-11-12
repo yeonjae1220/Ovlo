@@ -148,4 +148,20 @@ class OfficeConsultationPersistenceAdapterIntegrationTest {
         assertThat(chatAdapter.isMember(new me.yeonjae.ovlo.domain.chat.model.ChatRoomId(roomId), new MemberId(staffId))).isFalse();
         assertThat(chatAdapter.isMember(new me.yeonjae.ovlo.domain.chat.model.ChatRoomId(roomId), new MemberId(extraStaff))).isTrue();
     }
+
+    @Autowired private OfficeInquiryPersistenceAdapter inquiries;
+
+    @Test void v2ConversationSnapshotSurvivesReloadAndStatusChange() {
+        var inquiry = inquiries.save(me.yeonjae.ovlo.domain.office.model.Inquiry.noGrounds(officeId, studentId,
+                NoticeLang.KO, "늦으면?", List.of(), NOW, 0, null));
+        String transcript = "Student: 기숙사 신청?\nAI: 2월까지 [1]\n\nStudent: 늦으면?\nAI: NO_GROUNDS";
+        var saved = adapter.save(Consultation.open(officeId, studentId, inquiry.getId(), "v2",
+                new Consultation.SharedContext("늦으면?", null, NoticeLang.KO, true, transcript), newRoom(), NOW));
+        var reloaded = adapter.findFirstByInquiryId(inquiry.getId()).orElseThrow();
+        assertThat(reloaded.getId()).isEqualTo(saved.getId());
+        assertThat(reloaded.getSharedContext().conversationText()).isEqualTo(transcript);
+        assertThat(reloaded.getConsentText()).contains("모든 질문");
+        reloaded.assign(staffId, NOW.plusSeconds(10)); adapter.save(reloaded);
+        assertThat(adapter.findById(saved.getId()).orElseThrow().getSharedContext().conversationText()).isEqualTo(transcript);
+    }
 }

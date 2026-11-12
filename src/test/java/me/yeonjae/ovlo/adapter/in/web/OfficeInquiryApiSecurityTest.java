@@ -129,4 +129,29 @@ class OfficeInquiryApiSecurityTest {
                 .andExpect(status().isOk());
         verify(getInquiryQuery).findForStaff(eq(OFFICE_ID), eq(InquiryOutcome.NO_GROUNDS), any(), any(), any());
     }
+
+    @MockitoBean private me.yeonjae.ovlo.application.port.in.office.GetInquiryConversationQuery conversationQuery;
+
+    @Test void conversationRequiresAuthenticationAndUsesAuthenticatedMember() throws Exception {
+        mockMvc.perform(get("/api/v1/office/5/inquiries/900/conversation")).andExpect(status().isUnauthorized());
+        given(conversationQuery.conversation(5L, MEMBER_ID, 900L)).willReturn(
+                new me.yeonjae.ovlo.application.dto.result.InquiryConversationResult(List.of(), null, true));
+        mockMvc.perform(get("/api/v1/office/5/inquiries/900/conversation").header("Authorization", bearer(null)))
+                .andExpect(status().isOk()).andExpect(jsonPath("$.canContinue").value(true));
+        verify(conversationQuery).conversation(5L, MEMBER_ID, 900L);
+    }
+
+    @Test void followUpIdMustBePositiveAndIsPassedToUseCase() throws Exception {
+        mockMvc.perform(post("/api/v1/office/5/inquiries").header("Authorization", bearer(null))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"question\":\"Where?\",\"lang\":\"en\",\"previousInquiryId\":-1}"))
+                .andExpect(status().isBadRequest());
+        given(askQuestionUseCase.ask(any())).willReturn(new AskResult(901L, InquiryOutcome.NO_GROUNDS, NoticeLang.EN, null, List.of(), true));
+        mockMvc.perform(post("/api/v1/office/5/inquiries").header("Authorization", bearer(null))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"question\":\"Where?\",\"lang\":\"en\",\"previousInquiryId\":900}"))
+                .andExpect(status().isCreated());
+        verify(askQuestionUseCase).ask(new me.yeonjae.ovlo.application.dto.command.AskQuestionCommand(5L, MEMBER_ID, "Where?", NoticeLang.EN, 900L));
+    }
+
 }

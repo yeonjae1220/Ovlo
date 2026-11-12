@@ -335,13 +335,13 @@ export const TERMS_OF_SERVICE: Record<'ko' | 'en', LegalDocument> = {
  * 문구를 바꾸면 version 을 올린다(옛 동의 기록은 옛 version 으로 남는다).
  */
 export const CONSULTATION_CONSENT = {
-  version: 'v1',
+  version: 'v2',
   ko: {
     title: '국제처 담당자에게 전달하기',
     body: [
       '아래 내용이 소속 대학 국제처 담당자에게 전달됩니다.',
     ],
-    shared: ['지금 질문한 내용과 자동 안내 답변', '사용 언어', '학교 이메일 인증 여부(이메일 주소 자체는 전달하지 않음)', '이후 상담방에서 주고받는 메시지'],
+    shared: ['선택한 대화의 모든 질문과 자동 안내 답변(최대 20회)', '사용 언어', '학교 이메일 인증 여부(이메일 주소 자체는 전달하지 않음)', '이후 상담방에서 주고받는 메시지'],
     notes: [
       '담당자의 답변은 내 언어로 번역되어 표시되며 원문도 볼 수 있습니다.',
       '상담 내용은 학기 종료 후 1년까지 보관한 뒤 본문을 삭제합니다. 상담 종료 전에는 언제든 상담방에서 종료를 요청할 수 있습니다.',
@@ -353,7 +353,7 @@ export const CONSULTATION_CONSENT = {
   en: {
     title: 'Forward to your international office',
     body: ['The following will be shared with staff at your university\'s international office.'],
-    shared: ['Your question and the automated answer', 'Your language', 'Whether your school email is verified (the address itself is not shared)', 'Messages exchanged in the consultation room afterwards'],
+    shared: ['All questions and automated answers in this conversation (up to 20 turns)', 'Your language', 'Whether your school email is verified (the address itself is not shared)', 'Messages exchanged in the consultation room afterwards'],
     notes: [
       'Staff replies are shown translated into your language; the original is also available.',
       'Consultation content is kept until one year after the semester ends, then the text is deleted. You can ask to close the consultation at any time.',

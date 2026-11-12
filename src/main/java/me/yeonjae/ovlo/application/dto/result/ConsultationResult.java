@@ -10,13 +10,21 @@ import java.time.Instant;
 public record ConsultationResult(Long id, Long officeId, ConsultationStatus status, Long inquiryId, String question,
                                  String answerText, NoticeLang lang, boolean verifiedStudent, Long chatRoomId,
                                  Long assignedStaffMemberId, String assignedStaffNickname, String consentVersion,
-                                 Instant openedAt, Instant firstStaffReplyAt, Instant resolvedAt, Instant closedAt) {
+                                 Instant openedAt, Instant firstStaffReplyAt, Instant resolvedAt, Instant closedAt, String conversationText) {
+
+    public ConsultationResult(Long id, Long officeId, ConsultationStatus status, Long inquiryId, String question,
+                              String answerText, NoticeLang lang, boolean verifiedStudent, Long chatRoomId,
+                              Long assignedStaffMemberId, String assignedStaffNickname, String consentVersion,
+                              Instant openedAt, Instant firstStaffReplyAt, Instant resolvedAt, Instant closedAt) {
+        this(id, officeId, status, inquiryId, question, answerText, lang, verifiedStudent, chatRoomId,
+                assignedStaffMemberId, assignedStaffNickname, consentVersion, openedAt, firstStaffReplyAt, resolvedAt, closedAt, null);
+    }
 
     public static ConsultationResult from(Consultation c, String assignedStaffNickname) {
         var ctx = c.getSharedContext();
         return new ConsultationResult(c.getId(), c.getOfficeId(), c.getStatus(), c.getInquiryId(), ctx.question(),
                 ctx.answerText(), ctx.lang(), ctx.verifiedStudent(), c.getChatRoomId(), c.getAssignedStaffMemberId(),
                 assignedStaffNickname, c.getConsentVersion(), c.getOpenedAt(), c.getFirstStaffReplyAt(), c.getResolvedAt(),
-                c.getClosedAt());
+                c.getClosedAt(), ctx.conversationText());
     }
 }

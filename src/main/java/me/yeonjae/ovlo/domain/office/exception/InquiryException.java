@@ -5,6 +5,7 @@ public class InquiryException extends RuntimeException {
 
     public enum ErrorType {
         NOT_FOUND,
+        CONFLICT,
         FORBIDDEN,     // 다른 회원의 문의
         BAD_REQUEST,   // 질문 길이·형식
         RATE_LIMITED   // Office 일일 상한

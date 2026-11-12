@@ -1,5 +1,6 @@
 'use client'
 
+import { formatDateTime, noticeLangOf } from './officeFormatting'
 import Link from 'next/link'
 import { useParams } from 'next/navigation'
 import { useI18n } from '../../i18n/I18nProvider'
@@ -14,8 +15,8 @@ import {
   useTranscript,
 } from '../../hooks/useOffice'
 import { Button, Card, EmptyState, LinkButton, PageHeader, QueryErrorNotice, SkeletonLines } from '../../components/ui'
-import { ConsultationStatusBadge, Transcript, formatDateTime } from './consultationUi'
-import { noticeLangOf } from './noticeUi'
+import { ConsultationStatusBadge, Transcript } from './consultationUi'
+
 
 /**
  * 상담 상세. staff=true 면 담당자 받은함에서 연 것(배정·해결 버튼, 한국어 번역), 아니면 학생 화면(종료 버튼, 내 언어 번역).
@@ -95,6 +96,7 @@ export default function ConsultationDetailPage({ staff }: { staff: boolean }) {
       <Card>
         <div style={{ fontSize: 12, color: 'var(--color-text-muted)', marginBottom: 4 }}>{t('ask.title')} · {c.lang.toLowerCase()}</div>
         <div style={{ fontWeight: 600, marginBottom: c.answerText ? 8 : 0 }}>{c.question}</div>
+        {c.conversationText && <details><summary>{t('ask.sharedHistory')}</summary><p style={{ whiteSpace: 'pre-wrap', overflowWrap: 'anywhere' }}>{c.conversationText}</p></details>}
         {c.answerText && (
           <p style={{ margin: 0, fontSize: 14, whiteSpace: 'pre-wrap', lineHeight: 1.6, color: 'var(--color-text-secondary)' }}>{c.answerText}</p>
         )}

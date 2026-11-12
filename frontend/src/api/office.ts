@@ -107,6 +107,12 @@ export interface AskResult {
   canEscalate: boolean
 }
 
+export interface InquiryConversation {
+  turns: { question: string; result: AskResult }[]
+  consultationId: number | null
+  canContinue: boolean
+}
+
 /** 담당자 문의 로그 행 (학생 식별 정보 없음) */
 export interface InquiryLog {
   id: number
@@ -132,6 +138,7 @@ export interface Consultation {
   inquiryId: number | null
   question: string
   answerText: string | null
+  conversationText: string | null
   lang: NoticeLang
   verifiedStudent: boolean
   chatRoomId: number
@@ -312,8 +319,10 @@ export const officeApi = {
   myTranscript: (officeId: number, id: number, lang: string) =>
     apiClient.get<TranscriptMessage[]>(`/office/${officeId}/consultations/${id}/messages`, { params: { lang } }).then((r) => r.data),
 
-  ask: (officeId: number, question: string, lang: string) =>
-    apiClient.post<AskResult>(`/office/${officeId}/inquiries`, { question, lang }).then((r) => r.data),
+  conversation: (officeId: number, inquiryId: number, signal?: AbortSignal) =>
+    apiClient.get<InquiryConversation>(`/office/${officeId}/inquiries/${inquiryId}/conversation`, { signal }).then((r) => r.data),
+  ask: (officeId: number, question: string, lang: string, previousInquiryId?: number) =>
+    apiClient.post<AskResult>(`/office/${officeId}/inquiries`, { question, lang, previousInquiryId }).then((r) => r.data),
 
   inquiryFeedback: (officeId: number, inquiryId: number, helpful: boolean, reason?: string) =>
     apiClient.post(`/office/${officeId}/inquiries/${inquiryId}/feedback`, { helpful, reason: reason || null }),

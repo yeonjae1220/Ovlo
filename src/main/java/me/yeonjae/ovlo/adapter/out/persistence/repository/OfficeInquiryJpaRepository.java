@@ -8,8 +8,17 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.time.Instant;
+import java.util.Optional;
+import jakarta.persistence.LockModeType;
+import org.springframework.data.jpa.repository.Lock;
 
 public interface OfficeInquiryJpaRepository extends JpaRepository<OfficeInquiryJpaEntity, Long> {
+
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("SELECT i FROM OfficeInquiryJpaEntity i WHERE i.id = :id")
+    Optional<OfficeInquiryJpaEntity> findForUpdate(@Param("id") Long id);
+
+    Optional<OfficeInquiryJpaEntity> findByPreviousInquiryId(Long previousInquiryId);
 
     /** from·to 는 null 을 넘기지 않는다 — PostgreSQL 은 null timestamptz 파라미터의 타입을 정하지 못한다. 어댑터가 경계값을 채운다. */
 
