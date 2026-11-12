@@ -1,170 +1,200 @@
 'use client'
 
-import { useState } from 'react'
+import { formatDate, noticeLangOf } from './officeFormatting'
+import { Suspense, useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
+import { useRouter, useSearchParams } from 'next/navigation'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { isAxiosError } from 'axios'
+import { officeApi, type AskResult, type InquiryConversation } from '../../api/office'
 import { useI18n } from '../../i18n/I18nProvider'
-import { useRouter } from 'next/navigation'
+import { useAuthStore } from '../../store/authStore'
 import { useAskQuestion, useInquiryFeedback, useMyOffice, useOpenConsultation } from '../../hooks/useOffice'
 import ConsentDialog from './ConsentDialog'
-import type { AskResult } from '../../api/office'
 import { Button, Card, EmptyState, PageHeader, QueryErrorNotice, SkeletonLines, TextAreaField } from '../../components/ui'
-import { formatDate, noticeLangOf } from './noticeUi'
 
-/** 답변 본문의 [N] 을 출처 번호 링크로 바꾼다. */
-function AnswerText({ text }: { text: string }) {
-  const parts = text.split(/(\[\d{1,3}\])/)
-  return (
-    <p style={{ margin: 0, whiteSpace: 'pre-wrap', lineHeight: 1.8 }}>
-      {parts.map((part, i) => {
-        const m = /^\[(\d{1,3})\]$/.exec(part)
-        if (!m) return <span key={i}>{part}</span>
-        return (
-          <a key={i} href={`#cite-${m[1]}`} style={{ color: 'var(--color-primary)', fontSize: '0.8em', verticalAlign: 'super', textDecoration: 'none' }}>
-            [{m[1]}]
-          </a>
-        )
-      })}
+
+function Answer({ result }: { result: AskResult }) {
+  const { t } = useI18n()
+  return <>
+    <p style={{ margin: 0, whiteSpace: 'pre-wrap', lineHeight: 1.8, overflowWrap: 'anywhere' }}>
+      {result.answerText ? result.answerText.split(/(\[\d{1,3}\])/).map((part, i) => {
+        const match = /^\[(\d{1,3})\]$/.exec(part)
+        return match ? <a key={i} href={`#cite-${result.inquiryId}-${match[1]}`}>{part}</a> : <span key={i}>{part}</span>
+      }) : t('ask.noGrounds')}
     </p>
-  )
+    {result.citations.length > 0 && <>
+      <h4 style={{ margin: '12px 0 4px' }}>{t('ask.sources')}</h4>
+      <ol style={{ paddingLeft: 20 }}>
+        {result.citations.map(c => <li key={c.index} id={`cite-${result.inquiryId}-${c.index}`} value={c.index}>
+          {c.sourceUrl && /^https?:\/\//i.test(c.sourceUrl) ? <a href={c.sourceUrl} target="_blank" rel="noreferrer">{c.title}</a> : c.title}
+          {c.expiresAt && <small> ({t('ask.validUntil', { date: formatDate(c.expiresAt) })})</small>}
+        </li>)}
+      </ol>
+    </>}
+  </>
 }
 
-function errorMessage(e: unknown): string {
-  if (isAxiosError(e)) {
-    const code = (e.response?.data as { code?: string; message?: string } | undefined)?.code
-    const msg = (e.response?.data as { message?: string } | undefined)?.message
-    if (code === 'INQUIRY_RATE_LIMITED' || e.response?.status === 429) return msg ?? 'Too many requests'
-    if (msg) return msg
+function Conversation({ officeId, officeName, memberId, inquiryId }: {
+  officeId: number; officeName: string; memberId: string; inquiryId?: number
+}) {
+  const { t, language } = useI18n()
+  const router = useRouter()
+  const qc = useQueryClient()
+  const ask = useAskQuestion(officeId)
+  const feedback = useInquiryFeedback(officeId)
+  const handoff = useOpenConsultation(officeId)
+  const [question, setQuestion] = useState('')
+  const [error, setError] = useState<string | null>(null)
+  const [consentOpen, setConsentOpen] = useState(false)
+  const [feedbackIds, setFeedbackIds] = useState<number[]>([])
+  const [sending, setSending] = useState(false)
+  const busy = useRef(false)
+  const mounted = useRef(true)
+  const end = useRef<HTMLDivElement>(null)
+  useEffect(() => { mounted.current = true; return () => { mounted.current = false } }, [])
+  const isCurrent = () => mounted.current && String(useAuthStore.getState().currentUser?.id) === memberId
+  const queryKey = ['office', officeId, 'conversation', memberId, inquiryId] as const
+  const conversation = useQuery({
+    queryKey,
+    queryFn: ({ signal }) => officeApi.conversation(officeId, inquiryId!, signal),
+    enabled: inquiryId !== undefined,
+    retry: false,
+    refetchOnWindowFocus: !consentOpen,
+  })
+  const turns = conversation.data?.turns ?? []
+  const last = turns.at(-1)?.result
+  const consultationId = conversation.data?.consultationId
+  const canContinue = conversation.data?.canContinue ?? true
+  const unavailable = inquiryId !== undefined && (conversation.isPending || conversation.isError)
+  useEffect(() => { end.current?.scrollIntoView({ block: 'nearest' }) }, [turns.length, sending])
+
+  function failure(e: unknown) {
+    if (isAxiosError(e) && e.response?.status === 409) return t('ask.refresh')
+    if (isAxiosError(e) && typeof e.response?.data?.message === 'string') return e.response.data.message as string
+    return t('ask.failed')
   }
-  return e instanceof Error ? e.message : 'Unexpected error'
+
+  async function submit() {
+    const text = question.trim()
+    if (!text || busy.current || unavailable || !canContinue || consentOpen) return
+    busy.current = true
+    setSending(true)
+    setError(null)
+    let awaitingConversationRoute = false
+    try {
+      const result = await ask.mutateAsync({ question: text, lang: noticeLangOf(language), previousInquiryId: last?.inquiryId })
+      if (!isCurrent()) return
+      const rootId = inquiryId ?? result.inquiryId
+      const next: InquiryConversation = { turns: [...turns, { question: text, result }], consultationId: null, canContinue: turns.length + 1 < 20 }
+      qc.setQueryData(['office', officeId, 'conversation', memberId, rootId], next)
+      setQuestion('')
+      if (!inquiryId) {
+        // Keep input locked until the saved conversation mounts. Releasing it here lets
+        // a fast follow-up run with the old route's empty history and start a new chat.
+        router.replace(`/my-university/ask?inquiry=${rootId}`, { scroll: false })
+        awaitingConversationRoute = true
+      }
+    } catch (e) {
+      if (isCurrent()) {
+        setError(failure(e))
+        if (isAxiosError(e) && e.response?.status === 409 && inquiryId) void conversation.refetch()
+      }
+    } finally {
+      if (isCurrent() && !awaitingConversationRoute) { busy.current = false; setSending(false) }
+    }
+  }
+
+  async function connect(version: string) {
+    if (!last || busy.current) return
+    busy.current = true
+    setError(null)
+    try {
+      const result = await handoff.mutateAsync({ inquiryId: last.inquiryId, consentVersion: version })
+      if (isCurrent()) router.push(`/my-university/consultations/${result.id}`)
+    } catch (e) {
+      if (isCurrent()) setError(failure(e))
+    } finally { if (isCurrent()) busy.current = false }
+  }
+
+  return <div style={{ maxWidth: 760, margin: '0 auto', display: 'flex', flexDirection: 'column', gap: 16 }}>
+    <PageHeader eyebrow={<Link href="/my-university">← {officeName}</Link>} title={t('ask.title')}
+      description={t('ask.subtitle', { office: officeName })}
+      actions={<Button variant="secondary" disabled={sending || handoff.isPending} onClick={() => {
+        setError(null); setQuestion(''); setConsentOpen(false)
+        router.replace('/my-university/ask', { scroll: false })
+      }}>{t('ask.newConversation')}</Button>} />
+    {inquiryId && conversation.isPending && <SkeletonLines count={4} />}
+    {conversation.isError && <QueryErrorNotice onRetry={() => conversation.refetch()} />}
+    {!unavailable && <div role="log" aria-label={t('ask.history')} aria-live="polite" style={{ display: 'grid', gap: 16 }}>
+      {turns.map(({ question: q, result }) => <section key={result.inquiryId} style={{ display: 'grid', gap: 8 }}>
+        <Card style={{ padding: 16, marginLeft: '12%', background: 'var(--color-surface-soft)' }}>
+          <small>{t('ask.you')}</small><p style={{ whiteSpace: 'pre-wrap', overflowWrap: 'anywhere' }}>{q}</p>
+        </Card>
+        <Card style={{ padding: 16, marginRight: '4%' }}>
+          <small>{t('ask.assistant')}</small><Answer result={result} />
+          {result.answerText && (feedbackIds.includes(result.inquiryId) ? <small>{t('ask.thanks')}</small> :
+            <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
+              <small>{t('ask.helpful')}</small>
+              {[true, false].map(helpful => <Button key={String(helpful)} variant="ghost" disabled={feedback.isPending}
+                onClick={() => feedback.mutate({ inquiryId: result.inquiryId, helpful }, {
+                  onSuccess: () => { if (isCurrent()) setFeedbackIds(ids => [...ids, result.inquiryId]) },
+                  onError: e => { if (isCurrent()) setError(failure(e)) },
+                })}>{t(helpful ? 'ask.helpfulYes' : 'ask.helpfulNo')}</Button>)}
+            </div>)}
+        </Card>
+      </section>)}
+      {sending && <Card style={{ padding: 16 }}><p style={{ whiteSpace: 'pre-wrap' }}>{question}</p><p role="status">{t('ask.connecting')}</p></Card>}
+      <div ref={end} />
+    </div>}
+    {!unavailable && !sending && last && <Card style={{ padding: 16 }}>
+      {consultationId ? <><p>{t('ask.staffPending')}</p><Link href={`/my-university/consultations/${consultationId}`}>{t('ask.openConsultation')}</Link></> : <>
+        {last.outcome === 'NO_GROUNDS' && <p>{t('ask.handoff')}</p>}
+        {last.canEscalate && <Button variant={last.outcome === 'NO_GROUNDS' ? 'primary' : 'secondary'} onClick={() => { setError(null); setConsentOpen(true) }}>{t('consult.escalate')}</Button>}
+      </>}
+    </Card>}
+    {!unavailable && canContinue && <Card style={{ padding: 16 }}>
+      <TextAreaField aria-label={t('ask.submit')} value={question} rows={3} maxLength={1000} style={{ minHeight: 96 }}
+        disabled={sending || handoff.isPending || consentOpen} placeholder={t(last ? 'ask.continue' : 'ask.placeholder')}
+        onChange={e => setQuestion(e.target.value)} onKeyDown={e => {
+          if (e.nativeEvent.isComposing || e.keyCode === 229) return
+          if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); void submit() }
+        }} />
+      <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 8 }}>
+        <small>{question.length}/1000</small>
+        <Button variant="primary" disabled={!question.trim() || sending || consentOpen} onClick={() => void submit()}>{t('ask.submit')}</Button>
+      </div>
+    </Card>}
+    {!unavailable && !canContinue && !consultationId && <p>{t('ask.limit')}</p>}
+    {error && !consentOpen && <p role="alert">{error}</p>}
+    {inquiryId && <Button variant="ghost" disabled={sending || handoff.isPending || consentOpen} onClick={() => { setError(null); void conversation.refetch() }}>{t('ask.refresh')}</Button>}
+    <small>{t('ask.disclaimer')}</small>
+    {consentOpen && last && <ConsentDialog pending={handoff.isPending} error={error}
+      onDecline={() => { setConsentOpen(false); setError(null) }} onAgree={version => void connect(version)}
+      preview={<><p>{t('ask.preview')}</p>{turns.map(({ question: q, result }) => <div key={result.inquiryId} style={{ marginBottom: 12 }}>
+        <strong>{t('ask.you')}</strong><p style={{ whiteSpace: 'pre-wrap', overflowWrap: 'anywhere' }}>{q}</p>
+        <strong>{t('ask.assistant')}</strong><p style={{ whiteSpace: 'pre-wrap', overflowWrap: 'anywhere' }}>{result.answerText ?? t('ask.noGrounds')}</p>
+      </div>)}</>} />}
+  </div>
+}
+
+function OfficeChat() {
+  const { t } = useI18n()
+  const office = useMyOffice()
+  const memberId = useAuthStore(s => s.currentUser?.id)
+  const params = useSearchParams()
+  const raw = params.get('inquiry')
+  const parsed = raw === null ? undefined : Number(raw)
+  const inquiryId = parsed !== undefined && Number.isSafeInteger(parsed) && parsed > 0 ? parsed : undefined
+  if (office.isLoading) return <SkeletonLines count={4} />
+  if (office.isError) return <QueryErrorNotice onRetry={() => office.refetch()} />
+  if (!office.data) return <EmptyState title={t('office.none')} />
+  if (!office.data.verifiedStudent || !memberId) return <EmptyState title={t('student.notices.notVerified')} />
+  if (raw !== null && inquiryId === undefined) return <EmptyState title={t('ask.unavailable')} action={<Link href="/my-university/ask">{t('ask.newConversation')}</Link>} />
+  return <Conversation key={`${memberId}-${office.data.officeId}-${inquiryId ?? 'new'}`} memberId={String(memberId)}
+    officeId={office.data.officeId} officeName={office.data.officeName} inquiryId={inquiryId} />
 }
 
 export default function AskPage() {
-  const { t, language } = useI18n()
-  const myOffice = useMyOffice()
-  const office = myOffice.data ?? null
-  const officeId = office && office.verifiedStudent ? office.officeId : undefined
-
-  const router = useRouter()
-  const ask = useAskQuestion(officeId)
-  const feedback = useInquiryFeedback(officeId)
-  const openConsultation = useOpenConsultation(officeId)
-  const [consentOpen, setConsentOpen] = useState(false)
-  const [question, setQuestion] = useState('')
-  const [result, setResult] = useState<AskResult | null>(null)
-  const [feedbackSent, setFeedbackSent] = useState(false)
-
-  if (myOffice.isLoading) return <SkeletonLines count={4} />
-  if (myOffice.isError) return <QueryErrorNotice onRetry={() => myOffice.refetch()} />
-  if (!office) return <EmptyState title={t('office.none')} />
-  if (!office.verifiedStudent) {
-    return <EmptyState title={t('student.notices.notVerified')} action={<Link href="/my-university">{t('nav.myUniversity')}</Link>} />
-  }
-
-  const submit = () => {
-    const q = question.trim()
-    if (!q || ask.isPending) return
-    setFeedbackSent(false)
-    ask.mutate({ question: q, lang: noticeLangOf(language) }, { onSuccess: (r) => setResult(r) })
-  }
-
-  return (
-    <div style={{ maxWidth: 760, margin: '0 auto', display: 'flex', flexDirection: 'column', gap: 16 }}>
-      <PageHeader
-        eyebrow={<Link href="/my-university">← {office.officeName}</Link>}
-        title={t('ask.title')}
-        description={t('ask.subtitle', { office: office.officeName })}
-      />
-
-      <Card>
-        <TextAreaField
-          value={question}
-          rows={4}
-          maxLength={1000}
-          placeholder={t('ask.placeholder')}
-          onChange={(e) => setQuestion(e.target.value)}
-          onKeyDown={(e) => {
-            if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) submit()
-          }}
-        />
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 8, gap: 8 }}>
-          <span style={{ fontSize: 12, color: 'var(--color-text-muted)' }}>{question.length}/1000</span>
-          <Button variant="primary" disabled={!question.trim() || ask.isPending} onClick={submit}>
-            {t('ask.submit')}
-          </Button>
-        </div>
-        {ask.isError && (
-          <p role="alert" style={{ margin: '10px 0 0', color: 'var(--color-danger, #c0392b)', fontSize: 13 }}>
-            {errorMessage(ask.error)}
-          </p>
-        )}
-      </Card>
-
-      {ask.isPending && <SkeletonLines count={3} />}
-
-      {result && !ask.isPending && (
-        <Card>
-          {result.outcome === 'ANSWERED' && result.answerText ? (
-            <>
-              <AnswerText text={result.answerText} />
-              <h4 style={{ margin: '16px 0 6px', fontSize: 14 }}>{t('ask.sources')}</h4>
-              <ol style={{ margin: 0, paddingLeft: 20, fontSize: 14 }}>
-                {result.citations.map((c) => (
-                  <li key={c.index} id={`cite-${c.index}`} value={c.index} style={{ marginBottom: 4 }}>
-                    {c.sourceUrl ? (
-                      <a href={c.sourceUrl} target="_blank" rel="noreferrer">{c.title}</a>
-                    ) : (
-                      <span>{c.title}</span>
-                    )}
-                    {c.expiresAt && (
-                      <span style={{ marginLeft: 6, color: 'var(--color-text-muted)', fontSize: 12 }}>
-                        ({t('ask.validUntil', { date: formatDate(c.expiresAt) })})
-                      </span>
-                    )}
-                  </li>
-                ))}
-              </ol>
-            </>
-          ) : (
-            <p style={{ margin: 0, lineHeight: 1.7 }}>{t('ask.noGrounds')}</p>
-          )}
-
-          <p style={{ margin: '14px 0 0', fontSize: 12, color: 'var(--color-text-muted)' }}>{t('ask.disclaimer')}</p>
-
-          <div style={{ display: 'flex', gap: 8, alignItems: 'center', marginTop: 12, flexWrap: 'wrap' }}>
-            {result.outcome === 'ANSWERED' && (
-              feedbackSent || feedback.isSuccess ? (
-                <span style={{ fontSize: 13, color: 'var(--color-text-secondary)' }}>{t('ask.thanks')}</span>
-              ) : (
-                <>
-                  <span style={{ fontSize: 13 }}>{t('ask.helpful')}</span>
-                  <Button variant="ghost" disabled={feedback.isPending} onClick={() => feedback.mutate({ inquiryId: result.inquiryId, helpful: true }, { onSuccess: () => setFeedbackSent(true) })}>👍</Button>
-                  <Button variant="ghost" disabled={feedback.isPending} onClick={() => feedback.mutate({ inquiryId: result.inquiryId, helpful: false }, { onSuccess: () => setFeedbackSent(true) })}>👎</Button>
-                </>
-              )
-            )}
-            {result.canEscalate && (
-              <Button variant="secondary" style={{ marginLeft: 'auto' }} onClick={() => setConsentOpen(true)}>
-                {t('consult.escalate')}
-              </Button>
-            )}
-          </div>
-        </Card>
-      )}
-
-      {consentOpen && result && (
-        <ConsentDialog
-          pending={openConsultation.isPending}
-          error={openConsultation.isError ? errorMessage(openConsultation.error) : null}
-          onDecline={() => setConsentOpen(false)}
-          onAgree={(version) =>
-            openConsultation.mutate(
-              { inquiryId: result.inquiryId, consentVersion: version },
-              { onSuccess: (c) => router.push(`/my-university/consultations/${c.id}`) },
-            )
-          }
-        />
-      )}
-    </div>
-  )
+  return <Suspense fallback={<SkeletonLines count={4} />}><OfficeChat /></Suspense>
 }

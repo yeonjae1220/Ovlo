@@ -39,6 +39,11 @@ public class OfficeConsultationPersistenceAdapter implements LoadConsultationPor
     }
 
     @Override
+    public Optional<Consultation> findFirstByInquiryId(Long inquiryId) {
+        return repository.findFirstByInquiryIdOrderByIdAsc(inquiryId).map(this::toDomain);
+    }
+
+    @Override
     public Optional<Consultation> findByChatRoomId(Long chatRoomId) {
         return repository.findByChatRoomId(chatRoomId).map(this::toDomain);
     }
@@ -75,6 +80,7 @@ public class OfficeConsultationPersistenceAdapter implements LoadConsultationPor
         e.setInquiryId(c.getInquiryId());
         e.setConsentVersion(c.getConsentVersion());
         e.setConsentText(c.getConsentText());
+        e.setSharedConversation(c.getSharedContext().conversationText());
         e.setSharedQuestion(c.getSharedContext().question());
         e.setSharedAnswer(c.getSharedContext().answerText());
         e.setSharedLang(c.getSharedContext().lang().code());
@@ -116,7 +122,7 @@ public class OfficeConsultationPersistenceAdapter implements LoadConsultationPor
         return Consultation.restore(e.getId(), e.getOfficeId(), e.getMemberId(), e.getInquiryId(), e.getConsentVersion(),
                 e.getConsentText(),
                 new Consultation.SharedContext(e.getSharedQuestion(), e.getSharedAnswer(),
-                        NoticeLang.fromCode(e.getSharedLang()).orElse(NoticeLang.KO), e.isSharedVerifiedStudent()),
+                        NoticeLang.fromCode(e.getSharedLang()).orElse(NoticeLang.KO), e.isSharedVerifiedStudent(), e.getSharedConversation()),
                 ConsultationStatus.valueOf(e.getStatus()), e.getAssignedStaffMemberId(), e.getChatRoomId(), e.getOpenedAt(),
                 e.getFirstStaffReplyAt(), e.getResolvedAt(), e.getClosedAt());
     }

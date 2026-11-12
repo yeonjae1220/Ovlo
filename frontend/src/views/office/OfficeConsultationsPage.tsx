@@ -1,5 +1,6 @@
 'use client'
 
+import { formatDateTime } from './officeFormatting'
 import { useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
@@ -7,7 +8,7 @@ import { useI18n } from '../../i18n/I18nProvider'
 import { useAssignConsultation, useMyOffice, useOfficeConsultations } from '../../hooks/useOffice'
 import type { ConsultationStatus } from '../../api/office'
 import { Button, Card, EmptyState, PageHeader, QueryErrorNotice, SelectField, SkeletonLines } from '../../components/ui'
-import { ConsultationStatusBadge, formatDateTime } from './consultationUi'
+import { ConsultationStatusBadge } from './consultationUi'
 
 const STATUSES: ConsultationStatus[] = ['OPEN', 'IN_PROGRESS', 'RESOLVED', 'CLOSED']
 

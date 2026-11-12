@@ -11,6 +11,7 @@ import java.util.Optional;
 
 public interface LoadConsultationPort {
     Optional<Consultation> findById(Long consultationId);
+    Optional<Consultation> findFirstByInquiryId(Long inquiryId);
 
     Optional<Consultation> findByChatRoomId(Long chatRoomId);
 

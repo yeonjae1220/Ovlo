@@ -7,6 +7,7 @@ import me.yeonjae.ovlo.adapter.out.persistence.repository.OfficeInquiryJpaReposi
 import me.yeonjae.ovlo.application.port.out.office.LoadInquiryPort;
 import me.yeonjae.ovlo.application.port.out.office.SaveInquiryPort;
 import me.yeonjae.ovlo.domain.office.model.Inquiry;
+import me.yeonjae.ovlo.domain.office.exception.InquiryException;
 import me.yeonjae.ovlo.domain.office.model.InquiryFeedback;
 import me.yeonjae.ovlo.domain.office.model.InquiryOutcome;
 import me.yeonjae.ovlo.domain.office.model.NoticeLang;
@@ -42,6 +43,16 @@ public class OfficeInquiryPersistenceAdapter implements LoadInquiryPort, SaveInq
     }
 
     @Override
+    public Optional<Inquiry> findByIdForUpdate(Long id) {
+        return repository.findForUpdate(id).map(this::toDomain);
+    }
+
+    @Override
+    public Optional<Inquiry> findByPreviousInquiryId(Long id) {
+        return repository.findByPreviousInquiryId(id).map(this::toDomain);
+    }
+
+    @Override
     public Page<Inquiry> findByOffice(Long officeId, InquiryOutcome outcome, Instant from, Instant to, Pageable pageable) {
         Instant fromBound = from != null ? from : Instant.EPOCH;
         Instant toBound = to != null ? to : FAR_FUTURE;
@@ -63,10 +74,22 @@ public class OfficeInquiryPersistenceAdapter implements LoadInquiryPort, SaveInq
     @Override
     @Transactional
     public Inquiry save(Inquiry inquiry) {
+        if (inquiry.getId() == null && inquiry.getPreviousInquiryId() != null) {
+            Inquiry previous = findByIdForUpdate(inquiry.getPreviousInquiryId()).orElseThrow();
+            previous.assertCanContinue();
+            if (!previous.getOfficeId().equals(inquiry.getOfficeId()) || !previous.isOwnedBy(inquiry.getMemberId())) {
+                throw new IllegalArgumentException("대화 소유자가 다릅니다");
+            }
+            if (findByPreviousInquiryId(previous.getId()).isPresent()) {
+                throw new InquiryException("새 답변이 있습니다. 대화를 새로고침해 주세요",
+                        InquiryException.ErrorType.CONFLICT);
+            }
+        }
         OfficeInquiryJpaEntity e = inquiry.getId() == null
                 ? new OfficeInquiryJpaEntity()
                 : repository.findById(inquiry.getId())
                         .orElseThrow(() -> new IllegalStateException("저장할 문의가 없습니다: id=" + inquiry.getId()));
+        e.setPreviousInquiryId(inquiry.getPreviousInquiryId());
         e.setOfficeId(inquiry.getOfficeId());
         e.setMemberId(inquiry.getMemberId());
         e.setLang(inquiry.getLang().code());
@@ -99,7 +122,7 @@ public class OfficeInquiryPersistenceAdapter implements LoadInquiryPort, SaveInq
         return Inquiry.restore(e.getId(), e.getOfficeId(), e.getMemberId(),
                 NoticeLang.fromCode(e.getLang()).orElse(NoticeLang.KO), e.getQuestion(),
                 InquiryOutcome.valueOf(e.getOutcome()), e.getAnswerText(), split(e.getCitedNoticeIds()),
-                split(e.getCandidateNoticeIds()), e.getAskedAt(), e.getLatencyMs(), e.getModelId());
+                split(e.getCandidateNoticeIds()), e.getAskedAt(), e.getLatencyMs(), e.getModelId(), e.getPreviousInquiryId());
     }
 
     private static String join(List<Long> ids) {

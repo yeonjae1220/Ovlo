@@ -119,4 +119,26 @@ class NoticeTranslationServiceTest {
         verify(translationPort, never()).translate(any());
         verify(saveNoticePort, never()).save(any());
     }
+    @Test
+    void savesNaturalMonthNamesWithoutTranslationFailureNotification() {
+        given(translationPort.translate(any())).willAnswer(inv -> {
+            TranslationPort.Request r = inv.getArgument(0);
+            String date = switch (r.to()) {
+                case EN -> "February 10";
+                case DE -> "10. Februar";
+                case FR -> "10 février";
+                default -> "2월 10일";
+            };
+            return new TranslationPort.Result("[" + r.to().code() + "] Application", date, "m");
+        });
+        var outcome = sut.translateMissing(NOTICE);
+        assertThat(outcome.generated()).hasSize(6);
+        assertThat(outcome.failed()).isEmpty();
+        for (var lang : List.of(NoticeLang.EN, NoticeLang.DE, NoticeLang.FR)) {
+            assertThat(notice.getTranslation(lang)).isPresent();
+        }
+        verify(saveNoticePort).save(notice);
+        verify(notificationPort, never()).sendNoticeTranslationFailed(any(), any(), any(), any());
+    }
+
 }

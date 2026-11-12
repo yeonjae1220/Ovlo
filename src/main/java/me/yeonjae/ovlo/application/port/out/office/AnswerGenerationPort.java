@@ -14,7 +14,13 @@ public interface AnswerGenerationPort {
     /** index 는 1부터. 프롬프트의 [index] 인용 번호와 같다. */
     record Candidate(int index, Long noticeId, String title, String body, String sourceUrl) {}
 
-    record Request(String question, NoticeLang lang, List<Candidate> candidates) {}
+    record Turn(String question, String answer) {}
+    record Request(String question, NoticeLang lang, List<Candidate> candidates, List<Turn> history) {
+        public Request { candidates = List.copyOf(candidates); history = List.copyOf(history); }
+        public Request(String question, NoticeLang lang, List<Candidate> candidates) {
+            this(question, lang, candidates, List.of());
+        }
+    }
 
     /** refused 면 안전 분류기가 응답을 거부한 것 — text 는 비어 있다. */
     record Result(String text, String modelId, long inputTokens, long outputTokens, boolean refused) {}

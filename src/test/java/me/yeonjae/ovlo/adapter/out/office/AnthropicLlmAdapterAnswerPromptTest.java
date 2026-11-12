@@ -71,4 +71,15 @@ class AnthropicLlmAdapterAnswerPromptTest {
                 .contains("emphasis (** or __ or *)")
                 .contains("start with \\\"- \\\" is fine");
     }
+
+    @Test void historyIsContextOnlyAndOldCitationsAreNotEvidence() {
+        AnthropicLlmAdapter adapter = new AnthropicLlmAdapter(new OfficeMetrics(new SimpleMeterRegistry()), "sk-test",
+                "http://127.0.0.1:" + server.getAddress().getPort(), "claude-opus-5-5", "medium", 256, 10, false);
+        adapter.answer(new AnswerGenerationPort.Request("Where?", NoticeLang.EN,
+                List.of(new AnswerGenerationPort.Candidate(1, 10L, "Dorm", "Apply online", null)),
+                List.of(new AnswerGenerationPort.Turn("When does dorm registration close?", "Old answer [9]"))));
+        assertThat(body.get()).contains("When does dorm registration close?", "Old answer [9]", "untrusted context ONLY",
+                "CURRENT numbered reference notices", "NO_GROUNDS");
+    }
+
 }

@@ -15,6 +15,11 @@ public class OfficeInquiryJpaEntity {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(name = "previous_inquiry_id", unique = true)
+    private Long previousInquiryId;
+    public Long getPreviousInquiryId() { return previousInquiryId; }
+    public void setPreviousInquiryId(Long id) { previousInquiryId = id; }
+
     @Column(name = "office_id", nullable = false)
     private Long officeId;
 

@@ -11,6 +11,7 @@ import me.yeonjae.ovlo.application.port.out.office.LoadInquiryPort;
 import me.yeonjae.ovlo.application.port.out.office.NoticeSearchPort;
 import me.yeonjae.ovlo.application.port.out.office.SaveInquiryPort;
 import me.yeonjae.ovlo.application.service.office.GroundedAnswerValidator;
+import me.yeonjae.ovlo.application.service.office.InquiryHistory;
 import me.yeonjae.ovlo.application.service.office.StudentOfficeAccessPolicy;
 import me.yeonjae.ovlo.domain.office.exception.InquiryException;
 import me.yeonjae.ovlo.domain.office.model.Inquiry;
@@ -74,11 +75,21 @@ public class InquiryCommandService implements AskQuestionUseCase, GiveInquiryFee
     public AskResult ask(AskQuestionCommand c) {
         String question = Inquiry.validateQuestion(c.question());
         accessPolicy.assertMember(c.memberId(), c.officeId());
+        List<Inquiry> history = InquiryHistory.load(loadInquiryPort, c.officeId(), c.memberId(), c.previousInquiryId());
+        if (!history.isEmpty()) {
+            history.getLast().assertCanContinue();
+            if (history.size() >= InquiryHistory.MAX_TURNS) throw InquiryHistory.conflict("새 대화를 시작해 주세요");
+            if (loadInquiryPort.findByPreviousInquiryId(c.previousInquiryId()).isPresent())
+                throw InquiryHistory.conflict("새 답변이 있습니다. 대화를 새로고침해 주세요");
+        }
+        String searchQuestion = history.stream().skip(Math.max(0, history.size() - 2))
+                .map(Inquiry::getQuestion).collect(java.util.stream.Collectors.joining(" "));
+        searchQuestion = searchQuestion.isEmpty() ? question : searchQuestion + " " + question;
         Instant start = clock.instant();
         LocalDate today = LocalDate.ofInstant(start, clock.getZone());
         assertOfficeDailyLimit(c.officeId(), today);
 
-        List<Notice> candidates = searchPort.findCandidates(c.officeId(), c.lang(), question, today, candidateLimit).stream()
+        List<Notice> candidates = searchPort.findCandidates(c.officeId(), c.lang(), searchQuestion, today, candidateLimit).stream()
                 .filter(n -> n.isGroundingEligible(today, c.lang()))   // 최종 판정은 도메인(ADR-0006 2항)
                 .limit(candidateLimit)
                 .toList();
@@ -86,19 +97,22 @@ public class InquiryCommandService implements AskQuestionUseCase, GiveInquiryFee
 
         if (candidates.isEmpty()) {
             Inquiry saved = record(Inquiry.noGrounds(c.officeId(), c.memberId(), c.lang(), question, candidateIds, start,
-                    elapsed(start), null));
+                    elapsed(start), null), history);
             return noGroundsResult(saved);
         }
 
         List<Candidate> context = IntStream.range(0, candidates.size())
                 .mapToObj(i -> toCandidate(i + 1, candidates.get(i), c.lang()))
                 .toList();
-        AnswerGenerationPort.Result generated = answerPort.answer(new AnswerGenerationPort.Request(question, c.lang(), context));
+        AnswerGenerationPort.Result generated = answerPort.answer(new AnswerGenerationPort.Request(question, c.lang(), context,
+                history.stream().skip(Math.max(0, history.size() - 6))
+                        .map(i -> new AnswerGenerationPort.Turn(i.getQuestion(), i.getAnswerText() == null ? null
+                                : i.getAnswerText().substring(0, Math.min(2000, i.getAnswerText().length())))).toList()));
 
         if (generated.refused()) {
             log.warn("[Inquiry] model refused office={} member={} model={}", c.officeId(), c.memberId(), generated.modelId());
             Inquiry saved = record(Inquiry.noGrounds(c.officeId(), c.memberId(), c.lang(), question, candidateIds, start,
-                    elapsed(start), generated.modelId()));
+                    elapsed(start), generated.modelId()), history);
             return noGroundsResult(saved);
         }
 
@@ -108,13 +122,13 @@ public class InquiryCommandService implements AskQuestionUseCase, GiveInquiryFee
             log.warn("[Inquiry] answer rejected office={} reason={} model={} in={} out={}", c.officeId(),
                     outcome.rejection().reason(), generated.modelId(), generated.inputTokens(), generated.outputTokens());
             Inquiry saved = record(Inquiry.noGrounds(c.officeId(), c.memberId(), c.lang(), question, candidateIds, start,
-                    elapsed(start), generated.modelId()));
+                    elapsed(start), generated.modelId()), history);
             return noGroundsResult(saved);
         }
 
         GroundedAnswerValidator.Validated v = outcome.validated();
         Inquiry saved = record(Inquiry.answered(c.officeId(), c.memberId(), c.lang(), question, v.text(), v.citedNoticeIds(),
-                candidateIds, start, elapsed(start), generated.modelId()));
+                candidateIds, start, elapsed(start), generated.modelId()), history);
         log.info("[Inquiry] answered office={} inquiry={} cited={} latencyMs={} model={} in={} out={}", c.officeId(),
                 saved.getId(), v.citedNoticeIds(), saved.getLatencyMs(), generated.modelId(), generated.inputTokens(),
                 generated.outputTokens());
@@ -153,7 +167,8 @@ public class InquiryCommandService implements AskQuestionUseCase, GiveInquiryFee
     }
 
     @Transactional
-    protected Inquiry record(Inquiry inquiry) {
+    protected Inquiry record(Inquiry inquiry, List<Inquiry> history) {
+        if (!history.isEmpty()) inquiry.following(history.getLast());
         return saveInquiryPort.save(inquiry);
     }
 

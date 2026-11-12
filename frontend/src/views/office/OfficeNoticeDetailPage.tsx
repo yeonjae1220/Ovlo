@@ -1,5 +1,6 @@
 'use client'
 
+import { formatDate } from './officeFormatting'
 import { useState } from 'react'
 import Link from 'next/link'
 import { useParams, useRouter } from 'next/navigation'
@@ -16,7 +17,7 @@ import {
 import type { NoticeRequest } from '../../api/office'
 import { Badge, Button, Card, EmptyState, PageHeader, QueryErrorNotice, SkeletonLines } from '../../components/ui'
 import NoticeForm from './NoticeForm'
-import { CategoryBadge, StatusBadge, formatDate } from './noticeUi'
+import { CategoryBadge, StatusBadge } from './noticeUi'
 
 export default function OfficeNoticeDetailPage() {
   const { t } = useI18n()

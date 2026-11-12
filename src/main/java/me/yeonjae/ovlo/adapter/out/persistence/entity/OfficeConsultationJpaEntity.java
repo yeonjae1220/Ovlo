@@ -34,6 +34,10 @@ public class OfficeConsultationJpaEntity {
     @Column(name = "resolved_at") private Instant resolvedAt;
     @Column(name = "closed_at") private Instant closedAt;
 
+    @Column(name = "shared_conversation", columnDefinition = "TEXT") private String sharedConversation;
+    public String getSharedConversation() { return sharedConversation; }
+    public void setSharedConversation(String text) { sharedConversation = text; }
+
     public OfficeConsultationJpaEntity() {}
 
     public Long getId() { return id; }

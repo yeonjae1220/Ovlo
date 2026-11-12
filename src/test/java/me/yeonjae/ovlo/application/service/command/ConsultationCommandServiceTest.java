@@ -129,7 +129,7 @@ class ConsultationCommandServiceTest {
     void openFromInquiry() {
         Inquiry inquiry = Inquiry.answered(OFFICE, STUDENT, NoticeLang.VI, "Visa gia hạn?", "Liên hệ [1]", List.of(77L), List.of(77L), NOW, 1, "m");
         inquiry.assignId(900L);
-        given(loadInquiryPort.findById(900L)).willReturn(Optional.of(inquiry));
+        given(loadInquiryPort.findByIdForUpdate(900L)).willReturn(Optional.of(inquiry));
 
         ConsultationResult r = sut.open(new OpenConsultationCommand(OFFICE, STUDENT, 900L, "v1", null));
 
@@ -154,7 +154,7 @@ class ConsultationCommandServiceTest {
     void openSurvivesMailFailure() {
         Inquiry inquiry = Inquiry.answered(OFFICE, STUDENT, NoticeLang.VI, "Visa gia hạn?", "Liên hệ [1]", List.of(77L), List.of(77L), NOW, 1, "m");
         inquiry.assignId(900L);
-        given(loadInquiryPort.findById(900L)).willReturn(Optional.of(inquiry));
+        given(loadInquiryPort.findByIdForUpdate(900L)).willReturn(Optional.of(inquiry));
         willThrow(new OfficeNotificationException("consultation_opened", new RuntimeException("535")))
                 .given(notificationPort).sendConsultationOpened(anyList(), any(), any());
 
@@ -171,7 +171,7 @@ class ConsultationCommandServiceTest {
         given(accessPolicy.assertMember(STAFF_A, OFFICE)).willReturn(office);
         Inquiry inquiry = Inquiry.noGrounds(OFFICE, STAFF_A, NoticeLang.KO, "학식 메뉴?", List.of(), NOW, 1, "m");
         inquiry.assignId(901L);
-        given(loadInquiryPort.findById(901L)).willReturn(Optional.of(inquiry));
+        given(loadInquiryPort.findByIdForUpdate(901L)).willReturn(Optional.of(inquiry));
 
         ConsultationResult r = sut.open(new OpenConsultationCommand(OFFICE, STAFF_A, 901L, "v1", null));
 
@@ -222,7 +222,7 @@ class ConsultationCommandServiceTest {
     void inquiryOwnershipAndMessage() {
         Inquiry other = Inquiry.noGrounds(OFFICE, 43L, NoticeLang.KO, "q", List.of(), NOW, 1, null);
         other.assignId(901L);
-        given(loadInquiryPort.findById(901L)).willReturn(Optional.of(other));
+        given(loadInquiryPort.findByIdForUpdate(901L)).willReturn(Optional.of(other));
 
         assertThatThrownBy(() -> sut.open(new OpenConsultationCommand(OFFICE, STUDENT, 901L, "v1", null)))
                 .isInstanceOf(ConsultationException.class)
@@ -289,4 +289,46 @@ class ConsultationCommandServiceTest {
         assertThat(old.getStatus()).isEqualTo(ConsultationStatus.CLOSED);
         assertThat(recent.getStatus()).isEqualTo(ConsultationStatus.RESOLVED);
     }
+
+    @Test void v2HandoffSharesSavedConversationAndRetryReturnsSameConsultation() {
+        Inquiry first = Inquiry.answered(OFFICE, STUDENT, NoticeLang.KO, "기숙사 신청?", "2월까지 [1]",
+                List.of(1L), List.of(1L), NOW, 0, "test");
+        first.assignId(100L);
+        Inquiry last = Inquiry.noGrounds(OFFICE, STUDENT, NoticeLang.KO, "늦으면?", List.of(), NOW, 0, null).following(first);
+        last.assignId(101L);
+        given(loadInquiryPort.findByIdForUpdate(101L)).willReturn(Optional.of(last));
+        given(loadInquiryPort.findById(101L)).willReturn(Optional.of(last));
+        given(loadInquiryPort.findById(100L)).willReturn(Optional.of(first));
+        var command = new OpenConsultationCommand(OFFICE, STUDENT, 101L, "v2", null);
+        ConsultationResult result = sut.open(command);
+        assertThat(result.conversationText()).contains("기숙사 신청?", "2월까지 [1]", "늦으면?", "NO_GROUNDS");
+        ArgumentCaptor<Consultation> saved = ArgumentCaptor.forClass(Consultation.class);
+        verify(saveConsultationPort).save(saved.capture());
+        given(loadConsultationPort.findFirstByInquiryId(101L)).willReturn(Optional.of(saved.getValue()));
+        assertThat(sut.open(command).id()).isEqualTo(result.id());
+        verify(saveChatPort, org.mockito.Mockito.times(1)).save(any(ChatRoom.class));
+        verify(notificationPort, org.mockito.Mockito.times(1)).sendConsultationOpened(anyList(), anyString(), anyString());
+    }
+
+    @Test void previousConsentCannotShareMultiTurnHistory() {
+        Inquiry first = Inquiry.noGrounds(OFFICE, STUDENT, NoticeLang.KO, "기숙사", List.of(), NOW, 0, null);
+        first.assignId(100L);
+        Inquiry last = Inquiry.noGrounds(OFFICE, STUDENT, NoticeLang.KO, "이어서", List.of(), NOW, 0, null).following(first);
+        last.assignId(101L);
+        given(loadInquiryPort.findByIdForUpdate(101L)).willReturn(Optional.of(last));
+        assertThatThrownBy(() -> sut.open(new OpenConsultationCommand(OFFICE, STUDENT, 101L, "v1", null)))
+                .isInstanceOf(ConsultationException.class).hasMessageContaining("동의");
+        verify(saveChatPort, never()).save(any(ChatRoom.class));
+    }
+
+    @Test void staleHandoffMustNotShareAnUnseenFollowUp() {
+        Inquiry first = Inquiry.noGrounds(OFFICE, STUDENT, NoticeLang.KO, "기숙사", List.of(), NOW, 0, null);
+        first.assignId(100L);
+        given(loadInquiryPort.findByIdForUpdate(100L)).willReturn(Optional.of(first));
+        given(loadInquiryPort.findByPreviousInquiryId(100L)).willReturn(Optional.of(first));
+        assertThatThrownBy(() -> sut.open(new OpenConsultationCommand(OFFICE, STUDENT, 100L, "v2", null)))
+                .hasMessageContaining("최신 대화");
+        verify(saveChatPort, never()).save(any(ChatRoom.class));
+    }
+
 }

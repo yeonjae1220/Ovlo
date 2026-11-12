@@ -1,5 +1,6 @@
 'use client'
 
+import { formatDate, noticeLangOf } from './officeFormatting'
 import { useState } from 'react'
 import Link from 'next/link'
 import { useI18n } from '../../i18n/I18nProvider'
@@ -7,7 +8,7 @@ import { useAuthStore } from '../../store/authStore'
 import { useAcceptOfficeInvitation, useMyOffice, useStudentNotices } from '../../hooks/useOffice'
 import { NOTICE_CATEGORIES, type NoticeCategory } from '../../api/office'
 import { Badge, Button, Card, EmptyState, PageHeader, QueryErrorNotice, SelectField, SkeletonLines } from '../../components/ui'
-import { CategoryBadge, formatDate, noticeLangOf } from './noticeUi'
+import { CategoryBadge } from './noticeUi'
 
 /**
  * 학생용 "내 학교": 소속 국제처의 승인 공지를 내 언어로 보여 준다.

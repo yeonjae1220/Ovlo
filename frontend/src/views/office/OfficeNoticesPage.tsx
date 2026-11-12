@@ -1,5 +1,6 @@
 'use client'
 
+import { formatDate } from './officeFormatting'
 import { useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
@@ -8,7 +9,7 @@ import { useMyOffice, useOfficeNotices, useRegisterNotice } from '../../hooks/us
 import { NOTICE_CATEGORIES, type NoticeCategory, type NoticeStatus } from '../../api/office'
 import { Button, Card, EmptyState, PageHeader, QueryErrorNotice, SelectField, SkeletonLines } from '../../components/ui'
 import NoticeForm from './NoticeForm'
-import { CategoryBadge, StatusBadge, formatDate } from './noticeUi'
+import { CategoryBadge, StatusBadge } from './noticeUi'
 
 const STATUSES: NoticeStatus[] = ['DRAFT', 'APPROVED', 'EXPIRED', 'ARCHIVED']
 

@@ -1,12 +1,13 @@
 'use client'
 
+import { formatDate } from './officeFormatting'
 import { useState } from 'react'
 import Link from 'next/link'
 import { useI18n } from '../../i18n/I18nProvider'
 import { useExportCsv, useMyOffice, useOfficeDashboard } from '../../hooks/useOffice'
 import { PARTNER_CATEGORIES, type ExportKind, type RepeatedQuestion } from '../../api/office'
 import { Button, Card, EmptyState, PageHeader, QueryErrorNotice, SkeletonLines } from '../../components/ui'
-import { formatDate } from './noticeUi'
+
 
 const EXPORT_KINDS: ExportKind[] = ['inquiries', 'consultations', 'notices']
 

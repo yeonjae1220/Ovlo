@@ -21,6 +21,7 @@ public class Inquiry {
     public static final int MAX_QUESTION_LENGTH = 1000;
 
     private Long id;
+    private Long previousInquiryId;
     private final Long officeId;
     private final Long memberId;
     private final NoticeLang lang;
@@ -48,6 +49,35 @@ public class Inquiry {
         this.askedAt = askedAt;
         this.latencyMs = latencyMs;
         this.modelId = modelId;
+    }
+
+    /** A new immutable turn links to one persisted turn belonging to the same student and office. */
+    public Inquiry following(Inquiry previous) {
+        if (id != null || previousInquiryId != null || previous.id == null
+                || !officeId.equals(previous.officeId) || !memberId.equals(previous.memberId)) {
+            throw new IllegalArgumentException("같은 학교·회원의 저장된 문의만 이어갈 수 있습니다");
+        }
+        previous.assertCanContinue();
+        previousInquiryId = previous.id;
+        return this;
+    }
+
+    public void assertCanContinue() {
+        if (outcome == InquiryOutcome.ESCALATED) {
+            throw new InquiryException("담당자에게 전달된 대화입니다. 상담방에서 이어가 주세요", InquiryException.ErrorType.CONFLICT);
+        }
+    }
+
+    public Long getPreviousInquiryId() { return previousInquiryId; }
+
+    public static Inquiry restore(Long id, Long officeId, Long memberId, NoticeLang lang, String question,
+                                  InquiryOutcome outcome, String answerText, List<Long> citedNoticeIds,
+                                  List<Long> candidateNoticeIds, Instant askedAt, long latencyMs, String modelId,
+                                  Long previousInquiryId) {
+        Inquiry inquiry = restore(id, officeId, memberId, lang, question, outcome, answerText, citedNoticeIds,
+                candidateNoticeIds, askedAt, latencyMs, modelId);
+        inquiry.previousInquiryId = previousInquiryId;
+        return inquiry;
     }
 
     public static String validateQuestion(String question) {

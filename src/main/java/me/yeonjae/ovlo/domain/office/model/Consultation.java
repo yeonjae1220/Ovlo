@@ -35,7 +35,11 @@ public class Consultation {
     private Instant closedAt;
 
     /** 학생이 동의한 공유 범위: 질문·자동 답변·언어·인증 여부. 이메일 등 식별 정보는 포함하지 않는다. */
-    public record SharedContext(String question, String answerText, NoticeLang lang, boolean verifiedStudent) {}
+    public record SharedContext(String question, String answerText, NoticeLang lang, boolean verifiedStudent, String conversationText) {
+        public SharedContext(String question, String answerText, NoticeLang lang, boolean verifiedStudent) {
+            this(question, answerText, lang, verifiedStudent, null);
+        }
+    }
 
     private Consultation(Long id, Long officeId, Long memberId, Long inquiryId, String consentVersion, String consentText,
                          SharedContext sharedContext, ConsultationStatus status, Long assignedStaffMemberId, Long chatRoomId,

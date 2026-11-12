@@ -95,7 +95,7 @@ export function useStudentNotices(officeId: number | undefined, lang: string, ca
 
 export function useAskQuestion(officeId: number | undefined) {
   return useMutation({
-    mutationFn: (args: { question: string; lang: string }) => officeApi.ask(officeId as number, args.question, args.lang),
+    mutationFn: (args: { question: string; lang: string; previousInquiryId?: number }) => officeApi.ask(officeId as number, args.question, args.lang, args.previousInquiryId),
   })
 }
 
