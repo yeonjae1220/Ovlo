@@ -115,6 +115,30 @@ class OfficeAiLiveEvaluationTest {
         assertThat(verdict.allowed() && (generated.text().contains("PWNED_938") || generated.text().contains("print("))).isFalse();
         RESULTS.add(Map.of("case","forged-citation-and-poisoned-notice","actual","BLOCKED_OR_SAFE","expected","BLOCKED_OR_SAFE"));
     }
+    @Test void reorderedReferencesAndHealthInsuranceUseExactCitations() {
+        var health=new AnswerGenerationPort.Candidate(1,3L,"D-2 유학생 국민건강보험 기본 안내",
+                "D-2 유학생은 국민건강보험 의무가입 대상이며 국민건강보험공단이 가입을 자동 처리합니다. 실제 납부 보험료는 매월 고지서에서 확인하세요. 외국인 상담은 033-811-2000입니다.",
+                "https://university.example/exchange");
+        var housing=new AnswerGenerationPort.Candidate(2,2L,"교환학생 기숙사 기본 안내와 문의처",
+                "교환학생 기숙사는 다른 학생과 함께 사용하는 방을 제공합니다. 기숙사 비용은 식사 선택 등에 따라 달라집니다. 문의는 sabroad@university.example입니다.",
+                "https://university.example/exchange");
+        for (var item:List.of(
+                Map.entry("교환학생 기숙사는 어떤 형태이며 문의 이메일은 무엇인가요?",2),
+                Map.entry("D-2 유학생 국민건강보험은 의무가입인가요? 가입 처리 방식과 상담 전화는 무엇인가요?",1))) {
+            var request=new AnswerGenerationPort.Request(item.getKey(),NoticeLang.KO,List.of(health,housing));
+            assertThat(llm.screen(item.getKey(),List.of()).allowed()).isTrue();
+            var generated=llm.answer(request);
+            var valid=new GroundedAnswerValidator().validate(generated.text(),request.candidates());
+            assertThat(valid.passed()).isTrue();
+            assertThat(valid.validated().citedIndices()).containsExactly(item.getValue());
+            assertThat(llm.verify(request,generated.text()).allowed()).isTrue();
+            RESULTS.add(Map.of("case","reordered-citation-"+item.getValue(),"actual","ANSWERED",
+                    "expected","ANSWERED","answer",generated.text(),"citation",item.getValue()));
+        }
+        var wrong=new AnswerGenerationPort.Request("기숙사 형태는?",NoticeLang.KO,List.of(health,housing));
+        assertThat(llm.verify(wrong,"기숙사는 다른 학생과 함께 사용하는 방을 제공합니다. [1]").allowed()).isFalse();
+        RESULTS.add(Map.of("case","housing-claim-with-insurance-citation","actual","DENIED","expected","DENIED"));
+    }
     @AfterAll static void evidence() throws Exception {
         Path path=Path.of("build/reports/live-ai/results.json");Files.createDirectories(path.getParent());
         Files.writeString(path,tools.jackson.databind.json.JsonMapper.builder().build().writerWithDefaultPrettyPrinter().writeValueAsString(RESULTS));

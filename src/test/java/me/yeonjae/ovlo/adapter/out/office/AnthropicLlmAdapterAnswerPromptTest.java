@@ -82,4 +82,20 @@ class AnthropicLlmAdapterAnswerPromptTest {
                 "CURRENT numbered reference notices", "NO_GROUNDS");
     }
 
+    @Test void promptHasOnlyCitationLabelsWhenSearchOrderDiffersFromDatabaseIds() {
+        var adapter=new AnthropicLlmAdapter(new OfficeMetrics(new SimpleMeterRegistry()),"sk-test",
+            "http://127.0.0.1:"+server.getAddress().getPort(),"claude-opus-5-5","medium",256,10,false);
+        adapter.answer(new AnswerGenerationPort.Request("Housing?",NoticeLang.KO,List.of(
+            new AnswerGenerationPort.Candidate(1,2L,"Housing","Shared rooms", "https://school.example/exchange"),
+            new AnswerGenerationPort.Candidate(2,3L,"Insurance","Mandatory insurance", "https://school.example/exchange"))));
+        var json=tools.jackson.databind.json.JsonMapper.builder().build();
+        var user=json.readTree(body.get()).get("messages").get(0).get("content").asText();
+        var references=json.readTree(user.substring(user.indexOf('{'))).get("references");
+        assertThat(references.get(0).get("citation").asText()).isEqualTo("[1]");
+        assertThat(references.get(0).get("title").asText()).isEqualTo("Housing");
+        assertThat(references.get(1).get("citation").asText()).isEqualTo("[2]");
+        assertThat(references.get(1).get("title").asText()).isEqualTo("Insurance");
+        assertThat(user).doesNotContain("noticeId", "\"index\"");
+    }
+
 }
