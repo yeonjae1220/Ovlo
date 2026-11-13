@@ -27,7 +27,11 @@ function Answer({ result }: { result: AskResult }) {
       <h4 style={{ margin: '12px 0 4px' }}>{t('ask.sources')}</h4>
       <ol style={{ paddingLeft: 20 }}>
         {result.citations.map(c => <li key={c.index} id={`cite-${result.inquiryId}-${c.index}`} value={c.index}>
-          {c.sourceUrl && /^https?:\/\//i.test(c.sourceUrl) ? <a href={c.sourceUrl} target="_blank" rel="noreferrer">{c.title}</a> : c.title}
+          {c.sourceUrl && /^https?:\/\//i.test(c.sourceUrl) ? <a href={c.sourceUrl} target="_blank" rel="noreferrer">{c.title}</a> : c.currentlyValid ? <Link href={`/my-university/notices/${c.noticeId}`}>{c.title}</Link> : c.title}
+          {c.sourceType && <small> · {t(`office.knowledge.${c.sourceType}`)} · {c.department}</small>}
+          {c.verifiedOn && <small> · {t('office.knowledge.lastVerified')}: {formatDate(c.verifiedOn)}</small>}
+          {c.versionRecorded === false && <p role="status">{t('office.knowledge.legacy')}</p>}
+          {c.versionRecorded && c.currentlyValid === false && <p role="status">{t('office.knowledge.outdated')}</p>}
           {c.expiresAt && <small> ({t('ask.validUntil', { date: formatDate(c.expiresAt) })})</small>}
         </li>)}
       </ol>

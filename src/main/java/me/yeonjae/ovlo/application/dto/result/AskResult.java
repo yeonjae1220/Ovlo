@@ -13,5 +13,15 @@ import java.util.List;
 public record AskResult(Long inquiryId, InquiryOutcome outcome, NoticeLang lang, String answerText,
                         List<Citation> citations, boolean canEscalate) {
 
-    public record Citation(int index, Long noticeId, String title, String sourceUrl, LocalDate expiresAt) {}
+    public record Citation(int index, Long noticeId, String title, String sourceUrl, LocalDate expiresAt,
+                           Integer noticeVersion, String sourceType, String department, LocalDate verifiedOn,
+                           boolean currentlyValid, boolean versionRecorded) {
+        public Citation(int index,Long noticeId,String title,String sourceUrl,LocalDate expiresAt) {
+            this(index,noticeId,title,sourceUrl,expiresAt,null,null,null,null,false,false);
+        }
+        public static Citation from(me.yeonjae.ovlo.domain.office.model.NoticeCitation c,boolean valid) {
+            return new Citation(c.index(),c.noticeId(),c.title(),c.sourceUrl(),c.expiresAt(),c.version(),
+                    c.sourceType().name(),c.department(),c.verifiedOn(),valid,true);
+        }
+    }
 }

@@ -18,10 +18,14 @@ public class InquiryConversationQueryService implements GetInquiryConversationQu
     private final LoadNoticePort notices;
     private final LoadConsultationPort consultations;
     private final StudentOfficeAccessPolicy access;
+    private final NoticeKnowledgePort knowledge;
+    private final me.yeonjae.ovlo.application.service.office.NoticeGovernanceService governance;
+    private final java.time.Clock clock;
 
     public InquiryConversationQueryService(LoadInquiryPort inquiries, LoadNoticePort notices,
-                                          LoadConsultationPort consultations, StudentOfficeAccessPolicy access) {
-        this.inquiries = inquiries; this.notices = notices; this.consultations = consultations; this.access = access;
+                                          LoadConsultationPort consultations, StudentOfficeAccessPolicy access,NoticeKnowledgePort knowledge,
+                                          me.yeonjae.ovlo.application.service.office.NoticeGovernanceService governance,java.time.Clock clock) {
+        this.inquiries = inquiries; this.notices = notices; this.consultations = consultations; this.access = access;this.knowledge=knowledge;this.governance=governance;this.clock=clock;
     }
 
     @Override
@@ -44,12 +48,14 @@ public class InquiryConversationQueryService implements GetInquiryConversationQu
 
     private AskResult result(Inquiry inquiry) {
         List<AskResult.Citation> citations = new ArrayList<>();
-        for (int n = 0; n < inquiry.getCandidateNoticeIds().size(); n++) {
-            Long id = inquiry.getCandidateNoticeIds().get(n);
-            if (!inquiry.getCitedNoticeIds().contains(id)) continue;
-            final int index = n + 1;
-            notices.findById(id).filter(notice -> notice.getOfficeId().equals(inquiry.getOfficeId())).ifPresent(notice ->
-                    citations.add(new AskResult.Citation(index, id, notice.getTitle(), notice.getSourceUrl(), notice.getExpiresAt())));
+        for (NoticeCitation snapshot:knowledge.citations(inquiry.getId())) {
+            boolean current=notices.findById(snapshot.noticeId()).filter(n -> n.getOfficeId().equals(inquiry.getOfficeId())
+                    && n.getVersion()==snapshot.version() && governance.eligible(n,me.yeonjae.ovlo.application.service.office.OfficeDates.today(clock))).isPresent();
+            citations.add(AskResult.Citation.from(snapshot,current));
+        }
+        if(citations.isEmpty()) for(Long id:inquiry.getCitedNoticeIds()) {
+            // 과거 근거를 현재 본문으로 재구성하지 않는다.
+            citations.add(new AskResult.Citation(inquiry.getCandidateNoticeIds().indexOf(id)+1,id,"과거 출처 (버전 미기록)",null,null));
         }
         return new AskResult(inquiry.getId(), inquiry.getOutcome(), inquiry.getLang(), inquiry.getAnswerText(), citations,
                 inquiry.getOutcome() != InquiryOutcome.ESCALATED);

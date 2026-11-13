@@ -71,6 +71,7 @@ class NoticeExpiryServiceTest {
                 LocalDate.of(2027, 2, 1), expiresAt, 11L, Instant.parse("2027-02-01T00:00:00Z"));
         n.assignId(id);
         n.approve("11", Instant.parse("2027-02-01T00:00:00Z"), LocalDate.of(2027, 2, 1));
+        me.yeonjae.ovlo.support.NoticeFixtures.verify(n, NOW);
         return n;
     }
 

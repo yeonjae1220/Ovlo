@@ -1,6 +1,7 @@
 'use client'
 
 import { formatDate } from './officeFormatting'
+import NoticeReviewQueue from './NoticeReviewQueue'
 import { useState } from 'react'
 import Link from 'next/link'
 import { useI18n } from '../../i18n/I18nProvider'
@@ -101,6 +102,7 @@ export default function OfficeDashboardPage() {
         {t('office.dashboard.exportHint')}
       </p>
 
+      <NoticeReviewQueue officeId={office.officeId} />
       {dashboard.isLoading && <SkeletonLines count={6} />}
       {dashboard.isError && <QueryErrorNotice onRetry={() => dashboard.refetch()} />}
 

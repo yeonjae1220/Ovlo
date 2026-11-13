@@ -9,6 +9,8 @@ import java.util.List;
  * 호출부(초대·상담)는 잡고, 다음 실행에 다시 보내면 되는 호출부(만료 경고)는 전파한다.
  */
 public interface OfficeNotificationPort {
+    void sendNoticeReviewDue(List<String> toEmails, String officeName, String title, LocalDate due, boolean overdue);
+
     void sendStaffInvitation(String toEmail, String officeName, String invitedBy);
 
     /** 만료 7일 전 안내. 공지마다 한 번. */

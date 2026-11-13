@@ -33,6 +33,7 @@ class KeywordNoticeSearchAdapterTest {
                 LocalDate.of(2027, 2, 1), LocalDate.of(2027, 6, 30), 11L, NOW);
         n.assignId(id);
         n.approve("11", NOW, LocalDate.of(2027, 2, 1));
+        me.yeonjae.ovlo.support.NoticeFixtures.verify(n, NOW);
         return n;
     }
 
@@ -44,7 +45,7 @@ class KeywordNoticeSearchAdapterTest {
         Notice life = notice(3L, "교내 식당", "학생 식당 운영 시간");
         dorm.putTranslation(NoticeLang.EN, "Dormitory application", "Dormitory applications close February 10", NOW);
         given(loadNoticePort.findActiveForStudent(eq(5L), isNull(), any())).willReturn(List.of(dorm, visa, life));
-        var adapter = new KeywordNoticeSearchAdapter(loadNoticePort);
+        var adapter = new KeywordNoticeSearchAdapter(loadNoticePort,me.yeonjae.ovlo.support.NoticeFixtures.governance(loadNoticePort));
 
         assertThat(adapter.findCandidates(5L, NoticeLang.KO, "기숙사 신청은 언제까지예요?", TODAY, 8))
                 .extracting(Notice::getId).containsExactly(1L, 2L);   // 2번은 '신청'만 겹침

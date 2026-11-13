@@ -59,7 +59,8 @@ class NoticeCommandServiceTest {
     @BeforeEach
     void setUp() {
         sut = new NoticeCommandService(loadNoticePort, saveNoticePort, loadOfficePort, translateNoticeUseCase,
-                eventPublisher, Clock.fixed(NOW, ZoneOffset.UTC));
+                eventPublisher, Clock.fixed(NOW, ZoneOffset.UTC), org.mockito.Mockito.mock(me.yeonjae.ovlo.application.port.out.office.NoticeKnowledgePort.class),
+                org.mockito.Mockito.mock(me.yeonjae.ovlo.application.service.office.NoticeGovernanceService.class));
         office = Office.create(266L, "국제처", NOW);
         office.assignId(new OfficeId(OFFICE));
         lenient().when(loadOfficePort.findById(OFFICE)).thenReturn(Optional.of(office));
@@ -109,7 +110,7 @@ class NoticeCommandServiceTest {
     @Test
     @DisplayName("승인하면 APPROVED 로 저장하고 커밋 후 번역 이벤트를 발행한다")
     void approvePublishesEvent() {
-        draftInStore();
+        me.yeonjae.ovlo.support.NoticeFixtures.verify(draftInStore(),NOW);
 
         NoticeResult result = sut.approve(new NoticeActionCommand(OFFICE, NOTICE, "11"));
 
@@ -136,21 +137,22 @@ class NoticeCommandServiceTest {
     }
 
     @Test
-    @DisplayName("본문을 바꾸는 수정은 DRAFT·version 2 로 돌아가고, 날짜만 바꾸면 승인 상태가 남는다")
+    @DisplayName("본문과 날짜 변경 모두 새 버전의 재승인을 요구한다")
     void updateSemantics() {
         Notice n = draftInStore();
         n.approve("11", NOW, LocalDate.of(2027, 2, 1));
+        me.yeonjae.ovlo.support.NoticeFixtures.verify(n, NOW);
 
         NoticeResult datesOnly = sut.update(new UpdateNoticeCommand(OFFICE, NOTICE, NoticeCategory.HOUSING, "기숙사 신청",
                 "2월 10일까지", null, List.of(), "2027-1", LocalDate.of(2027, 2, 1), LocalDate.of(2027, 4, 1)));
-        assertThat(datesOnly.status()).isEqualTo(NoticeStatus.APPROVED);
-        assertThat(datesOnly.version()).isEqualTo(1);
+        assertThat(datesOnly.status()).isEqualTo(NoticeStatus.DRAFT);
+        assertThat(datesOnly.version()).isEqualTo(2);
         assertThat(datesOnly.expiresAt()).isEqualTo(LocalDate.of(2027, 4, 1));
 
         NoticeResult edited = sut.update(new UpdateNoticeCommand(OFFICE, NOTICE, NoticeCategory.HOUSING, "기숙사 신청",
                 "2월 12일까지", null, List.of(), "2027-1", LocalDate.of(2027, 2, 1), LocalDate.of(2027, 4, 1)));
         assertThat(edited.status()).isEqualTo(NoticeStatus.DRAFT);
-        assertThat(edited.version()).isEqualTo(2);
+        assertThat(edited.version()).isEqualTo(3);
     }
 
     @Test

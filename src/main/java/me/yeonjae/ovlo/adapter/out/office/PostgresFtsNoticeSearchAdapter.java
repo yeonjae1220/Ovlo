@@ -45,7 +45,6 @@ public class PostgresFtsNoticeSearchAdapter implements NoticeSearchPort {
             ) s
             WHERE r_src > 0 OR r_tr > 0
             ORDER BY (r_src + r_tr) DESC, id DESC
-            LIMIT ?
             """;
 
     /** 'simple' 구성은 불용어를 빼지 않는다 — 어느 문서에나 있는 기능어가 후보를 채우지 않게 조금만 뺀다. */
@@ -56,12 +55,13 @@ public class PostgresFtsNoticeSearchAdapter implements NoticeSearchPort {
 
     private final JdbcTemplate jdbc;
     private final LoadNoticePort loadNoticePort;
+    private final me.yeonjae.ovlo.application.service.office.NoticeGovernanceService governance;
     private final KeywordNoticeSearchAdapter cjkFallback;
 
-    public PostgresFtsNoticeSearchAdapter(JdbcTemplate jdbc, LoadNoticePort loadNoticePort) {
+    public PostgresFtsNoticeSearchAdapter(JdbcTemplate jdbc, LoadNoticePort loadNoticePort, me.yeonjae.ovlo.application.service.office.NoticeGovernanceService governance) {
         this.jdbc = jdbc;
-        this.loadNoticePort = loadNoticePort;
-        this.cjkFallback = new KeywordNoticeSearchAdapter(loadNoticePort);
+        this.loadNoticePort = loadNoticePort; this.governance=governance;
+        this.cjkFallback = new KeywordNoticeSearchAdapter(loadNoticePort,governance);
     }
 
     @Override
@@ -69,9 +69,10 @@ public class PostgresFtsNoticeSearchAdapter implements NoticeSearchPort {
         Map<Long, Notice> merged = new LinkedHashMap<>();
         String tsquery = toOrQuery(question);
         if (!tsquery.isEmpty()) {
-            List<Long> ids = jdbc.queryForList(SQL, Long.class, lang.code(), tsquery, officeId, today, today, limit);
+            List<Long> ids = jdbc.queryForList(SQL, Long.class, lang.code(), tsquery, officeId, today, today);
             for (Long id : ids) {
-                loadNoticePort.findById(id).ifPresent(n -> merged.put(n.getId(), n));
+                loadNoticePort.findById(id).filter(n -> n.isGroundingEligible(today, lang) && governance.eligible(n,today)).ifPresent(n -> merged.put(n.getId(), n));
+                if (merged.size() >= limit) break;
             }
         }
         if (merged.size() < limit && containsCjk(question)) {

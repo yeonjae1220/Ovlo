@@ -52,6 +52,7 @@ public class OfficeNoticePersistenceAdapter implements LoadNoticePort, SaveNotic
     public List<Notice> findActiveForStudent(Long officeId, NoticeCategory category, LocalDate today) {
         return repository.findActiveForStudent(officeId, category != null ? category.name() : null, today).stream()
                 .map(this::toDomain)
+                .filter(n -> n.isActiveOn(today))
                 .toList();
     }
 
@@ -70,8 +71,14 @@ public class OfficeNoticePersistenceAdapter implements LoadNoticePort, SaveNotic
     public Notice save(Notice notice) {
         OfficeNoticeJpaEntity e = notice.getId() == null
                 ? new OfficeNoticeJpaEntity()
-                : repository.findWithTranslationsById(notice.getId())
+                : repository.findForUpdate(notice.getId())
                         .orElseThrow(() -> new IllegalStateException("저장할 공지가 없습니다: id=" + notice.getId()));
+        if (notice.getId() != null && e.getRowVersion() != notice.getRowVersion())
+            throw new org.springframework.orm.ObjectOptimisticLockingFailureException("Notice", notice.getId());
+        e.setUpdatedAt(java.time.Instant.now());
+        e.setSourceMetadata(notice.getSource() == null ? null : NoticeJson.write(notice.getSource()));
+        e.setReviewMetadata(NoticeJson.write(notice.getReview()));
+        e.setNextReviewOn(notice.getReview().nextReviewOn());
         e.setOfficeId(notice.getOfficeId());
         e.setCategory(notice.getCategory().name());
         e.setTitle(notice.getTitle());
@@ -108,6 +115,7 @@ public class OfficeNoticePersistenceAdapter implements LoadNoticePort, SaveNotic
         OfficeNoticeJpaEntity saved = repository.saveAndFlush(e);
         // 호출자가 넘긴 객체를 계속 쓰더라도 두 번째 save 가 새 행을 만들지 않도록 id 를 돌려준다
         if (notice.getId() == null) notice.assignId(saved.getId());
+        notice.restoreGovernance(saved.getRowVersion(), notice.getSource(), notice.getReview());
         return toDomain(saved);
     }
 
@@ -116,11 +124,14 @@ public class OfficeNoticePersistenceAdapter implements LoadNoticePort, SaveNotic
                 .map(t -> NoticeTranslation.restore(NoticeLang.fromCode(t.getLang()).orElseThrow(), t.getTitle(), t.getBody(),
                         TranslationStatus.valueOf(t.getStatus()), t.getSourceVersion(), t.getGeneratedAt()))
                 .toList();
-        return Notice.restore(e.getId(), e.getOfficeId(), NoticeCategory.valueOf(e.getCategory()), e.getTitle(), e.getBody(),
+        Notice notice = Notice.restore(e.getId(), e.getOfficeId(), NoticeCategory.valueOf(e.getCategory()), e.getTitle(), e.getBody(),
                 NoticeLang.fromCode(e.getSourceLang()).orElse(NoticeLang.KO), e.getSourceUrl(), splitIds(e.getAttachmentMediaIds()),
                 e.getTerm(), e.getEffectiveFrom(), e.getExpiresAt(), NoticeStatus.valueOf(e.getStatus()), e.getApprovedBy(),
                 e.getApprovedAt(), e.getExpiryWarnedAt(), e.getVersion(), e.getCreatedBy(), e.getCreatedAt(), e.getUpdatedAt(),
                 translations);
+        notice.restoreGovernance(e.getRowVersion(), NoticeJson.read(e.getSourceMetadata(), me.yeonjae.ovlo.domain.office.model.NoticeSource.class),
+                NoticeJson.read(e.getReviewMetadata(), me.yeonjae.ovlo.domain.office.model.NoticeReview.class));
+        return notice;
     }
 
     private static String joinIds(List<Long> ids) {

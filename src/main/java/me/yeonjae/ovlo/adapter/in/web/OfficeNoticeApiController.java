@@ -80,46 +80,51 @@ public class OfficeNoticeApiController {
     @Operation(summary = "공지 수정 — 제목·본문이 바뀌면 DRAFT 로 돌아가 다시 승인해야 한다")
     @PutMapping("/{noticeId}")
     public ResponseEntity<NoticeResult> update(@PathVariable Long officeId, @PathVariable Long noticeId,
-                                               @Valid @RequestBody NoticeRequest request, Authentication authentication) {
+                                               @Valid @RequestBody NoticeRequest request, @AuthenticationPrincipal Long memberId, Authentication authentication) {
         accessPolicy.assertStaff(OfficePrincipal.membershipOrNull(authentication), officeId);
+        if (request.revision()==null || request.revision()<0) throw new IllegalArgumentException("자료 버전이 필요합니다");
         return ResponseEntity.ok(manageNoticeUseCase.update(new UpdateNoticeCommand(officeId, noticeId, request.category(),
                 request.title(), request.body(), request.sourceUrl(), request.attachmentMediaIds(), request.term(),
-                request.effectiveFrom(), request.expiresAt())));
+                request.effectiveFrom(), request.expiresAt(), request.revision(), memberId)));
     }
+
+    public record RevisionRequest(@jakarta.validation.constraints.NotNull @jakarta.validation.constraints.Min(0) Long revision) {}
 
     @Operation(summary = "승인 — 커밋 뒤 7개 언어 번역이 비동기로 생성된다")
     @PostMapping("/{noticeId}/approve")
     public ResponseEntity<NoticeResult> approve(@PathVariable Long officeId, @PathVariable Long noticeId,
-                                                @AuthenticationPrincipal Long memberId, Authentication authentication) {
+                                                @AuthenticationPrincipal Long memberId, Authentication authentication, @Valid @RequestBody RevisionRequest request) {
         accessPolicy.assertStaff(OfficePrincipal.membershipOrNull(authentication), officeId);
-        return ResponseEntity.ok(manageNoticeUseCase.approve(new NoticeActionCommand(officeId, noticeId, String.valueOf(memberId))));
+        return ResponseEntity.ok(manageNoticeUseCase.approve(new NoticeActionCommand(officeId, noticeId, String.valueOf(memberId), request.revision())));
     }
 
     @Operation(summary = "보관 — 이후 변경 불가")
     @PostMapping("/{noticeId}/archive")
     public ResponseEntity<Void> archive(@PathVariable Long officeId, @PathVariable Long noticeId,
-                                        @AuthenticationPrincipal Long memberId, Authentication authentication) {
+                                        @AuthenticationPrincipal Long memberId, Authentication authentication, @Valid @RequestBody RevisionRequest request) {
         accessPolicy.assertStaff(OfficePrincipal.membershipOrNull(authentication), officeId);
-        manageNoticeUseCase.archive(new NoticeActionCommand(officeId, noticeId, String.valueOf(memberId)));
+        manageNoticeUseCase.archive(new NoticeActionCommand(officeId, noticeId, String.valueOf(memberId), request.revision()));
         return ResponseEntity.noContent().build();
     }
 
     @Operation(summary = "번역 검토 완료 표시")
     @PostMapping("/{noticeId}/translations/{lang}/review")
     public ResponseEntity<Void> review(@PathVariable Long officeId, @PathVariable Long noticeId, @PathVariable String lang,
-                                       Authentication authentication) {
+                                       Authentication authentication, @AuthenticationPrincipal Long memberId,
+                                       @Valid @RequestBody RevisionRequest request) {
         accessPolicy.assertStaff(OfficePrincipal.membershipOrNull(authentication), officeId);
         NoticeLang noticeLang = NoticeLang.fromCode(lang)
                 .orElseThrow(() -> new IllegalArgumentException("지원하지 않는 언어입니다: " + lang));
-        manageNoticeUseCase.reviewTranslation(new ReviewNoticeTranslationCommand(officeId, noticeId, noticeLang));
+        manageNoticeUseCase.reviewTranslation(new ReviewNoticeTranslationCommand(officeId, noticeId, noticeLang, request.revision(), memberId));
         return ResponseEntity.noContent().build();
     }
 
     @Operation(summary = "없거나 stale 인 번역 다시 생성 (동기)")
     @PostMapping("/{noticeId}/retranslate")
     public ResponseEntity<NoticeResult> retranslate(@PathVariable Long officeId, @PathVariable Long noticeId,
-                                                    @AuthenticationPrincipal Long memberId, Authentication authentication) {
+                                                    @AuthenticationPrincipal Long memberId, Authentication authentication,
+                                                    @Valid @RequestBody RevisionRequest request) {
         accessPolicy.assertStaff(OfficePrincipal.membershipOrNull(authentication), officeId);
-        return ResponseEntity.ok(manageNoticeUseCase.retranslate(new NoticeActionCommand(officeId, noticeId, String.valueOf(memberId))));
+        return ResponseEntity.ok(manageNoticeUseCase.retranslate(new NoticeActionCommand(officeId, noticeId, String.valueOf(memberId), request.revision())));
     }
 }

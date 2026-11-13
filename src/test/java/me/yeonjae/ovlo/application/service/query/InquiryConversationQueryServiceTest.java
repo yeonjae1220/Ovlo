@@ -14,7 +14,7 @@ class InquiryConversationQueryServiceTest {
     LoadInquiryPort inquiries = mock(LoadInquiryPort.class);
     LoadConsultationPort consultations = mock(LoadConsultationPort.class);
     StudentOfficeAccessPolicy access = mock(StudentOfficeAccessPolicy.class);
-    InquiryConversationQueryService service = new InquiryConversationQueryService(inquiries, mock(LoadNoticePort.class), consultations, access);
+    InquiryConversationQueryService service = new InquiryConversationQueryService(inquiries, mock(LoadNoticePort.class), consultations, access, mock(NoticeKnowledgePort.class), me.yeonjae.ovlo.support.NoticeFixtures.governance(mock(LoadNoticePort.class)),java.time.Clock.systemUTC());
 
     Inquiry turn(long id, long office, long member) {
         Inquiry i = Inquiry.noGrounds(office, member, NoticeLang.KO, "question " + id, List.of(), Instant.now(), 0, null);

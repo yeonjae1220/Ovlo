@@ -65,8 +65,12 @@ class InquiryCommandServiceTest {
 
     @BeforeEach
     void setUp() {
+        var candidateLoad=org.mockito.Mockito.mock(me.yeonjae.ovlo.application.port.out.office.LoadNoticePort.class);
+        lenient().when(candidateLoad.findById(any())).thenAnswer(inv -> java.util.stream.Stream.of(dorm,insurance).filter(n -> n!=null && n.getId().equals(inv.getArgument(0))).findFirst());
+        var governance=me.yeonjae.ovlo.support.NoticeFixtures.governance(candidateLoad);
+        var finalizer=new me.yeonjae.ovlo.application.service.office.NoticeAnswerFinalizer(org.mockito.Mockito.mock(me.yeonjae.ovlo.application.port.out.office.NoticeKnowledgePort.class),candidateLoad,saveInquiryPort,governance,Clock.fixed(NOW,ZoneOffset.UTC));
         sut = new InquiryCommandService(accessPolicy, searchPort, answerPort, new GroundedAnswerValidator(),
-                loadInquiryPort, saveInquiryPort, Clock.fixed(NOW, ZoneOffset.UTC), 8, 500);
+                loadInquiryPort, saveInquiryPort, Clock.fixed(NOW, ZoneOffset.UTC), finalizer, governance, 8, 500);
         Office office = Office.create(266L, "국제처", NOW);
         office.assignId(new OfficeId(OFFICE));
         lenient().when(accessPolicy.assertMember(MEMBER, OFFICE)).thenReturn(office);
@@ -86,6 +90,7 @@ class InquiryCommandServiceTest {
                 LocalDate.of(2027, 2, 1), LocalDate.of(2027, 6, 30), 11L, NOW);
         n.assignId(id);
         n.approve("11", NOW, LocalDate.of(2027, 2, 1));
+        me.yeonjae.ovlo.support.NoticeFixtures.verify(n, NOW);
         return n;
     }
 

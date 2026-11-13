@@ -25,10 +25,11 @@ public class NoticeQueryService implements GetNoticeQuery {
 
     private final LoadNoticePort loadNoticePort;
     private final Clock clock;
+    private final me.yeonjae.ovlo.application.service.office.NoticeGovernanceService governance;
 
-    public NoticeQueryService(LoadNoticePort loadNoticePort, Clock clock) {
+    public NoticeQueryService(LoadNoticePort loadNoticePort, Clock clock, me.yeonjae.ovlo.application.service.office.NoticeGovernanceService governance) {
         this.loadNoticePort = loadNoticePort;
-        this.clock = clock;
+        this.clock = clock; this.governance=governance;
     }
 
     @Override
@@ -46,6 +47,7 @@ public class NoticeQueryService implements GetNoticeQuery {
     @Override
     public List<StudentNoticeResult> findForStudent(Long officeId, NoticeCategory category, NoticeLang lang) {
         return loadNoticePort.findActiveForStudent(officeId, category, today()).stream()
+                .filter(n -> governance.eligible(n,today()))
                 .map(n -> NoticeResultMapper.toStudent(n, lang))
                 .toList();
     }
@@ -56,10 +58,11 @@ public class NoticeQueryService implements GetNoticeQuery {
         return loadNoticePort.findById(noticeId)
                 .filter(n -> n.getOfficeId().equals(officeId))
                 .filter(n -> n.isActiveOn(today))
+                .filter(n -> governance.eligible(n,today()))
                 .map(n -> NoticeResultMapper.toStudent(n, lang));
     }
 
     private LocalDate today() {
-        return LocalDate.ofInstant(clock.instant(), clock.getZone());
+        return me.yeonjae.ovlo.application.service.office.OfficeDates.today(clock);
     }
 }

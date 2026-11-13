@@ -17,5 +17,5 @@ public record NoticeRequest(@NotNull NoticeCategory category,
                             @Size(max = 20) List<Long> attachmentMediaIds,
                             @NotBlank @Pattern(regexp = "\\d{4}-[12S]", message = "적용 학기는 2027-1 형식입니다") String term,
                             @NotNull LocalDate effectiveFrom,
-                            @NotNull LocalDate expiresAt) {
+                            @NotNull LocalDate expiresAt, Long revision) {
 }

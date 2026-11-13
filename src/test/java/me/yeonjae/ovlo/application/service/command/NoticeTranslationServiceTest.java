@@ -55,11 +55,13 @@ class NoticeTranslationServiceTest {
     @BeforeEach
     void setUp() {
         sut = new NoticeTranslationService(loadNoticePort, saveNoticePort, loadOfficePort, loadMemberPort,
-                translationPort, new NoticeTranslationGate(), notificationPort, Clock.fixed(NOW, ZoneOffset.UTC));
+                translationPort, new NoticeTranslationGate(), notificationPort, Clock.fixed(NOW, ZoneOffset.UTC),new org.springframework.transaction.support.TransactionTemplate(org.mockito.Mockito.mock(org.springframework.transaction.PlatformTransactionManager.class)),
+                org.mockito.Mockito.mock(me.yeonjae.ovlo.application.port.out.office.NoticeKnowledgePort.class));
         notice = Notice.register(5L, NoticeCategory.HOUSING, "기숙사 신청", "신청은 2월 10일까지입니다.", null, List.of(),
                 "2027-1", LocalDate.of(2027, 2, 1), LocalDate.of(2027, 3, 15), 11L, NOW);
         notice.assignId(NOTICE);
         notice.approve("11", NOW, LocalDate.of(2027, 2, 1));
+        me.yeonjae.ovlo.support.NoticeFixtures.verify(notice, NOW);
         given(loadNoticePort.findById(NOTICE)).willReturn(Optional.of(notice));
         lenient().when(saveNoticePort.save(any())).thenAnswer(inv -> inv.getArgument(0));
         Office office = Office.create(266L, "국제처", NOW);
@@ -81,7 +83,7 @@ class NoticeTranslationServiceTest {
         assertThat(outcome.generated()).hasSize(6).doesNotContain(NoticeLang.KO);
         assertThat(outcome.failed()).isEmpty();
         assertThat(notice.isGroundingEligible(LocalDate.of(2027, 2, 5), NoticeLang.VI)).isTrue();
-        verify(saveNoticePort).save(notice);
+        verify(saveNoticePort, org.mockito.Mockito.times(outcome.generated().size())).save(notice);
         verify(notificationPort, never()).sendNoticeTranslationFailed(any(), any(), any(), any());
     }
 
@@ -101,7 +103,7 @@ class NoticeTranslationServiceTest {
         assertThat(outcome.generated()).containsExactlyInAnyOrder(NoticeLang.EN, NoticeLang.ZH, NoticeLang.FR, NoticeLang.VI);
         assertThat(notice.getTranslation(NoticeLang.JA)).isEmpty();
         assertThat(notice.getTranslation(NoticeLang.EN)).isPresent();
-        verify(saveNoticePort).save(notice);
+        verify(saveNoticePort, org.mockito.Mockito.times(outcome.generated().size())).save(notice);
         verify(notificationPort).sendNoticeTranslationFailed(anyList(), eq("국제처"), eq("기숙사 신청"), eq(List.of("ja", "de")));
     }
 
@@ -137,8 +139,25 @@ class NoticeTranslationServiceTest {
         for (var lang : List.of(NoticeLang.EN, NoticeLang.DE, NoticeLang.FR)) {
             assertThat(notice.getTranslation(lang)).isPresent();
         }
-        verify(saveNoticePort).save(notice);
+        verify(saveNoticePort, org.mockito.Mockito.times(outcome.generated().size())).save(notice);
         verify(notificationPort, never()).sendNoticeTranslationFailed(any(), any(), any(), any());
+    }
+
+    @Test
+    void translationOfAnOlderVersionNeverOverwritesNewContent() {
+        Notice replacement=Notice.register(5L,NoticeCategory.HOUSING,"새 제목","새 본문",null,List.of(),"2027-1",
+                LocalDate.of(2027,2,1),LocalDate.of(2027,3,15),11L,NOW);
+        replacement.assignId(NOTICE);
+        replacement.editContent(NoticeCategory.HOUSING,"수정된 제목","새로운 기한",null,List.of(),NOW);
+        given(translationPort.translate(any())).willAnswer(inv -> {
+            given(loadNoticePort.findById(NOTICE)).willReturn(Optional.of(replacement));
+            TranslationPort.Request request=inv.getArgument(0);
+            return new TranslationPort.Result("["+request.to().code()+"] "+request.title(),"["+request.to().code()+"] "+request.body(),"test");
+        });
+        var result=sut.translateMissing(NOTICE);
+        assertThat(result.generated()).isEmpty();
+        verify(saveNoticePort,never()).save(any());
+        assertThat(replacement.getTitle()).isEqualTo("수정된 제목");
     }
 
 }

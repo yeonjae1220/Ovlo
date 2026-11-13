@@ -90,6 +90,7 @@ class OfficeNoticePersistenceAdapterIntegrationTest {
     void saveAndReload() {
         Notice n = newNotice(NoticeCategory.HOUSING, LocalDate.of(2027, 2, 1), LocalDate.of(2027, 3, 15));
         n.approve(String.valueOf(staffId), NOW, LocalDate.of(2027, 2, 1));
+        me.yeonjae.ovlo.support.NoticeFixtures.verify(n, NOW);
         n.putTranslation(NoticeLang.EN, "Notice", "Apply by Feb 10", NOW);
         Notice saved = adapter.save(n);
         saved.reviewTranslation(NoticeLang.EN);
@@ -121,9 +122,11 @@ class OfficeNoticePersistenceAdapterIntegrationTest {
         Notice draft = adapter.save(newNotice(NoticeCategory.HOUSING, LocalDate.of(2027, 2, 1), LocalDate.of(2027, 3, 15)));
         Notice active = newNotice(NoticeCategory.VISA_STAY, LocalDate.of(2027, 2, 1), LocalDate.of(2027, 3, 15));
         active.approve("x", NOW, LocalDate.of(2027, 2, 1));
+        me.yeonjae.ovlo.support.NoticeFixtures.verify(active, NOW);
         adapter.save(active);
         Notice future = newNotice(NoticeCategory.VISA_STAY, LocalDate.of(2027, 3, 1), LocalDate.of(2027, 4, 1));
         future.approve("x", NOW, LocalDate.of(2027, 2, 1));
+        me.yeonjae.ovlo.support.NoticeFixtures.verify(future, NOW);
         adapter.save(future);
 
         assertThat(adapter.findByOffice(officeId, null, null, PageRequest.of(0, 10)).getTotalElements()).isEqualTo(3);
@@ -141,12 +144,15 @@ class OfficeNoticePersistenceAdapterIntegrationTest {
     void expiryQueries() {
         Notice expired = newNotice(NoticeCategory.LIFE, LocalDate.of(2027, 1, 1), LocalDate.of(2027, 2, 1));
         expired.approve("x", NOW, LocalDate.of(2027, 1, 15));
+        me.yeonjae.ovlo.support.NoticeFixtures.verify(expired, NOW);
         Long expiredId = adapter.save(expired).getId();
         Notice soon = newNotice(NoticeCategory.LIFE, LocalDate.of(2027, 1, 1), LocalDate.of(2027, 2, 10));
         soon.approve("x", NOW, LocalDate.of(2027, 1, 15));
+        me.yeonjae.ovlo.support.NoticeFixtures.verify(soon, NOW);
         Long soonId = adapter.save(soon).getId();
         Notice far = newNotice(NoticeCategory.LIFE, LocalDate.of(2027, 1, 1), LocalDate.of(2027, 6, 1));
         far.approve("x", NOW, LocalDate.of(2027, 1, 15));
+        me.yeonjae.ovlo.support.NoticeFixtures.verify(far, NOW);
         adapter.save(far);
 
         assertThat(adapter.findIdsToExpire(TODAY)).contains(expiredId).doesNotContain(soonId);

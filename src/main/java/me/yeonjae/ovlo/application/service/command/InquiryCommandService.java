@@ -52,12 +52,16 @@ public class InquiryCommandService implements AskQuestionUseCase, GiveInquiryFee
     private final LoadInquiryPort loadInquiryPort;
     private final SaveInquiryPort saveInquiryPort;
     private final Clock clock;
+    private final me.yeonjae.ovlo.application.service.office.NoticeAnswerFinalizer finalizer;
+    private final me.yeonjae.ovlo.application.service.office.NoticeGovernanceService governance;
     private final int candidateLimit;
     private final int officeDailyLimit;
 
     public InquiryCommandService(StudentOfficeAccessPolicy accessPolicy, NoticeSearchPort searchPort,
                                  AnswerGenerationPort answerPort, GroundedAnswerValidator validator,
                                  LoadInquiryPort loadInquiryPort, SaveInquiryPort saveInquiryPort, Clock clock,
+                                 me.yeonjae.ovlo.application.service.office.NoticeAnswerFinalizer finalizer,
+                                 me.yeonjae.ovlo.application.service.office.NoticeGovernanceService governance,
                                  @Value("${ovlo.office.inquiry-candidate-limit:8}") int candidateLimit,
                                  @Value("${ovlo.office.inquiry-office-daily-limit:500}") int officeDailyLimit) {
         this.accessPolicy = accessPolicy;
@@ -66,7 +70,7 @@ public class InquiryCommandService implements AskQuestionUseCase, GiveInquiryFee
         this.validator = validator;
         this.loadInquiryPort = loadInquiryPort;
         this.saveInquiryPort = saveInquiryPort;
-        this.clock = clock;
+        this.clock = clock; this.finalizer=finalizer; this.governance=governance;
         this.candidateLimit = candidateLimit;
         this.officeDailyLimit = officeDailyLimit;
     }
@@ -86,11 +90,12 @@ public class InquiryCommandService implements AskQuestionUseCase, GiveInquiryFee
                 .map(Inquiry::getQuestion).collect(java.util.stream.Collectors.joining(" "));
         searchQuestion = searchQuestion.isEmpty() ? question : searchQuestion + " " + question;
         Instant start = clock.instant();
-        LocalDate today = LocalDate.ofInstant(start, clock.getZone());
+        LocalDate today = me.yeonjae.ovlo.application.service.office.OfficeDates.today(clock);
         assertOfficeDailyLimit(c.officeId(), today);
 
         List<Notice> candidates = searchPort.findCandidates(c.officeId(), c.lang(), searchQuestion, today, candidateLimit).stream()
                 .filter(n -> n.isGroundingEligible(today, c.lang()))   // 최종 판정은 도메인(ADR-0006 2항)
+                .filter(n -> governance.eligible(n,today))
                 .limit(candidateLimit)
                 .toList();
         List<Long> candidateIds = candidates.stream().map(Notice::getId).toList();
@@ -127,18 +132,20 @@ public class InquiryCommandService implements AskQuestionUseCase, GiveInquiryFee
         }
 
         GroundedAnswerValidator.Validated v = outcome.validated();
-        Inquiry saved = record(Inquiry.answered(c.officeId(), c.memberId(), c.lang(), question, v.text(), v.citedNoticeIds(),
-                candidateIds, start, elapsed(start), generated.modelId()), history);
+        List<me.yeonjae.ovlo.domain.office.model.NoticeCitation> evidence = v.citedIndices().stream().map(i -> {
+            Notice n=candidates.get(i-1);
+            return new me.yeonjae.ovlo.domain.office.model.NoticeCitation(i,n.getId(),n.getVersion(),titleIn(n,c.lang()),
+                    n.getSource().publicSource()?n.getSourceUrl():null,n.getSource().type(),n.getSource().department(),
+                    n.getReview().verifiedOn(),n.getExpiresAt());
+        }).toList();
+        Inquiry saved = finalizer.finish(Inquiry.answered(c.officeId(), c.memberId(), c.lang(), question, v.text(), v.citedNoticeIds(),
+                candidateIds, start, elapsed(start), generated.modelId()), candidates, evidence, history);
+        if(saved.getOutcome()!=me.yeonjae.ovlo.domain.office.model.InquiryOutcome.ANSWERED) return noGroundsResult(saved);
         log.info("[Inquiry] answered office={} inquiry={} cited={} latencyMs={} model={} in={} out={}", c.officeId(),
                 saved.getId(), v.citedNoticeIds(), saved.getLatencyMs(), generated.modelId(), generated.inputTokens(),
                 generated.outputTokens());
 
-        List<AskResult.Citation> citations = v.citedIndices().stream()
-                .map(i -> {
-                    Notice n = candidates.get(i - 1);
-                    return new AskResult.Citation(i, n.getId(), titleIn(n, c.lang()), n.getSourceUrl(), n.getExpiresAt());
-                })
-                .toList();
+        List<AskResult.Citation> citations = evidence.stream().map(citation -> AskResult.Citation.from(citation,true)).toList();
         return new AskResult(saved.getId(), saved.getOutcome(), c.lang(), v.text(), citations, true);
     }
 
@@ -158,7 +165,7 @@ public class InquiryCommandService implements AskQuestionUseCase, GiveInquiryFee
     // ── 내부 ──────────────────────────────────────────────────────────────────
 
     private void assertOfficeDailyLimit(Long officeId, LocalDate today) {
-        Instant startOfDay = today.atStartOfDay(ZoneOffset.UTC).toInstant();
+        Instant startOfDay = today.atStartOfDay(me.yeonjae.ovlo.application.service.office.OfficeDates.ZONE).toInstant();
         long used = loadInquiryPort.countByOfficeSince(officeId, startOfDay);
         if (used >= officeDailyLimit) {
             throw new InquiryException("오늘 이 국제처의 질문 한도에 도달했습니다. 내일 다시 시도해 주세요",

@@ -28,6 +28,7 @@ class NoticeTest {
     private static Notice approved() {
         Notice n = draft();
         n.approve("11", NOW, TODAY);
+        me.yeonjae.ovlo.support.NoticeFixtures.verify(n, NOW);
         return n;
     }
 
@@ -65,6 +66,8 @@ class NoticeTest {
             Notice n = draft();
 
             n.approve("11", NOW, TODAY);
+
+            me.yeonjae.ovlo.support.NoticeFixtures.verify(n, NOW);
 
             assertThat(n.getStatus()).isEqualTo(NoticeStatus.APPROVED);
             assertThat(n.getApprovedBy()).isEqualTo("11");
@@ -106,6 +109,7 @@ class NoticeTest {
 
             n.reschedule(FROM, UNTIL.plusMonths(6), NOW);
             n.approve("11", NOW, UNTIL.plusDays(1));
+            me.yeonjae.ovlo.support.NoticeFixtures.verify(n, NOW);
             assertThat(n.getStatus()).isEqualTo(NoticeStatus.APPROVED);
         }
     }
@@ -197,6 +201,7 @@ class NoticeTest {
             Notice n = approved();
 
             assertThat(n.isGroundingEligible(FROM.minusDays(1), NoticeLang.KO)).isFalse();
+            n.verifySource(UNTIL);
             assertThat(n.isGroundingEligible(UNTIL, NoticeLang.KO)).isTrue();
             assertThat(n.isGroundingEligible(UNTIL.plusDays(1), NoticeLang.KO)).isFalse();
         }

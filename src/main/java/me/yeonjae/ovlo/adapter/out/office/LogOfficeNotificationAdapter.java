@@ -17,6 +17,10 @@ public class LogOfficeNotificationAdapter implements OfficeNotificationPort {
     private static final Logger log = LoggerFactory.getLogger(LogOfficeNotificationAdapter.class);
 
     @Override
+    public void sendNoticeReviewDue(List<String> toEmails,String officeName,String title,LocalDate due,boolean overdue) {
+        log.info("[EMAIL:NOTICE_REVIEW] recipients={} due={} overdue={}",toEmails.size(),due,overdue);
+    }
+    @Override
     public void sendStaffInvitation(String toEmail, String officeName, String invitedBy) {
         log.info("[EMAIL:OFFICE_INVITE] to={} office={} by={} (LOG adapter — 실제 발송 안 함)",
                 toEmail, officeName, invitedBy);

@@ -103,6 +103,6 @@ public class NoticeExpiryService implements ExpireNoticesUseCase {
     }
 
     private LocalDate today() {
-        return LocalDate.ofInstant(clock.instant(), clock.getZone());
+        return me.yeonjae.ovlo.application.service.office.OfficeDates.today(clock);
     }
 }
