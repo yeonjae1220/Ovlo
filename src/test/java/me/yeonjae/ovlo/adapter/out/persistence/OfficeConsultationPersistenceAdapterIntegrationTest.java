@@ -67,6 +67,7 @@ class OfficeConsultationPersistenceAdapterIntegrationTest {
     @Autowired private ChatPersistenceAdapter chatAdapter;
     @Autowired private MemberPersistenceAdapter memberAdapter;
     @Autowired private JdbcTemplate jdbc;
+    @Autowired private org.springframework.transaction.support.TransactionTemplate tx;
 
     private Long officeId;
     private Long studentId;
@@ -163,5 +164,26 @@ class OfficeConsultationPersistenceAdapterIntegrationTest {
         assertThat(reloaded.getConsentText()).contains("모든 질문");
         reloaded.assign(staffId, NOW.plusSeconds(10)); adapter.save(reloaded);
         assertThat(adapter.findById(saved.getId()).orElseThrow().getSharedContext().conversationText()).isEqualTo(transcript);
+    }
+
+    @Test void concurrentConsultationCreationSerializesAcrossDifferentInquiries() throws Exception {
+        var barrier=new java.util.concurrent.CyclicBarrier(6);
+        try(var pool=java.util.concurrent.Executors.newVirtualThreadPerTaskExecutor()) {
+            var futures=new java.util.ArrayList<java.util.concurrent.Future<Boolean>>();
+            for(int i=0;i<6;i++) futures.add(pool.submit(() -> {
+                barrier.await();
+                return tx.execute(status -> {
+                    adapter.lockStudentForCreation(studentId);
+                    if(adapter.hasActiveForStudent(officeId,studentId)) return false;
+                    adapter.save(Consultation.open(officeId,studentId,null,"v2",
+                        new Consultation.SharedContext("question",null,NoticeLang.KO,true),newRoom(),NOW));
+                    return true;
+                });
+            }));
+            int successes=0; for(var f:futures) if(f.get()) successes++;
+            assertThat(successes).isEqualTo(1);
+        }
+        assertThat(adapter.findByMember(officeId,studentId)).hasSize(1);
+        assertThat(adapter.countOpenedSince(studentId,NOW.minusSeconds(1))).isEqualTo(1);
     }
 }

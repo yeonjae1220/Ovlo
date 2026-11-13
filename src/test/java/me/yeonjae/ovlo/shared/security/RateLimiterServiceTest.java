@@ -63,4 +63,9 @@ class RateLimiterServiceTest {
         assertThatThrownBy(() -> searchRateLimiter(100).checkSearchRate("203.0.113.9"))
                 .isInstanceOf(TooManyRequestsException.class);
     }
+
+    @Test void missingRedisResultCannotBypassPaidInquiryLimit() {
+        assertThatThrownBy(() -> rateLimiterService(5).checkOfficeInquiryRate(1L))
+                .isInstanceOf(IllegalStateException.class);
+    }
 }

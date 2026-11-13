@@ -4,6 +4,7 @@ package me.yeonjae.ovlo.domain.office.exception;
 public class InquiryException extends RuntimeException {
 
     public enum ErrorType {
+        UNAVAILABLE,
         NOT_FOUND,
         CONFLICT,
         FORBIDDEN,     // 다른 회원의 문의

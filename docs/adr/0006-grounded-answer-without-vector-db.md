@@ -44,3 +44,9 @@
   - 두 구현은 `NoticeSearchPort` 뒤에 있고, 최종 근거 자격은 언제나 `Notice.isGroundingEligible` 이 판정한다.
 - 테스트: FTS 어댑터는 Testcontainers PostgreSQL로 "만료 공지 제외", "다른 Office 공지 제외", "번역 stale 제외"를 고정한다.
   후처리 검증은 순수 단위 테스트(후보 밖 인용 → 강등, 인용 0 → NO_GROUNDS, 외부 URL 제거).
+
+## 2026-11-13 보완
+
+[ADR-0007](0007-office-ai-abuse-controls.md)은 질문 범위 검사, 인용 검사 뒤 독립 근거 검증,
+Sonnet 답변 모델 분리와 호출 전 원자적 예산 예약을 추가한다. 이제 후보가 없더라도 범위 검사 호출은 발생할 수 있다.
+현재 PostgreSQL 어댑터는 쿼리 시점 `to_tsvector`를 사용한다. 위 생성 컬럼/GIN과 질문 번역 검색은 구현된 기능으로 간주하지 않는다.

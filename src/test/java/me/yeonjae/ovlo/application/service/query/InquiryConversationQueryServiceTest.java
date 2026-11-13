@@ -47,4 +47,14 @@ class InquiryConversationQueryServiceTest {
         assertThatThrownBy(() -> service.conversation(9L, 2L, 10L)).hasMessageContaining("찾을 수 없습니다");
         verifyNoInteractions(consultations);
     }
+
+    @Test void reloadingRejectedTurnNeverOffersHandoff() {
+        Inquiry i=Inquiry.outOfScope(1L,2L,NoticeLang.KO,"write code",Instant.now(),0,"sonnet");
+        i.assignId(10L);when(inquiries.findById(10L)).thenReturn(Optional.of(i));
+        var result=service.conversation(1L,2L,10L);
+        assertThat(result.turns().getFirst().result().outcome()).isEqualTo(InquiryOutcome.OUT_OF_SCOPE);
+        assertThat(result.turns().getFirst().result().canEscalate()).isFalse();
+        assertThat(result.canContinue()).isTrue();
+        assertThatThrownBy(i::markEscalated).hasMessageContaining("범위");
+    }
 }

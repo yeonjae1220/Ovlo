@@ -281,6 +281,7 @@ jobs:
             OVLO_LLM_PROVIDER=anthropic \
             OVLO_SEARCH_PROVIDER=postgres \
             OVLO_LLM_MODEL=claude-opus-5-5 \
+            OVLO_LLM_ANSWER_MODEL=claude-sonnet-5-5 \
             OVLO_LLM_EFFORT=medium \
             OVLO_LLM_BASE_URL=https://api.bizrouter.ai \
             OVLO_LLM_SERVER_SIDE_FALLBACK=false \

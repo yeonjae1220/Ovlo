@@ -160,4 +160,16 @@ class OfficeInquiryApiSecurityTest {
         verify(askQuestionUseCase).ask(new me.yeonjae.ovlo.application.dto.command.AskQuestionCommand(5L, MEMBER_ID, "Where?", NoticeLang.EN, 900L));
     }
 
+
+    @Test void rejectedRequestHasNoGeneratedAnswerOrHandoffAndGuardOutageIs503() throws Exception {
+        given(askQuestionUseCase.ask(any())).willReturn(new AskResult(900L, InquiryOutcome.OUT_OF_SCOPE, NoticeLang.EN, null, List.of(), false));
+        mockMvc.perform(post("/api/v1/office/5/inquiries").header("Authorization", bearer(null))
+                .contentType(MediaType.APPLICATION_JSON).content("{\"question\":\"Write code\",\"lang\":\"en\"}"))
+            .andExpect(status().isCreated()).andExpect(jsonPath("$.outcome").value("OUT_OF_SCOPE"))
+            .andExpect(jsonPath("$.canEscalate").value(false)).andExpect(jsonPath("$.answerText").isEmpty());
+        given(askQuestionUseCase.ask(any())).willThrow(new InquiryException("안전한 답변을 확인하지 못했습니다",InquiryException.ErrorType.UNAVAILABLE));
+        mockMvc.perform(post("/api/v1/office/5/inquiries").header("Authorization", bearer(null))
+                .contentType(MediaType.APPLICATION_JSON).content("{\"question\":\"Dormitory?\",\"lang\":\"en\"}"))
+            .andExpect(status().isServiceUnavailable()).andExpect(jsonPath("$.code").value("INQUIRY_UNAVAILABLE"));
+    }
 }

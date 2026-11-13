@@ -139,6 +139,7 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ErrorResponse> handleInquiryException(InquiryException ex) {
         HttpStatus status = ex.getErrorType() == InquiryException.ErrorType.RATE_LIMITED
                 ? HttpStatus.TOO_MANY_REQUESTS
+                : ex.getErrorType() == InquiryException.ErrorType.UNAVAILABLE ? HttpStatus.SERVICE_UNAVAILABLE
                 : resolveStatus(ex.getErrorType());
         return ResponseEntity.status(status)
                 .body(ErrorResponse.of(resolveCode(InquiryException.class, ex.getErrorType()), ex.getMessage()));

@@ -7,7 +7,7 @@ import { useMyOffice, useOfficeInquiries } from '../../hooks/useOffice'
 import type { InquiryOutcome } from '../../api/office'
 import { Badge, Button, Card, EmptyState, PageHeader, QueryErrorNotice, SelectField, SkeletonLines } from '../../components/ui'
 
-const OUTCOMES: InquiryOutcome[] = ['ANSWERED', 'NO_GROUNDS', 'ESCALATED']
+const OUTCOMES: InquiryOutcome[] = ['ANSWERED', 'NO_GROUNDS', 'OUT_OF_SCOPE', 'ESCALATED']
 
 function OutcomeBadge({ outcome }: { outcome: InquiryOutcome }) {
   const { t } = useI18n()

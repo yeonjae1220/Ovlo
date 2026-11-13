@@ -159,6 +159,8 @@ spec:
                 secretKeyRef:
                   name: ovlo-secret
                   key: ANTHROPIC_API_KEY
+            - name: OVLO_LLM_ANSWER_MODEL
+              value: "claude-sonnet-5-5"
             - name: OVLO_LLM_MODEL
               value: "claude-opus-5-5"
             - name: OVLO_LLM_EFFORT
