@@ -118,4 +118,57 @@ class NoticeTranslationGateTest {
         assertThat(gate.check(source, new TranslationPort.Result("Deadline", "December 10, 2026", "m")).passed()).isFalse();
     }
 
+
+    @ParameterizedTest
+    @CsvSource(delimiter = '|', value = {
+            "EN | 1.5 | 15", "EN | 15 | 1.5", "EN | 0.05 | 005",
+            "EN | 1.50 | 150", "DE | 1.5 | 15", "FR | 1.5 | 15",
+            "EN | 1,500 | 1.500", "DE | 1.5 | 1.500", "FR | 1500 | 1,500",
+            "EN | -1.5 | 1.5", "DE | -1.5 | 1,5", "EN | .5 | 5"
+    })
+    void rejectsChangedDecimalValue(NoticeLang target, String source, String translated) {
+        assertThat(checkNumber(NoticeLang.KO, target, source, translated).passed()).isFalse();
+    }
+
+    @ParameterizedTest
+    @CsvSource(delimiter = '|', value = {
+            "KO | EN | 1.5 | 1.50", "KO | EN | 1,500.25 | 1500.25",
+            "KO | DE | 1.5 | 1,5", "KO | DE | 1,500.25 | 1.500,25",
+            "KO | FR | 1.5 | 1,5", "KO | FR | 1,500.25 | 1 500,25",
+            "KO | FR | 1500.25 | 1 500,25", "KO | FR | 1500.25 | 1 500,25",
+            "KO | VI | 1500.25 | 1.500,25", "KO | JA | 1.5 | 1.5",
+            "KO | ZH | 1500.25 | 1,500.25", "DE | EN | 1.500,25 | 1,500.25",
+            "FR | KO | 1 500,25 | 1500.25", "EN | DE | -0.05 | -0,05",
+            "KO | EN | .5 | 0.5", "DE | EN | ,5 | 0.5",
+            "KO | EN | 999999999999999999999.123456789 | 999999999999999999999.1234567890"
+    })
+    void acceptsEquivalentLocalizedNumbers(NoticeLang from, NoticeLang to, String source, String translated) {
+        assertThat(checkNumber(from, to, source, translated).passed()).isTrue();
+    }
+
+    @ParameterizedTest
+    @CsvSource(delimiter = '|', value = {
+            "EN | 1.5.0", "EN | 1,50", "DE | 1.50", "DE | 1,5,0", "FR | 1.500,0"
+    })
+    void rejectsMalformedOrWrongLocaleSeparators(NoticeLang target, String translated) {
+        assertThat(checkNumber(NoticeLang.KO, target, "150", translated).passed()).isFalse();
+    }
+
+    @Test void doesNotLetAnotherOccurrenceHideDecimalLoss() {
+        var source = new TranslationPort.Request(NoticeLang.KO, NoticeLang.EN, "안내",
+                "수업은 1.5시간, 상담은 1.5시간입니다.");
+        assertThat(gate.check(source, new TranslationPort.Result("Notice",
+                "Class lasts 1.5 hours; consultation lasts 15 hours.", "m")).passed()).isFalse();
+    }
+
+    @Test void keepsTimeRangeHyphensSeparateFromNegativeSigns() {
+        var source = new TranslationPort.Request(NoticeLang.KO, NoticeLang.EN, "안내", "운영 14-17시, 요금 1.5원.");
+        assertThat(gate.check(source, new TranslationPort.Result("Notice",
+                "Open 14:00–17:00; fee 1.5 KRW.", "m")).passed()).isTrue();
+    }
+
+    private NoticeTranslationGate.Verdict checkNumber(NoticeLang from, NoticeLang to, String source, String translated) {
+        return gate.check(new TranslationPort.Request(from, to, "원문", "값: " + source),
+                new TranslationPort.Result("Translation", "Value: " + translated, "m"));
+    }
 }

@@ -60,8 +60,12 @@ public class AnthropicLlmAdapter implements AnswerGenerationPort, me.yeonjae.ovl
 
     private static final String TRANSLATE_SYSTEM = """
             You translate official notices from a Korean university's international office for international students.
-            Translate the title and body faithfully into the target language. Keep every number, date, time, amount, duration,
-            email address and URL exactly as in the source. Do not add, omit or summarize. Keep line breaks.
+            Translate the title and body faithfully into the target language. Preserve every numeric value and its occurrences,
+            date, time, amount and duration. Keep numbers as digits, including decimal fractions and signs; never round them.
+            Format numbers using the target language: ko/en/ja/zh use a decimal point and optional comma thousands grouping;
+            de/vi use a decimal comma and optional dot thousands grouping; fr uses a decimal comma and optional space grouping.
+            For example, Korean 1.5 becomes German/French 1,5, never 15; Korean 1,500 becomes German 1.500 or French 1 500.
+            Keep email addresses and URLs exactly as in the source. Do not add, omit or summarize. Keep line breaks.
             Reply in exactly this format and nothing else:
             TITLE: <translated title>
             BODY:

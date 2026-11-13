@@ -160,4 +160,30 @@ class NoticeTranslationServiceTest {
         assertThat(replacement.getTitle()).isEqualTo("수정된 제목");
     }
 
+
+    @Test
+    void decimalLossIsNotSavedAndNotifiesStaffWhileOtherLanguagesSucceed() {
+        notice = Notice.register(5L, NoticeCategory.HOUSING, "교육 안내", "교육은 1.5시간입니다.", null, List.of(),
+                "2027-1", LocalDate.of(2027, 2, 1), LocalDate.of(2027, 3, 15), 11L, NOW);
+        notice.assignId(NOTICE);
+        notice.approve("11", NOW, LocalDate.of(2027, 2, 1));
+        given(loadNoticePort.findById(NOTICE)).willReturn(Optional.of(notice));
+        given(translationPort.translate(any())).willAnswer(inv -> {
+            TranslationPort.Request request = inv.getArgument(0);
+            String duration = switch (request.to()) {
+                case EN -> "15"; // Provider accidentally dropped the decimal point.
+                case DE, FR, VI -> "1,5";
+                default -> "1.5";
+            };
+            return new TranslationPort.Result("[" + request.to().code() + "] Training", "Duration: " + duration, "m");
+        });
+
+        var outcome = sut.translateMissing(NOTICE);
+
+        assertThat(outcome.failed()).containsExactly(NoticeLang.EN);
+        assertThat(outcome.generated()).containsExactlyInAnyOrder(NoticeLang.DE, NoticeLang.FR, NoticeLang.VI, NoticeLang.JA, NoticeLang.ZH);
+        assertThat(notice.getTranslation(NoticeLang.EN)).isEmpty();
+        verify(saveNoticePort, org.mockito.Mockito.times(5)).save(notice);
+        verify(notificationPort).sendNoticeTranslationFailed(anyList(), eq("국제처"), eq("교육 안내"), eq(List.of("en")));
+    }
 }
