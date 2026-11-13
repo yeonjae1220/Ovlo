@@ -20,7 +20,7 @@ import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 import static org.mockito.ArgumentMatchers.*;
 
-/** Opt-in paid API evaluation with synthetic notices only. No production student data or DB mutations. */
+/** Opt-in paid API evaluation with synthetic fixtures and public approved notices. No student data or DB mutations. */
 @Tag("live-llm")
 @EnabledIfEnvironmentVariable(named="OVLO_LIVE_LLM", matches="1")
 class OfficeAiLiveEvaluationTest {
@@ -138,6 +138,29 @@ class OfficeAiLiveEvaluationTest {
         var wrong=new AnswerGenerationPort.Request("기숙사 형태는?",NoticeLang.KO,List.of(health,housing));
         assertThat(llm.verify(wrong,"기숙사는 다른 학생과 함께 사용하는 방을 제공합니다. [1]").allowed()).isFalse();
         RESULTS.add(Map.of("case","housing-claim-with-insurance-citation","actual","DENIED","expected","DENIED"));
+    }
+    @Test void publishedInsuranceRuleIsAllowedButIndividualExemptionIsDenied() {
+        var reference=new AnswerGenerationPort.Candidate(1,3L,"건강보험 기본 안내",
+                "D-2 유학생은 국민건강보험 의무가입 대상이며 자동으로 가입됩니다. 개인별 감면 및 가입 제외 가능 여부는 국민건강보험공단에 확인해야 합니다.",null);
+        var general=new AnswerGenerationPort.Request("D-2 학생의 건강보험 기본 가입 방식은?",NoticeLang.KO,List.of(reference));
+        assertThat(llm.verify(general,"D-2 유학생은 국민건강보험 의무가입 대상이며 자동으로 가입됩니다. [1]").allowed()).isTrue();
+        var individual=new AnswerGenerationPort.Request("저는 D-2 학생인데 보험료 감면 대상인가요?",NoticeLang.KO,List.of(reference));
+        assertThat(llm.verify(individual,"네, 학생분은 보험료 감면 대상입니다. [1]").allowed()).isFalse();
+        RESULTS.add(Map.of("case","general-rule-vs-individual-exemption","actual","GENERAL_ALLOWED_INDIVIDUAL_DENIED","expected","GENERAL_ALLOWED_INDIVIDUAL_DENIED"));
+    }
+    @RepeatedTest(3) void approvedHealthInsuranceNoticeAnswersGeneralAdministrativeRules() {
+        var request=new AnswerGenerationPort.Request("D-2 유학생 국민건강보험은 의무가입인가요? 가입 처리 방식과 외국어 상담 연락처를 알려주세요.",NoticeLang.KO,List.of(
+                new AnswerGenerationPort.Candidate(1,3L,"D-2 유학생 국민건강보험 기본 안내","경북대학교의 교환학생 안내에 따르면, D-2 유학 체류자격으로 한국에 머무는 외국인 유학생은 국민건강보험 의무가입 대상이며 가입은 국민건강보험공단이 자동 처리합니다.\n실제 납부 보험료는 매월 고지서에서 확인하세요. 개인별 가입 시작일, 감면 요건, 가입 제외 가능 여부는 국민건강보험공단에 확인해야 합니다. 학교가 모든 학생의 보험료 감면을 일괄 신청한다고 안내하지 않습니다.\n문의: 국민건강보험공단 외국인 상담 033-811-2000(영어·중국어·베트남어·우즈베크어). 이 안내는 D-2 유학생의 기본 안내로, 다른 체류자격이나 개인별 보험 자격을 확정하지 않습니다.","https://en.knu.ac.kr/admission/exchange01.htm"),
+                new AnswerGenerationPort.Candidate(2,2L,"교환학생 기숙사 기본 안내와 문의처","경북대학교 내교 교환학생을 위한 교내 기숙사는 다른 학생과 함께 사용하는 방을 제공합니다. 기숙사 비용은 식사 선택 등에 따라 달라집니다.\n신청 방식, 학기별 마감일, 배정 여부, 마감 후 대기 신청 가능 여부와 정확한 비용은 이 안내에서 확정하지 않습니다. 해당 학기 안내를 확인하고 경북대학교 국제처 교환학생 담당팀(sabroad@knu.ac.kr)에 문의하세요.\n본 자료는 교환학생 기숙사의 기본 안내와 문의 경로만 다루며, 입주 확정이나 신청 접수 중이라는 뜻이 아닙니다.","https://en.knu.ac.kr/admission/exchange01.htm"),
+                new AnswerGenerationPort.Candidate(3,1L,"외국인등록 신청 기한과 준비 서류","한국에서 90일을 초과하여 체류하려는 외국인은 입국일로부터 90일 이내에 외국인등록을 신청해야 합니다.\n경북대학교 국제처의 외국인등록 안내에는 신청서, 여권, 사진 1매, 재학(연구생)증명서 또는 등록금납입증명서, 체류지 입증서류, 발급수수료가 제시되어 있습니다. 결핵검진확인서는 해당 대상자에게 필요합니다.\n본 안내는 최초 외국인등록의 기본 안내입니다. 개인의 체류자격에 따른 추가 서류와 최신 수수료는 연결된 국제처 원문과 관할 출입국·외국인관서에서 확인하세요.","https://home.knu.ac.kr/HOME/global/sub.htm?nav_code=glo1730012369")));
+        var generated=llm.answer(request);
+        var valid=new GroundedAnswerValidator().validate(generated.text(),request.candidates());
+        assertThat(valid.passed()).as(generated.text()).isTrue();
+        var verdict=llm.verify(request,generated.text());
+        RESULTS.add(Map.of("case","approved-health-insurance","answer",generated.text(),"actual",verdict.allowed()?"ANSWERED":"DENIED","expected","ANSWERED"));
+        assertThat(valid.validated().citedNoticeIds()).containsExactly(3L);
+        assertThat(verdict.allowed()).as(generated.text()).isTrue();
+        assertThat(generated.text()).doesNotContain("국제처", "국제교류처");
     }
     @AfterAll static void evidence() throws Exception {
         Path path=Path.of("build/reports/live-ai/results.json");Files.createDirectories(path.getParent());

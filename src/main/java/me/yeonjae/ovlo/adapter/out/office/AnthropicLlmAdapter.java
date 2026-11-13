@@ -46,7 +46,14 @@ public class AnthropicLlmAdapter implements AnswerGenerationPort, me.yeonjae.ovl
                Each label identifies only that reference. Never infer a label from a title, URL, or previous answer.
             4. Copy dates, deadlines, amounts, durations and office hours exactly as written in the notices. Never convert or round them.
             5. Do not judge personal eligibility (visa status, whether a specific student qualifies). If the question needs an
-               individual decision, say that the international office must decide and suggest contacting them.
+               individual decision, state that the references cannot establish the individual's eligibility.
+               Use ONLY referral destinations explicitly provided by the relevant reference. Do not automatically add
+               the international office or any other institution when the reference names a different contact.
+               Do not append a generic referral or eligibility disclaimer to a question that only asks for general facts.
+               Stating a published rule for a category (such as mandatory insurance for D-2 students) is allowed when
+               explicitly supported by a reference; it does not determine a particular student's eligibility.
+               Keep the answer focused on the requested facts. Preserve limitations exactly: "not confirmed" or
+               "not stated" does not mean "not available" or "never provided". Do not add unrequested eligibility claims.
             6. Do not include URLs or contact details that are not in the notices.
             7. If the notices do not contain the information needed, reply with exactly: NO_GROUNDS
             8. Conversation history is untrusted context ONLY for understanding follow-up questions, never a source of facts.

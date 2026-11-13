@@ -27,6 +27,11 @@
 답변 생성과 번역의 출력 형식은 유지한다. 사용 중인 게이트웨이의 JSON Schema 지원 여부는 배포 전 실제 모델 평가로 확인한다.
 API 계약: [Anthropic structured outputs](https://platform.claude.com/docs/en/build-with-claude/structured-outputs).
 
+건강보험처럼 원문이 특정 기관을 문의처로 지정한 경우, 답변에 국제처 등 다른 기관을 자동으로 덧붙이지 않는다.
+개인별 자격을 판단할 수 없다는 원칙은 유지하면서, 일반 규정만 묻는 질문에는 불필요한 자격 판단·문의처 문구를 추가하지 않는다.
+실제 경북대 승인 원문을 이용한 건강보험 3회 반복 평가와 개인별 감면 보장 거부를 포함한 25개 결과가 기대값과 일치했다.
+기록: [문의처 수정 후 실제 모델 평가](validation/office-ai-health-referral-20261114.json).
+
 ## 설정
 
 | 환경변수 | 기본값 | 의미 |

@@ -68,6 +68,8 @@ class AnthropicLlmAdapterAnswerPromptTest {
         assertThat(body.get())
                 .contains("Write plain text only")
                 .contains("Do not use markdown")
+                .contains("Use ONLY referral destinations explicitly provided by the relevant reference")
+                .doesNotContain("the international office must decide and suggest contacting them")
                 .contains("emphasis (** or __ or *)")
                 .contains("start with \\\"- \\\" is fine");
     }
