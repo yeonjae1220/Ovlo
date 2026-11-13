@@ -28,6 +28,11 @@ public class MemberPersistenceAdapter implements LoadMemberPort, SaveMemberPort 
     }
 
     @Override
+    public boolean isActive(MemberId id) {
+        return memberJpaRepository.existsByIdAndStatus(id.value(), me.yeonjae.ovlo.domain.member.model.MemberStatus.ACTIVE);
+    }
+
+    @Override
     public Optional<Member> findById(MemberId memberId) {
         return memberJpaRepository.findById(memberId.value())
                 .map(memberMapper::toDomain);

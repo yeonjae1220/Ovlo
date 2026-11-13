@@ -148,3 +148,13 @@ spring:
 | DM 채팅방 unique constraint | TOCTOU race condition 방어 미완 (코드 주석 참조) | V7 migration에 unique constraint 추가 |
 | 채팅 Rate Limiting | 미적용 | WebSocket 메시지 빈도 제한 (Bucket4j 등) |
 | 메시지 sender_id FK | message 테이블에 member FK 없음 | V7 이후 migration에서 FK 추가 권장 |
+
+## 채팅 권한 회수와 개발 계정 폐기 (2026-11)
+
+- STOMP 구독은 숫자 방 ID의 메시지·읽음 주소만, 발송은 /app/chat/{id}만 허용한다. 와일드카드·알 수 없는 주소·브로커 직접 발송은 거부한다.
+- 기존 구독에도 수신 메시지마다 현재 권한을 확인한다. HTTP 메시지 조회·읽음 처리·발송·방 목록은 현재 활동 회원과 상담 담당자 소속을 적용한다.
+- 담당자 제거는 종료된 상담과 2인 방까지 적용한다. 본인이 학생으로 요청한 상담과 기존 메시지는 보존한다.
+- HTTP JWT 인증과 WebSocket 연결은 현재 회원 상태를 확인한다. 비활성 계정은 로그인·refresh를 거부하고 refresh 시 남은 세션을 폐기한다.
+- 운영 공통 Flyway 경로의 개발 계정 repeatable seed는 no-op이다. V46은 기존 로컬 dev@dev.com 계정을 정지하고 비밀번호를 로그인 불가능한 표식으로 바꾼다. 관련 데이터는 삭제하지 않는다.
+- 배포 시 해당 계정의 Redis 세션·현재 및 이전 토큰 인덱스를 정리한다. 다른 회원의 세션은 유지한다.
+- ChatAuthorizationTest, ChatAccessIntegrationTest, ActiveMemberAuthenticationTest, LegacyDevelopmentAccountMigrationIntegrationTest가 브로커 전달·권한 회수·기존 토큰·스키마 업그레이드를 검증한다.

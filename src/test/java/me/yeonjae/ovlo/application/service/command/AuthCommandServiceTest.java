@@ -64,6 +64,10 @@ class AuthCommandServiceTest {
     void setUp() {
         lenient().when(jwtTokenProvider.refreshTokenTtl()).thenReturn(REFRESH_TTL);
         sut = newService(false);
+        var member = org.mockito.Mockito.mock(me.yeonjae.ovlo.domain.member.model.Member.class);
+        lenient().when(member.getStatus()).thenReturn(me.yeonjae.ovlo.domain.member.model.MemberStatus.ACTIVE);
+        lenient().when(member.getRole()).thenReturn(MemberRole.MEMBER);
+        lenient().when(loadMemberPort.findById(any())).thenReturn(Optional.of(member));
     }
 
     private AuthCommandService newService(boolean revokeSessionOnReuse) {
@@ -76,6 +80,24 @@ class AuthCommandServiceTest {
                 loadOfficeMembershipPort,
                 revokeSessionOnReuse
         );
+    }
+
+    @Test void suspendedAccountCannotLoginOrRefreshAndAllSessionsAreRevoked() {
+        MemberId id = new MemberId(1L);
+        var member = org.mockito.Mockito.mock(me.yeonjae.ovlo.domain.member.model.Member.class);
+        given(member.getStatus()).willReturn(me.yeonjae.ovlo.domain.member.model.MemberStatus.SUSPENDED);
+        given(loadMemberPort.findById(id)).willReturn(Optional.of(member));
+        given(loadMemberCredentialsPort.findByEmail("disabled@example.invalid"))
+            .willReturn(Optional.of(new MemberCredentials(id, "hash", MemberRole.MEMBER)));
+        given(passwordHasherPort.matches("old-password", "hash")).willReturn(true);
+        assertThatThrownBy(() -> sut.login(new LoginCommand("disabled@example.invalid", "old-password")))
+            .isInstanceOf(AuthException.class);
+        given(tokenStorePort.findByRefreshToken("old-refresh"))
+            .willReturn(Optional.of(AuthSession.create(id, "old-refresh", Instant.now().plusSeconds(1000))));
+        assertThatThrownBy(() -> sut.refresh(new RefreshTokenCommand("old-refresh"))).isInstanceOf(AuthException.class);
+        then(tokenStorePort).should(org.mockito.Mockito.times(2)).delete(id);
+        then(tokenStorePort).should(never()).rotate(any(), any());
+        then(jwtTokenProvider).should(never()).generateAccessToken(any(), any(), any());
     }
 
     /** 세션 만료가 "지금 + 설정된 refresh TTL"인지 본다(쿠키 maxAge 와 같은 소스, GLOBAL-PIT-070). */

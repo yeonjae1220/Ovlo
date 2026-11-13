@@ -12,6 +12,7 @@ import java.util.Optional;
 public interface MemberJpaRepository extends JpaRepository<MemberJpaEntity, Long> {
     Optional<MemberJpaEntity> findByEmail(String email);
     boolean existsByEmail(String email);
+    boolean existsByIdAndStatus(Long id, me.yeonjae.ovlo.domain.member.model.MemberStatus status);
     boolean existsByNickname(String nickname);
     List<MemberJpaEntity> findByNicknameContainingIgnoreCase(String keyword, Pageable pageable);
 

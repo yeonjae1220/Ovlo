@@ -89,7 +89,7 @@ class CalendarApiSecurityTest {
         mvc.perform(get("/api/v1/calendar/schools/" + school + "/events").header("Authorization","Bearer " + managerToken)
                 .param("from","2026-03-01").param("to","2026-04-01")).andExpect(status().isForbidden());
         m.updateRole(MemberRole.UNIV); m.suspend(); saveMembers.save(m);
-        mvc.perform(get("/api/v1/calendar/options").header("Authorization","Bearer " + managerToken)).andExpect(status().isForbidden());
+        mvc.perform(get("/api/v1/calendar/options").header("Authorization","Bearer " + managerToken)).andExpect(status().isUnauthorized());
     }
     @Test void draftsStayPrivatePublishedAndCancelledEventsReachSubscribers() throws Exception {
         commands.subscribe(student, school, true);

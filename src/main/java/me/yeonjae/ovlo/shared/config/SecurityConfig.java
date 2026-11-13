@@ -1,5 +1,6 @@
 package me.yeonjae.ovlo.shared.config;
 
+import me.yeonjae.ovlo.application.port.out.member.LoadMemberPort;
 import jakarta.annotation.PostConstruct;
 import jakarta.servlet.DispatcherType;
 import jakarta.servlet.http.HttpServletResponse;
@@ -81,12 +82,13 @@ public class SecurityConfig {
     public SecurityConfig(JwtTokenProvider jwtTokenProvider,
                           Environment environment,
                           ClientIpResolver clientIpResolver,
-                          AdminLoginAttemptService adminLoginAttemptService) {
+                          AdminLoginAttemptService adminLoginAttemptService,
+                          LoadMemberPort members) {
         this.jwtTokenProvider = jwtTokenProvider;
         this.environment = environment;
         this.clientIpResolver = clientIpResolver;
         this.adminLoginAttemptService = adminLoginAttemptService;
-        this.jwtAuthenticationFilter = new JwtAuthenticationFilter(jwtTokenProvider);
+        this.jwtAuthenticationFilter = new JwtAuthenticationFilter(jwtTokenProvider, members);
     }
 
     // 공개적으로 알려진 테스트 BCrypt 해시 목록 — 운영 환경 사용 차단

@@ -1,5 +1,6 @@
 package me.yeonjae.ovlo.shared.security;
 
+import me.yeonjae.ovlo.application.port.out.member.LoadMemberPort;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -35,8 +36,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private static final String BEARER_PREFIX = "Bearer ";
 
     private final JwtTokenProvider jwtTokenProvider;
+    private final LoadMemberPort members;
 
-    public JwtAuthenticationFilter(JwtTokenProvider jwtTokenProvider) {
+    public JwtAuthenticationFilter(JwtTokenProvider jwtTokenProvider, LoadMemberPort members) {
+        this.members = members;
         this.jwtTokenProvider = jwtTokenProvider;
     }
 
@@ -48,6 +51,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         if (StringUtils.hasText(token) && jwtTokenProvider.validateAccessToken(token)) {
             MemberId memberId = jwtTokenProvider.extractMemberId(token);
+            if (!members.isActive(memberId)) {
+                response.sendError(HttpServletResponse.SC_UNAUTHORIZED);
+                return;
+            }
             MemberRole role = jwtTokenProvider.extractRole(token);
             Optional<OfficeMembership> membership = jwtTokenProvider.extractOfficeMembership(token);
 
