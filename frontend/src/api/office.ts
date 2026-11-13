@@ -33,7 +33,22 @@ export interface NoticeTranslation {
 }
 
 /** 담당자용 상세 */
+export type NoticeSourceType = 'OFFICE_MATERIAL' | 'UNIVERSITY_WEB' | 'REVIEWED_STAFF_QA'
+export interface NoticeSource {
+  type: NoticeSourceType; department: string; reference: string; audience: string; campus: string
+  acquiredOn: string; publishedOn: string | null; ownerMemberId: number; critical: boolean
+  publicSource: boolean; scopeId: number | null; basisNoticeIds: number[]
+}
+export interface NoticeReview { sourceVersion: number; verifiedOn: string | null; nextReviewOn: string | null; holdReason: string | null }
+export interface SourceScope { id: number | null; officeId?: number; department: string; url: string; enabled: boolean; revision: number }
+export interface NoticeAudit { id: number; version: number; actorId: number; action: string; evidence: string; snapshot: string; createdAt: string }
+export interface SourceReviewRequest { revision: number; outcome: string; evidence: string; official: boolean; scopeChecked: boolean; privacyChecked: boolean; generalizable: boolean }
+
 export interface Notice {
+  revision: number
+  source: NoticeSource | null
+  review: NoticeReview
+
   id: number
   officeId: number
   category: NoticeCategory
@@ -89,6 +104,13 @@ export interface StudentNotice {
 export type InquiryOutcome = 'ANSWERED' | 'NO_GROUNDS' | 'OUT_OF_SCOPE' | 'ESCALATED'
 
 export interface Citation {
+  noticeVersion?: number | null
+  sourceType?: NoticeSourceType | null
+  department?: string | null
+  verifiedOn?: string | null
+  currentlyValid?: boolean
+  versionRecorded?: boolean
+
   index: number
   noticeId: number
   title: string
@@ -199,6 +221,8 @@ export interface OfficeDashboard {
 export type ExportKind = 'inquiries' | 'consultations' | 'notices'
 
 export interface NoticeRequest {
+  revision?: number
+
   category: NoticeCategory
   title: string
   body: string
@@ -217,6 +241,15 @@ interface PageResult<T> {
 }
 
 export const officeApi = {
+  listStaff: (officeId: number) => apiClient.get<{ staff: Array<{ memberId: number; nickname: string; role: OfficeRole; status: string }> }>(`/office-admin/${officeId}`).then(r => r.data.staff),
+  reviewQueue: (officeId: number) => apiClient.get<Array<{ id: number; title: string; state: string; nextReviewOn: string | null; ownerMemberId: number | null; canBeBasis: boolean }>>(`/office-admin/${officeId}/review-queue`).then(r => r.data),
+
+  sourceScopes: (officeId: number) => apiClient.get<SourceScope[]>(`/office-admin/${officeId}/source-scopes`).then(r => r.data),
+  saveSourceScope: (officeId: number, body: SourceScope) => apiClient.put<SourceScope>(`/office-admin/${officeId}/source-scopes`, body).then(r => r.data),
+  configureSource: (officeId: number, noticeId: number, revision: number, source: NoticeSource) => apiClient.put(`/office-admin/${officeId}/notices/${noticeId}/source`, { revision, source }),
+  reviewSource: (officeId: number, noticeId: number, body: SourceReviewRequest) => apiClient.post(`/office-admin/${officeId}/notices/${noticeId}/source-review`, body),
+  noticeHistory: (officeId: number, noticeId: number) => apiClient.get<NoticeAudit[]>(`/office-admin/${officeId}/notices/${noticeId}/history`).then(r => r.data),
+
   me: () => apiClient.get<MyOffice>('/office/me').then((r) => r.data),
 
   acceptInvitation: () => apiClient.post('/office/invitations/accept').then((r) => r.data),
@@ -238,17 +271,17 @@ export const officeApi = {
   updateNotice: (officeId: number, noticeId: number, req: NoticeRequest) =>
     apiClient.put<Notice>(`/office-admin/${officeId}/notices/${noticeId}`, req).then((r) => r.data),
 
-  approveNotice: (officeId: number, noticeId: number) =>
-    apiClient.post<Notice>(`/office-admin/${officeId}/notices/${noticeId}/approve`).then((r) => r.data),
+  approveNotice: (officeId: number, noticeId: number, revision: number) =>
+    apiClient.post<Notice>(`/office-admin/${officeId}/notices/${noticeId}/approve`, { revision }).then((r) => r.data),
 
-  archiveNotice: (officeId: number, noticeId: number) =>
-    apiClient.post(`/office-admin/${officeId}/notices/${noticeId}/archive`),
+  archiveNotice: (officeId: number, noticeId: number, revision: number) =>
+    apiClient.post(`/office-admin/${officeId}/notices/${noticeId}/archive`, { revision }),
 
-  reviewTranslation: (officeId: number, noticeId: number, lang: NoticeLang) =>
-    apiClient.post(`/office-admin/${officeId}/notices/${noticeId}/translations/${lang.toLowerCase()}/review`),
+  reviewTranslation: (officeId: number, noticeId: number, lang: NoticeLang, revision: number) =>
+    apiClient.post(`/office-admin/${officeId}/notices/${noticeId}/translations/${lang.toLowerCase()}/review`, { revision }),
 
-  retranslateNotice: (officeId: number, noticeId: number) =>
-    apiClient.post<Notice>(`/office-admin/${officeId}/notices/${noticeId}/retranslate`).then((r) => r.data),
+  retranslateNotice: (officeId: number, noticeId: number, revision: number) =>
+    apiClient.post<Notice>(`/office-admin/${officeId}/notices/${noticeId}/retranslate`, { revision }).then((r) => r.data),
 
   listInquiries: (officeId: number, outcome?: InquiryOutcome | '', page = 0, size = 20) =>
     apiClient

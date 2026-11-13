@@ -1,6 +1,7 @@
 'use client'
 
 import { formatDate } from './officeFormatting'
+import NoticeReviewQueue from './NoticeReviewQueue'
 import { useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
@@ -58,6 +59,7 @@ export default function OfficeNoticesPage() {
         }
       />
 
+      <NoticeReviewQueue officeId={office.officeId} />
       {showForm && (
         <Card>
           <NoticeForm

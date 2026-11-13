@@ -17,6 +17,10 @@ public interface OfficeNoticeJpaRepository extends JpaRepository<OfficeNoticeJpa
     @EntityGraph(attributePaths = "translations")
     Optional<OfficeNoticeJpaEntity> findWithTranslationsById(Long id);
 
+    @org.springframework.data.jpa.repository.Lock(jakarta.persistence.LockModeType.PESSIMISTIC_WRITE)
+    @Query("SELECT n FROM OfficeNoticeJpaEntity n WHERE n.id = :id")
+    Optional<OfficeNoticeJpaEntity> findForUpdate(@Param("id") Long id);
+
     /** 담당자 목록. status/category 가 null 이면 필터하지 않는다. */
     @Query(value = """
             SELECT n FROM OfficeNoticeJpaEntity n

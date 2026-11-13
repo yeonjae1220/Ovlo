@@ -65,6 +65,25 @@ public class OfficeNoticeJpaEntity {
     @Column(nullable = false)
     private int version;
 
+    @Version
+    @Column(name = "row_version", nullable = false)
+    private long rowVersion;
+    @Column(name = "source_metadata", columnDefinition = "TEXT")
+    private String sourceMetadata;
+    @Column(name = "review_metadata", columnDefinition = "TEXT")
+    private String reviewMetadata;
+    @Column(name = "next_review_on")
+    private LocalDate nextReviewOn;
+
+    public long getRowVersion() { return rowVersion; }
+    public String getSourceMetadata() { return sourceMetadata; }
+    public void setSourceMetadata(String value) { sourceMetadata = value; }
+    public String getReviewMetadata() { return reviewMetadata; }
+    public void setReviewMetadata(String value) { reviewMetadata = value; }
+    public LocalDate getNextReviewOn() { return nextReviewOn; }
+    public void setNextReviewOn(LocalDate value) { nextReviewOn = value; }
+
+
     @Column(name = "created_by", nullable = false)
     private Long createdBy;
 

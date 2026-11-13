@@ -17,6 +17,7 @@ import {
 import type { NoticeRequest } from '../../api/office'
 import { Badge, Button, Card, EmptyState, PageHeader, QueryErrorNotice, SkeletonLines } from '../../components/ui'
 import NoticeForm from './NoticeForm'
+import NoticeSourcePanel from './NoticeSourcePanel'
 import { CategoryBadge, StatusBadge } from './noticeUi'
 
 export default function OfficeNoticeDetailPage() {
@@ -46,7 +47,7 @@ export default function OfficeNoticeDetailPage() {
 
   const n = notice.data
   const frozen = n.status === 'ARCHIVED'
-  const canApprove = n.status === 'DRAFT' || n.status === 'EXPIRED'
+  const canApprove = (n.status === 'DRAFT' || n.status === 'EXPIRED') && !!n.review?.verifiedOn && !n.review.holdReason && n.review.sourceVersion === n.version
   const initial: NoticeRequest = {
     category: n.category,
     title: n.title,
@@ -56,6 +57,7 @@ export default function OfficeNoticeDetailPage() {
     term: n.term,
     effectiveFrom: n.effectiveFrom,
     expiresAt: n.expiresAt,
+    revision: n.revision,
   }
   const busy = update.isPending || approve.isPending || archive.isPending || retranslate.isPending
 
@@ -78,10 +80,10 @@ export default function OfficeNoticeDetailPage() {
           !frozen && (
             <>
               {canApprove && (
-                <Button variant="primary" disabled={busy} onClick={() => approve.mutate(n.id)}>{t('office.notice.approve')}</Button>
+                <Button variant="primary" disabled={busy} onClick={() => approve.mutate({ noticeId: n.id, revision: n.revision })}>{t('office.notice.approve')}</Button>
               )}
               <Button variant="secondary" disabled={busy || editing} onClick={() => setEditing(true)}>{t('office.notice.save')}…</Button>
-              <Button variant="danger" disabled={busy} onClick={() => archive.mutate(n.id, { onSuccess: () => router.push('/office/notices') })}>
+              <Button variant="danger" disabled={busy} onClick={() => archive.mutate({ noticeId: n.id, revision: n.revision }, { onSuccess: () => router.push('/office/notices') })}>
                 {t('office.notice.archive')}
               </Button>
             </>
@@ -89,6 +91,8 @@ export default function OfficeNoticeDetailPage() {
         }
       />
 
+      {(approve.isError || archive.isError || update.isError) && <p role="alert">{t('office.knowledge.actionError')}</p>}
+      <NoticeSourcePanel key={`${n.id}:${n.revision}`} officeId={office.officeId} notice={n} admin={office.role === 'OFFICE_ADMIN'} />
       {editing ? (
         <Card>
           <NoticeForm
@@ -101,7 +105,7 @@ export default function OfficeNoticeDetailPage() {
       ) : (
         <Card>
           <p style={{ margin: 0, whiteSpace: 'pre-wrap', lineHeight: 1.7 }}>{n.body}</p>
-          {n.sourceUrl && (
+          {n.sourceUrl && /^https?:\/\//i.test(n.sourceUrl) && (
             <p style={{ margin: '10px 0 0', fontSize: 13 }}>
               <a href={n.sourceUrl} target="_blank" rel="noreferrer">{n.sourceUrl}</a>
             </p>
@@ -113,7 +117,7 @@ export default function OfficeNoticeDetailPage() {
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 8 }}>
           <h3 style={{ margin: 0, fontSize: 16 }}>{t('office.notice.translations')}</h3>
           {!frozen && n.missingLangs.length > 0 && (
-            <Button variant="secondary" disabled={busy} onClick={() => retranslate.mutate(n.id)}>{t('office.notice.retranslate')}</Button>
+            <Button variant="secondary" disabled={busy} onClick={() => retranslate.mutate({ noticeId: n.id, revision: n.revision })}>{t('office.notice.retranslate')}</Button>
           )}
         </div>
         {n.missingLangs.length > 0 && (
@@ -137,7 +141,7 @@ export default function OfficeNoticeDetailPage() {
                 <Button
                   variant="ghost"
                   disabled={review.isPending}
-                  onClick={() => review.mutate({ noticeId: n.id, lang: tr.lang })}
+                  onClick={() => review.mutate({ noticeId: n.id, lang: tr.lang, revision: n.revision })}
                   style={{ marginLeft: 'auto' }}
                 >
                   {t('office.notice.review')}

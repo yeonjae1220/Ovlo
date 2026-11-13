@@ -41,11 +41,14 @@ public class NoticeTranslationService implements TranslateNoticeUseCase {
     private final NoticeTranslationGate gate;
     private final OfficeNotificationPort notificationPort;
     private final Clock clock;
+    private final org.springframework.transaction.support.TransactionTemplate tx;
+    private final me.yeonjae.ovlo.application.port.out.office.NoticeKnowledgePort knowledge;
 
     public NoticeTranslationService(LoadNoticePort loadNoticePort, SaveNoticePort saveNoticePort,
                                     LoadOfficePort loadOfficePort, LoadMemberPort loadMemberPort,
                                     TranslationPort translationPort, NoticeTranslationGate gate,
-                                    OfficeNotificationPort notificationPort, Clock clock) {
+                                    OfficeNotificationPort notificationPort, Clock clock, org.springframework.transaction.support.TransactionTemplate tx,
+                                    me.yeonjae.ovlo.application.port.out.office.NoticeKnowledgePort knowledge) {
         this.loadNoticePort = loadNoticePort;
         this.saveNoticePort = saveNoticePort;
         this.loadOfficePort = loadOfficePort;
@@ -53,11 +56,11 @@ public class NoticeTranslationService implements TranslateNoticeUseCase {
         this.translationPort = translationPort;
         this.gate = gate;
         this.notificationPort = notificationPort;
-        this.clock = clock;
+        this.clock = clock; this.tx=tx; this.knowledge=knowledge;
     }
 
     @Override
-    @Transactional
+    @Transactional(propagation=org.springframework.transaction.annotation.Propagation.NOT_SUPPORTED)
     public Outcome translateMissing(Long noticeId) {
         Notice notice = loadNoticePort.findById(noticeId)
                 .orElseThrow(() -> new NoticeException("공지를 찾을 수 없습니다: id=" + noticeId,
@@ -77,17 +80,20 @@ public class NoticeTranslationService implements TranslateNoticeUseCase {
                     failed.add(lang);
                     continue;
                 }
-                notice.putTranslation(lang, result.title(), result.body(), clock.instant());
-                generated.add(lang);
+                boolean stored=Boolean.TRUE.equals(tx.execute(status -> {
+                    knowledge.lockOffice(notice.getOfficeId());
+                    Notice current=loadNoticePort.findById(noticeId).orElseThrow();
+                    if (current.getVersion()!=notice.getVersion() || current.getStatus()==me.yeonjae.ovlo.domain.office.model.NoticeStatus.ARCHIVED)
+                        return false;
+                    current.putTranslation(lang,result.title(),result.body(),clock.instant()); saveNoticePort.save(current); return true;
+                }));
+                if(stored) generated.add(lang);
             } catch (RuntimeException e) {
                 log.warn("[Notice] translation failed notice={} lang={}: {}", noticeId, lang.code(), e.toString());
                 failed.add(lang);
             }
         }
 
-        if (!generated.isEmpty()) {
-            saveNoticePort.save(notice);
-        }
         if (!failed.isEmpty()) {
             notifyAdmins(notice, failed);
         }

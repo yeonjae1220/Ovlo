@@ -26,8 +26,8 @@ import java.time.Clock;
 import java.time.LocalDate;
 
 /**
- * 승인 자료 등록·수정·승인·보관·번역 검토. 범위 검사(어느 Office 의 담당자인가)는 어댑터의 OfficeAccessPolicy 가 하고,
- * 여기서는 "그 공지가 그 Office 의 것인가"와 Office 가 정지되지 않았는가만 본다.
+ * 승인 자료 등록·수정·승인·보관·번역 검토. 현재 담당자 소속과 국제처 상태를 확인하고,
+ * 자료 소유 학교·요청 revision·출처 검토 자격을 변경 시점에 검증한다.
  */
 @Service
 @Transactional
@@ -41,21 +41,26 @@ public class NoticeCommandService implements ManageNoticeUseCase {
     private final TranslateNoticeUseCase translateNoticeUseCase;
     private final ApplicationEventPublisher eventPublisher;
     private final Clock clock;
+    private final me.yeonjae.ovlo.application.port.out.office.NoticeKnowledgePort knowledge;
+    private final me.yeonjae.ovlo.application.service.office.NoticeGovernanceService governance;
 
     public NoticeCommandService(LoadNoticePort loadNoticePort, SaveNoticePort saveNoticePort, LoadOfficePort loadOfficePort,
                                 TranslateNoticeUseCase translateNoticeUseCase, ApplicationEventPublisher eventPublisher,
-                                Clock clock) {
+                                Clock clock, me.yeonjae.ovlo.application.port.out.office.NoticeKnowledgePort knowledge,
+                                me.yeonjae.ovlo.application.service.office.NoticeGovernanceService governance) {
         this.loadNoticePort = loadNoticePort;
         this.saveNoticePort = saveNoticePort;
         this.loadOfficePort = loadOfficePort;
         this.translateNoticeUseCase = translateNoticeUseCase;
         this.eventPublisher = eventPublisher;
-        this.clock = clock;
+        this.clock = clock; this.knowledge=knowledge; this.governance=governance;
     }
 
     @Override
     public NoticeResult register(RegisterNoticeCommand c) {
+        knowledge.lockOffice(c.officeId());
         requireWritableOffice(c.officeId());
+        governance.authorize(c.officeId(),c.createdBy(),false);
         Notice notice = Notice.register(c.officeId(), c.category(), c.title(), c.body(), c.sourceUrl(),
                 c.attachmentMediaIds(), c.term(), c.effectiveFrom(), c.expiresAt(), c.createdBy(), clock.instant());
         Notice saved = saveNoticePort.save(notice);
@@ -65,12 +70,16 @@ public class NoticeCommandService implements ManageNoticeUseCase {
 
     @Override
     public NoticeResult update(UpdateNoticeCommand c) {
+        knowledge.lockOffice(c.officeId());
         requireWritableOffice(c.officeId());
         Notice notice = requireNotice(c.officeId(), c.noticeId());
-        notice.editContent(c.category(), c.title(), c.body(), c.sourceUrl(), c.attachmentMediaIds(), clock.instant());
-        notice.reschedule(c.effectiveFrom(), c.expiresAt(), clock.instant());
-        notice.changeTerm(c.term(), clock.instant());
+        if (c.revision()!=null) notice.expectRevision(c.revision());
+        if(c.actor()!=null) governance.authorize(c.officeId(),c.actor(),false);
+        int previousVersion=notice.getVersion();
+        notice.revise(c.category(),c.title(),c.body(),c.sourceUrl(),c.attachmentMediaIds(),c.term(),c.effectiveFrom(),c.expiresAt(),clock.instant());
         Notice saved = saveNoticePort.save(notice);
+        if(saved.getVersion()!=previousVersion) governance.invalidateDependents(c.officeId(),saved.getId());
+        knowledge.audit(saved,c.actor()==null?0:c.actor(),"UPDATED","자료 수정",clock.instant());
         log.info("[Notice] updated office={} notice={} version={} status={}", c.officeId(), saved.getId(),
                 saved.getVersion(), saved.getStatus());
         return NoticeResultMapper.toResult(saved, today());
@@ -78,10 +87,15 @@ public class NoticeCommandService implements ManageNoticeUseCase {
 
     @Override
     public NoticeResult approve(NoticeActionCommand c) {
+        knowledge.lockOffice(c.officeId());
         requireWritableOffice(c.officeId());
         Notice notice = requireNotice(c.officeId(), c.noticeId());
+        if (c.revision()!=null) notice.expectRevision(c.revision());
+        governance.authorize(c.officeId(),Long.valueOf(c.actor()),false);
+        governance.validateApproval(notice);
         notice.approve(c.actor(), clock.instant(), today());
         Notice saved = saveNoticePort.save(notice);
+        knowledge.audit(saved,Long.parseLong(c.actor()),"APPROVED","검토한 현재 버전 승인",clock.instant());
         // 커밋 뒤 비동기 번역(NoticeTranslationEventListener)
         eventPublisher.publishEvent(new NoticeApprovedEvent(saved.getId()));
         log.info("[Notice] approved office={} notice={} by={} expiresAt={}", c.officeId(), saved.getId(), c.actor(),
@@ -91,25 +105,36 @@ public class NoticeCommandService implements ManageNoticeUseCase {
 
     @Override
     public void archive(NoticeActionCommand c) {
+        knowledge.lockOffice(c.officeId());
         requireWritableOffice(c.officeId());
         Notice notice = requireNotice(c.officeId(), c.noticeId());
+        if (c.revision()!=null) notice.expectRevision(c.revision());
+        governance.authorize(c.officeId(),Long.valueOf(c.actor()),false);
         notice.archive();
         saveNoticePort.save(notice);
+        governance.invalidateDependents(c.officeId(),notice.getId());
+        knowledge.audit(notice,Long.parseLong(c.actor()),"ARCHIVED","보관",clock.instant());
         log.info("[Notice] archived office={} notice={} by={}", c.officeId(), c.noticeId(), c.actor());
     }
 
     @Override
     public void reviewTranslation(ReviewNoticeTranslationCommand c) {
+        knowledge.lockOffice(c.officeId());
         requireWritableOffice(c.officeId());
         Notice notice = requireNotice(c.officeId(), c.noticeId());
+        if(c.revision()!=null) notice.expectRevision(c.revision());
+        if(c.actor()!=null) governance.authorize(c.officeId(),c.actor(),false);
         notice.reviewTranslation(c.lang());
         saveNoticePort.save(notice);
     }
 
     @Override
+    @Transactional(propagation=org.springframework.transaction.annotation.Propagation.NOT_SUPPORTED)
     public NoticeResult retranslate(NoticeActionCommand c) {
         requireWritableOffice(c.officeId());
-        requireNotice(c.officeId(), c.noticeId());
+        governance.authorize(c.officeId(),Long.valueOf(c.actor()),false);
+        Notice notice=requireNotice(c.officeId(), c.noticeId());
+        if(c.revision()!=null) notice.expectRevision(c.revision());
         translateNoticeUseCase.translateMissing(c.noticeId());
         return NoticeResultMapper.toResult(requireNotice(c.officeId(), c.noticeId()), today());
     }
@@ -132,6 +157,6 @@ public class NoticeCommandService implements ManageNoticeUseCase {
     }
 
     private LocalDate today() {
-        return LocalDate.ofInstant(clock.instant(), clock.getZone());
+        return me.yeonjae.ovlo.application.service.office.OfficeDates.today(clock);
     }
 }

@@ -26,7 +26,7 @@ public final class NoticeResultMapper {
         return new NoticeResult(n.getId(), n.getOfficeId(), n.getCategory(), n.getTitle(), n.getBody(), n.getSourceLang(),
                 n.getSourceUrl(), n.getAttachmentMediaIds(), n.getTerm(), n.getEffectiveFrom(), n.getExpiresAt(),
                 n.getStatus(), n.getApprovedBy(), n.getApprovedAt(), n.getVersion(), n.isActiveOn(today),
-                n.getCreatedAt(), n.getUpdatedAt(), translations, n.translationsToGenerate(NoticeLang.ALL));
+                n.getCreatedAt(), n.getUpdatedAt(), translations, n.translationsToGenerate(NoticeLang.ALL), n.getRowVersion(), n.getSource(), n.getReview());
     }
 
     public static NoticeSummaryResult toSummary(Notice n) {

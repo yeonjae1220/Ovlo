@@ -70,19 +70,19 @@ export function useUpdateNotice(officeId: number | undefined) {
 }
 
 export function useApproveNotice(officeId: number | undefined) {
-  return useNoticeMutation(officeId, (id, noticeId: number) => officeApi.approveNotice(id, noticeId))
+  return useNoticeMutation(officeId, (id, a: { noticeId: number; revision: number }) => officeApi.approveNotice(id, a.noticeId, a.revision))
 }
 
 export function useArchiveNotice(officeId: number | undefined) {
-  return useNoticeMutation(officeId, (id, noticeId: number) => officeApi.archiveNotice(id, noticeId))
+  return useNoticeMutation(officeId, (id, a: { noticeId: number; revision: number }) => officeApi.archiveNotice(id, a.noticeId, a.revision))
 }
 
 export function useReviewTranslation(officeId: number | undefined) {
-  return useNoticeMutation(officeId, (id, a: { noticeId: number; lang: NoticeLang }) => officeApi.reviewTranslation(id, a.noticeId, a.lang))
+  return useNoticeMutation(officeId, (id, a: { noticeId: number; lang: NoticeLang; revision: number }) => officeApi.reviewTranslation(id, a.noticeId, a.lang, a.revision))
 }
 
 export function useRetranslateNotice(officeId: number | undefined) {
-  return useNoticeMutation(officeId, (id, noticeId: number) => officeApi.retranslateNotice(id, noticeId))
+  return useNoticeMutation(officeId, (id, a: { noticeId: number; revision: number }) => officeApi.retranslateNotice(id, a.noticeId, a.revision))
 }
 
 export function useStudentNotices(officeId: number | undefined, lang: string, category: NoticeCategory | '') {

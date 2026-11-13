@@ -66,6 +66,9 @@ jobs:
       - name: Chat authorization and legacy account migration regressions
         run: ./gradlew integrationTest --tests '*ChatAccessIntegrationTest' --tests '*LegacyDevelopmentAccountMigrationIntegrationTest' --no-daemon
 
+      - name: Notice source approval and migration regressions
+        run: ./gradlew integrationTest --tests '*NoticeGovernanceIntegrationTest' --tests '*NoticeSourceMigrationIntegrationTest' --no-daemon
+
   frontend-check:
     name: Frontend build
     runs-on: ubuntu-latest

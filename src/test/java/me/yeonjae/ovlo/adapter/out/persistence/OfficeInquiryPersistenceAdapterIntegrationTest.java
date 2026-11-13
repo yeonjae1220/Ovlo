@@ -87,6 +87,8 @@ class OfficeInquiryPersistenceAdapterIntegrationTest {
         Notice n = Notice.register(officeId, NoticeCategory.HOUSING, title, body, null, List.of(), "2027-1",
                 LocalDate.of(2027, 2, 1), LocalDate.of(2027, 6, 30), memberId, NOW);
         n.approve(String.valueOf(memberId), NOW, LocalDate.of(2027, 2, 1));
+        me.yeonjae.ovlo.support.NoticeFixtures.verify(n, NOW);
+        if (title.matches("[A-Za-z ]+")) n.putTranslation(NoticeLang.EN,title,body,NOW);
         return noticeAdapter.save(n);
     }
 
@@ -118,6 +120,8 @@ class OfficeInquiryPersistenceAdapterIntegrationTest {
     @DisplayName("PostgreSQL 전문 검색: 원문 또는 학생 언어 번역에 걸리는 승인 공지만, 겹침이 큰 순으로")
     void fullTextSearch() {
         Notice dorm = approvedNotice("Dormitory application", "Dormitory applications close on February 10.");
+        Notice unreviewed=Notice.register(officeId,NoticeCategory.HOUSING,"Dormitory application close","Dormitory application close",null,List.of(),"2027-1",TODAY.minusDays(1),TODAY.plusDays(30),memberId,NOW);
+        unreviewed.approve("legacy",NOW,TODAY);noticeAdapter.save(unreviewed);
         Notice visa = approvedNotice("Visa extension", "Visit the immigration office to extend your stay.");
         Notice koOnly = approvedNotice("식당 운영", "학생 식당 운영 시간 안내");
         Notice reloaded = noticeAdapter.findById(koOnly.getId()).orElseThrow();
@@ -129,6 +133,7 @@ class OfficeInquiryPersistenceAdapterIntegrationTest {
         assertThat(searchAdapter.findCandidates(officeId, NoticeLang.EN, "cafeteria opening hours", TODAY, 8))
                 .extracting(Notice::getId).containsExactly(koOnly.getId());
         assertThat(searchAdapter.findCandidates(officeId, NoticeLang.EN, "scholarship", TODAY, 8)).isEmpty();
+        assertThat(searchAdapter.findCandidates(officeId, NoticeLang.EN, "dormitory application close", TODAY, 1)).extracting(Notice::getId).containsExactly(dorm.getId());
         assertThat(searchAdapter.findCandidates(officeId, NoticeLang.EN, "extend stay immigration", TODAY, 8))
                 .extracting(Notice::getId).containsExactly(visa.getId());
     }

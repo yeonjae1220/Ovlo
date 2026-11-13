@@ -14,7 +14,7 @@ public class NoticeExpiryScheduler {
         this.expireNoticesUseCase = expireNoticesUseCase;
     }
 
-    @Scheduled(cron = "${ovlo.office.notice-expiry-cron:0 10 0 * * *}")
+    @Scheduled(cron = "${ovlo.office.notice-expiry-cron:0 10 0 * * *}", zone = "Asia/Seoul")
     public void run() {
         expireNoticesUseCase.expireDue();
         expireNoticesUseCase.warnExpiringSoon();

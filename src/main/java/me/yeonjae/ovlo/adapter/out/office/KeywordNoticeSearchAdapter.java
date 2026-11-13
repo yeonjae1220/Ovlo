@@ -25,9 +25,10 @@ import java.util.Set;
 public class KeywordNoticeSearchAdapter implements NoticeSearchPort {
 
     private final LoadNoticePort loadNoticePort;
+    private final me.yeonjae.ovlo.application.service.office.NoticeGovernanceService governance;
 
-    public KeywordNoticeSearchAdapter(LoadNoticePort loadNoticePort) {
-        this.loadNoticePort = loadNoticePort;
+    public KeywordNoticeSearchAdapter(LoadNoticePort loadNoticePort, me.yeonjae.ovlo.application.service.office.NoticeGovernanceService governance) {
+        this.loadNoticePort = loadNoticePort; this.governance=governance;
     }
 
     @Override
@@ -35,6 +36,7 @@ public class KeywordNoticeSearchAdapter implements NoticeSearchPort {
         Set<String> queryTokens = tokens(question);
         if (queryTokens.isEmpty()) return List.of();
         return loadNoticePort.findActiveForStudent(officeId, null, today).stream()
+                .filter(n -> n.isGroundingEligible(today, lang) && governance.eligible(n,today))
                 .map(n -> new Scored(n, score(queryTokens, textOf(n, lang))))
                 .filter(s -> s.score > 0)
                 .sorted(Comparator.comparingInt((Scored s) -> s.score).reversed()

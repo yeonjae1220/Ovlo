@@ -165,10 +165,12 @@ class OfficeStatsPersistenceAdapterIntegrationTest {
         Notice soon = Notice.register(officeId, NoticeCategory.HOUSING, "곧 만료", "본문", null, List.of(), "2027-1",
                 LocalDate.of(2027, 2, 1), LocalDate.of(2027, 3, 5), staffId, NOW);
         soon.approve(String.valueOf(staffId), NOW, LocalDate.of(2027, 2, 1));
+        me.yeonjae.ovlo.support.NoticeFixtures.verify(soon, NOW);
         noticeAdapter.save(soon);
         Notice later = Notice.register(officeId, NoticeCategory.HOUSING, "한참 뒤", "본문", null, List.of(), "2027-1",
                 LocalDate.of(2027, 2, 1), LocalDate.of(2027, 6, 30), staffId, NOW);
         later.approve(String.valueOf(staffId), NOW, LocalDate.of(2027, 2, 1));
+        me.yeonjae.ovlo.support.NoticeFixtures.verify(later, NOW);
         noticeAdapter.save(later);
         noticeAdapter.save(Notice.register(officeId, NoticeCategory.LIFE, "초안", "본문", null, List.of(), "2027-1",
                 LocalDate.of(2027, 2, 1), LocalDate.of(2027, 6, 30), staffId, NOW));

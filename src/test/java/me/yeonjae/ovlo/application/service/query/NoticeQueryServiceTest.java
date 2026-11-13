@@ -35,11 +35,12 @@ class NoticeQueryServiceTest {
 
     @BeforeEach
     void setUp() {
-        sut = new NoticeQueryService(loadNoticePort, Clock.fixed(NOW, ZoneOffset.UTC));
+        sut = new NoticeQueryService(loadNoticePort, Clock.fixed(NOW, ZoneOffset.UTC),me.yeonjae.ovlo.support.NoticeFixtures.governance(loadNoticePort));
         notice = Notice.register(5L, NoticeCategory.HOUSING, "기숙사 신청", "2월 10일까지", null, List.of(), "2027-1",
                 LocalDate.of(2027, 2, 1), LocalDate.of(2027, 3, 15), 11L, NOW);
         notice.assignId(77L);
         notice.approve("11", NOW, TODAY);
+        me.yeonjae.ovlo.support.NoticeFixtures.verify(notice, NOW);
         notice.putTranslation(NoticeLang.EN, "Dorm application", "By Feb 10", NOW);
     }
 
@@ -73,6 +74,7 @@ class NoticeQueryServiceTest {
 
         notice.editContent(NoticeCategory.HOUSING, "기숙사 신청", "2월 12일까지", null, List.of(), NOW);
         notice.approve("11", NOW, TODAY);
+        me.yeonjae.ovlo.support.NoticeFixtures.verify(notice, NOW);
         assertThat(sut.findStudentDetail(5L, 77L, NoticeLang.EN)).hasValueSatisfying(r ->
                 assertThat(r.lang()).isEqualTo(NoticeLang.KO));
     }

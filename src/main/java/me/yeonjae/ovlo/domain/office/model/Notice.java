@@ -19,9 +19,9 @@ import java.util.Set;
  * 불변식
  * - 제목·본문 필수, expiresAt > effectiveFrom
  * - APPROVED 전이는 DRAFT/EXPIRED 에서만, 승인자 필수, 만료일이 오늘 이후여야 한다
- * - 제목·본문이 바뀌면 version+1 · DRAFT 로 복귀 · 기존 번역은 stale
+ * - 내용·출처·첨부·적용 범위가 바뀌면 version+1 · DRAFT 로 복귀 · 기존 번역은 stale
  * - ARCHIVED 는 수정·승인·번역을 받지 않는다
- * - 근거 자격 = APPROVED ∧ effectiveFrom ≤ today ≤ expiresAt ∧ (원문 언어이거나 최신 번역 존재)
+ * - 근거 자격 = 승인·유효기간·현재 버전의 출처 재검토·번역 자격 (기반 자료/허용 범위는 서비스에서 추가 검사)
  */
 public class Notice {
 
@@ -41,6 +41,49 @@ public class Notice {
     private Instant approvedAt;
     private Instant expiryWarnedAt;
     private int version;
+    private long rowVersion;
+    private NoticeSource source;
+    private NoticeReview review = NoticeReview.pending();
+
+    public void restoreGovernance(long rowVersion, NoticeSource source, NoticeReview review) {
+        this.rowVersion = rowVersion;
+        this.source = source;
+        this.review = review == null ? NoticeReview.pending() : review;
+    }
+    public long getRowVersion() { return rowVersion; }
+    public NoticeSource getSource() { return source; }
+    public NoticeReview getReview() { return review; }
+    public void expectRevision(long expected) {
+        if (rowVersion != expected) throw new NoticeException("자료가 변경되었습니다. 다시 확인해 주세요", NoticeException.ErrorType.INVALID_STATE);
+    }
+    public void configureSource(NoticeSource value, Instant now) {
+        assertNotArchived();
+        if (!Objects.equals(source, value)) {
+            source = Objects.requireNonNull(value);
+            invalidate(now);
+        }
+    }
+    public void verifySource(LocalDate today) {
+        assertNotArchived();
+        if (source == null) throw new IllegalArgumentException("출처 정보를 먼저 등록하세요");
+        if (source.acquiredOn().isAfter(today)) throw new IllegalArgumentException("확보일은 미래일 수 없습니다");
+        if (expiresAt.isBefore(today)) throw new IllegalArgumentException("유효기간을 먼저 갱신하세요");
+        review = new NoticeReview(version, today, source.nextReview(today, expiresAt), null);
+    }
+    public void requireReapproval(Instant now) {
+        assertNotArchived(); status=NoticeStatus.DRAFT; approvedBy=null; approvedAt=null; updatedAt=now;
+    }
+    public void holdSource(String reason) { assertNotArchived(); review = review.hold(reason); }
+    public boolean sourceEligible(LocalDate today) { return source != null && review.eligible(version, today); }
+    private void invalidate(Instant now) {
+        version++;
+        status = NoticeStatus.DRAFT;
+        approvedBy = null;
+        approvedAt = null;
+        review = NoticeReview.pending();
+        updatedAt = now;
+    }
+
     private final Long createdBy;
     private final Instant createdAt;
     private Instant updatedAt;
@@ -96,16 +139,24 @@ public class Notice {
                 createdAt, updatedAt, translations);
     }
 
+    public void revise(NoticeCategory category,String title,String body,String url,List<Long> attachments,
+                       String term,LocalDate from,LocalDate until,Instant now) {
+        int before=version;
+        editContent(category,title,body,url,attachments,now); reschedule(from,until,now); changeTerm(term,now);
+        if(version>before) version=before+1; // 한 번의 자료 편집은 한 개의 새 내용 버전이다.
+    }
     // ── 편집 ──────────────────────────────────────────────────────────────────
 
-    /** 제목·본문·분류·출처·첨부. 제목이나 본문이 바뀌면 version+1, DRAFT 로 복귀. */
+    /** 제목·본문·분류·출처·첨부 중 하나라도 바뀌면 version+1, DRAFT로 복귀. */
     public void editContent(NoticeCategory category, String title, String body, String sourceUrl,
                             List<Long> attachmentMediaIds, Instant now) {
         assertNotArchived();
         Objects.requireNonNull(category, "category는 필수입니다");
         String newTitle = requireText(title, "제목");
         String newBody = requireText(body, "본문");
-        boolean contentChanged = !newTitle.equals(this.title) || !newBody.equals(this.body);
+        boolean contentChanged = !newTitle.equals(this.title) || !newBody.equals(this.body)
+                || category != this.category || !Objects.equals(blankToNull(sourceUrl), this.sourceUrl)
+                || !Objects.equals(attachmentMediaIds == null ? List.of() : attachmentMediaIds, this.attachmentMediaIds);
         this.category = category;
         this.title = newTitle;
         this.body = newBody;
@@ -113,10 +164,7 @@ public class Notice {
         this.attachmentMediaIds = new ArrayList<>(attachmentMediaIds == null ? List.of() : attachmentMediaIds);
         this.updatedAt = now;
         if (contentChanged) {
-            this.version += 1;
-            this.status = NoticeStatus.DRAFT;
-            this.approvedBy = null;
-            this.approvedAt = null;
+            invalidate(now);
         }
     }
 
@@ -124,6 +172,7 @@ public class Notice {
     public void reschedule(LocalDate effectiveFrom, LocalDate expiresAt, Instant now) {
         assertNotArchived();
         validateDates(effectiveFrom, expiresAt);
+        if (!effectiveFrom.equals(this.effectiveFrom) || !expiresAt.equals(this.expiresAt)) invalidate(now);
         this.effectiveFrom = effectiveFrom;
         this.expiresAt = expiresAt;
         this.expiryWarnedAt = null;
@@ -132,7 +181,9 @@ public class Notice {
 
     public void changeTerm(String term, Instant now) {
         assertNotArchived();
-        this.term = requireText(term, "적용 학기");
+        String value = requireText(term, "적용 학기");
+        if (!value.equals(this.term)) invalidate(now);
+        this.term = value;
         this.updatedAt = now;
     }
 
@@ -226,13 +277,14 @@ public class Notice {
     public boolean isGroundingEligible(LocalDate today, NoticeLang lang) {
         if (status != NoticeStatus.APPROVED) return false;
         if (today.isBefore(effectiveFrom) || today.isAfter(expiresAt)) return false;
+        if (!sourceEligible(today)) return false;
         if (lang == sourceLang) return true;
         NoticeTranslation t = translations.get(lang);
         return t != null && !t.isStaleFor(version);
     }
 
     public boolean isActiveOn(LocalDate today) {
-        return status == NoticeStatus.APPROVED && !today.isBefore(effectiveFrom) && !today.isAfter(expiresAt);
+        return status == NoticeStatus.APPROVED && !today.isBefore(effectiveFrom) && !today.isAfter(expiresAt) && sourceEligible(today);
     }
 
     // ── 내부 ──────────────────────────────────────────────────────────────────

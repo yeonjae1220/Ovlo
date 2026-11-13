@@ -13,5 +13,7 @@ public record NoticeResult(Long id, Long officeId, NoticeCategory category, Stri
                            NoticeLang sourceLang, String sourceUrl, List<Long> attachmentMediaIds, String term,
                            LocalDate effectiveFrom, LocalDate expiresAt, NoticeStatus status, String approvedBy,
                            Instant approvedAt, int version, boolean activeToday, Instant createdAt, Instant updatedAt,
-                           List<NoticeTranslationResult> translations, List<NoticeLang> missingLangs) {
+                           List<NoticeTranslationResult> translations, List<NoticeLang> missingLangs, long revision,
+                           me.yeonjae.ovlo.domain.office.model.NoticeSource source,
+                           me.yeonjae.ovlo.domain.office.model.NoticeReview review) {
 }

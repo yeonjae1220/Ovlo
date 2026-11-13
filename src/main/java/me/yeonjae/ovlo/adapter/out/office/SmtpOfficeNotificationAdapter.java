@@ -48,6 +48,12 @@ public class SmtpOfficeNotificationAdapter implements OfficeNotificationPort {
     }
 
     @Override
+    public void sendNoticeReviewDue(List<String> toEmails,String officeName,String title,LocalDate due,boolean overdue) {
+        send("notice_review",toEmails,"[Ovlo] 자료 재검토 " + (overdue?"기한 초과: ":"예정: ") + title,
+                officeName + " 자료의 원문과 적용 여부를 확인해 주세요. 재검토 기한: " + due
+                + "\n기한이 지난 자료는 AI 답변에서 제외됩니다.\n" + appBaseUrl + "/office/notices");
+    }
+    @Override
     public void sendStaffInvitation(String toEmail, String officeName, String invitedBy) {
         send("staff_invitation", List.of(toEmail), "[Ovlo] " + officeName + " 담당자로 초대되었습니다", """
                 %s 담당자로 초대되었습니다.
