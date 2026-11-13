@@ -25,7 +25,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 class AnthropicLlmAdapterAnswerPromptTest {
 
     private static final String RESPONSE = """
-            {"id":"msg_1","type":"message","role":"assistant","model":"anthropic/claude-opus-5.5",
+            {"id":"msg_1","type":"message","role":"assistant","model":"anthropic/claude-sonnet-5.5",
              "content":[{"type":"text","text":"Apply within 90 days of entry. [1]"}],
              "stop_reason":"end_turn","stop_sequence":null,
              "usage":{"input_tokens":10,"output_tokens":5}}

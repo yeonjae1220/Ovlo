@@ -33,6 +33,16 @@ public class OfficeConsultationPersistenceAdapter implements LoadConsultationPor
         this.translationRepository = translationRepository;
     }
 
+    @Override public void lockStudentForCreation(Long memberId) {
+        if (repository.lockStudentForCreation(memberId)==null) throw new IllegalStateException("Student not found");
+    }
+    @Override public long countOpenedSince(Long memberId, Instant since) {
+        return repository.countByMemberIdAndOpenedAtGreaterThanEqual(memberId, since);
+    }
+    @Override public boolean hasActiveForStudent(Long officeId, Long memberId) {
+        return repository.existsByOfficeIdAndMemberIdAndStatusIn(officeId, memberId, List.of("OPEN", "IN_PROGRESS", "RESOLVED"));
+    }
+
     @Override
     public Optional<Consultation> findById(Long consultationId) {
         return repository.findById(consultationId).map(this::toDomain);

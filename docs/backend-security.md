@@ -158,3 +158,9 @@ spring:
 - 운영 공통 Flyway 경로의 개발 계정 repeatable seed는 no-op이다. V46은 기존 로컬 dev@dev.com 계정을 정지하고 비밀번호를 로그인 불가능한 표식으로 바꾼다. 관련 데이터는 삭제하지 않는다.
 - 배포 시 해당 계정의 Redis 세션·현재 및 이전 토큰 인덱스를 정리한다. 다른 회원의 세션은 유지한다.
 - ChatAuthorizationTest, ChatAccessIntegrationTest, ActiveMemberAuthenticationTest, LegacyDevelopmentAccountMigrationIntegrationTest가 브로커 전달·권한 회수·기존 토큰·스키마 업그레이드를 검증한다.
+
+## 학교 챗봇 악용 방어 (2026-11-13)
+
+질문 범위·독립 근거 검사, 회원/학교/전체 호출 예약, 토큰 예산, 상담 중복 생성 제한을 추가했다.
+설정과 검증 범위는 [학교 챗봇 악용 방어](office-ai-guardrails.md), 결정은 [ADR-0007](adr/0007-office-ai-abuse-controls.md)을 참고한다.
+LLM 판단은 확률적이며 인증/학교 격리/쿼터/도구 미제공을 대체하지 않는다.

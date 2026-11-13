@@ -52,6 +52,6 @@ public class InquiryConversationQueryService implements GetInquiryConversationQu
                     citations.add(new AskResult.Citation(index, id, notice.getTitle(), notice.getSourceUrl(), notice.getExpiresAt())));
         }
         return new AskResult(inquiry.getId(), inquiry.getOutcome(), inquiry.getLang(), inquiry.getAnswerText(), citations,
-                inquiry.getOutcome() != InquiryOutcome.ESCALATED);
+                inquiry.getOutcome() != InquiryOutcome.ESCALATED && inquiry.getOutcome() != InquiryOutcome.OUT_OF_SCOPE);
     }
 }

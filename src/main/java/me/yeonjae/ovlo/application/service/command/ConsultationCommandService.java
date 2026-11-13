@@ -89,6 +89,7 @@ public class ConsultationCommandService implements OpenConsultationUseCase, Mana
     public ConsultationResult open(OpenConsultationCommand c) {
         Office office = accessPolicy.assertMember(c.memberId(), c.officeId());
         ConsultationConsent.textFor(c.consentVersion());
+        loadConsultationPort.lockStudentForCreation(c.memberId());
         // 묻는 사람이 그 국제처 담당자이기도 하면(근로 학생 등) 받는 쪽에서 뺀다 — 참여자가 겹치면 PK 중복 409 (2026-11-02)
         List<Long> staffIds = office.activeStaff().stream().map(OfficeStaff::getMemberId)
                 .filter(id -> !id.equals(c.memberId())).toList();
@@ -105,6 +106,8 @@ public class ConsultationCommandService implements OpenConsultationUseCase, Mana
         if (inquiry.isPresent() && !inquiry.get().isOwnedBy(c.memberId())) {
             throw new ConsultationException("본인의 문의만 전달할 수 있습니다", ConsultationException.ErrorType.FORBIDDEN);
         }
+        if (inquiry.isPresent() && inquiry.get().getOutcome() == me.yeonjae.ovlo.domain.office.model.InquiryOutcome.OUT_OF_SCOPE)
+            throw new ConsultationException("학교 안내 범위를 벗어난 요청은 상담으로 전달할 수 없습니다", ConsultationException.ErrorType.FORBIDDEN);
         String transcript = null;
         if (inquiry.isPresent()) {
             // Same row lock is used when saving a continuation. A retry returns the original consultation.
@@ -120,6 +123,10 @@ public class ConsultationCommandService implements OpenConsultationUseCase, Mana
                 transcript = InquiryHistory.transcript(InquiryHistory.load(loadInquiryPort, c.officeId(), c.memberId(), c.inquiryId()));
             }
         }
+        if (loadConsultationPort.hasActiveForStudent(c.officeId(), c.memberId()))
+            throw new ConsultationException("진행 중인 학교 상담이 있습니다. 기존 상담방에서 이어가 주세요.", ConsultationException.ErrorType.INVALID_STATE);
+        if (loadConsultationPort.countOpenedSince(c.memberId(), clock.instant().minus(java.time.Duration.ofDays(1))) >= 3)
+            throw new ConsultationException("하루에 새 상담은 3개까지 열 수 있습니다. 기존 상담방을 이용해 주세요.", ConsultationException.ErrorType.INVALID_STATE);
         String question = inquiry.map(Inquiry::getQuestion).orElseGet(() -> requireText(c.message()));
         String answer = inquiry.map(Inquiry::getAnswerText).orElse(null);
         NoticeLang lang = inquiry.map(Inquiry::getLang).orElse(NoticeLang.KO);
