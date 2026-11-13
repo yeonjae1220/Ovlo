@@ -9,14 +9,13 @@ import me.yeonjae.ovlo.domain.marketplace.model.*;
 import me.yeonjae.ovlo.shared.security.RateLimiterService;
 import org.springframework.http.*;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.time.LocalDate;
 import java.util.*;
 
-@RestController @Validated @RequestMapping("/api/v1/marketplace")
+@RestController @RequestMapping("/api/v1/marketplace")
 public class MarketplaceApiController {
     private final MarketplaceUseCase market;
     private final TranslateListingUseCase translations;
@@ -69,6 +68,8 @@ public class MarketplaceApiController {
     @PostMapping("/{id}/reports") @ResponseStatus(HttpStatus.NO_CONTENT) public void report(@AuthenticationPrincipal Long actor,@PathVariable long id,@Valid @RequestBody ReportRequest r) {
         limiter.checkMarketplaceWriteRate(actor); market.report(actor,id,r.reason());
     }
+    @GetMapping("/blocks") public MarketplaceUseCase.BlockedMemberPage blocks(@AuthenticationPrincipal Long actor,
+            @RequestParam(required=false) @Positive Long before) {return market.blockedMembers(actor,before);}
     @PutMapping("/blocks/{target}") @ResponseStatus(HttpStatus.NO_CONTENT) public void block(@AuthenticationPrincipal Long actor,@PathVariable long target) {market.block(actor,target,true);}
     @DeleteMapping("/blocks/{target}") @ResponseStatus(HttpStatus.NO_CONTENT) public void unblock(@AuthenticationPrincipal Long actor,@PathVariable long target) {market.block(actor,target,false);}
 }

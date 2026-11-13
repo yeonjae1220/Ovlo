@@ -22,6 +22,7 @@ export default function MarketplaceListPage() {
   return <div className={s.page}>
     <header className={s.header}><div><h1>{text('title')}</h1><div className={s.muted}>{text('intro')}</div></div><Link className={s.primary} href="/marketplace/new">+ {text('new')}</Link></header>
     <div className={s.actions}>{[false,true].map(mine => <button key={String(mine)} className={`${s.chip} ${filters.mine === mine ? s.selected : ''}`} onClick={() => {setFilters(f => ({...f,mine,page:0}));change({mine})}}>{text(mine ? 'mine' : 'all')}</button>)}</div>
+    <Link className={s.button} href="/marketplace/blocks">{text('manageBlocks')}</Link>
     <form className={s.panel} onSubmit={e => {e.preventDefault();setFilters({...draft,page:0})}}>
       <label className={s.field}>{text('search')}<input value={draft.keyword || ''} maxLength={100} onChange={e => change({keyword: e.target.value})}/></label>
       <details style={{marginTop:16}}><summary style={{cursor:'pointer',padding:'8px 0'}}>{language === 'ko' ? '학교·지역·상세 필터' : 'School, location & more filters'}</summary><div className={s.fields}>
