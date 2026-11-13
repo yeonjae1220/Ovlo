@@ -1,5 +1,7 @@
 package me.yeonjae.ovlo.shared.security;
 
+import me.yeonjae.ovlo.domain.member.model.MemberId;
+import me.yeonjae.ovlo.application.port.out.member.LoadMemberPort;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageChannel;
 import org.springframework.messaging.simp.stomp.StompCommand;
@@ -13,8 +15,10 @@ import org.springframework.stereotype.Component;
 public class JwtChannelInterceptor implements ChannelInterceptor {
 
     private final JwtTokenProvider jwtTokenProvider;
+    private final LoadMemberPort members;
 
-    public JwtChannelInterceptor(JwtTokenProvider jwtTokenProvider) {
+    public JwtChannelInterceptor(JwtTokenProvider jwtTokenProvider, LoadMemberPort members) {
+        this.members = members;
         this.jwtTokenProvider = jwtTokenProvider;
     }
 
@@ -37,6 +41,9 @@ public class JwtChannelInterceptor implements ChannelInterceptor {
         }
 
         Long memberId = jwtTokenProvider.extractMemberId(token).value();
+        if (!members.isActive(new MemberId(memberId))) {
+            throw new IllegalArgumentException("활동 중인 회원만 연결할 수 있습니다");
+        }
         accessor.getSessionAttributes().put(WsSessionKeys.MEMBER_ID, memberId);
         return message;
     }

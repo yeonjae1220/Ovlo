@@ -71,6 +71,7 @@ public class AuthCommandService implements LoginUseCase, LogoutUseCase, RefreshT
             throw new AuthException("이메일 또는 비밀번호가 올바르지 않습니다");
         }
 
+        requireActive(credentials.memberId());
         String accessToken = jwtTokenProvider.generateAccessToken(
                 credentials.memberId(), credentials.role(), officeMembershipOf(credentials.memberId()));
         String refreshToken = jwtTokenProvider.generateRefreshToken();
@@ -96,6 +97,7 @@ public class AuthCommandService implements LoginUseCase, LogoutUseCase, RefreshT
             throw new AuthException("만료되었거나 유효하지 않은 세션입니다. 다시 로그인해 주세요");
         }
 
+        requireActive(session.getMemberId());
         String newRefreshToken = jwtTokenProvider.generateRefreshToken();
         Instant newExpiry = Instant.now().plus(jwtTokenProvider.refreshTokenTtl());
         session.rotate(newRefreshToken, newExpiry);
@@ -121,6 +123,13 @@ public class AuthCommandService implements LoginUseCase, LogoutUseCase, RefreshT
                 session.getMemberId(), role, officeMembershipOf(session.getMemberId()));
 
         return new TokenPairResult(newAccessToken, newRefreshToken, session.getMemberId().value());
+    }
+
+    private void requireActive(MemberId id) {
+        if (loadMemberPort.findById(id).filter(m -> m.getStatus().isActive()).isEmpty()) {
+            tokenStorePort.delete(id);
+            throw new AuthException("활동 중인 회원이 아닙니다");
+        }
     }
 
     /** 담당자 소속이 있으면 JWT 클레임으로 싣는다(ADR-0005). 정지된 Office 는 포트가 돌려주지 않는다. */

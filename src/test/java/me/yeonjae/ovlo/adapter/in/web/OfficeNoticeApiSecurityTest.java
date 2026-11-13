@@ -54,6 +54,12 @@ import static org.springframework.test.web.servlet.setup.MockMvcBuilders.webAppC
 @SpringBootTest
 @ActiveProfiles("test")
 class OfficeNoticeApiSecurityTest {
+    @MockitoBean private me.yeonjae.ovlo.adapter.out.persistence.MemberPersistenceAdapter authenticatedMembers;
+
+    @BeforeEach void activeAuthenticatedMemberFixture() {
+        org.mockito.Mockito.when(authenticatedMembers.isActive(org.mockito.ArgumentMatchers.any())).thenReturn(true);
+    }
+
 
     private static final long OFFICE_ID = 5L;
     private static final long UNIV = 266L;

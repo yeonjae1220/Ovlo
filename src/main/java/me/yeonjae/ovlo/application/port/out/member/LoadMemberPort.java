@@ -10,6 +10,8 @@ import java.util.Optional;
 
 public interface LoadMemberPort {
     Optional<Member> findById(MemberId memberId);
+    /** Lightweight current-status check for authentication, without loading profile collections. */
+    boolean isActive(MemberId memberId);
     List<Member> findAllByIds(List<MemberId> ids);
     Optional<Member> findByEmail(String email);
     boolean existsByEmail(String email);

@@ -167,7 +167,7 @@ class MarketplaceIntegrationTest {
         }
         assertThat(market.get(buyer,l.id()).version()).isEqualTo(1);
         String oldToken=token(seller);jdbc.update("UPDATE member SET status='SUSPENDED' WHERE id=?",seller);
-        mvc.perform(get("/api/v1/marketplace/"+l.id()).header("Authorization",oldToken)).andExpect(status().isForbidden());
+        mvc.perform(get("/api/v1/marketplace/"+l.id()).header("Authorization",oldToken)).andExpect(status().isUnauthorized());
     }
     @Test void fourDecimalCurrencySurvivesDatabaseRoundTrip() {
         var d=details("Currency precision",market.upload(seller,png));

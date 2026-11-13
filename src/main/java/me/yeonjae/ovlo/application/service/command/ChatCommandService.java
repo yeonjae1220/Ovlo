@@ -76,6 +76,9 @@ public class ChatCommandService implements CreateChatRoomUseCase, SendMessageUse
 
     @Override
     public void markRead(Long chatRoomId, Long memberId) {
+        if (!loadChatPort.isMember(new ChatRoomId(chatRoomId), new MemberId(memberId))) {
+            throw new ChatException("채팅방 접근 권한이 없습니다", ChatException.ErrorType.NOT_FOUND);
+        }
         saveReadMarkerPort.markRead(new ChatRoomId(chatRoomId), new MemberId(memberId));
     }
 

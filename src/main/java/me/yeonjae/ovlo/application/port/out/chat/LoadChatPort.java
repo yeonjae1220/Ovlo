@@ -35,6 +35,6 @@ public interface LoadChatPort {
     /** 여러 채팅방의 안 읽은 메시지 수 일괄 조회 (chatRoomId → unreadCount) */
     Map<Long, Long> countUnreadBatch(MemberId memberId, Map<Long, Instant> sinceByRoomId);
 
-    /** 채팅방 참여자 여부 (단일 EXISTS 쿼리) */
+    /** 현재 활동 회원이며 상담방이면 현재 담당자(또는 상담 학생)인 참여자만 허용한다. */
     boolean isMember(ChatRoomId chatRoomId, MemberId memberId);
 }

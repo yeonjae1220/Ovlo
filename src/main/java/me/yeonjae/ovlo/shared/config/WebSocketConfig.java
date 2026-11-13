@@ -1,5 +1,6 @@
 package me.yeonjae.ovlo.shared.config;
 
+import me.yeonjae.ovlo.adapter.in.web.ws.ChatOutboundAuthorizationInterceptor;
 import me.yeonjae.ovlo.adapter.in.web.ws.ChatSubscriptionInterceptor;
 import me.yeonjae.ovlo.shared.security.JwtChannelInterceptor;
 import org.springframework.beans.factory.annotation.Value;
@@ -18,12 +19,15 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
     private final JwtChannelInterceptor jwtChannelInterceptor;
     private final ChatSubscriptionInterceptor chatSubscriptionInterceptor;
+    private final ChatOutboundAuthorizationInterceptor outbound;
 
     @Value("${CORS_ALLOWED_ORIGINS:http://localhost:3000}")
     private String corsAllowedOrigins;
 
     public WebSocketConfig(JwtChannelInterceptor jwtChannelInterceptor,
-                           ChatSubscriptionInterceptor chatSubscriptionInterceptor) {
+                           ChatSubscriptionInterceptor chatSubscriptionInterceptor,
+                            ChatOutboundAuthorizationInterceptor outbound) {
+        this.outbound = outbound;
         this.jwtChannelInterceptor = jwtChannelInterceptor;
         this.chatSubscriptionInterceptor = chatSubscriptionInterceptor;
     }
@@ -55,6 +59,11 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
         registry.enableSimpleBroker("/topic", "/queue")
                 .setHeartbeatValue(new long[]{25000, 25000}) // 로드밸런서 idle timeout(60s) 방지
                 .setTaskScheduler(heartbeatScheduler()); // @Configuration CGLIB이 싱글턴 보장
+    }
+
+    @Override
+    public void configureClientOutboundChannel(ChannelRegistration registration) {
+        registration.interceptors(outbound);
     }
 
     @Override
