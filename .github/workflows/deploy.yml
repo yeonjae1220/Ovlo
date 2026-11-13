@@ -54,12 +54,13 @@ jobs:
       - name: Test marketplace lifecycle with PostgreSQL
         run: ./gradlew integrationTest --tests '*MarketplaceIntegrationTest' --no-daemon
 
-      - name: Test office conversations and schema upgrade with PostgreSQL
+      - name: Test office conversations, schema and AI limits with PostgreSQL and Redis
         run: >-
           ./gradlew integrationTest
           --tests '*OfficeInquiryPersistenceAdapterIntegrationTest'
           --tests '*OfficeConsultationPersistenceAdapterIntegrationTest'
           --tests '*MarketplaceInquiryMigrationIntegrationTest'
+          --tests '*RedisInquiryAdmissionAdapterIntegrationTest'
           --no-daemon
 
       - name: Chat authorization and legacy account migration regressions
