@@ -62,6 +62,7 @@ class OfficeAiLiveEvaluationTest {
             "기숙사 입사는 2026년 11월 20일 14:00부터 17:00까지입니다. 국제관 101호에서 열쇠를 받습니다. 여권과 입사 확인서를 지참하세요.",
             "https://university.example/dorm",List.of(),"2026-2",LocalDate.of(2026,11,1),LocalDate.of(2026,12,1),2L,NOW);
         n.assignId(1L); n.approve("2",NOW,LocalDate.of(2026,11,13));
+        me.yeonjae.ovlo.support.NoticeFixtures.verify(n,NOW);
         n.putTranslation(NoticeLang.EN,"Dormitory check-in","Dormitory check-in is November 20, 2026, from 14:00 to 17:00. Collect keys in room 101 of the International Building. Bring your passport and check-in confirmation.",NOW);
         n.putTranslation(NoticeLang.DE,"Einzug ins Wohnheim","Der Einzug ist am 20. November 2026 von 14:00 bis 17:00 Uhr. Die Schlüssel erhalten Sie in Raum 101 des Internationalen Gebäudes. Bringen Sie Ihren Reisepass und Ihre Einzugsbestätigung mit.",NOW);
         n.putTranslation(NoticeLang.FR,"Installation en résidence","L’installation est prévue le 20 novembre 2026 de 14:00 à 17:00. Récupérez les clés dans la salle 101 du bâtiment international. Apportez votre passeport et votre confirmation d’installation.",NOW);
@@ -82,8 +83,12 @@ class OfficeAiLiveEvaluationTest {
             var prior=Inquiry.answered(1L,1L,c.lang(),c.previousQuestion(),"2026년 11월 20일 14:00–17:00입니다 [1].",List.of(1L),List.of(1L),NOW,0,"fixture");
             prior.assignId(10L); when(load.findById(10L)).thenReturn(Optional.of(prior)); previous=10L;
         }
+        var candidateLoad=mock(LoadNoticePort.class);
+        when(candidateLoad.findById(1L)).thenReturn(Optional.of(notice()));
+        var governance=me.yeonjae.ovlo.support.NoticeFixtures.governance(candidateLoad);
+        var finalizer=new NoticeAnswerFinalizer(mock(NoticeKnowledgePort.class),candidateLoad,save,governance,Clock.fixed(NOW,ZoneOffset.UTC));
         var service=new InquiryCommandService(access,search,llm,new GroundedAnswerValidator(),load,save,
-            Clock.fixed(NOW,ZoneOffset.UTC),8,500,llm,admission);
+            Clock.fixed(NOW,ZoneOffset.UTC),finalizer,governance,8,500,llm,admission);
         long started=System.nanoTime();
         var result=service.ask(new AskQuestionCommand(1L,1L,c.question(),c.lang(),previous));
         Map<String,Object> evidence=new LinkedHashMap<>();
