@@ -30,6 +30,7 @@ export const marketplaceApi = {
   contact: (id: number) => api.post<{roomId: number}>(`/marketplace/${id}/contact`).then(r => r.data.roomId),
   translate: (id: number, language: string) => api.post<ListingTranslation>(`/marketplace/${id}/translations/${language}`).then(r => r.data),
   report: (id: number, reason: string) => api.post(`/marketplace/${id}/reports`, {reason}),
+  blocks: (before?: number) => api.get<{content: {memberId: number; nickname: string}[]; nextBefore: number | null}>('/marketplace/blocks', {params: {before}}).then(r => r.data),
   block: (id: number) => api.put(`/marketplace/blocks/${id}`),
   unblock: (id: number) => api.delete(`/marketplace/blocks/${id}`),
 }

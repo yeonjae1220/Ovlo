@@ -135,6 +135,14 @@ public class MarketplacePersistenceAdapter implements MarketplaceStore {
                         (b.target_id=:viewer AND b.actor_id=l.seller_id))))
                 """,Map.of("id",id,"viewer",viewer),Long.class)>0;
     }
+    @Override public List<me.yeonjae.ovlo.application.dto.result.BlockedMarketplaceMember> blockedMembers(long actor,Long before) {
+        String sql="SELECT b.target_id,m.nickname FROM marketplace_block b JOIN member m ON m.id=b.target_id WHERE b.actor_id=:actor";
+        var parameters=new MapSqlParameterSource("actor",actor);
+        if(before!=null) {sql+=" AND b.target_id<:before";parameters.addValue("before",before);}
+        // Keyset pagination remains stable when a member removes a block on an earlier page.
+        sql+=" ORDER BY b.target_id DESC LIMIT 21";
+        return jdbc.query(sql,parameters,(r,n)->new me.yeonjae.ovlo.application.dto.result.BlockedMarketplaceMember(r.getLong(1),r.getString(2)));
+    }
     @Override public boolean blocked(long a,long b) {
         return jdbc.queryForObject("SELECT count(*) FROM marketplace_block WHERE (actor_id=:a AND target_id=:b) OR (actor_id=:b AND target_id=:a)",Map.of("a",a,"b",b),Long.class)>0;
     }

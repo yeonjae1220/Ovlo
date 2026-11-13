@@ -16,6 +16,7 @@ public interface MarketplaceStore {
     Optional<Photo> photo(UUID id);
     boolean photoVisible(UUID id, long viewer);
     void validatePhotos(long owner, Long listingId, List<UUID> ids);
+    List<me.yeonjae.ovlo.application.dto.result.BlockedMarketplaceMember> blockedMembers(long actor, Long before);
     boolean blocked(long a, long b);
     void block(long actor, long target, boolean blocked);
     Optional<Long> chat(long listingId, long buyerId);

@@ -8,6 +8,8 @@ import java.util.*;
 
 public interface MarketplaceUseCase {
     record ListingPage(List<ListingResult> content, boolean hasNext) {}
+    record BlockedMemberPage(List<BlockedMarketplaceMember> content, Long nextBefore) {}
+    BlockedMemberPage blockedMembers(long actor, Long before);
     ListingPage search(long actor, MarketplaceSearch search);
     ListingResult get(long actor, long id);
     ListingResult create(long actor, ListingDetails details);

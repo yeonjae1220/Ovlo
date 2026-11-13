@@ -138,6 +138,77 @@ class MarketplaceIntegrationTest {
             mvc.perform(get("/api/v1/chat/rooms/"+room).header("Authorization",token(other))).andExpect(status().isNotFound());
         }
     }
+    @Test void blockListIsPrivateAndAllowsUnblockingWithoutAccessToListing() throws Exception {
+        var listing=market.create(seller,details("Blocked listing",market.upload(seller,png)));
+        market.block(buyer,seller,true);market.block(other,buyer,true);
+        mvc.perform(get("/api/v1/marketplace/blocks")).andExpect(status().isUnauthorized());
+        mvc.perform(get("/api/v1/marketplace/"+listing.id()).header("Authorization",token(buyer))).andExpect(status().isNotFound());
+        mvc.perform(get("/api/v1/marketplace/blocks").header("Authorization",token(buyer)).param("actor",""+other))
+                .andExpect(status().isOk()).andExpect(jsonPath("$.content.length()").value(1))
+                .andExpect(jsonPath("$.content[0].memberId").value(seller))
+                .andExpect(jsonPath("$.content[0].nickname").exists())
+                .andExpect(jsonPath("$.content[0].email").doesNotExist())
+                .andExpect(jsonPath("$.content[0].status").doesNotExist());
+        mvc.perform(get("/api/v1/marketplace/blocks").header("Authorization",token(seller)))
+                .andExpect(status().isOk()).andExpect(jsonPath("$.content.length()").value(0));
+        mvc.perform(delete("/api/v1/marketplace/blocks/"+seller).header("Authorization",token(buyer)))
+                .andExpect(status().isNoContent());
+        mvc.perform(get("/api/v1/marketplace/"+listing.id()).header("Authorization",token(buyer))).andExpect(status().isOk());
+        assertThat(store.blocked(other,buyer)).isTrue();
+        jdbc.update("UPDATE member SET status='SUSPENDED' WHERE id=?",buyer);
+        mvc.perform(get("/api/v1/marketplace/blocks").header("Authorization",token(buyer))).andExpect(status().isUnauthorized());
+    }
+    @Test void blockListHasBoundedStablePaginationWhileEntriesAreRemoved() throws Exception {
+        var ids=new ArrayList<Long>();
+        for(int i=0;i<21;i++) {long id=member();ids.add(id);market.block(buyer,id,true);}
+        mvc.perform(get("/api/v1/marketplace/blocks").header("Authorization",token(buyer)))
+                .andExpect(status().isOk()).andExpect(jsonPath("$.content.length()").value(20))
+                .andExpect(jsonPath("$.content[0].memberId").value(ids.getLast()))
+                .andExpect(jsonPath("$.nextBefore").value(ids.get(1)));
+        market.block(buyer,ids.getLast(),false);
+        mvc.perform(get("/api/v1/marketplace/blocks").header("Authorization",token(buyer)).param("before",ids.get(1).toString()))
+                .andExpect(status().isOk()).andExpect(jsonPath("$.content.length()").value(1))
+                .andExpect(jsonPath("$.content[0].memberId").value(ids.getFirst()))
+                .andExpect(jsonPath("$.nextBefore").isEmpty());
+        mvc.perform(get("/api/v1/marketplace/blocks").header("Authorization",token(buyer)).param("before","0"))
+                .andExpect(status().isBadRequest());
+    }
+    @Test void truncatedProviderResponseIsNotCachedAndCanBeRetried() throws Exception {
+        var listing=market.create(seller,details("Complete translation",market.upload(seller,png)));
+        var reason=new java.util.concurrent.atomic.AtomicReference<>("max_tokens");
+        var calls=new java.util.concurrent.atomic.AtomicInteger();
+        var server=com.sun.net.httpserver.HttpServer.create(new java.net.InetSocketAddress("127.0.0.1",0),0);
+        server.createContext("/",exchange->{
+            exchange.getRequestBody().readAllBytes();calls.incrementAndGet();
+            byte[] body=("""
+                {"id":"msg_test","type":"message","role":"assistant","model":"claude-opus-5-5",
+                "content":[{"type":"text","text":"TITLE: Pots BODY: Microwave excluded. 25000 KRW."}],
+                "stop_reason":"%s","stop_sequence":null,"usage":{"input_tokens":100,"output_tokens":2048}}
+                """).formatted(reason.get()).getBytes(java.nio.charset.StandardCharsets.UTF_8);
+            exchange.getResponseHeaders().add("Content-Type","application/json");
+            exchange.sendResponseHeaders(200,body.length);exchange.getResponseBody().write(body);exchange.close();
+        });
+        server.start();
+        var adapter=new me.yeonjae.ovlo.adapter.out.office.AnthropicLlmAdapter(
+                new me.yeonjae.ovlo.shared.metrics.OfficeMetrics(new io.micrometer.core.instrument.simple.SimpleMeterRegistry()),
+                "sk-test","http://127.0.0.1:"+server.getAddress().getPort(),"claude-opus-5-5","medium",2048,10,false);
+        var service=new me.yeonjae.ovlo.application.service.command.ListingTranslationService(market,store,adapter,leases,transactionManager,120,120);
+        try {
+            assertThatThrownBy(()->service.translate(buyer,listing.id(),"ko")).hasMessageContaining("unavailable");
+            assertThat(store.translation(listing.id(),0,"ko")).isEmpty();
+            assertThat(jdbc.queryForObject("SELECT count(*) FROM marketplace_translation_lease WHERE listing_id=?",Long.class,listing.id())).isZero();
+            assertThat(market.get(buyer,listing.id()).details()).isEqualTo(listing.details());
+            reason.set("end_turn");
+            assertThat(service.translate(buyer,listing.id(),"ko").description()).isEqualTo("Microwave excluded. 25000 KRW.");
+            service.translate(buyer,listing.id(),"ko");assertThat(calls).hasValue(2);
+        } finally {service.close();server.stop(0);}
+    }
+    @Test void invalidSearchParametersReturnBadRequest() throws Exception {
+        mvc.perform(get("/api/v1/marketplace").header("Authorization",token(buyer)).param("page","-1"))
+                .andExpect(status().isBadRequest());
+        mvc.perform(get("/api/v1/marketplace").header("Authorization",token(buyer)).param("country","INVALID"))
+                .andExpect(status().isBadRequest());
+    }
     @Test void translationsAreCachedByVersionAndNeverReplacePriceOrOriginal() {
         var l=market.create(seller,details("Translation",market.upload(seller,png)));
         when(translator.translateListing(any(),eq("ko"),any(),any())).thenReturn(new ListingTranslationPort.Text("주방 묶음","전자레인지는 제외입니다."));

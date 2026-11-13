@@ -17,10 +17,12 @@ export default function MarketplaceDetailPage({editing = false}: {editing?: bool
   const user = useAuthStore(state => state.currentUser?.id)
   const {text} = useMarketText()
   const result = useQuery({queryKey:['market-detail',user,id],queryFn:() => marketplaceApi.get(id),enabled:!!id})
+  // Keep the editor mounted across new versions, visibility changes and background read failures.
+  if(editing && result.data?.sellerId === Number(user)) return <MarketplaceForm key={`${user}:${id}`} listing={result.data} loadError={result.error} onRetry={() => void result.refetch()}/>
   if(result.isPending) return <p>{text('loading')}</p>
-  if(result.isError) return <div className={s.page}><Link href="/marketplace">{text('back')}</Link><MarketError error={result.error}/><button className={s.button} onClick={() => void result.refetch()}>{text('retry')}</button></div>
+  if(result.isError) return <div className={s.page}><Link href="/marketplace">{text('back')}</Link><Link className={s.button} href="/marketplace/blocks">{text('manageBlocks')}</Link><MarketError error={result.error}/><button className={s.button} onClick={() => void result.refetch()}>{text('retry')}</button></div>
   const item = result.data
-  if(editing) return item.sellerId === Number(user) && !item.hidden && item.status !== 'COMPLETED' ? <MarketplaceForm key={`${user}:${item.id}:${item.version}`} listing={item}/> : <div className={s.page}><Link href={`/marketplace/${id}`}>{text('back')}</Link><p>{text(item.hidden?'hidden':'completed')}</p></div>
+  if(editing) return <div className={s.page}><Link href={`/marketplace/${id}`}>{text('back')}</Link></div>
   return <Details key={`${user}:${item.id}`} item={item}/>
 }
 function Details({item}: {item: Listing}) {

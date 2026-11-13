@@ -11,10 +11,13 @@ import {categories, conditions, tags, useMarketText} from './marketplaceText'
 import {Photo, MarketError, SchoolPicker, CountryOptions} from './MarketplaceShared'
 import s from './Marketplace.module.css'
 
-export default function MarketplaceForm({listing}: {listing?: Listing}) {
+export default function MarketplaceForm({listing, loadError, onRetry}: {listing?: Listing; loadError?: unknown; onRetry?: () => void}) {
   const {text, label, language} = useMarketText()
   const user = useAuthStore(state => state.currentUser?.id)
   const router = useRouter(); const cache = useQueryClient()
+  const [base, setBase] = useState(listing)
+  const conflict = !!base && !!listing && base.version !== listing.version
+  const unavailable = !!loadError || !!listing?.hidden || listing?.status === 'COMPLETED'
   const [form, setForm] = useState<ListingDetails>(() => listing?.details || {
     title:'',description:'',sourceLanguage:language,category:'HOUSEHOLD',condition:'GOOD',free:false,bundle:true,partialPickup:false,
     price:{amount:'',currency:language === 'ko' ? 'KRW' : 'USD'},location:{countryCode:'',city:'',universityId:null,meetingPoint:''},pickupFrom:null,pickupUntil:null,tags:[],photoIds:[],
@@ -23,9 +26,17 @@ export default function MarketplaceForm({listing}: {listing?: Listing}) {
   const [uploading, setUploading] = useState(false)
   const [uploadError, setUploadError] = useState<unknown>(null)
   const options = useQuery({queryKey:['market-options',user],queryFn:marketplaceApi.options})
-  const save = useMutation({mutationFn: () => listing ? marketplaceApi.edit(listing,form) : marketplaceApi.create(form), onSuccess: async saved => {
+  const save = useMutation({mutationFn: () => base ? marketplaceApi.edit(base,form) : marketplaceApi.create(form),
+    onError: async error => {
+      if(base && (error as {response?: {status?: number}}).response?.status === 409)
+        await cache.invalidateQueries({queryKey:['market-detail',user,String(base.id)]})
+    }, onSuccess: async saved => {
     await cache.invalidateQueries({queryKey:['market-list']}); await cache.invalidateQueries({queryKey:['market-detail',user,String(saved.id)]});router.push(`/marketplace/${saved.id}`)
   }})
+  const reloadLatest = () => {
+    if(!listing || unavailable || uploading || save.isPending || !window.confirm(text('discardDraft'))) return
+    setBase(listing); setForm(listing.details); setSchoolName(listing.universityName || ''); setUploadError(null); save.reset()
+  }
   const change = (patch: Partial<ListingDetails>) => setForm(current => ({...current,...patch}))
   const upload = async (files: FileList | null) => {
     if (!files?.length) return
@@ -43,14 +54,18 @@ export default function MarketplaceForm({listing}: {listing?: Listing}) {
   return <div className={s.page}>
     <Link className={s.button} href={listing ? `/marketplace/${listing.id}` : '/marketplace'}>← {text('back')}</Link>
     <header className={s.header}><h1>{text(listing ? 'edit' : 'new')}</h1></header><p className={s.muted}>{text('verifyHint')}</p>
-    <form onSubmit={e => {e.preventDefault();if(valid && !uploading) save.mutate()}}>
+    {conflict && <div className={s.notice} role="status"><p>{text('draftConflict')}</p><button type="button" className={s.button} disabled={unavailable || uploading || save.isPending} onClick={reloadLatest}>{text('reloadLatest')}</button></div>}
+    {listing?.hidden && <p className={s.notice}>{text('hidden')}</p>}
+    {listing?.status === 'COMPLETED' && <p className={s.notice}>{text('completed')}</p>}
+    <MarketError error={loadError}/>{!!loadError && <button type="button" className={s.button} onClick={onRetry}>{text('retry')}</button>}
+    <form onSubmit={e => {e.preventDefault();if(valid && !uploading && !save.isPending && !conflict && !unavailable && options.data) save.mutate()}}>
       <section className={s.panel}><h2 className={s.sectionTitle}>{text('photos')} · {form.photoIds.length}/8</h2><p className={s.muted}>{text('photoHint')}</p>
         <div className={s.thumbs}>{form.photoIds.map((id,i) => <div key={id}><div className={s.thumb}><Photo id={id} alt={`${text('photos')} ${i+1}`}/></div><div className={s.photoActions}>
           <button type="button" className={s.button} disabled={i===0 || uploading} aria-label={text('moveLeft')} onClick={() => move(i,-1)}>←</button>
           <button type="button" className={s.button} disabled={i===form.photoIds.length-1 || uploading} aria-label={text('moveRight')} onClick={() => move(i,1)}>→</button>
           <button type="button" className={s.button} disabled={uploading} onClick={() => change({photoIds:form.photoIds.filter(p => p !== id)})}>{text('remove')}</button>
         </div></div>)}</div>
-        <label className={s.field}>{text('addPhotos')}<input className={s.file} type="file" accept="image/jpeg,image/png" multiple disabled={uploading || save.isPending || form.photoIds.length>=8} onChange={e => {void upload(e.target.files);e.target.value=''}}/></label>
+        <label className={s.field}>{text('addPhotos')}<input className={s.file} type="file" accept="image/jpeg,image/png" multiple disabled={uploading || save.isPending || conflict || unavailable || form.photoIds.length>=8} onChange={e => {void upload(e.target.files);e.target.value=''}}/></label>
         {uploading && <p role="status">{text('uploading')}</p>}<MarketError error={uploadError}/>
       </section>
       <section className={s.panel}><div className={s.fields}>
@@ -78,7 +93,7 @@ export default function MarketplaceForm({listing}: {listing?: Listing}) {
       </div></section>
       <MarketError error={options.error}/>{options.isError && <button type="button" className={s.button} onClick={() => void options.refetch()}>{text('retry')}</button>}
       <MarketError error={save.error}/>{!valid && <p className={s.muted}>{text('required')}</p>}
-      <div className={s.actions}><button className={s.primary} disabled={!valid || uploading || save.isPending || !options.data}>{text(save.isPending ? 'saving' : listing ? 'saveEdit' : 'save')}</button></div>
+      <div className={s.actions}><button className={s.primary} disabled={!valid || uploading || save.isPending || !options.data || conflict || unavailable}>{text(save.isPending ? 'saving' : listing ? 'saveEdit' : 'save')}</button></div>
     </form>
   </div>
 }
