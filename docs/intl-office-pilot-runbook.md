@@ -154,6 +154,10 @@ OVLO_PILOT_SEED_ADMIN_EMAIL=<가입한 이메일>
 | 초대·상담 메일이 안 옴, 로그 `알림 메일 발송 실패 ... 535` | Gmail 앱 비밀번호 폐기·오타(`MAIL_PASSWORD`) | Google 계정 → 앱 비밀번호 재발급 → `gh secret set MAIL_PASSWORD --repo yeonjae1220/Ovlo` (파이프로) → 다음 배포에서 반영. 초대·상담은 이미 저장돼 있어 재시도 불필요(담당자는 화면에서 본다). 만료 경고만 다음 배치가 다시 보낸다 |
 | 기동 실패 `운영 설정이 잘못됐습니다` | env 누락 | 1.1. 급하면 `OVLO_OFFICE_ALLOW_DEGRADED=true` 로 띄우되 fake 답이 나간다는 뜻이므로 질문 화면을 닫을 것 |
 
+재번역 API의 즉시 응답은 언어별 저장이 끝난 뒤 독립된 읽기 트랜잭션에서 공지와 번역을 조회한다.
+따라서 `translations`, `missingLangs`, `revision`은 커밋된 결과를 반영한다. 외부 번역 호출 중에는 DB 트랜잭션을 유지하지 않는다.
+`NoticeRetranslationIntegrationTest`가 PostgreSQL과 실제 API 경로로 전체 성공·일부 실패 응답, 후속 revision 사용 및 권한/경합 검사를 검증한다.
+
 ### 공지 번역 숫자 검사
 
 - 소수점과 천 단위 구분자를 모두 지우지 않는다. `BigDecimal`로 정확한 값과 원문 숫자의 최소 출현 횟수를 비교한다. `1.5 → 15`, `-1.5 → 1.5`, 같은 값 두 번 중 한 번의 누락은 보류한다.

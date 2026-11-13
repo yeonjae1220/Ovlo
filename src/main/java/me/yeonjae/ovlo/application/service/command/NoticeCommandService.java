@@ -136,7 +136,10 @@ public class NoticeCommandService implements ManageNoticeUseCase {
         Notice notice=requireNotice(c.officeId(), c.noticeId());
         if(c.revision()!=null) notice.expectRevision(c.revision());
         translateNoticeUseCase.translateMissing(c.noticeId());
-        return NoticeResultMapper.toResult(requireNotice(c.officeId(), c.noticeId()), today());
+        Notice committed = loadNoticePort.findCommittedById(c.noticeId())
+                .filter(n -> n.getOfficeId().equals(c.officeId()))
+                .orElseThrow(() -> new NoticeException("공지를 찾을 수 없습니다: id=" + c.noticeId(), NoticeException.ErrorType.NOT_FOUND));
+        return NoticeResultMapper.toResult(committed, today());
     }
 
     private Office requireWritableOffice(Long officeId) {

@@ -13,6 +13,9 @@ import java.util.Optional;
 public interface LoadNoticePort {
     Optional<Notice> findById(Long noticeId);
 
+    /** Independently committed notice/translation snapshot, without reusing the caller's persistence context. */
+    Optional<Notice> findCommittedById(Long noticeId);
+
     /** 담당자 목록. status·category 는 null 이면 전체. */
     Page<Notice> findByOffice(Long officeId, NoticeStatus status, NoticeCategory category, Pageable pageable);
 

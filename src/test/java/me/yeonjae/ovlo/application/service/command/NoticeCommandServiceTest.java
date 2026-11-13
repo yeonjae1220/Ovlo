@@ -159,6 +159,7 @@ class NoticeCommandServiceTest {
     @DisplayName("재번역은 번역 유스케이스를 동기로 부르고 최신 상태를 돌려준다")
     void retranslateDelegates() {
         draftInStore();
+        given(loadNoticePort.findCommittedById(NOTICE)).willAnswer(inv -> loadNoticePort.findById(NOTICE));
         given(translateNoticeUseCase.translateMissing(NOTICE))
                 .willReturn(new TranslateNoticeUseCase.Outcome(List.of(NoticeLang.EN), List.of()));
 
