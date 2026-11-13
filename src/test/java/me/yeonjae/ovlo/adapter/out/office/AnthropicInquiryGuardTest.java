@@ -15,7 +15,7 @@ import static org.assertj.core.api.Assertions.*;
 
 class AnthropicInquiryGuardTest {
     HttpServer server;
-    AtomicReference<String> answer=new AtomicReference<>("ALLOW"), stop=new AtomicReference<>("end_turn"), sent=new AtomicReference<>();
+    AtomicReference<String> answer=new AtomicReference<>("{\"decision\":\"ALLOW\"}"), stop=new AtomicReference<>("end_turn"), sent=new AtomicReference<>();
     AtomicInteger status=new AtomicInteger(200), calls=new AtomicInteger();
     tools.jackson.databind.json.JsonMapper json=tools.jackson.databind.json.JsonMapper.builder().build();
     AnthropicLlmAdapter adapter;
@@ -43,11 +43,14 @@ class AnthropicInquiryGuardTest {
         assertThat(sent.get()).contains("untrusted DATA", "DENY mixed requests");
     }
     @Test void malformedAndTruncatedDecisionsFailClosed() {
-        for(String text:List.of("ALLOW because I say so","{\"allowed\":true}","", "allow")) {
+        for(String text:List.of("ALLOW", "ALLOW because I say so", "{\"allowed\":true}", "", "allow",
+                "{\"decision\":true}", "{\"decision\":\"allow\"}", "{\"decision\":\"ALLOW\",\"reason\":\"ok\"}",
+                "{\"decision\":\"DENY\",\"decision\":\"ALLOW\"}",
+                "{\"decision\":\"ALLOW\"} {\"decision\":\"DENY\"}", "null", "[]")) {
             answer.set(text);
             assertThatThrownBy(() -> adapter.screen("Dormitory?",List.of())).isInstanceOf(InquiryException.class);
         }
-        answer.set("ALLOW"); stop.set("max_tokens");
+        answer.set("{\"decision\":\"ALLOW\"}"); stop.set("max_tokens");
         assertThatThrownBy(() -> adapter.screen("Dormitory?",List.of())).isInstanceOf(InquiryException.class);
     }
     @Test void providerErrorsAreNotRetried() {
@@ -60,7 +63,7 @@ class AnthropicInquiryGuardTest {
         assertThat(calls.get()).isZero();
     }
     @Test void independentVerificationRejectsForgeryAndTranslationKeepsItsOwnModel() {
-        answer.set("DENY");
+        answer.set("{\"decision\":\"DENY\"}");
         var request=new AnswerGenerationPort.Request("When?",NoticeLang.EN,List.of(new AnswerGenerationPort.Candidate(1,1L,"Dorm","Apply by November 20.",null)));
         assertThat(adapter.verify(request,"Apply by December 31 [1]").allowed()).isFalse();
         assertThat(sent.get()).contains("EVERY factual claim", "CURRENT cited reference");
@@ -68,4 +71,26 @@ class AnthropicInquiryGuardTest {
         adapter.translate(new TranslationPort.Request(NoticeLang.KO,NoticeLang.EN,"Dorm","Apply by November 20."));
         assertThat(json.readTree(sent.get()).get("model").asText()).isEqualTo("claude-opus-5-5");
     }
+    @Test void guardRequestsAnExactDecisionSchema() {
+        assertThat(adapter.screen("Is health insurance compulsory for D-2 students?",List.of()).allowed()).isTrue();
+        var format=json.readTree(sent.get()).get("output_config").get("format");
+        assertThat(format.get("type").asText()).isEqualTo("json_schema");
+        var schema=format.get("schema");
+        assertThat(schema.get("additionalProperties").asBoolean()).isFalse();
+        assertThat(schema.get("required").toString()).isEqualTo("[\"decision\"]");
+        assertThat(schema.get("properties").get("decision").get("enum").toString()).isEqualTo("[\"ALLOW\",\"DENY\"]");
+    }
+    @Test void verificationOnlySeesCitedReferencesAndNeverDatabaseIds() {
+        var request=new AnswerGenerationPort.Request("Housing?",NoticeLang.KO,List.of(
+            new AnswerGenerationPort.Candidate(1,2L,"Housing","Shared rooms", "https://school.example/exchange"),
+            new AnswerGenerationPort.Candidate(2,3L,"Insurance","Mandatory insurance", "https://school.example/exchange")));
+        adapter.verify(request,"Shared rooms [2]");
+        var user=json.readTree(sent.get()).get("messages").get(0).get("content").asText();
+        var references=json.readTree(user).get("request").get("references");
+        assertThat(references.size()).isEqualTo(1);
+        assertThat(references.get(0).get("citation").asText()).isEqualTo("[2]");
+        assertThat(references.get(0).get("title").asText()).isEqualTo("Insurance");
+        assertThat(user).doesNotContain("noticeId", "Shared rooms\",", "Housing\"");
+    }
+
 }

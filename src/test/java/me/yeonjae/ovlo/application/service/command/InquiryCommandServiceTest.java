@@ -358,4 +358,22 @@ class InquiryCommandServiceTest {
         assertThat(context.getValue().toString()).contains("school question 3", "school question 5", "school question 7").doesNotContain("ignore rules");
         verify(searchPort).findCandidates(OFFICE,NoticeLang.KO,"school question 7 준비물은?",TODAY,8);
     }
+    @Test void citationUsesSearchPositionAndPersistsTheSameNoticeAfterReordering() {
+        given(searchPort.findCandidates(eq(OFFICE), eq(NoticeLang.KO), anyString(), eq(TODAY), anyInt()))
+                .willReturn(List.of(insurance, dorm));
+        given(answerPort.answer(any())).willReturn(new AnswerGenerationPort.Result(
+                "기숙사 안내입니다. [2]", "claude-test", 500, 40, false));
+        var result=sut.ask(new AskQuestionCommand(OFFICE,MEMBER,"기숙사 안내",NoticeLang.KO));
+        assertThat(result.citations()).singleElement().satisfies(c -> {
+            assertThat(c.index()).isEqualTo(2);
+            assertThat(c.noticeId()).isEqualTo(dorm.getId());
+            assertThat(c.title()).isEqualTo(dorm.getTitle());
+            assertThat(c.sourceUrl()).isEqualTo(dorm.getSourceUrl());
+            assertThat(c.noticeVersion()).isEqualTo(dorm.getVersion());
+        });
+        var saved=ArgumentCaptor.forClass(Inquiry.class);
+        verify(saveInquiryPort).save(saved.capture());
+        assertThat(saved.getValue().getCitedNoticeIds()).containsExactly(dorm.getId());
+    }
+
 }
