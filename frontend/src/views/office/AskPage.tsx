@@ -21,7 +21,7 @@ function Answer({ result }: { result: AskResult }) {
       {result.answerText ? result.answerText.split(/(\[\d{1,3}\])/).map((part, i) => {
         const match = /^\[(\d{1,3})\]$/.exec(part)
         return match ? <a key={i} href={`#cite-${result.inquiryId}-${match[1]}`}>{part}</a> : <span key={i}>{part}</span>
-      }) : t('ask.noGrounds')}
+      }) : t(result.outcome === 'OUT_OF_SCOPE' ? 'ask.outOfScope' : 'ask.noGrounds')}
     </p>
     {result.citations.length > 0 && <>
       <h4 style={{ margin: '12px 0 4px' }}>{t('ask.sources')}</h4>
@@ -177,7 +177,7 @@ function Conversation({ officeId, officeName, memberId, inquiryId }: {
       onDecline={() => { setConsentOpen(false); setError(null) }} onAgree={version => void connect(version)}
       preview={<><p>{t('ask.preview')}</p>{turns.map(({ question: q, result }) => <div key={result.inquiryId} style={{ marginBottom: 12 }}>
         <strong>{t('ask.you')}</strong><p style={{ whiteSpace: 'pre-wrap', overflowWrap: 'anywhere' }}>{q}</p>
-        <strong>{t('ask.assistant')}</strong><p style={{ whiteSpace: 'pre-wrap', overflowWrap: 'anywhere' }}>{result.answerText ?? t('ask.noGrounds')}</p>
+        <strong>{t('ask.assistant')}</strong><p style={{ whiteSpace: 'pre-wrap', overflowWrap: 'anywhere' }}>{result.answerText ?? t(result.outcome === 'OUT_OF_SCOPE' ? 'ask.outOfScope' : 'ask.noGrounds')}</p>
       </div>)}</>} />}
   </div>
 }

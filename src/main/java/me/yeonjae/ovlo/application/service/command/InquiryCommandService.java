@@ -45,6 +45,8 @@ public class InquiryCommandService implements AskQuestionUseCase, GiveInquiryFee
     /** 후보 본문이 너무 길면 토큰이 늘고 답변 품질은 오르지 않는다. 자료 등록 시 상한(20,000자)보다 훨씬 작게 둔다. */
     private static final int MAX_CANDIDATE_BODY_CHARS = 3000;
 
+    private final me.yeonjae.ovlo.application.port.out.office.InquiryGuardPort guard;
+    private final me.yeonjae.ovlo.application.port.out.office.InquiryAdmissionPort admission;
     private final StudentOfficeAccessPolicy accessPolicy;
     private final NoticeSearchPort searchPort;
     private final AnswerGenerationPort answerPort;
@@ -63,7 +65,10 @@ public class InquiryCommandService implements AskQuestionUseCase, GiveInquiryFee
                                  me.yeonjae.ovlo.application.service.office.NoticeAnswerFinalizer finalizer,
                                  me.yeonjae.ovlo.application.service.office.NoticeGovernanceService governance,
                                  @Value("${ovlo.office.inquiry-candidate-limit:8}") int candidateLimit,
-                                 @Value("${ovlo.office.inquiry-office-daily-limit:500}") int officeDailyLimit) {
+                                 @Value("${ovlo.office.inquiry-office-daily-limit:500}") int officeDailyLimit,
+                                 me.yeonjae.ovlo.application.port.out.office.InquiryGuardPort guard,
+                                 me.yeonjae.ovlo.application.port.out.office.InquiryAdmissionPort admission) {
+        this.guard=guard; this.admission=admission;
         this.accessPolicy = accessPolicy;
         this.searchPort = searchPort;
         this.answerPort = answerPort;
@@ -86,12 +91,38 @@ public class InquiryCommandService implements AskQuestionUseCase, GiveInquiryFee
             if (loadInquiryPort.findByPreviousInquiryId(c.previousInquiryId()).isPresent())
                 throw InquiryHistory.conflict("새 답변이 있습니다. 대화를 새로고침해 주세요");
         }
+        assertOfficeDailyLimit(c.officeId(), me.yeonjae.ovlo.application.service.office.OfficeDates.today(clock));
+        // Invalid ownership/history or an already exhausted DB quota must not reserve paid-call budget.
+        try (var lease=admission.acquire(c.officeId(), c.memberId())) {
+            AskResult result=askAdmitted(c, question, history, lease);
+            lease.complete();
+            return result;
+        }
+    }
+
+    private AskResult askAdmitted(AskQuestionCommand c, String question, List<Inquiry> history,
+            me.yeonjae.ovlo.application.port.out.office.InquiryAdmissionPort.Lease lease) {
         String searchQuestion = history.stream().skip(Math.max(0, history.size() - 2))
+                .filter(i -> i.getOutcome() != me.yeonjae.ovlo.domain.office.model.InquiryOutcome.OUT_OF_SCOPE)
                 .map(Inquiry::getQuestion).collect(java.util.stream.Collectors.joining(" "));
         searchQuestion = searchQuestion.isEmpty() ? question : searchQuestion + " " + question;
         Instant start = clock.instant();
         LocalDate today = me.yeonjae.ovlo.application.service.office.OfficeDates.today(clock);
-        assertOfficeDailyLimit(c.officeId(), today);
+        List<AnswerGenerationPort.Turn> promptHistory = history.stream()
+                .skip(Math.max(0, history.size() - 6))
+                .filter(i -> i.getOutcome() != me.yeonjae.ovlo.domain.office.model.InquiryOutcome.OUT_OF_SCOPE)
+                .map(i -> new AnswerGenerationPort.Turn(i.getQuestion(), i.getAnswerText() == null ? null
+                        : i.getAnswerText().substring(0, Math.min(2000, i.getAnswerText().length())))).toList();
+        promptHistory = boundedHistory(promptHistory);
+        var screened=guard.screen(question, promptHistory);
+        if (screened == null) throw guardUnavailable();
+        lease.usage(screened.inputTokens(), screened.outputTokens());
+        if (!screened.allowed()) {
+            Inquiry saved=record(Inquiry.outOfScope(c.officeId(), c.memberId(), c.lang(), question, start,
+                    elapsed(start), screened.modelId()), history);
+            return new AskResult(saved.getId(), saved.getOutcome(), c.lang(), null, List.of(), false);
+        }
+
 
         List<Notice> candidates = searchPort.findCandidates(c.officeId(), c.lang(), searchQuestion, today, candidateLimit).stream()
                 .filter(n -> n.isGroundingEligible(today, c.lang()))   // 최종 판정은 도메인(ADR-0006 2항)
@@ -109,10 +140,10 @@ public class InquiryCommandService implements AskQuestionUseCase, GiveInquiryFee
         List<Candidate> context = IntStream.range(0, candidates.size())
                 .mapToObj(i -> toCandidate(i + 1, candidates.get(i), c.lang()))
                 .toList();
-        AnswerGenerationPort.Result generated = answerPort.answer(new AnswerGenerationPort.Request(question, c.lang(), context,
-                history.stream().skip(Math.max(0, history.size() - 6))
-                        .map(i -> new AnswerGenerationPort.Turn(i.getQuestion(), i.getAnswerText() == null ? null
-                                : i.getAnswerText().substring(0, Math.min(2000, i.getAnswerText().length())))).toList()));
+        context=boundedContext(context);
+        var request=new AnswerGenerationPort.Request(question, c.lang(), context, promptHistory);
+        AnswerGenerationPort.Result generated = answerPort.answer(request);
+        lease.usage(generated.inputTokens(), generated.outputTokens());
 
         if (generated.refused()) {
             log.warn("[Inquiry] model refused office={} member={} model={}", c.officeId(), c.memberId(), generated.modelId());
@@ -131,6 +162,14 @@ public class InquiryCommandService implements AskQuestionUseCase, GiveInquiryFee
             return noGroundsResult(saved);
         }
 
+        var verified=guard.verify(request, outcome.validated().text());
+        if (verified == null) throw guardUnavailable();
+        lease.usage(verified.inputTokens(), verified.outputTokens());
+        if (!verified.allowed()) {
+            Inquiry saved=record(Inquiry.noGrounds(c.officeId(), c.memberId(), c.lang(), question, candidateIds, start,
+                    elapsed(start), generated.modelId()), history);
+            return noGroundsResult(saved);
+        }
         GroundedAnswerValidator.Validated v = outcome.validated();
         List<me.yeonjae.ovlo.domain.office.model.NoticeCitation> evidence = v.citedIndices().stream().map(i -> {
             Notice n=candidates.get(i-1);
@@ -201,5 +240,33 @@ public class InquiryCommandService implements AskQuestionUseCase, GiveInquiryFee
     private static String titleIn(Notice n, NoticeLang lang) {
         return n.getTranslation(lang).filter(t -> !t.isStaleFor(n.getVersion()))
                 .map(NoticeTranslation::getTitle).orElse(n.getTitle());
+    }
+    private static InquiryException guardUnavailable() {
+        return new InquiryException("안전한 답변을 확인하지 못했습니다. 잠시 후 다시 시도해 주세요.", InquiryException.ErrorType.UNAVAILABLE);
+    }
+    private static List<AnswerGenerationPort.Turn> boundedHistory(List<AnswerGenerationPort.Turn> history) {
+        var kept=new java.util.ArrayList<AnswerGenerationPort.Turn>();
+        int left=15000;
+        for (int i=history.size()-1; i>=0; i--) {
+            var t=history.get(i);
+            int size=(t.question()+String.valueOf(t.answer())).getBytes(java.nio.charset.StandardCharsets.UTF_8).length;
+            if(size>left) break;
+            left-=size; kept.addFirst(t);
+        }
+        return List.copyOf(kept);
+    }
+    private static List<Candidate> boundedContext(List<Candidate> candidates) {
+        var kept=new java.util.ArrayList<Candidate>();
+        int left=30000;
+        for(var c:candidates) {
+            String title=c.title().substring(0, Math.min(c.title().length(), 200));
+            String body=c.body();
+            while((title+body).getBytes(java.nio.charset.StandardCharsets.UTF_8).length>left && !body.isEmpty())
+                body=body.substring(0, body.offsetByCodePoints(body.length(), -1));
+            if(body.isBlank()) break;
+            kept.add(new Candidate(c.index(), c.noticeId(), title, body, c.sourceUrl()));
+            left-=(title+body).getBytes(java.nio.charset.StandardCharsets.UTF_8).length;
+        }
+        return List.copyOf(kept);
     }
 }

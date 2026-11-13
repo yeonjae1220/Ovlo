@@ -133,7 +133,16 @@ public class Inquiry {
     }
 
     /** S4: 학생 동의로 담당자에게 넘어감. */
+    public static Inquiry outOfScope(Long officeId, Long memberId, NoticeLang lang, String question,
+                                      Instant askedAt, long latencyMs, String modelId) {
+        requireCommon(officeId, memberId, lang, askedAt);
+        return new Inquiry(null, officeId, memberId, lang, validateQuestion(question), InquiryOutcome.OUT_OF_SCOPE,
+                null, List.of(), List.of(), askedAt, latencyMs, modelId);
+    }
+
     public void markEscalated() {
+        if (outcome == InquiryOutcome.OUT_OF_SCOPE) throw new InquiryException(
+                "학교 안내 범위를 벗어난 요청은 상담으로 전달할 수 없습니다", InquiryException.ErrorType.FORBIDDEN);
         this.outcome = InquiryOutcome.ESCALATED;
     }
 

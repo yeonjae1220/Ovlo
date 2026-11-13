@@ -96,7 +96,8 @@ public class RateLimiterService {
 
     private void check(String key, int limit, int ttlSeconds) {
         Long count = redisTemplate.execute(INCREMENT_SCRIPT, List.of(key), String.valueOf(ttlSeconds));
-        if (count != null && count > limit) {
+        if (count == null) throw new IllegalStateException("Rate limiter unavailable");
+        if (count > limit) {
             throw new TooManyRequestsException("요청이 너무 많습니다. 잠시 후 다시 시도해주세요");
         }
     }

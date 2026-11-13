@@ -14,9 +14,9 @@ import java.time.Duration;
  * 태그 값은 enum·고정 문자열만 — 질문 본문·회원 id 같은 고카디널리티 값은 절대 넣지 않는다.
  *
  * <pre>
- * ovlo.office.inquiry            counter  outcome=ANSWERED|NO_GROUNDS|ESCALATED
+ * ovlo.office.inquiry            counter  outcome=ANSWERED|NO_GROUNDS|OUT_OF_SCOPE|ESCALATED
  * ovlo.office.inquiry.latency    timer    outcome
- * ovlo.office.llm.calls          counter  purpose=answer|translate  result=ok|refused|error  model
+ * ovlo.office.llm.calls          counter  purpose=answer|inquiry-screen|inquiry-verify|translate|marketplace-translate  result=ok|refused|error  model
  * ovlo.office.llm.tokens         counter  purpose  direction=input|output  model
  * ovlo.office.llm.latency        timer    purpose  model
  * ovlo.office.consultation       counter  action=opened|assigned|resolved|closed

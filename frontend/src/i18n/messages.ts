@@ -76,6 +76,8 @@ const en: Messages = {
   "office.knowledge.noTasks": "No matching materials.",
   "office.knowledge.approvedDetail": "View approved material",
 
+  'ask.outOfScope': 'I can help with university administration and exchange-student services. Please ask a university-related question.',
+  'office.outcome.OUT_OF_SCOPE': 'Outside scope',
   'common.retry': 'Try again',
   'error.unexpected': 'Something went wrong.',
   // Nav / Tabs
@@ -726,6 +728,8 @@ const ko: Messages = {
   "office.knowledge.noTasks": "해당하는 자료가 없습니다.",
   "office.knowledge.approvedDetail": "승인 자료 보기",
 
+  'ask.outOfScope': '학교 행정·교환학생 생활 안내만 도와드릴 수 있습니다. 학교 관련 질문을 입력해 주세요.',
+  'office.outcome.OUT_OF_SCOPE': '안내 범위 밖',
   'common.retry': '다시 시도',
   'error.unexpected': '문제가 발생했습니다.',
   'tab.all': '전체',
@@ -1294,6 +1298,8 @@ const ko: Messages = {
 }
 
 const ja: Messages = {
+  'ask.outOfScope': '大学の手続きや交換留学生の生活についてご案内します。大学に関する質問を入力してください。',
+  'office.outcome.OUT_OF_SCOPE': '対象外',
   'common.retry': '再試行',
   'error.unexpected': '問題が発生しました。',
   'tab.all': 'すべて',
@@ -1637,6 +1643,8 @@ const ja: Messages = {
 }
 
 const zh: Messages = {
+  'ask.outOfScope': '我可以帮助解答学校行政和交换生服务相关问题。请输入与学校有关的问题。',
+  'office.outcome.OUT_OF_SCOPE': '超出服务范围',
   'common.retry': '重试',
   'error.unexpected': '出现了问题。',
   'tab.all': '全部',
@@ -1980,6 +1988,8 @@ const zh: Messages = {
 }
 
 const es: Messages = {
+  'ask.outOfScope': 'Puedo ayudar con trámites universitarios y servicios para estudiantes de intercambio. Haz una pregunta sobre tu universidad.',
+  'office.outcome.OUT_OF_SCOPE': 'Fuera de ámbito',
   'common.retry': 'Reintentar',
   'error.unexpected': 'Algo salió mal.',
   'tab.all': 'Todo',
@@ -2323,6 +2333,8 @@ const es: Messages = {
 }
 
 const fr: Messages = {
+  'ask.outOfScope': 'Je peux vous aider pour les démarches universitaires et les services aux étudiants en échange. Posez une question liée à votre université.',
+  'office.outcome.OUT_OF_SCOPE': 'Hors périmètre',
   'common.retry': 'Réessayer',
   'error.unexpected': 'Une erreur s\'est produite.',
   'tab.all': 'Tout',
@@ -2666,6 +2678,8 @@ const fr: Messages = {
 }
 
 const de: Messages = {
+  'ask.outOfScope': 'Ich helfe bei Fragen zur Hochschulverwaltung und zum Austauschstudium. Bitte stellen Sie eine Frage zu Ihrer Hochschule.',
+  'office.outcome.OUT_OF_SCOPE': 'Außerhalb des Angebots',
   'common.retry': 'Erneut versuchen',
   'error.unexpected': 'Etwas ist schiefgelaufen.',
   'tab.all': 'Alle',
@@ -3009,6 +3023,8 @@ const de: Messages = {
 }
 
 const pt: Messages = {
+  'ask.outOfScope': 'Posso ajudar com procedimentos universitários e serviços para estudantes de intercâmbio. Faça uma pergunta sobre sua universidade.',
+  'office.outcome.OUT_OF_SCOPE': 'Fora do âmbito',
   'common.retry': 'Tentar novamente',
   'error.unexpected': 'Algo deu errado.',
   "tab.all": "Todos",
@@ -3379,6 +3395,8 @@ const pt: Messages = {
 }
 
 const ru: Messages = {
+  'ask.outOfScope': 'Я помогаю с университетскими процедурами и услугами для студентов по обмену. Задайте вопрос о вашем университете.',
+  'office.outcome.OUT_OF_SCOPE': 'Вне сферы помощи',
   'common.retry': 'Повторить',
   'error.unexpected': 'Что-то пошло не так.',
   "tab.all": "Все",

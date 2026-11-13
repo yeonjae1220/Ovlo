@@ -107,6 +107,8 @@ ovlo:
       # 비우면 api.anthropic.com. Messages 호환 게이트웨이(예: https://api.bizrouter.ai)를 쓸 때만 넣는다
       base-url: ${OVLO_LLM_BASE_URL:}
       model: ${OVLO_LLM_MODEL:claude-opus-5-5}
+      # Student answer + scope/evidence checks; translation model above remains independent.
+      answer-model: ${OVLO_LLM_ANSWER_MODEL:claude-sonnet-5-5}
       # thinking 은 항상 켜져 있고 effort 로만 조절한다 (low|medium|high|xhigh|max)
       effort: ${OVLO_LLM_EFFORT:medium}
       max-tokens: ${OVLO_LLM_MAX_TOKENS:2048}
@@ -119,6 +121,13 @@ ovlo:
   office:
     inquiry-candidate-limit: ${OVLO_INQUIRY_CANDIDATE_LIMIT:8}
     inquiry-office-daily-limit: ${OVLO_INQUIRY_OFFICE_DAILY_LIMIT:500}
+    ai-global-daily-limit: ${OVLO_AI_GLOBAL_DAILY_LIMIT:5000}
+    # UTC-day budget: input tokens + 5 * output tokens, including screening and verification.
+    # This is a conservative token budget, not a provider currency invoice.
+    ai-office-weighted-token-budget: ${OVLO_AI_OFFICE_WEIGHTED_TOKEN_BUDGET:25000000}
+    ai-global-weighted-token-budget: ${OVLO_AI_GLOBAL_WEIGHTED_TOKEN_BUDGET:100000000}
+    ai-office-concurrent-limit: ${OVLO_AI_OFFICE_CONCURRENT_LIMIT:5}
+    ai-global-concurrent-limit: ${OVLO_AI_GLOBAL_CONCURRENT_LIMIT:20}
     notice-expiry-warn-days: ${OVLO_NOTICE_EXPIRY_WARN_DAYS:7}
     notice-expiry-cron: ${OVLO_NOTICE_EXPIRY_CRON:0 10 0 * * *}
     consultation-auto-close-cron: ${OVLO_CONSULTATION_AUTO_CLOSE_CRON:0 20 0 * * *}

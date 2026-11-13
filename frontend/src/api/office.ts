@@ -101,7 +101,7 @@ export interface StudentNotice {
   expiresAt: string
 }
 
-export type InquiryOutcome = 'ANSWERED' | 'NO_GROUNDS' | 'ESCALATED'
+export type InquiryOutcome = 'ANSWERED' | 'NO_GROUNDS' | 'OUT_OF_SCOPE' | 'ESCALATED'
 
 export interface Citation {
   noticeVersion?: number | null

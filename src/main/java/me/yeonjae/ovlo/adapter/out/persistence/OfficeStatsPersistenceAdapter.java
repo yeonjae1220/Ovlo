@@ -48,6 +48,7 @@ public class OfficeStatsPersistenceAdapter implements LoadOfficeStatsPort {
                 case ANSWERED -> answered = n;
                 case NO_GROUNDS -> noGrounds = n;
                 case ESCALATED -> escalated = n;
+                case OUT_OF_SCOPE -> { /* Not a university inquiry: exclude from the resolution rate denominator. */ }
             }
         }
         return new InquiryCounts(answered + noGrounds + escalated, answered, noGrounds, escalated);

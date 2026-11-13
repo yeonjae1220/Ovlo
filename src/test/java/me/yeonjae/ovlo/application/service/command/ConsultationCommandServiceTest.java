@@ -331,4 +331,27 @@ class ConsultationCommandServiceTest {
         verify(saveChatPort, never()).save(any(ChatRoom.class));
     }
 
+
+    @Test void rejectsAnotherActiveConsultationBeforeCreatingRoom() {
+        given(loadConsultationPort.hasActiveForStudent(OFFICE, STUDENT)).willReturn(true);
+        assertThatThrownBy(() -> sut.open(new OpenConsultationCommand(OFFICE, STUDENT, null, "v2", "another question")))
+                .isInstanceOf(ConsultationException.class);
+        verify(saveChatPort, never()).save(any());
+    }
+
+    @Test void rejectedInquiryCannotBeEscalatedByCallingApiDirectly() {
+        Inquiry denied=Inquiry.outOfScope(OFFICE, STUDENT, NoticeLang.KO, "write code", NOW, 0, "sonnet");
+        denied.assignId(100L);
+        given(loadInquiryPort.findByIdForUpdate(100L)).willReturn(Optional.of(denied));
+        assertThatThrownBy(() -> sut.open(new OpenConsultationCommand(OFFICE, STUDENT, 100L, "v2", null)))
+                .isInstanceOf(ConsultationException.class);
+        verify(saveChatPort, never()).save(any());
+    }
+    @Test void closingConsultationsDoesNotResetDailyCreationLimit() {
+        given(loadConsultationPort.countOpenedSince(eq(STUDENT), any())).willReturn(3L);
+        assertThatThrownBy(() -> sut.open(new OpenConsultationCommand(OFFICE, STUDENT, null, "v2", "question")))
+                .isInstanceOf(ConsultationException.class);
+        verify(saveChatPort,never()).save(any());
+        verify(loadConsultationPort).lockStudentForCreation(STUDENT);
+    }
 }

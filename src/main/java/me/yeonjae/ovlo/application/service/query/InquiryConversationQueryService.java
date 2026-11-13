@@ -58,6 +58,6 @@ public class InquiryConversationQueryService implements GetInquiryConversationQu
             citations.add(new AskResult.Citation(inquiry.getCandidateNoticeIds().indexOf(id)+1,id,"과거 출처 (버전 미기록)",null,null));
         }
         return new AskResult(inquiry.getId(), inquiry.getOutcome(), inquiry.getLang(), inquiry.getAnswerText(), citations,
-                inquiry.getOutcome() != InquiryOutcome.ESCALATED);
+                inquiry.getOutcome() != InquiryOutcome.ESCALATED && inquiry.getOutcome() != InquiryOutcome.OUT_OF_SCOPE);
     }
 }
