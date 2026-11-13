@@ -67,7 +67,7 @@ jobs:
         run: ./gradlew integrationTest --tests '*ChatAccessIntegrationTest' --tests '*LegacyDevelopmentAccountMigrationIntegrationTest' --no-daemon
 
       - name: Notice source approval and migration regressions
-        run: ./gradlew integrationTest --tests '*NoticeGovernanceIntegrationTest' --tests '*NoticeSourceMigrationIntegrationTest' --no-daemon
+        run: ./gradlew integrationTest --tests '*NoticeGovernanceIntegrationTest' --tests '*NoticeSourceMigrationIntegrationTest' --tests '*NoticeRetranslationIntegrationTest' --no-daemon
 
   frontend-check:
     name: Frontend build

@@ -40,6 +40,14 @@ public class OfficeNoticePersistenceAdapter implements LoadNoticePort, SaveNotic
     }
 
     @Override
+    @Transactional(readOnly = true, propagation = org.springframework.transaction.annotation.Propagation.REQUIRES_NEW)
+    public Optional<Notice> findCommittedById(Long noticeId) {
+        // NOT_SUPPORTED orchestration can retain a synchronization-bound EntityManager while per-language
+        // transactions commit elsewhere. Read in a separate context instead of returning that stale aggregate.
+        return repository.findWithTranslationsById(noticeId).map(this::toDomain);
+    }
+
+    @Override
     @Transactional(readOnly = true)
     public Page<Notice> findByOffice(Long officeId, NoticeStatus status, NoticeCategory category, Pageable pageable) {
         return repository.findByOfficeFiltered(officeId,
