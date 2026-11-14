@@ -185,6 +185,11 @@ public class ConsultationCommandService implements OpenConsultationUseCase, Mana
     @Transactional
     public ConsultationResult resolve(ConsultationActionCommand c) {
         Consultation consultation = requireConsultation(c.officeId(), c.consultationId());
+        Office office = loadOfficePort.findById(c.officeId())
+                .orElseThrow(() -> new OfficeException("국제처를 찾을 수 없습니다", OfficeException.ErrorType.NOT_FOUND));
+        if (office.isSuspended() || office.activeMembershipOf(c.actorMemberId()).isEmpty()) {
+            throw new ConsultationException("현재 활동 담당자만 해결 처리할 수 있습니다", ConsultationException.ErrorType.FORBIDDEN);
+        }
         consultation.resolve(clock.instant());
         Consultation saved = saveConsultationPort.save(consultation);
         log.info("[Consultation] resolved office={} consultation={} by={}", c.officeId(), c.consultationId(), c.actorMemberId());

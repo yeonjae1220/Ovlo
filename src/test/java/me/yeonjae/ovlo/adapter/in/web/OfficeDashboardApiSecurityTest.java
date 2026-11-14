@@ -61,6 +61,7 @@ import static org.springframework.test.web.servlet.setup.MockMvcBuilders.webAppC
 @ActiveProfiles("test")
 class OfficeDashboardApiSecurityTest {
     @MockitoBean private me.yeonjae.ovlo.adapter.out.persistence.MemberPersistenceAdapter authenticatedMembers;
+    @MockitoBean private me.yeonjae.ovlo.adapter.out.persistence.OfficePersistenceAdapter authenticatedOffices;
 
     @BeforeEach void activeAuthenticatedMemberFixture() {
         org.mockito.Mockito.when(authenticatedMembers.isActive(org.mockito.ArgumentMatchers.any())).thenReturn(true);
@@ -101,6 +102,13 @@ class OfficeDashboardApiSecurityTest {
     }
 
     private String bearer(OfficeMembership membership) {
+        // Set up current persisted membership separately from the signed token.
+        if (membership != null) {
+            var office=me.yeonjae.ovlo.domain.office.model.Office.create(266L,"Test office",java.time.Instant.now());
+            office.assignId(new me.yeonjae.ovlo.domain.office.model.OfficeId(membership.officeId()));
+            office.invite(MEMBER_ID,membership.role(),"test",java.time.Instant.now()); office.accept(MEMBER_ID,java.time.Instant.now());
+            org.mockito.Mockito.when(authenticatedOffices.findById(membership.officeId())).thenReturn(java.util.Optional.of(office));
+        }
         return "Bearer " + jwtTokenProvider.generateAccessToken(new MemberId(MEMBER_ID), MemberRole.MEMBER, membership);
     }
 
@@ -139,7 +147,6 @@ class OfficeDashboardApiSecurityTest {
     @DisplayName("제휴 설정 조회는 담당자도 되지만 변경은 OFFICE_ADMIN 만 (STAFF 는 403)")
     void partnerSettings_adminOnlyForUpdate() throws Exception {
         String staff = bearer(new OfficeMembership(OFFICE_ID, OfficeRole.OFFICE_STAFF));
-        String admin = bearer(new OfficeMembership(OFFICE_ID, OfficeRole.OFFICE_ADMIN));
         String body = "{\"enabledCategories\":[\"SIM\",\"PICKUP\"]}";
 
         mockMvc.perform(get("/api/v1/office-admin/" + OFFICE_ID + "/settings/partners").header("Authorization", staff))
@@ -150,6 +157,7 @@ class OfficeDashboardApiSecurityTest {
                         .header("Authorization", staff).contentType(MediaType.APPLICATION_JSON).content(body))
                 .andExpect(status().isForbidden());
         verify(partnerSettings, never()).update(anyLong(), any());
+        String admin = bearer(new OfficeMembership(OFFICE_ID, OfficeRole.OFFICE_ADMIN));
 
         mockMvc.perform(put("/api/v1/office-admin/" + OFFICE_ID + "/settings/partners")
                         .header("Authorization", admin).contentType(MediaType.APPLICATION_JSON).content(body))

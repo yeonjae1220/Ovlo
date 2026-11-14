@@ -41,6 +41,7 @@ public class NoticeTranslationService implements TranslateNoticeUseCase {
     private final NoticeTranslationGate gate;
     private final OfficeNotificationPort notificationPort;
     private final Clock clock;
+    private final me.yeonjae.ovlo.application.port.out.office.TranslationWorkPort work;
     private final org.springframework.transaction.support.TransactionTemplate tx;
     private final me.yeonjae.ovlo.application.port.out.office.NoticeKnowledgePort knowledge;
 
@@ -48,7 +49,8 @@ public class NoticeTranslationService implements TranslateNoticeUseCase {
                                     LoadOfficePort loadOfficePort, LoadMemberPort loadMemberPort,
                                     TranslationPort translationPort, NoticeTranslationGate gate,
                                     OfficeNotificationPort notificationPort, Clock clock, org.springframework.transaction.support.TransactionTemplate tx,
-                                    me.yeonjae.ovlo.application.port.out.office.NoticeKnowledgePort knowledge) {
+                                    me.yeonjae.ovlo.application.port.out.office.NoticeKnowledgePort knowledge,
+                                    me.yeonjae.ovlo.application.port.out.office.TranslationWorkPort work) {
         this.loadNoticePort = loadNoticePort;
         this.saveNoticePort = saveNoticePort;
         this.loadOfficePort = loadOfficePort;
@@ -56,7 +58,7 @@ public class NoticeTranslationService implements TranslateNoticeUseCase {
         this.translationPort = translationPort;
         this.gate = gate;
         this.notificationPort = notificationPort;
-        this.clock = clock; this.tx=tx; this.knowledge=knowledge;
+        this.clock = clock; this.tx=tx; this.knowledge=knowledge; this.work=work;
     }
 
     @Override
@@ -73,6 +75,12 @@ public class NoticeTranslationService implements TranslateNoticeUseCase {
             TranslationPort.Request request = new TranslationPort.Request(notice.getSourceLang(), lang,
                     notice.getTitle(), notice.getBody());
             try {
+                var claimed = work.tryAcquire("notice:" + noticeId + ":" + notice.getVersion() + ":" + lang.code());
+                if (claimed.isEmpty()) continue;
+                try (var lease = claimed.get()) {
+                Notice latest = loadNoticePort.findCommittedById(noticeId).orElseThrow();
+                if (latest.getVersion()!=notice.getVersion() || latest.getStatus()==me.yeonjae.ovlo.domain.office.model.NoticeStatus.ARCHIVED
+                        || latest.getTranslation(lang).filter(t -> !t.isStaleFor(latest.getVersion())).isPresent()) continue;
                 TranslationPort.Result result = translationPort.translate(request);
                 NoticeTranslationGate.Verdict verdict = gate.check(request, result);
                 if (!verdict.passed()) {
@@ -83,13 +91,15 @@ public class NoticeTranslationService implements TranslateNoticeUseCase {
                 boolean stored=Boolean.TRUE.equals(tx.execute(status -> {
                     knowledge.lockOffice(notice.getOfficeId());
                     Notice current=loadNoticePort.findById(noticeId).orElseThrow();
-                    if (current.getVersion()!=notice.getVersion() || current.getStatus()==me.yeonjae.ovlo.domain.office.model.NoticeStatus.ARCHIVED)
+                    if (!lease.isHeld() || current.getVersion()!=notice.getVersion() || current.getStatus()==me.yeonjae.ovlo.domain.office.model.NoticeStatus.ARCHIVED
+                            || current.getTranslation(lang).filter(t -> !t.isStaleFor(current.getVersion())).isPresent())
                         return false;
                     current.putTranslation(lang,result.title(),result.body(),clock.instant()); saveNoticePort.save(current); return true;
                 }));
                 if(stored) generated.add(lang);
+                }
             } catch (RuntimeException e) {
-                log.warn("[Notice] translation failed notice={} lang={}: {}", noticeId, lang.code(), e.toString());
+                log.warn("[Notice] translation failed notice={} lang={}: {}", noticeId, lang.code(), e.getClass().getSimpleName());
                 failed.add(lang);
             }
         }

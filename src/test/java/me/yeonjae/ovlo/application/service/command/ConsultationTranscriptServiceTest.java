@@ -53,7 +53,7 @@ class ConsultationTranscriptServiceTest {
 
     @BeforeEach
     void setUp() {
-        sut = new ConsultationTranscriptService(loadConsultationPort, loadChatPort, messageTranslationPort, translationPort);
+        sut = new ConsultationTranscriptService(loadConsultationPort, loadChatPort, messageTranslationPort, translationPort, me.yeonjae.ovlo.support.TranslationWorkFixtures.available());
         Consultation c = Consultation.open(OFFICE, STUDENT, null, "v1",
                 new Consultation.SharedContext("Visa?", null, NoticeLang.VI, true), ROOM, NOW);
         c.assignId(700L);
@@ -116,4 +116,34 @@ class ConsultationTranscriptServiceTest {
         assertThatThrownBy(() -> sut.transcript(99L, 700L, STUDENT, false, NoticeLang.KO, 10))
                 .isInstanceOf(ConsultationException.class);
     }
+    @Test void atMostFiveNewTranslationsPerRequestPreservesRemainingOriginals() {
+        var messages=java.util.stream.LongStream.rangeClosed(1,12).mapToObj(id ->
+                Message.restore(new MessageId(id),new MemberId(STUDENT),"original "+id,NOW)).toList();
+        given(loadChatPort.findMessages(eq(new ChatRoomId(ROOM)),eq(0),anyInt())).willReturn(messages);
+        given(translationPort.translate(any())).willReturn(new TranslationPort.Result("message","번역","test"));
+        var out=sut.transcript(OFFICE,700L,STAFF,true,NoticeLang.KO,200);
+        assertThat(out).hasSize(12);
+        assertThat(out.stream().filter(x->x.translatedText()!=null)).hasSize(5);
+        assertThat(out.subList(5,12)).allSatisfy(x->{assertThat(x.translationFailed()).isTrue();assertThat(x.content()).startsWith("original");});
+        verify(translationPort,org.mockito.Mockito.times(5)).translate(any());
+    }
+
+    @Test void busyMessageDoesNotStartDuplicateProviderCall() {
+        sut=new ConsultationTranscriptService(loadConsultationPort,loadChatPort,messageTranslationPort,translationPort,key->Optional.empty());
+        var out=sut.transcript(OFFICE,700L,STAFF,true,NoticeLang.KO,100);
+        assertThat(out.get(0).translationFailed()).isTrue();
+        assertThat(out.get(0).content()).isNotBlank();
+        verify(translationPort,never()).translate(any());
+    }
+
+    @Test void expiredWorkerMustNotSaveItsResult() {
+        var lease=org.mockito.Mockito.mock(me.yeonjae.ovlo.application.port.out.office.TranslationWorkPort.Lease.class);
+        sut=new ConsultationTranscriptService(loadConsultationPort,loadChatPort,messageTranslationPort,translationPort,key->Optional.of(lease));
+        given(translationPort.translate(any())).willReturn(new TranslationPort.Result("message","번역","test"));
+        var out=sut.transcript(OFFICE,700L,STAFF,true,NoticeLang.KO,100);
+        assertThat(out.get(0).translationFailed()).isTrue();
+        verify(messageTranslationPort,never()).save(any(),any(),any(),any());
+        verify(lease).close();
+    }
+
 }

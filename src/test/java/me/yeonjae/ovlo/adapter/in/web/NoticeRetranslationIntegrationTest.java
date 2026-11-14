@@ -39,7 +39,10 @@ import static org.springframework.test.web.servlet.setup.MockMvcBuilders.webAppC
 @Testcontainers
 class NoticeRetranslationIntegrationTest {
     @Container static final PostgreSQLContainer<?> PG = new PostgreSQLContainer<>("postgres:16");
+    @Container static final org.testcontainers.containers.GenericContainer<?> REDIS = new org.testcontainers.containers.GenericContainer<>("redis:7-alpine").withExposedPorts(6379);
     @DynamicPropertySource static void db(DynamicPropertyRegistry r) {
+        r.add("spring.data.redis.host", REDIS::getHost);
+        r.add("spring.data.redis.port", () -> REDIS.getMappedPort(6379));
         r.add("spring.datasource.url", PG::getJdbcUrl);
         r.add("spring.datasource.username", PG::getUsername);
         r.add("spring.datasource.password", PG::getPassword);

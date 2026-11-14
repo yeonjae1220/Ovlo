@@ -83,12 +83,12 @@ public class SecurityConfig {
                           Environment environment,
                           ClientIpResolver clientIpResolver,
                           AdminLoginAttemptService adminLoginAttemptService,
-                          LoadMemberPort members) {
+                          LoadMemberPort members, me.yeonjae.ovlo.application.port.out.office.LoadOfficePort offices) {
         this.jwtTokenProvider = jwtTokenProvider;
         this.environment = environment;
         this.clientIpResolver = clientIpResolver;
         this.adminLoginAttemptService = adminLoginAttemptService;
-        this.jwtAuthenticationFilter = new JwtAuthenticationFilter(jwtTokenProvider, members);
+        this.jwtAuthenticationFilter = new JwtAuthenticationFilter(jwtTokenProvider, members, offices);
     }
 
     // 공개적으로 알려진 테스트 BCrypt 해시 목록 — 운영 환경 사용 차단

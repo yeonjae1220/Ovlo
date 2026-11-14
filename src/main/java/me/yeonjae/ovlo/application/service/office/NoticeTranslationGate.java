@@ -38,8 +38,12 @@ public class NoticeTranslationGate {
         if (!sourceDates.dates().equals(targetDates.dates())) {
             reasons.add("원문과 번역의 날짜가 다릅니다: 원문=" + sourceDates.dates() + ", 번역=" + targetDates.dates());
         }
-        var sourceNumbers = TranslationNumbers.extract(sourceDates.remainingText(), request.from());
-        var targetNumbers = TranslationNumbers.extract(targetDates.remainingText(), request.to());
+        var sourceTimes = TranslationTimes.extract(sourceDates.remainingText(), request.from());
+        var targetTimes = TranslationTimes.extract(targetDates.remainingText(), request.to());
+        if (sourceTimes.invalidTime() || targetTimes.invalidTime()) reasons.add("유효하지 않은 시각이 있습니다");
+        if (!sourceTimes.times().equals(targetTimes.times())) reasons.add("원문과 번역의 시각 또는 출현 횟수가 다릅니다");
+        var sourceNumbers = TranslationNumbers.extract(sourceTimes.remainingText(), request.from());
+        var targetNumbers = TranslationNumbers.extract(targetTimes.remainingText(), request.to());
         if (sourceNumbers.invalidNumber() || targetNumbers.invalidNumber()) {
             reasons.add("언어의 소수점·천 단위 표기와 맞지 않는 숫자가 있습니다");
         }
