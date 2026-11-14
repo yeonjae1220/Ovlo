@@ -16,7 +16,7 @@ final class TranslationTimes {
         StringBuilder remaining = new StringBuilder(text);
         Map<LocalTime,Integer> times = new HashMap<>();
         boolean[] invalid = {false};
-        collect(remaining, "(?<![\\p{L}\\d.,])(?:(?<ap>오전|오후)\\s*)?(?<h>\\d+)[:：](?<m>\\d+)(?::(?<s>\\d+))?\\s*(?<suffix>a\\.?m\\.?|p\\.?m\\.?)?(?!\\d)",
+        collect(remaining, "(?<![\\d.,])(?:(?<ap>오전|오후|午前|午後|上午|下午)\\s*)?(?<h>\\d+)[:：](?<m>\\d+)(?::(?<s>\\d+))?\\s*(?<suffix>a\\.?m\\.?|p\\.?m\\.?)?(?!\\d)",
                 m -> add(times, m.group("h"), m.group("m"), m.group("s"), m.group("ap") == null ? m.group("suffix") : m.group("ap")), invalid);
         if (language == NoticeLang.KO || language == NoticeLang.JA || language == NoticeLang.ZH) {
             collect(remaining, "(?<![\\d.,])(?:(?<ap>오전|오후|午前|午後|上午|下午)\\s*)?(?<h>\\d+)\\s*[-–~]\\s*(?<end>\\d+)\\s*[시時时](?![간間])",

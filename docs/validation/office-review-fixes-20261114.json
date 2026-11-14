@@ -9,7 +9,7 @@
   ],
   "localChecks": {
     "test": {
-      "tests": 781,
+      "tests": 784,
       "failures": 0,
       "errors": 0,
       "skipped": 6
@@ -24,12 +24,20 @@
   "pythonTests": 55,
   "jarBuild": "passed",
   "liveEvaluation": {
+    "expectedLanguages": [
+      "en",
+      "de",
+      "fr",
+      "ja",
+      "zh",
+      "vi"
+    ],
     "results": [
       {
         "language": "en",
         "model": "anthropic/claude-opus-5.5",
         "title": "Dormitory Application Notice",
-        "body": "The application deadline is November 20, 2026, 18:00. The orientation session is 1.5 hours. The deposit is 1,500.25 euros. The late fee is 0.05%. The capacity is 15 people.",
+        "body": "The application deadline is November 20, 2026, 18:00. The orientation session lasts 1.5 hours. The deposit is 1,500.25 euros. The late fee is 0.05%. The capacity is 15 people.",
         "originalPassed": true,
         "originalReasons": [],
         "decimalLossMutationApplied": true,
@@ -39,13 +47,13 @@
         ],
         "changedTimeMutationApplied": true,
         "changedTimeRejected": true,
-        "latencyMs": 3464
+        "latencyMs": 3225
       },
       {
         "language": "ja",
         "model": "anthropic/claude-opus-5.5",
         "title": "寮申請のご案内",
-        "body": "申請締切は2026年11月20日18:00です。案内説明会は1.5時間です。保証金は1,500.25ユーロです。遅延手数料は0.05%です。定員は15名です。",
+        "body": "申請締切は2026年11月20日18:00です。案内オリエンテーションは1.5時間です。保証金は1,500.25ユーロです。延滞手数料は0.05%です。定員は15名です。",
         "originalPassed": true,
         "originalReasons": [],
         "decimalLossMutationApplied": true,
@@ -55,7 +63,7 @@
         ],
         "changedTimeMutationApplied": true,
         "changedTimeRejected": true,
-        "latencyMs": 2471
+        "latencyMs": 2645
       },
       {
         "language": "zh",
@@ -71,13 +79,13 @@
         ],
         "changedTimeMutationApplied": true,
         "changedTimeRejected": true,
-        "latencyMs": 2419
+        "latencyMs": 2430
       },
       {
         "language": "de",
         "model": "anthropic/claude-opus-5.5",
         "title": "Hinweise zur Bewerbung für das Studentenwohnheim",
-        "body": "Bewerbungsschluss ist der 20. November 2026 um 18:00 Uhr. Die Einführungsschulung dauert 1,5 Stunden. Die Kaution beträgt 1.500,25 Euro. Die Verspätungsgebühr beträgt 0,05 %. Die Kapazität beträgt 15 Personen.",
+        "body": "Bewerbungsschluss ist der 20. November 2026 um 18:00 Uhr. Die Einführungsveranstaltung dauert 1,5 Stunden. Die Kaution beträgt 1.500,25 Euro. Die Säumnisgebühr beträgt 0,05 %. Die Kapazität beträgt 15 Personen.",
         "originalPassed": true,
         "originalReasons": [],
         "decimalLossMutationApplied": true,
@@ -87,13 +95,13 @@
         ],
         "changedTimeMutationApplied": true,
         "changedTimeRejected": true,
-        "latencyMs": 4506
+        "latencyMs": 2711
       },
       {
         "language": "fr",
         "model": "anthropic/claude-opus-5.5",
-        "title": "Informations sur la demande de résidence universitaire",
-        "body": "La date limite de dépôt des demandes est fixée au 20 novembre 2026 à 18:00. La séance d'information dure 1,5 heure. Le montant de la caution est de 1 500,25 euros. Les frais de retard s'élèvent à 0,05 %. Le nombre de places est limité à 15 personnes.",
+        "title": "Informations sur la demande de logement en résidence universitaire",
+        "body": "La date limite de dépôt des demandes est fixée au 20 novembre 2026 à 18:00. La séance d'information dure 1,5 heure. Le dépôt de garantie s'élève à 1 500,25 euros. Les frais de retard sont de 0,05 %. La capacité d'accueil est de 15 personnes.",
         "originalPassed": true,
         "originalReasons": [],
         "decimalLossMutationApplied": true,
@@ -103,7 +111,7 @@
         ],
         "changedTimeMutationApplied": true,
         "changedTimeRejected": true,
-        "latencyMs": 3395
+        "latencyMs": 8775
       },
       {
         "language": "vi",
@@ -119,18 +127,12 @@
         ],
         "changedTimeMutationApplied": true,
         "changedTimeRejected": true,
-        "latencyMs": 3126
+        "latencyMs": 3509
       }
     ],
-    "executedAt": "2026-11-14T04:47:31.858566918Z",
-    "expectedLanguages": [
-      "en",
-      "de",
-      "fr",
-      "ja",
-      "zh",
-      "vi"
-    ]
+    "executedAt": "2026-11-14T04:52:09.528639061Z"
   },
-  "productionVerification": "performed after merge; recorded separately in release evidence"
+  "productionVerification": "performed after merge; recorded separately in release evidence",
+  "additionalClockRegression": "Korean/Japanese text adjacent to HH:MM and Chinese AM/PM; 3 failures reproduced then fixed",
+  "postClockChangeIntegrationTests": 14
 }
