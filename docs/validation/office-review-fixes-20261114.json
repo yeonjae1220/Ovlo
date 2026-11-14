@@ -1,0 +1,136 @@
+{
+  "baseCommit": "f41e49f",
+  "scope": [
+    "current office membership for existing JWT",
+    "reject incomplete provider translations",
+    "distributed translation ownership and reviewed text preservation",
+    "transaction-free transcript translation with five-call limit",
+    "exact normalized clock-time multiset"
+  ],
+  "localChecks": {
+    "test": {
+      "tests": 781,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 6
+    },
+    "integrationTest": {
+      "tests": 167,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    }
+  },
+  "pythonTests": 55,
+  "jarBuild": "passed",
+  "liveEvaluation": {
+    "results": [
+      {
+        "language": "en",
+        "model": "anthropic/claude-opus-5.5",
+        "title": "Dormitory Application Notice",
+        "body": "The application deadline is November 20, 2026, 18:00. The orientation session is 1.5 hours. The deposit is 1,500.25 euros. The late fee is 0.05%. The capacity is 15 people.",
+        "originalPassed": true,
+        "originalReasons": [],
+        "decimalLossMutationApplied": true,
+        "decimalLossRejected": true,
+        "decimalLossReasons": [
+          "원문 숫자의 값 또는 출현 횟수가 번역에서 누락되었습니다: 1.5"
+        ],
+        "changedTimeMutationApplied": true,
+        "changedTimeRejected": true,
+        "latencyMs": 3464
+      },
+      {
+        "language": "ja",
+        "model": "anthropic/claude-opus-5.5",
+        "title": "寮申請のご案内",
+        "body": "申請締切は2026年11月20日18:00です。案内説明会は1.5時間です。保証金は1,500.25ユーロです。遅延手数料は0.05%です。定員は15名です。",
+        "originalPassed": true,
+        "originalReasons": [],
+        "decimalLossMutationApplied": true,
+        "decimalLossRejected": true,
+        "decimalLossReasons": [
+          "원문 숫자의 값 또는 출현 횟수가 번역에서 누락되었습니다: 1.5"
+        ],
+        "changedTimeMutationApplied": true,
+        "changedTimeRejected": true,
+        "latencyMs": 2471
+      },
+      {
+        "language": "zh",
+        "model": "anthropic/claude-opus-5.5",
+        "title": "宿舍申请须知",
+        "body": "申请截止时间为2026年11月20日18:00。说明培训时长为1.5小时。押金为1,500.25欧元。滞纳金为0.05%。名额为15人。",
+        "originalPassed": true,
+        "originalReasons": [],
+        "decimalLossMutationApplied": true,
+        "decimalLossRejected": true,
+        "decimalLossReasons": [
+          "원문 숫자의 값 또는 출현 횟수가 번역에서 누락되었습니다: 1.5"
+        ],
+        "changedTimeMutationApplied": true,
+        "changedTimeRejected": true,
+        "latencyMs": 2419
+      },
+      {
+        "language": "de",
+        "model": "anthropic/claude-opus-5.5",
+        "title": "Hinweise zur Bewerbung für das Studentenwohnheim",
+        "body": "Bewerbungsschluss ist der 20. November 2026 um 18:00 Uhr. Die Einführungsschulung dauert 1,5 Stunden. Die Kaution beträgt 1.500,25 Euro. Die Verspätungsgebühr beträgt 0,05 %. Die Kapazität beträgt 15 Personen.",
+        "originalPassed": true,
+        "originalReasons": [],
+        "decimalLossMutationApplied": true,
+        "decimalLossRejected": true,
+        "decimalLossReasons": [
+          "원문 숫자의 값 또는 출현 횟수가 번역에서 누락되었습니다: 1.5"
+        ],
+        "changedTimeMutationApplied": true,
+        "changedTimeRejected": true,
+        "latencyMs": 4506
+      },
+      {
+        "language": "fr",
+        "model": "anthropic/claude-opus-5.5",
+        "title": "Informations sur la demande de résidence universitaire",
+        "body": "La date limite de dépôt des demandes est fixée au 20 novembre 2026 à 18:00. La séance d'information dure 1,5 heure. Le montant de la caution est de 1 500,25 euros. Les frais de retard s'élèvent à 0,05 %. Le nombre de places est limité à 15 personnes.",
+        "originalPassed": true,
+        "originalReasons": [],
+        "decimalLossMutationApplied": true,
+        "decimalLossRejected": true,
+        "decimalLossReasons": [
+          "원문 숫자의 값 또는 출현 횟수가 번역에서 누락되었습니다: 1.5"
+        ],
+        "changedTimeMutationApplied": true,
+        "changedTimeRejected": true,
+        "latencyMs": 3395
+      },
+      {
+        "language": "vi",
+        "model": "anthropic/claude-opus-5.5",
+        "title": "Thông báo đăng ký ký túc xá",
+        "body": "Hạn chót đăng ký là 18:00 ngày 20 tháng 11 năm 2026. Buổi hướng dẫn kéo dài 1,5 giờ. Tiền đặt cọc là 1.500,25 euro. Phí nộp muộn là 0,05%. Số lượng tối đa là 15 người.",
+        "originalPassed": true,
+        "originalReasons": [],
+        "decimalLossMutationApplied": true,
+        "decimalLossRejected": true,
+        "decimalLossReasons": [
+          "원문 숫자의 값 또는 출현 횟수가 번역에서 누락되었습니다: 1.5"
+        ],
+        "changedTimeMutationApplied": true,
+        "changedTimeRejected": true,
+        "latencyMs": 3126
+      }
+    ],
+    "executedAt": "2026-11-14T04:47:31.858566918Z",
+    "expectedLanguages": [
+      "en",
+      "de",
+      "fr",
+      "ja",
+      "zh",
+      "vi"
+    ]
+  },
+  "productionVerification": "performed after merge; recorded separately in release evidence"
+}

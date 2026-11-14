@@ -37,9 +37,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtTokenProvider jwtTokenProvider;
     private final LoadMemberPort members;
+    private final me.yeonjae.ovlo.application.port.out.office.LoadOfficePort offices;
 
-    public JwtAuthenticationFilter(JwtTokenProvider jwtTokenProvider, LoadMemberPort members) {
+    public JwtAuthenticationFilter(JwtTokenProvider jwtTokenProvider, LoadMemberPort members, me.yeonjae.ovlo.application.port.out.office.LoadOfficePort offices) {
         this.members = members;
+        this.offices = offices;
         this.jwtTokenProvider = jwtTokenProvider;
     }
 
@@ -56,7 +58,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 return;
             }
             MemberRole role = jwtTokenProvider.extractRole(token);
-            Optional<OfficeMembership> membership = jwtTokenProvider.extractOfficeMembership(token);
+            // A claim selects a school; current DB membership determines whether any staff authority remains.
+            Optional<OfficeMembership> membership = jwtTokenProvider.extractOfficeMembership(token)
+                    .flatMap(claim -> offices.findById(claim.officeId()))
+                    .filter(office -> !office.isSuspended())
+                    .flatMap(office -> office.activeMembershipOf(memberId.value()));
 
             List<GrantedAuthority> authorities = new ArrayList<>();
             authorities.add(new SimpleGrantedAuthority(role == MemberRole.ADMIN ? "ADMIN" : "ROLE_USER"));

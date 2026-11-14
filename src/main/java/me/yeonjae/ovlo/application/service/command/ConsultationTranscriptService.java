@@ -27,23 +27,27 @@ import java.util.Map;
  * - 번역 실패는 translationFailed 로 드러낸다(빈 값 치환 금지).
  */
 @Service
-@Transactional
+@Transactional(propagation = org.springframework.transaction.annotation.Propagation.NOT_SUPPORTED)
 public class ConsultationTranscriptService implements GetConsultationTranscriptQuery {
 
     private static final Logger log = LoggerFactory.getLogger(ConsultationTranscriptService.class);
     private static final int MAX_LIMIT = 200;
+    private static final int MAX_NEW_TRANSLATIONS = 5;
 
     private final LoadConsultationPort loadConsultationPort;
     private final LoadChatPort loadChatPort;
     private final MessageTranslationPort messageTranslationPort;
     private final TranslationPort translationPort;
+    private final me.yeonjae.ovlo.application.port.out.office.TranslationWorkPort work;
 
     public ConsultationTranscriptService(LoadConsultationPort loadConsultationPort, LoadChatPort loadChatPort,
-                                         MessageTranslationPort messageTranslationPort, TranslationPort translationPort) {
+                                         MessageTranslationPort messageTranslationPort, TranslationPort translationPort,
+                                         me.yeonjae.ovlo.application.port.out.office.TranslationWorkPort work) {
         this.loadConsultationPort = loadConsultationPort;
         this.loadChatPort = loadChatPort;
         this.messageTranslationPort = messageTranslationPort;
         this.translationPort = translationPort;
+        this.work = work;
     }
 
     @Override
@@ -62,6 +66,7 @@ public class ConsultationTranscriptService implements GetConsultationTranscriptQ
         Map<Long, String> existing = messageTranslationPort.findTranslations(ids, lang);
 
         List<TranscriptMessageResult> out = new ArrayList<>();
+        int generated = 0;
         for (Message m : messages) {
             boolean fromStudent = m.getSenderId().value().equals(c.getMemberId());
             NoticeLang sourceLang = fromStudent ? c.getSharedContext().lang() : NoticeLang.KO;
@@ -74,14 +79,28 @@ public class ConsultationTranscriptService implements GetConsultationTranscriptQ
                 translated = existing.get(m.getId().value());
                 if (translated == null) {
                     try {
-                        TranslationPort.Result r = translationPort.translate(
-                                new TranslationPort.Request(sourceLang, lang, "message", m.getContent()));
-                        translated = r.body();
-                        messageTranslationPort.save(m.getId().value(), lang, translated, r.modelId());
+                        if (generated >= MAX_NEW_TRANSLATIONS) {
+                            failed = true;
+                        } else {
+                            var claimed = work.tryAcquire("message:" + m.getId().value() + ":" + lang.code());
+                            if (claimed.isEmpty()) failed = true;
+                            else try (var lease = claimed.get()) {
+                                translated = messageTranslationPort.findTranslations(List.of(m.getId().value()),lang).get(m.getId().value());
+                                if (translated == null) {
+                                    generated++;
+                                    TranslationPort.Result r = translationPort.translate(
+                                            new TranslationPort.Request(sourceLang, lang, "message", m.getContent()));
+                                    if (lease.isHeld()) {
+                                        messageTranslationPort.save(m.getId().value(), lang, r.body(), r.modelId());
+                                        translated = r.body();
+                                    } else failed = true;
+                                }
+                            }
+                        }
                     } catch (RuntimeException e) {
                         failed = true;
                         log.warn("[Consultation] message translation failed consultation={} message={} lang={}: {}",
-                                consultationId, m.getId().value(), lang.code(), e.toString());
+                                consultationId, m.getId().value(), lang.code(), e.getClass().getSimpleName());
                     }
                 }
             }

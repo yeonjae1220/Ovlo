@@ -96,6 +96,13 @@ class OfficeNoticeApiSecurityTest {
     }
 
     private String bearer(OfficeMembership membership) {
+        // Set up current persisted membership separately from the signed token.
+        if (membership != null) {
+            var office=me.yeonjae.ovlo.domain.office.model.Office.create(266L,"Test office",Instant.now());
+            office.assignId(new me.yeonjae.ovlo.domain.office.model.OfficeId(membership.officeId()));
+            office.invite(MEMBER_ID,membership.role(),"test",Instant.now()); office.accept(MEMBER_ID,Instant.now());
+            org.mockito.Mockito.when(loadOfficePort.findById(membership.officeId())).thenReturn(java.util.Optional.of(office));
+        }
         return "Bearer " + jwtTokenProvider.generateAccessToken(new MemberId(MEMBER_ID), MemberRole.MEMBER, membership);
     }
 

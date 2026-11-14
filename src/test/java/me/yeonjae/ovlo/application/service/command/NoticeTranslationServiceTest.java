@@ -56,13 +56,15 @@ class NoticeTranslationServiceTest {
     void setUp() {
         sut = new NoticeTranslationService(loadNoticePort, saveNoticePort, loadOfficePort, loadMemberPort,
                 translationPort, new NoticeTranslationGate(), notificationPort, Clock.fixed(NOW, ZoneOffset.UTC),new org.springframework.transaction.support.TransactionTemplate(org.mockito.Mockito.mock(org.springframework.transaction.PlatformTransactionManager.class)),
-                org.mockito.Mockito.mock(me.yeonjae.ovlo.application.port.out.office.NoticeKnowledgePort.class));
+                org.mockito.Mockito.mock(me.yeonjae.ovlo.application.port.out.office.NoticeKnowledgePort.class),
+                me.yeonjae.ovlo.support.TranslationWorkFixtures.available());
         notice = Notice.register(5L, NoticeCategory.HOUSING, "기숙사 신청", "신청은 2월 10일까지입니다.", null, List.of(),
                 "2027-1", LocalDate.of(2027, 2, 1), LocalDate.of(2027, 3, 15), 11L, NOW);
         notice.assignId(NOTICE);
         notice.approve("11", NOW, LocalDate.of(2027, 2, 1));
         me.yeonjae.ovlo.support.NoticeFixtures.verify(notice, NOW);
         given(loadNoticePort.findById(NOTICE)).willReturn(Optional.of(notice));
+        lenient().when(loadNoticePort.findCommittedById(NOTICE)).thenAnswer(inv -> loadNoticePort.findById(NOTICE));
         lenient().when(saveNoticePort.save(any())).thenAnswer(inv -> inv.getArgument(0));
         Office office = Office.create(266L, "국제처", NOW);
         office.assignId(new OfficeId(5L));

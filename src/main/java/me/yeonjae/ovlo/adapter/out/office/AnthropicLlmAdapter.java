@@ -73,6 +73,8 @@ public class AnthropicLlmAdapter implements AnswerGenerationPort, me.yeonjae.ovl
             Format numbers using the target language: ko/en/ja/zh use a decimal point and optional comma thousands grouping;
             de/vi use a decimal comma and optional dot thousands grouping; fr uses a decimal comma and optional space grouping.
             For example, Korean 1.5 becomes German/French 1,5, never 15; Korean 1,500 becomes German 1.500 or French 1 500.
+            Render clock times in 24-hour HH:MM format (HH:MM:SS if seconds are supplied); preserve AM/PM meaning.
+            Do not turn durations into clock times. Preserve dates, time ranges and repeated times without omission.
             Keep email addresses and URLs exactly as in the source. Do not add, omit or summarize. Keep line breaks.
             Reply in exactly this format and nothing else:
             TITLE: <translated title>
@@ -232,6 +234,9 @@ public class AnthropicLlmAdapter implements AnswerGenerationPort, me.yeonjae.ovl
         if (c.refused) {
             throw new IllegalStateException("번역 요청이 거부되었습니다(stop_reason=refusal)");
         }
+        if (!"end_turn".equals(c.stopReason)) {
+            throw new IllegalStateException("번역이 끝나지 않았습니다");
+        }
         String text = c.text.trim();
         int titleAt = text.indexOf("TITLE:");
         int bodyAt = text.indexOf("BODY:");
@@ -299,7 +304,7 @@ public class AnthropicLlmAdapter implements AnswerGenerationPort, me.yeonjae.ovl
         String usedModel = message.model().toString();
         log.info("[LLM] {} model={} stop={} in={} out={} ms={}", purpose, usedModel, stopReason, in, out, ms);
         if (inquiry && (!usedModel.equals(answerModel) && !usedModel.equals("anthropic/"+answerModel.replace("5-5", "5.5")))) throw unavailable();
-        String outcome = refused ? "refused" : ("marketplace-translate".equals(purpose) && !"end_turn".equalsIgnoreCase(stopReason) ? "incomplete" : "ok");
+        String outcome = refused ? "refused" : (!"end_turn".equalsIgnoreCase(stopReason) ? "incomplete" : "ok");
         metrics.llmCall(purpose, usedModel, outcome, in, out, ms);
         if (refused) {
             message.stopDetails().ifPresent(d -> log.warn("[LLM] {} refused: {}", purpose, d));

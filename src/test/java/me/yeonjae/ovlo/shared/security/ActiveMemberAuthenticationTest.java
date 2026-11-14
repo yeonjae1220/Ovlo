@@ -25,7 +25,7 @@ class ActiveMemberAuthenticationTest {
         when(tokens.extractRole("existing-jwt")).thenReturn(MemberRole.MEMBER);
         when(tokens.extractOfficeMembership("existing-jwt")).thenReturn(Optional.empty());
         when(members.isActive(id)).thenReturn(true);
-        var filter=new JwtAuthenticationFilter(tokens,members);
+        var filter=new JwtAuthenticationFilter(tokens,members,mock(me.yeonjae.ovlo.application.port.out.office.LoadOfficePort.class));
         var request=new MockHttpServletRequest(); request.addHeader("Authorization","Bearer existing-jwt");
         var response=new MockHttpServletResponse();
         filter.doFilter(request,response,(req,res)->assertThat(SecurityContextHolder.getContext().getAuthentication()).isNotNull());
@@ -45,4 +45,29 @@ class ActiveMemberAuthenticationTest {
         when(members.isActive(id)).thenReturn(true);
         assertThat(interceptor.preSend(message,null)).isSameAs(message);
     }
+    @Test void currentDatabaseRoleOverridesOldAdminClaimAndSuspensionRevokesIt() throws Exception {
+        var offices=mock(me.yeonjae.ovlo.application.port.out.office.LoadOfficePort.class);
+        var office=me.yeonjae.ovlo.domain.office.model.Office.create(1L,"Test",java.time.Instant.now());
+        office.assignId(new me.yeonjae.ovlo.domain.office.model.OfficeId(3L));
+        office.invite(id.value(),me.yeonjae.ovlo.domain.office.model.OfficeRole.OFFICE_STAFF,"test",java.time.Instant.now());
+        office.accept(id.value(),java.time.Instant.now());
+        when(offices.findById(3L)).thenReturn(Optional.of(office));
+        when(members.isActive(id)).thenReturn(true);
+        when(tokens.extractRole("existing-jwt")).thenReturn(MemberRole.MEMBER);
+        when(tokens.extractOfficeMembership("existing-jwt")).thenReturn(Optional.of(new me.yeonjae.ovlo.domain.office.model.OfficeMembership(3L,me.yeonjae.ovlo.domain.office.model.OfficeRole.OFFICE_ADMIN)));
+        var filter=new JwtAuthenticationFilter(tokens,members,offices);
+        var request=new MockHttpServletRequest();request.addHeader("Authorization","Bearer existing-jwt");
+        filter.doFilter(request,new MockHttpServletResponse(),(req,res)->{
+            var auth=SecurityContextHolder.getContext().getAuthentication();
+            assertThat(auth.getAuthorities()).extracting("authority").contains("OFFICE_STAFF").doesNotContain("OFFICE_ADMIN");
+            assertThat(((me.yeonjae.ovlo.domain.office.model.OfficeMembership)auth.getDetails()).isAdmin()).isFalse();
+        });
+        SecurityContextHolder.clearContext(); office.suspend();
+        filter.doFilter(request,new MockHttpServletResponse(),(req,res)->{
+            var auth=SecurityContextHolder.getContext().getAuthentication();
+            assertThat(auth.getAuthorities()).extracting("authority").doesNotContain("OFFICE_STAFF","OFFICE_ADMIN");
+            assertThat(auth.getDetails()).isNull();
+        });
+    }
+
 }

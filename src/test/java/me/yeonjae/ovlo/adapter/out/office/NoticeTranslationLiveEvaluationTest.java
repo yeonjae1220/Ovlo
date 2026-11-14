@@ -37,7 +37,7 @@ class NoticeTranslationLiveEvaluationTest {
 
     @ParameterizedTest
     @EnumSource(value = NoticeLang.class, names = {"EN", "DE", "FR", "JA", "ZH", "VI"})
-    void preservesDecimalValuesAndRejectsCorruptedRealOutput(NoticeLang target) {
+    void preservesNumbersAndTimesAndRejectsCorruptedRealOutput(NoticeLang target) {
         var request = new TranslationPort.Request(NoticeLang.KO, target, "기숙사 신청 안내",
                 "신청 마감은 2026년 11월 20일 18:00입니다. 안내 교육은 1.5시간입니다. "
                         + "보증금은 1,500.25유로입니다. 지연 수수료는 0.05%입니다. 정원은 15명입니다.");
@@ -48,6 +48,8 @@ class NoticeTranslationLiveEvaluationTest {
         String corruptedBody = result.body().replaceAll("(?<![0-9])1[.,]5(?![0-9])", "15");
         var corrupted = new TranslationPort.Result(result.title(), corruptedBody, result.modelId());
         var corruptedVerdict = gate.check(request, corrupted);
+        String changedTimeBody = result.body().replace("18:00", "18:59");
+        var changedTimeVerdict = gate.check(request, new TranslationPort.Result(result.title(), changedTimeBody, result.modelId()));
         Map<String, Object> evidence = new LinkedHashMap<>();
         evidence.put("language", target.code());
         evidence.put("model", result.modelId());
@@ -58,12 +60,16 @@ class NoticeTranslationLiveEvaluationTest {
         evidence.put("decimalLossMutationApplied", !corruptedBody.equals(result.body()));
         evidence.put("decimalLossRejected", !corruptedVerdict.passed());
         evidence.put("decimalLossReasons", corruptedVerdict.reasons());
+        evidence.put("changedTimeMutationApplied", !changedTimeBody.equals(result.body()));
+        evidence.put("changedTimeRejected", !changedTimeVerdict.passed());
         evidence.put("latencyMs", (System.nanoTime() - started) / 1_000_000);
         RESULTS.add(evidence);
         assertThat(result.modelId()).contains("opus");
         assertThat(originalVerdict.passed()).as("%s: %s", target, originalVerdict.reasons()).isTrue();
         assertThat(corruptedBody).as("decimal-loss mutation must actually change the output").isNotEqualTo(result.body());
         assertThat(corruptedVerdict.passed()).isFalse();
+        assertThat(changedTimeBody).as("clock-time mutation must actually change the output").isNotEqualTo(result.body());
+        assertThat(changedTimeVerdict.passed()).isFalse();
     }
 
     @AfterAll static void writeEvidence() throws Exception {
