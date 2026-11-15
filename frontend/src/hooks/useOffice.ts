@@ -3,6 +3,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { isAxiosError } from 'axios'
 import { officeApi } from '../api/office'
+import { useAuthStore } from '../store/authStore'
 import type {
   ConsultationStatus,
   ExportKind,
@@ -19,10 +20,12 @@ import type {
  * (GLOBAL-PIT-108: 실패를 빈 값으로 치환하지 않는다).
  */
 export function useMyOffice() {
+  const memberId = useAuthStore((s) => s.currentUser?.id)
   return useQuery({
-    queryKey: ['office', 'me'],
-    queryFn: () =>
-      officeApi.me().catch((e: unknown) => {
+    queryKey: ['office', 'me', memberId],
+    enabled: memberId !== undefined,
+    queryFn: ({ signal }) =>
+      officeApi.me(signal).catch((e: unknown) => {
         if (isAxiosError(e) && e.response?.status === 404) return null
         throw e
       }),
@@ -38,18 +41,20 @@ export function useAcceptOfficeInvitation() {
 }
 
 export function useOfficeNotices(officeId: number | undefined, status: NoticeStatus | '', category: NoticeCategory | '', page: number) {
+  const memberId = useAuthStore((s) => s.currentUser?.id)
   return useQuery({
-    queryKey: ['office', officeId, 'notices', status, category, page],
+    queryKey: ['office', officeId, 'notices', status, category, page, memberId],
     queryFn: () => officeApi.listNotices(officeId as number, status, category, page),
-    enabled: officeId !== undefined,
+    enabled: memberId !== undefined && officeId !== undefined,
   })
 }
 
 export function useOfficeNotice(officeId: number | undefined, noticeId: number | undefined) {
+  const memberId = useAuthStore((s) => s.currentUser?.id)
   return useQuery({
-    queryKey: ['office', officeId, 'notice', noticeId],
+    queryKey: ['office', officeId, 'notice', noticeId, memberId],
     queryFn: () => officeApi.getNotice(officeId as number, noticeId as number),
-    enabled: officeId !== undefined && noticeId !== undefined,
+    enabled: memberId !== undefined && officeId !== undefined && noticeId !== undefined,
   })
 }
 
@@ -86,10 +91,11 @@ export function useRetranslateNotice(officeId: number | undefined) {
 }
 
 export function useStudentNotices(officeId: number | undefined, lang: string, category: NoticeCategory | '') {
+  const memberId = useAuthStore((s) => s.currentUser?.id)
   return useQuery({
-    queryKey: ['office', officeId, 'student-notices', lang, category],
+    queryKey: ['office', officeId, 'student-notices', lang, category, memberId],
     queryFn: () => officeApi.listStudentNotices(officeId as number, lang, category),
-    enabled: officeId !== undefined,
+    enabled: memberId !== undefined && officeId !== undefined,
   })
 }
 
@@ -107,10 +113,11 @@ export function useInquiryFeedback(officeId: number | undefined) {
 }
 
 export function useOfficeInquiries(officeId: number | undefined, outcome: InquiryOutcome | '', page: number) {
+  const memberId = useAuthStore((s) => s.currentUser?.id)
   return useQuery({
-    queryKey: ['office', officeId, 'inquiries', outcome, page],
+    queryKey: ['office', officeId, 'inquiries', outcome, page, memberId],
     queryFn: () => officeApi.listInquiries(officeId as number, outcome, page),
-    enabled: officeId !== undefined,
+    enabled: memberId !== undefined && officeId !== undefined,
   })
 }
 
@@ -126,18 +133,20 @@ export function useOpenConsultation(officeId: number | undefined) {
 }
 
 export function useMyConsultations(officeId: number | undefined) {
+  const memberId = useAuthStore((s) => s.currentUser?.id)
   return useQuery({
-    queryKey: ['office', officeId, 'my-consultations'],
-    queryFn: () => officeApi.myConsultations(officeId as number),
-    enabled: officeId !== undefined,
+    queryKey: ['office', officeId, 'my-consultations', memberId],
+    queryFn: ({ signal }) => officeApi.myConsultations(officeId as number, signal),
+    enabled: memberId !== undefined && officeId !== undefined,
   })
 }
 
 export function useMyConsultation(officeId: number | undefined, id: number | undefined) {
+  const memberId = useAuthStore((s) => s.currentUser?.id)
   return useQuery({
-    queryKey: ['office', officeId, 'my-consultation', id],
-    queryFn: () => officeApi.myConsultation(officeId as number, id as number),
-    enabled: officeId !== undefined && id !== undefined,
+    queryKey: ['office', officeId, 'my-consultation', id, memberId],
+    queryFn: ({ signal }) => officeApi.myConsultation(officeId as number, id as number, signal),
+    enabled: memberId !== undefined && officeId !== undefined && id !== undefined,
   })
 }
 
@@ -151,27 +160,30 @@ export function useCloseConsultation(officeId: number | undefined) {
 
 /** 상담 대화(번역 병기). 열린 상담은 15초마다 다시 읽는다. */
 export function useTranscript(officeId: number | undefined, id: number | undefined, lang: string, staff: boolean, active: boolean) {
+  const memberId = useAuthStore((s) => s.currentUser?.id)
   return useQuery({
-    queryKey: ['office', officeId, staff ? 'staff-transcript' : 'my-transcript', id, lang],
-    queryFn: () => (staff ? officeApi.staffTranscript(officeId as number, id as number, lang) : officeApi.myTranscript(officeId as number, id as number, lang)),
-    enabled: officeId !== undefined && id !== undefined,
+    queryKey: ['office', officeId, staff ? 'staff-transcript' : 'my-transcript', id, lang, memberId],
+    queryFn: ({ signal }) => (staff ? officeApi.staffTranscript(officeId as number, id as number, lang, signal) : officeApi.myTranscript(officeId as number, id as number, lang, signal)),
+    enabled: memberId !== undefined && officeId !== undefined && id !== undefined,
     refetchInterval: active ? 15000 : false,
   })
 }
 
 export function useOfficeConsultations(officeId: number | undefined, status: ConsultationStatus | '', page: number) {
+  const memberId = useAuthStore((s) => s.currentUser?.id)
   return useQuery({
-    queryKey: ['office', officeId, 'consultations', status, page],
-    queryFn: () => officeApi.listConsultations(officeId as number, status, page),
-    enabled: officeId !== undefined,
+    queryKey: ['office', officeId, 'consultations', status, page, memberId],
+    queryFn: ({ signal }) => officeApi.listConsultations(officeId as number, status, page, 20, signal),
+    enabled: memberId !== undefined && officeId !== undefined,
   })
 }
 
 export function useStaffConsultation(officeId: number | undefined, id: number | undefined) {
+  const memberId = useAuthStore((s) => s.currentUser?.id)
   return useQuery({
-    queryKey: ['office', officeId, 'consultation', id],
-    queryFn: () => officeApi.getStaffConsultation(officeId as number, id as number),
-    enabled: officeId !== undefined && id !== undefined,
+    queryKey: ['office', officeId, 'consultation', id, memberId],
+    queryFn: ({ signal }) => officeApi.getStaffConsultation(officeId as number, id as number, signal),
+    enabled: memberId !== undefined && officeId !== undefined && id !== undefined,
   })
 }
 
@@ -194,10 +206,11 @@ export function useResolveConsultation(officeId: number | undefined) {
 // ── 대시보드·설정 (S5) ──────────────────────────────────────────────────
 
 export function useOfficeDashboard(officeId: number | undefined, from: string, to: string) {
+  const memberId = useAuthStore((s) => s.currentUser?.id)
   return useQuery({
-    queryKey: ['office', officeId, 'dashboard', from, to],
+    queryKey: ['office', officeId, 'dashboard', from, to, memberId],
     queryFn: () => officeApi.dashboard(officeId as number, from, to),
-    enabled: officeId !== undefined,
+    enabled: memberId !== undefined && officeId !== undefined,
   })
 }
 
@@ -219,10 +232,11 @@ export function useExportCsv(officeId: number | undefined) {
 }
 
 export function usePartnerSettings(officeId: number | undefined) {
+  const memberId = useAuthStore((s) => s.currentUser?.id)
   return useQuery({
-    queryKey: ['office', officeId, 'settings', 'partners'],
+    queryKey: ['office', officeId, 'settings', 'partners', memberId],
     queryFn: () => officeApi.partnerSettings(officeId as number),
-    enabled: officeId !== undefined,
+    enabled: memberId !== undefined && officeId !== undefined,
   })
 }
 
@@ -235,10 +249,11 @@ export function useUpdatePartnerSettings(officeId: number | undefined) {
 }
 
 export function useStudentPartners(officeId: number | undefined) {
+  const memberId = useAuthStore((s) => s.currentUser?.id)
   return useQuery({
-    queryKey: ['office', officeId, 'partners'],
+    queryKey: ['office', officeId, 'partners', memberId],
     queryFn: () => officeApi.studentPartners(officeId as number),
-    enabled: officeId !== undefined,
+    enabled: memberId !== undefined && officeId !== undefined,
   })
 }
 

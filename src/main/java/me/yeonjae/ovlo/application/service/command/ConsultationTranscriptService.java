@@ -87,13 +87,22 @@ public class ConsultationTranscriptService implements GetConsultationTranscriptQ
                             else try (var lease = claimed.get()) {
                                 translated = messageTranslationPort.findTranslations(List.of(m.getId().value()),lang).get(m.getId().value());
                                 if (translated == null) {
-                                    generated++;
-                                    TranslationPort.Result r = translationPort.translate(
-                                            new TranslationPort.Request(sourceLang, lang, "message", m.getContent()));
-                                    if (lease.isHeld()) {
-                                        messageTranslationPort.save(m.getId().value(), lang, r.body(), r.modelId());
-                                        translated = r.body();
-                                    } else failed = true;
+                                    if (!lease.tryBeginAttempt()) failed = true;
+                                    else {
+                                        generated++;
+                                        try {
+                                            TranslationPort.Result r = translationPort.translate(
+                                                    new TranslationPort.Request(sourceLang, lang, "message", m.getContent()));
+                                            if (lease.isHeld()) {
+                                                messageTranslationPort.save(m.getId().value(), lang, r.body(), r.modelId());
+                                                translated = r.body();
+                                                lease.translationSucceeded();
+                                            } else failed = true;
+                                        } catch (RuntimeException e) {
+                                            lease.translationFailed();
+                                            throw e;
+                                        }
+                                    }
                                 }
                             }
                         }

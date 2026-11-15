@@ -138,11 +138,22 @@ class ConsultationTranscriptServiceTest {
 
     @Test void expiredWorkerMustNotSaveItsResult() {
         var lease=org.mockito.Mockito.mock(me.yeonjae.ovlo.application.port.out.office.TranslationWorkPort.Lease.class);
+        given(lease.tryBeginAttempt()).willReturn(true);
         sut=new ConsultationTranscriptService(loadConsultationPort,loadChatPort,messageTranslationPort,translationPort,key->Optional.of(lease));
         given(translationPort.translate(any())).willReturn(new TranslationPort.Result("message","번역","test"));
         var out=sut.transcript(OFFICE,700L,STAFF,true,NoticeLang.KO,100);
         assertThat(out.get(0).translationFailed()).isTrue();
         verify(messageTranslationPort,never()).save(any(),any(),any(),any());
+        verify(lease).close();
+    }
+
+    @Test void cooldownDoesNotConsumeTheRequestBudgetOrCallProvider() {
+        var lease=org.mockito.Mockito.mock(me.yeonjae.ovlo.application.port.out.office.TranslationWorkPort.Lease.class);
+        sut=new ConsultationTranscriptService(loadConsultationPort,loadChatPort,messageTranslationPort,translationPort,key->Optional.of(lease));
+        var out=sut.transcript(OFFICE,700L,STAFF,true,NoticeLang.KO,100);
+        assertThat(out.getFirst().translationFailed()).isTrue();
+        assertThat(out.getFirst().content()).isNotBlank();
+        verify(translationPort,never()).translate(any());
         verify(lease).close();
     }
 

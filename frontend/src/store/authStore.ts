@@ -3,6 +3,7 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 import type { Member } from '../types'
+import { clearAuthQueryCaches } from '../utils/authQueryCache'
 
 interface AuthState {
   accessToken: string | null
@@ -15,19 +16,26 @@ interface AuthState {
 
 export const useAuthStore = create<AuthState>()(
   persist(
-    (set) => ({
+    (set, get) => ({
       accessToken: null,
       currentUser: null,
 
-      setAuth: (accessToken, user) =>
-        set({ accessToken, currentUser: user }),
+      setAuth: (accessToken, user) => {
+        if (get().currentUser?.id !== user.id) clearAuthQueryCaches()
+        set({ accessToken, currentUser: user })
+      },
 
       setAccessToken: (token) => set({ accessToken: token }),
 
-      setCurrentUser: (user) => set({ currentUser: user }),
+      setCurrentUser: (user) => {
+        if (get().currentUser?.id !== user.id) clearAuthQueryCaches()
+        set({ currentUser: user })
+      },
 
-      clearAuth: () =>
-        set({ accessToken: null, currentUser: null }),
+      clearAuth: () => {
+        clearAuthQueryCaches()
+        set({ accessToken: null, currentUser: null })
+      },
     }),
     {
       name: 'ovlo-auth',

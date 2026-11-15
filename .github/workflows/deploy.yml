@@ -81,6 +81,9 @@ jobs:
           cache-dependency-path: frontend/package-lock.json
       - run: npm ci
         working-directory: frontend
+      - name: Test account cache isolation
+        run: node scripts/test-auth-query-cache.cjs
+        working-directory: frontend
       - run: npm run build
         working-directory: frontend
 
