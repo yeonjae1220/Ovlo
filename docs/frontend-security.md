@@ -1,6 +1,17 @@
 # Ovlo Frontend — 보안 아키텍처
 
-> 마지막 업데이트: 2026-05-31
+> 마지막 업데이트: 2026-11-15
+
+## 계정 전환과 비공개 조회 캐시
+
+`authStore.clearAuth()`는 로그아웃·탈퇴·세션 만료의 공통 경로에서 등록된 QueryClient의 요청을 취소하고 캐시를 지운다.
+`setAuth`·`setCurrentUser`도 회원 ID가 바뀌면 같은 처리를 한다. 같은 회원의 토큰 갱신은 캐시를 유지한다.
+브라우저 Providers가 클라이언트를 등록하므로 SSR 요청 간 QueryClient를 공유하지 않는다.
+국제처 조회 키에는 회원 ID를 포함하고, 로그인 전에는 조회하지 않는다. 상담·소속 조회의 AbortSignal을 HTTP 요청까지 전달한다.
+
+회귀 검사: `node frontend/scripts/test-auth-query-cache.cjs`.
+화면 검사: 프런트엔드를 실행한 뒤 `OFFICE_CHAT_URL=<URL> PLAYWRIGHT_MODULE=<module path> node frontend/scripts/test-office-account-cache-browser.cjs`.
+화면 검사는 모든 API를 합성 응답으로 대체하며, 실제 탈퇴나 상담 데이터 변경 없이 같은 문서에서 A 탈퇴 → B 로그인 → B 상담 조회를 검증한다.
 
 ---
 

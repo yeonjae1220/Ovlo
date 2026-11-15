@@ -16,8 +16,11 @@ final class TranslationTimes {
         StringBuilder remaining = new StringBuilder(text);
         Map<LocalTime,Integer> times = new HashMap<>();
         boolean[] invalid = {false};
-        collect(remaining, "(?<![\\d.,])(?:(?<ap>오전|오후|午前|午後|上午|下午)\\s*)?(?<h>\\d+)[:：](?<m>\\d+)(?::(?<s>\\d+))?\\s*(?<suffix>a\\.?m\\.?|p\\.?m\\.?)?(?!\\d)",
-                m -> add(times, m.group("h"), m.group("m"), m.group("s"), m.group("ap") == null ? m.group("suffix") : m.group("ap")), invalid);
+        // German "am Freitag" is a preposition, not an English AM suffix.
+        String suffix = language == NoticeLang.EN ? "(?:\\s*(?<suffix>a\\.?m\\.?|p\\.?m\\.?)(?!\\p{L}))?" : "";
+        collect(remaining, "(?<![\\d.,])(?:(?<ap>오전|오후|午前|午後|上午|下午)\\s*)?(?<h>\\d+)[:：](?<m>\\d+)(?::(?<s>\\d+))?" + suffix + "(?!\\d)",
+                m -> add(times, m.group("h"), m.group("m"), m.group("s"), m.group("ap") == null
+                        ? (language == NoticeLang.EN ? m.group("suffix") : null) : m.group("ap")), invalid);
         if (language == NoticeLang.KO || language == NoticeLang.JA || language == NoticeLang.ZH) {
             collect(remaining, "(?<![\\d.,])(?:(?<ap>오전|오후|午前|午後|上午|下午)\\s*)?(?<h>\\d+)\\s*[-–~]\\s*(?<end>\\d+)\\s*[시時时](?![간間])",
                     m -> { add(times,m.group("h"),null,null,m.group("ap")); add(times,m.group("end"),null,null,m.group("ap")); }, invalid);
@@ -33,7 +36,7 @@ final class TranslationTimes {
                     m -> add(times,m.group("h"),null,null,null),invalid);
         }
         if (language == NoticeLang.FR) {
-            collect(remaining,"(?<![\\d.,])(?<h>\\d+)\\s*h\\s*(?<m>\\d+)(?!\\d)",
+            collect(remaining,"(?<![\\d.,])(?<h>\\d+)\\s*h(?:\\s*(?<m>\\d+))?(?![\\p{L}\\d])",
                     m -> add(times,m.group("h"),m.group("m"),null,null),invalid);
         }
         return new Extracted(Map.copyOf(times),remaining.toString(),invalid[0]);

@@ -250,7 +250,7 @@ export const officeApi = {
   reviewSource: (officeId: number, noticeId: number, body: SourceReviewRequest) => apiClient.post(`/office-admin/${officeId}/notices/${noticeId}/source-review`, body),
   noticeHistory: (officeId: number, noticeId: number) => apiClient.get<NoticeAudit[]>(`/office-admin/${officeId}/notices/${noticeId}/history`).then(r => r.data),
 
-  me: () => apiClient.get<MyOffice>('/office/me').then((r) => r.data),
+  me: (signal?: AbortSignal) => apiClient.get<MyOffice>('/office/me', { signal }).then((r) => r.data),
 
   acceptInvitation: () => apiClient.post('/office/invitations/accept').then((r) => r.data),
 
@@ -290,13 +290,13 @@ export const officeApi = {
       })
       .then((r) => r.data),
 
-  listConsultations: (officeId: number, status?: ConsultationStatus | '', page = 0, size = 20) =>
+  listConsultations: (officeId: number, status?: ConsultationStatus | '', page = 0, size = 20, signal?: AbortSignal) =>
     apiClient
-      .get<PageResult<Consultation>>(`/office-admin/${officeId}/consultations`, { params: { status: status || undefined, page, size } })
+      .get<PageResult<Consultation>>(`/office-admin/${officeId}/consultations`, { signal, params: { status: status || undefined, page, size } })
       .then((r) => r.data),
 
-  getStaffConsultation: (officeId: number, id: number) =>
-    apiClient.get<Consultation>(`/office-admin/${officeId}/consultations/${id}`).then((r) => r.data),
+  getStaffConsultation: (officeId: number, id: number, signal?: AbortSignal) =>
+    apiClient.get<Consultation>(`/office-admin/${officeId}/consultations/${id}`, { signal }).then((r) => r.data),
 
   assignConsultation: (officeId: number, id: number) =>
     apiClient.post<Consultation>(`/office-admin/${officeId}/consultations/${id}/assign`).then((r) => r.data),
@@ -304,8 +304,8 @@ export const officeApi = {
   resolveConsultation: (officeId: number, id: number) =>
     apiClient.post<Consultation>(`/office-admin/${officeId}/consultations/${id}/resolve`).then((r) => r.data),
 
-  staffTranscript: (officeId: number, id: number, lang: string) =>
-    apiClient.get<TranscriptMessage[]>(`/office-admin/${officeId}/consultations/${id}/messages`, { params: { lang } }).then((r) => r.data),
+  staffTranscript: (officeId: number, id: number, lang: string, signal?: AbortSignal) =>
+    apiClient.get<TranscriptMessage[]>(`/office-admin/${officeId}/consultations/${id}/messages`, { signal, params: { lang } }).then((r) => r.data),
 
   dashboard: (officeId: number, from?: string, to?: string) =>
     apiClient
@@ -340,17 +340,17 @@ export const officeApi = {
   openConsultation: (officeId: number, body: { inquiryId?: number | null; consentVersion: string; message?: string | null }) =>
     apiClient.post<Consultation>(`/office/${officeId}/consultations`, body).then((r) => r.data),
 
-  myConsultations: (officeId: number) =>
-    apiClient.get<Consultation[]>(`/office/${officeId}/consultations`).then((r) => r.data),
+  myConsultations: (officeId: number, signal?: AbortSignal) =>
+    apiClient.get<Consultation[]>(`/office/${officeId}/consultations`, { signal }).then((r) => r.data),
 
-  myConsultation: (officeId: number, id: number) =>
-    apiClient.get<Consultation>(`/office/${officeId}/consultations/${id}`).then((r) => r.data),
+  myConsultation: (officeId: number, id: number, signal?: AbortSignal) =>
+    apiClient.get<Consultation>(`/office/${officeId}/consultations/${id}`, { signal }).then((r) => r.data),
 
   closeConsultation: (officeId: number, id: number) =>
     apiClient.patch<Consultation>(`/office/${officeId}/consultations/${id}/close`).then((r) => r.data),
 
-  myTranscript: (officeId: number, id: number, lang: string) =>
-    apiClient.get<TranscriptMessage[]>(`/office/${officeId}/consultations/${id}/messages`, { params: { lang } }).then((r) => r.data),
+  myTranscript: (officeId: number, id: number, lang: string, signal?: AbortSignal) =>
+    apiClient.get<TranscriptMessage[]>(`/office/${officeId}/consultations/${id}/messages`, { signal, params: { lang } }).then((r) => r.data),
 
   conversation: (officeId: number, inquiryId: number, signal?: AbortSignal) =>
     apiClient.get<InquiryConversation>(`/office/${officeId}/inquiries/${inquiryId}/conversation`, { signal }).then((r) => r.data),
