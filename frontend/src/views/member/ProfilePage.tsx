@@ -11,7 +11,7 @@ import { useDropzone } from 'react-dropzone'
 import { useUploadMedia } from '../../hooks/useMedia'
 import { memberApi } from '../../api/member'
 import { authApi } from '../../api/auth'
-import { useQueryClient } from '@tanstack/react-query'
+import { captureAuthSession, isCurrentAuthSession } from '@/utils/authSession'
 import { usePostsByAuthor } from '../../hooks/usePost'
 import { useI18n } from '../../i18n/I18nProvider'
 import { SUPPORTED_UI_LANGUAGES, LANGUAGE_LABELS } from '../../i18n/messages'
@@ -60,7 +60,6 @@ export default function ProfilePage() {
 
   const { data: myPostsData, isLoading: myPostsLoading } = usePostsByAuthor(id, myPostsPage, 10)
 
-  const queryClient = useQueryClient()
   const isOwner = String(currentUser?.id) === id
   const { data: followingIds } = useFollowingStatus(isOwner || !id ? [] : [id])
   const isFollowing = followingIds?.has(String(id)) ?? false
@@ -88,22 +87,25 @@ export default function ProfilePage() {
   }
 
   const handleLogout = async () => {
+    const logout = authApi.logout()
+    const session = captureAuthSession()
     try {
-      await authApi.logout()
+      await logout
     } finally {
-      queryClient.clear()
-      clearAuth()
-      router.push('/login')
+      if (isCurrentAuthSession(session)) router.push('/login')
     }
   }
 
   const handleWithdraw = async () => {
     if (!confirm(t('profile.withdraw.confirm'))) return
+    const session = captureAuthSession()
     try {
       await memberApi.withdraw(id!)
     } finally {
-      clearAuth()
-      router.push('/login')
+      if (isCurrentAuthSession(session)) {
+        clearAuth()
+        router.push('/login')
+      }
     }
   }
 

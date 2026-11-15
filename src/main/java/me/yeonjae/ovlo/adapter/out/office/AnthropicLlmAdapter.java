@@ -245,6 +245,7 @@ public class AnthropicLlmAdapter implements AnswerGenerationPort, me.yeonjae.ovl
         }
         String title = text.substring(titleAt + "TITLE:".length(), bodyAt).trim();
         String body = text.substring(bodyAt + "BODY:".length()).trim();
+        if (title.isBlank() || body.isBlank()) throw new IllegalStateException("Empty translation");
         return new TranslationPort.Result(title, body, c.modelId);
     }
 
@@ -264,9 +265,10 @@ public class AnthropicLlmAdapter implements AnswerGenerationPort, me.yeonjae.ovl
 
     private Completion complete(String system, String user, String purpose) {
         boolean inquiry=purpose.equals("answer") || purpose.startsWith("inquiry-");
+        boolean officeTranslation=purpose.equals("translate");
         String selectedModel=inquiry ? answerModel : model;
-        long selectedMax=inquiry ? Math.min(maxTokens, me.yeonjae.ovlo.application.port.out.office.InquiryAdmissionPort.MAX_OUTPUT_TOKENS) : maxTokens;
-        if (inquiry && (system+user).getBytes(java.nio.charset.StandardCharsets.UTF_8).length >
+        long selectedMax=(inquiry || officeTranslation) ? Math.min(maxTokens, me.yeonjae.ovlo.application.port.out.office.InquiryAdmissionPort.MAX_OUTPUT_TOKENS) : maxTokens;
+        if ((inquiry || officeTranslation) && (system+user).getBytes(java.nio.charset.StandardCharsets.UTF_8).length >
                 me.yeonjae.ovlo.application.port.out.office.InquiryAdmissionPort.MAX_INPUT_BYTES - 1024) throw unavailable();
         MessageCreateParams.Builder builder = MessageCreateParams.builder()
                 .model(selectedModel)
@@ -276,7 +278,7 @@ public class AnthropicLlmAdapter implements AnswerGenerationPort, me.yeonjae.ovl
                 // Guard decisions use constrained JSON generation, not free-form prose parsing.
                 .putAdditionalBodyProperty("output_config", JsonValue.from(purpose.startsWith("inquiry-")
                         ? Map.of("effort", effort, "format", DECISION_FORMAT) : Map.of("effort", effort)));
-        if (serverSideFallback && !inquiry) {
+        if (serverSideFallback && !inquiry && !officeTranslation) {
             builder.addBeta("server-side-fallback-2026-07-01")
                    .putAdditionalBodyProperty("fallbacks", JsonValue.from("default"));
         }

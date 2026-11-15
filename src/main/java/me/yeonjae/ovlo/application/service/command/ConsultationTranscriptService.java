@@ -34,6 +34,7 @@ public class ConsultationTranscriptService implements GetConsultationTranscriptQ
     private static final int MAX_LIMIT = 200;
     private static final int MAX_NEW_TRANSLATIONS = 5;
 
+    private final me.yeonjae.ovlo.application.port.out.office.TranslationAdmissionPort admission;
     private final LoadConsultationPort loadConsultationPort;
     private final LoadChatPort loadChatPort;
     private final MessageTranslationPort messageTranslationPort;
@@ -42,12 +43,13 @@ public class ConsultationTranscriptService implements GetConsultationTranscriptQ
 
     public ConsultationTranscriptService(LoadConsultationPort loadConsultationPort, LoadChatPort loadChatPort,
                                          MessageTranslationPort messageTranslationPort, TranslationPort translationPort,
-                                         me.yeonjae.ovlo.application.port.out.office.TranslationWorkPort work) {
+                                         me.yeonjae.ovlo.application.port.out.office.TranslationWorkPort work,
+                                         me.yeonjae.ovlo.application.port.out.office.TranslationAdmissionPort admission) {
         this.loadConsultationPort = loadConsultationPort;
         this.loadChatPort = loadChatPort;
         this.messageTranslationPort = messageTranslationPort;
         this.translationPort = translationPort;
-        this.work = work;
+        this.work = work; this.admission = admission;
     }
 
     @Override
@@ -76,7 +78,7 @@ public class ConsultationTranscriptService implements GetConsultationTranscriptQ
             String translated = null;
             boolean failed = false;
             if (needsTranslation) {
-                translated = existing.get(m.getId().value());
+                translated = nonblank(existing.get(m.getId().value()));
                 if (translated == null) {
                     try {
                         if (generated >= MAX_NEW_TRANSLATIONS) {
@@ -85,14 +87,16 @@ public class ConsultationTranscriptService implements GetConsultationTranscriptQ
                             var claimed = work.tryAcquire("message:" + m.getId().value() + ":" + lang.code());
                             if (claimed.isEmpty()) failed = true;
                             else try (var lease = claimed.get()) {
-                                translated = messageTranslationPort.findTranslations(List.of(m.getId().value()),lang).get(m.getId().value());
+                                translated = nonblank(messageTranslationPort.findTranslations(List.of(m.getId().value()),lang).get(m.getId().value()));
                                 if (translated == null) {
-                                    if (!lease.tryBeginAttempt()) failed = true;
-                                    else {
+                                    if (!lease.isRetryAllowed()) failed = true;
+                                    else try (var admitted = admission.acquire(officeId, c.getMemberId())) {
+                                        if (!lease.tryBeginAttempt()) throw new IllegalStateException("Translation ownership expired");
                                         generated++;
                                         try {
                                             TranslationPort.Result r = translationPort.translate(
                                                     new TranslationPort.Request(sourceLang, lang, "message", m.getContent()));
+                                            if (r == null || nonblank(r.body()) == null) throw new IllegalStateException("Empty translation");
                                             if (lease.isHeld()) {
                                                 messageTranslationPort.save(m.getId().value(), lang, r.body(), r.modelId());
                                                 translated = r.body();
@@ -118,4 +122,6 @@ public class ConsultationTranscriptService implements GetConsultationTranscriptQ
         }
         return out;
     }
+
+    private static String nonblank(String value) { return value == null || value.isBlank() ? null : value; }
 }

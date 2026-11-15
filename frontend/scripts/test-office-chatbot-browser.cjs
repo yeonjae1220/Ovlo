@@ -22,7 +22,7 @@ const output = process.env.OFFICE_CHAT_SCREENSHOTS || '/tmp/ovlo-office-chatbot-
     await context.route('**/api/v1/**', async route => {
       const request = route.request(), path = new URL(request.url()).pathname
       const json = (data, status = 200) => route.fulfill({ status, contentType: 'application/json', body: JSON.stringify(data) })
-      if (path.endsWith('/auth/refresh')) return json({ accessToken: 'browser-fixture-token' })
+      if (path.endsWith('/auth/refresh')) return json({ accessToken: 'browser-fixture-token', memberId: 42 })
       if (path.endsWith('/office/me')) return json({ officeId: 5, officeName: '테스트대학교 국제처', universityId: 1, status: 'ACTIVE', role: null, verifiedStudent: true, pendingInvitation: false })
       if (path === '/api/v1/office/5/inquiries' && request.method() === 'POST') {
         const body = request.postDataJSON()

@@ -12,6 +12,14 @@ import java.util.UUID;
 /** Lease exceeds the provider's 90-second timeout. Expired owners cannot release a replacement owner's lease. */
 @Component
 public class RedisTranslationWorkAdapter implements TranslationWorkPort {
+    private static final RedisScript<Long> CAN_ATTEMPT = RedisScript.of("""
+        if redis.call('GET', KEYS[1]) ~= ARGV[1] then return 0 end
+        local time = redis.call('TIME')
+        local now = time[1] * 1000 + math.floor(time[2] / 1000)
+        if tonumber(redis.call('HGET', KEYS[2], 'attempts') or '0') >= 3 then return 0 end
+        if tonumber(redis.call('HGET', KEYS[2], 'nextAt') or '0') > now then return 0 end
+        return 1
+        """, Long.class);
     // Retry state is shared by all app instances and callers, independently of the 180s work lease.
     // Reserve before the paid call: a crashed worker still consumes an attempt. Redis TIME avoids clock skew.
     private static final RedisScript<Long> BEGIN_ATTEMPT = RedisScript.of("""
@@ -54,6 +62,9 @@ public class RedisTranslationWorkAdapter implements TranslationWorkPort {
             private boolean closed;
             private boolean attempted;
             public boolean isHeld() { return !closed && owner.equals(redis.opsForValue().get(key)); }
+            public boolean isRetryAllowed() {
+                return !closed && !attempted && Long.valueOf(1).equals(redis.execute(CAN_ATTEMPT,List.of(key,retryKey),owner));
+            }
             public boolean tryBeginAttempt() {
                 if (closed || attempted) return false;
                 attempted = Long.valueOf(1).equals(redis.execute(BEGIN_ATTEMPT,List.of(key,retryKey),owner));

@@ -17,6 +17,7 @@ function load(file, overrides = {}) {
 }
 const caches = load('src/utils/authQueryCache.ts')
 const { useAuthStore } = load('src/store/authStore.ts', { '../utils/authQueryCache': caches })
+const sessions = load('src/utils/authSession.ts', { '../store/authStore': { useAuthStore } })
 const store = useAuthStore.getState
 const qc = new QueryClient({ defaultOptions: { queries: { staleTime: 60000, retry: false } } })
 const unregister = caches.registerAuthQueryClient(qc)
@@ -48,8 +49,8 @@ async function withdrawThroughProfile() {
   const code = ts.transpileModule('module.exports = ' + expression,
     { compilerOptions: { target: ts.ScriptTarget.ES2020, module: ts.ModuleKind.CommonJS } }).outputText
   const m = { exports: {} }
-  new Function('memberApi', 'id', 'clearAuth', 'router', 'confirm', 't', 'module', code)(
-    { withdraw: async () => {} }, 42, store().clearAuth, { push: () => {} }, () => true, x => x, m)
+  new Function('memberApi', 'id', 'clearAuth', 'router', 'confirm', 't', 'module', 'captureAuthSession', 'isCurrentAuthSession', code)(
+    { withdraw: async () => {} }, 42, store().clearAuth, { push: () => {} }, () => true, x => x, m, sessions.captureAuthSession, sessions.isCurrentAuthSession)
   await m.exports()
 }
 ;(async () => {
@@ -89,7 +90,7 @@ async function withdrawThroughProfile() {
   // Expiration follows the same central cleanup path.
   await qc.fetchQuery(hooks.useMyOffice())
   const axios = { post: async () => { throw { response: { status: 401 } } }, isAxiosError: () => true }
-  const { refreshAuth } = load('src/utils/refreshAuth.ts', { axios, '@/store/authStore': { useAuthStore } })
+  const { refreshAuth } = load('src/utils/refreshAuth.ts', { axios, '@/store/authStore': { useAuthStore }, './authSession': sessions })
   assert.equal(await refreshAuth(), null)
   assert.equal(qc.getQueryCache().getAll().length, 0)
   console.log('PASS: withdrawal, account switch, expiration, scoped keys, late response abort, same-account refresh')

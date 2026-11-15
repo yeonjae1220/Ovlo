@@ -24,7 +24,7 @@ const output = process.env.OFFICE_CHAT_SCREENSHOTS || '/tmp/ovlo-account-cache-b
       const req=route.request(),p=new URL(req.url()).pathname
       const json=(body,status=200)=>route.fulfill({status,contentType:'application/json',body:JSON.stringify(body)})
       if(p.endsWith('/auth/login')) {current=b;return json({accessToken:'fixture-B',memberId:43})}
-      if(p.endsWith('/auth/refresh')) return withdrawn?json({},401):json({accessToken:'fixture-A'})
+      if(p.endsWith('/auth/refresh')) return withdrawn?json({},401):json({accessToken:'fixture-A',memberId:42})
       if(p==='/api/v1/members/42'&&req.method()==='DELETE') {withdrawn=true;return route.fulfill({status:204})}
       if(p==='/api/v1/members/42') return json(a)
       if(p==='/api/v1/members/43') return json(b)

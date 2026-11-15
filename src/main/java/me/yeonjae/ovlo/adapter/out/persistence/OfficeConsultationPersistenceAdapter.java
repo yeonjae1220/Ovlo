@@ -119,6 +119,7 @@ public class OfficeConsultationPersistenceAdapter implements LoadConsultationPor
     @Override
     @Transactional
     public void save(Long messageId, NoticeLang lang, String text, String modelId) {
+        if (text == null || text.isBlank()) throw new IllegalArgumentException("Empty message translation");
         ChatMessageTranslationJpaEntity e = translationRepository.findByMessageIdAndLang(messageId, lang.code())
                 .orElseGet(ChatMessageTranslationJpaEntity::new);
         e.setMessageId(messageId);

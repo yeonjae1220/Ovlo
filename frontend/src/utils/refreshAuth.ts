@@ -2,6 +2,7 @@
 
 import axios from 'axios'
 import { useAuthStore } from '@/store/authStore'
+import { AuthSessionChangedError, assertAuthSession, captureAuthSession, isCurrentAuthSession, serializeAuthCookie, type AuthSession } from './authSession'
 
 /**
  * refresh 토큰은 1회용(rotation)이라 같은 쿠키로 동시에 두 번 보내면 하나만 성공한다.
@@ -18,7 +19,6 @@ import { useAuthStore } from '@/store/authStore'
  */
 
 const REFRESH_URL = '/api/v1/auth/refresh'
-const LOCK_NAME = 'ovlo-auth-refresh'
 const CONFLICT_RETRY_DELAY_MS = 300
 const TRANSIENT_RETRY_DELAYS_MS = [1000, 3000]
 const SESSION_ENDED_STATUSES = new Set([400, 401, 403])
@@ -31,34 +31,39 @@ export class TransientRefreshError extends Error {
 }
 
 let pending: Promise<string | null> | null = null
+let pendingSession: AuthSession | null = null
 
 export function refreshAuth(): Promise<string | null> {
-  if (pending) return pending
-
-  pending = withCrossTabLock(requestWithRetry).finally(() => {
-    pending = null
+  if (pending && pendingSession && isCurrentAuthSession(pendingSession)) return pending
+  const session = captureAuthSession()
+  pendingSession = session
+  const request = serializeAuthCookie(() => requestWithRetry(session)).finally(() => {
+    if (pending === request) { pending = null; pendingSession = null }
   })
-  return pending
+  pending = request
+  return request
 }
 
-async function withCrossTabLock(task: () => Promise<string | null>): Promise<string | null> {
-  const locks = typeof navigator !== 'undefined' ? navigator.locks : undefined
-  if (!locks) return task()
-  return await locks.request(LOCK_NAME, task)
-}
-
-async function requestWithRetry(): Promise<string | null> {
+async function requestWithRetry(session: AuthSession): Promise<string | null> {
   let conflictRetried = false
   let transientAttempt = 0
 
   for (;;) {
+    assertAuthSession(session)
     try {
-      const { data } = await axios.post<{ accessToken: string }>(REFRESH_URL, undefined, {
+      const { data } = await axios.post<{ accessToken: string; memberId: string | number }>(REFRESH_URL, undefined, {
         withCredentials: true,
       })
+      assertAuthSession(session)
+      const member = useAuthStore.getState().currentUser
+      if (member && String(member.id) !== String(data.memberId)) {
+        useAuthStore.getState().clearAuth()
+        throw new AuthSessionChangedError()
+      }
       useAuthStore.getState().setAccessToken(data.accessToken)
       return data.accessToken
     } catch (err) {
+      assertAuthSession(session)
       const status = axios.isAxiosError(err) ? err.response?.status : undefined
 
       if (status !== undefined && SESSION_ENDED_STATUSES.has(status)) {

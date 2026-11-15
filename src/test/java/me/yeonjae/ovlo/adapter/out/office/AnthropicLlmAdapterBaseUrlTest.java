@@ -62,6 +62,13 @@ class AnthropicLlmAdapterBaseUrlTest {
                 "claude-opus-5-5", "medium", 256, 10, serverSideFallback);
     }
 
+    @Test void oversizedTranslationIsRejectedBeforeAnyNetworkCall() {
+        org.assertj.core.api.Assertions.assertThatThrownBy(() -> adapter(false).translate(
+            new TranslationPort.Request(NoticeLang.KO, NoticeLang.EN, "Title", "한".repeat(22000))))
+            .isInstanceOf(RuntimeException.class);
+        assertThat(body.get()).isNull();
+    }
+
     @Test
     @DisplayName("base-url 을 넣으면 그 게이트웨이의 /v1/messages 로 키를 실어 보낸다")
     void sendsToConfiguredBaseUrl() {
@@ -85,10 +92,10 @@ class AnthropicLlmAdapterBaseUrlTest {
     }
 
     @Test
-    @DisplayName("서버측 폴백을 켜면 fallbacks 를 보낸다 (Anthropic 직결용)")
-    void sendsFallbacksWhenEnabled() {
+    @DisplayName("공지 번역은 유료 호출 예산을 지키기 위해 설정과 무관하게 폴백을 금지한다")
+    void translationNeverEnablesUnbudgetedFallbacks() {
         adapter(true).translate(new TranslationPort.Request(NoticeLang.KO, NoticeLang.EN, "안녕", "세상"));
 
-        assertThat(body.get()).contains("\"fallbacks\":\"default\"");
+        assertThat(body.get()).doesNotContain("\"fallbacks\"");
     }
 }

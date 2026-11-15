@@ -33,6 +33,7 @@ public class NoticeTranslationService implements TranslateNoticeUseCase {
 
     private static final Logger log = LoggerFactory.getLogger(NoticeTranslationService.class);
 
+    private final me.yeonjae.ovlo.application.port.out.office.TranslationAdmissionPort admission;
     private final LoadNoticePort loadNoticePort;
     private final SaveNoticePort saveNoticePort;
     private final LoadOfficePort loadOfficePort;
@@ -50,7 +51,8 @@ public class NoticeTranslationService implements TranslateNoticeUseCase {
                                     TranslationPort translationPort, NoticeTranslationGate gate,
                                     OfficeNotificationPort notificationPort, Clock clock, org.springframework.transaction.support.TransactionTemplate tx,
                                     me.yeonjae.ovlo.application.port.out.office.NoticeKnowledgePort knowledge,
-                                    me.yeonjae.ovlo.application.port.out.office.TranslationWorkPort work) {
+                                    me.yeonjae.ovlo.application.port.out.office.TranslationWorkPort work,
+                                    me.yeonjae.ovlo.application.port.out.office.TranslationAdmissionPort admission) {
         this.loadNoticePort = loadNoticePort;
         this.saveNoticePort = saveNoticePort;
         this.loadOfficePort = loadOfficePort;
@@ -58,7 +60,7 @@ public class NoticeTranslationService implements TranslateNoticeUseCase {
         this.translationPort = translationPort;
         this.gate = gate;
         this.notificationPort = notificationPort;
-        this.clock = clock; this.tx=tx; this.knowledge=knowledge; this.work=work;
+        this.clock = clock; this.tx=tx; this.knowledge=knowledge; this.work=work; this.admission=admission;
     }
 
     @Override
@@ -81,7 +83,10 @@ public class NoticeTranslationService implements TranslateNoticeUseCase {
                 Notice latest = loadNoticePort.findCommittedById(noticeId).orElseThrow();
                 if (latest.getVersion()!=notice.getVersion() || latest.getStatus()==me.yeonjae.ovlo.domain.office.model.NoticeStatus.ARCHIVED
                         || latest.getTranslation(lang).filter(t -> !t.isStaleFor(latest.getVersion())).isPresent()) continue;
-                TranslationPort.Result result = translationPort.translate(request);
+                TranslationPort.Result result;
+                try (var admitted = admission.acquire(notice.getOfficeId(), notice.getCreatedBy())) {
+                    result = translationPort.translate(request);
+                }
                 NoticeTranslationGate.Verdict verdict = gate.check(request, result);
                 if (!verdict.passed()) {
                     log.warn("[Notice] translation rejected notice={} lang={} reasons={}", noticeId, lang.code(), verdict.reasons());

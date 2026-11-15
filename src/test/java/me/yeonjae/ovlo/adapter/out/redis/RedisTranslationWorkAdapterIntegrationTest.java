@@ -106,6 +106,7 @@ class RedisTranslationWorkAdapterIntegrationTest {
                 new me.yeonjae.ovlo.domain.member.model.MemberId(42L),i<6?"controlled failure "+i:"Vui lòng mang hộ chiếu đến văn phòng vào ngày mai.",now)).toList();
         org.mockito.Mockito.when(chat.findMessages(org.mockito.ArgumentMatchers.any(),org.mockito.ArgumentMatchers.eq(0),org.mockito.ArgumentMatchers.anyInt())).thenReturn(messages);
         java.util.Map<Long,String> stored=new java.util.HashMap<>();
+        stored.put(base+6," "); // legacy blank success must be repaired
         org.mockito.Mockito.when(cache.findTranslations(org.mockito.ArgumentMatchers.anyList(),org.mockito.ArgumentMatchers.eq(lang)))
             .thenAnswer(inv->java.util.Map.copyOf(stored));
         org.mockito.Mockito.doAnswer(inv->{stored.put(inv.getArgument(0),inv.getArgument(2));return null;})
@@ -117,7 +118,10 @@ class RedisTranslationWorkAdapterIntegrationTest {
             if(request.body().startsWith("controlled")) throw new IllegalStateException("controlled failure");
             var result=healthy.translate(request);models.add(result.modelId());return result;
         };
-        var service=new me.yeonjae.ovlo.application.service.command.ConsultationTranscriptService(consultations,chat,cache,provider,sut);
+        redis.delete(java.util.List.of("ai:{translation}:member:42:daily","ai:{translation}:office:5:daily","ai:{translation}:global:daily"));
+        long budget=6*me.yeonjae.ovlo.application.port.out.office.TranslationAdmissionPort.RESERVATION;
+        var admission=new RedisTranslationAdmissionAdapter(redis,6,6,6,budget,budget,budget,5,20);
+        var service=new me.yeonjae.ovlo.application.service.command.ConsultationTranscriptService(consultations,chat,cache,provider,sut,admission);
         var first=service.transcript(5L,700L,11L,true,lang,100);
         assertThat(attempted).hasSize(5);
         assertThat(first).allSatisfy(m->assertThat(m.translationFailed()).isTrue());
@@ -128,13 +132,15 @@ class RedisTranslationWorkAdapterIntegrationTest {
         assertThat(second.subList(0,5)).allSatisfy(m->{assertThat(m.translationFailed()).isTrue();assertThat(m.content()).startsWith("controlled");});
         service.transcript(5L,700L,11L,true,lang,100);
         assertThat(attempted).hasSize(6); // cooldown + saved successful translation
+        assertThat(redis.opsForHash().get("ai:{translation}:member:42:daily","count")).isEqualTo("6");
+        assertThatThrownBy(()->admission.acquire(5L,42L)).isInstanceOf(IllegalStateException.class);
         if(live) {
             assertThat(models).allSatisfy(model->assertThat(model).contains("opus"));
             var file=java.nio.file.Path.of("build/reports/live-office-retry/results.json");
             java.nio.file.Files.createDirectories(file.getParent());
             java.nio.file.Files.writeString(file,tools.jackson.databind.json.JsonMapper.builder().build().writerWithDefaultPrettyPrinter()
                 .writeValueAsString(java.util.Map.of("passed",true,"controlledFailures",5,"actualProviderCalls",1,
-                    "polls",3,"models",models,"translatedText",second.getLast().translatedText())));
+                    "polls",3,"budgetChargedCalls",6,"nextCallBlocked",true,"blankCacheRepaired",true,"models",models,"translatedText",second.getLast().translatedText())));
         }
     }
 

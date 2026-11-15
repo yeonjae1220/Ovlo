@@ -3,6 +3,7 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { useEffect, useState } from 'react'
 import { registerAuthQueryClient } from '@/utils/authQueryCache'
+import { watchAuthSessionChanges } from '@/utils/authSession'
 import { I18nProvider } from '@/i18n/I18nProvider'
 import type { UiLanguage } from '@/i18n/messages'
 import { InstallBanner } from '@/components/InstallBanner'
@@ -26,6 +27,7 @@ export function Providers({
   )
 
   useEffect(() => registerAuthQueryClient(queryClient), [queryClient])
+  useEffect(watchAuthSessionChanges, [])
 
   return (
     <QueryClientProvider client={queryClient}>
