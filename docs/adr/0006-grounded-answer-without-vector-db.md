@@ -50,3 +50,26 @@
 [ADR-0007](0007-office-ai-abuse-controls.md)은 질문 범위 검사, 인용 검사 뒤 독립 근거 검증,
 Sonnet 답변 모델 분리와 호출 전 원자적 예산 예약을 추가한다. 이제 후보가 없더라도 범위 검사 호출은 발생할 수 있다.
 현재 PostgreSQL 어댑터는 쿼리 시점 `to_tsvector`를 사용한다. 위 생성 컬럼/GIN과 질문 번역 검색은 구현된 기능으로 간주하지 않는다.
+
+
+## 2026-11-15: 답변 확정은 근거 스냅샷을 비교한다
+
+공지의 JPA `rowVersion`은 다른 언어 번역 저장·검수 표시·만료 알림 기록에도 증가한다. 따라서 LLM 호출 전후의
+행 수정 번호가 다르다는 이유만으로 `NO_GROUNDS`로 낮추지 않는다. 학교 잠금을 얻은 최종 저장 트랜잭션에서
+다음 항목을 호출 전 스냅샷과 비교하고 현재 근거 자격도 다시 검사한다.
+
+- 원문 내용 버전, 제목·본문·분류·언어·출처 URL·첨부·학기·유효기간
+- 출처 메타데이터, 출처 검토 정보, 승인자·승인 시각
+- 번역 언어로 질문했다면 그 언어의 번역 제목·본문·원문 버전
+- 현재 승인·유효기간·출처 검토 상태, 공식 URL 허용 범위 및 기반 자료의 유효성
+
+다른 언어 번역과 시각/검수 표시만 바뀐 동일 내용의 번역은 답변을 유지한다. 사용한 번역의 내용 변경이나
+원문 변경·철회·재승인은 계속 보류한다. 쓰기 경합 방지용 `rowVersion` 자체와 낙관적 락은 유지한다.
+새 DB 컬럼이나 마이그레이션은 필요하지 않다. 사용하지 않은 다른 후보가 변경될 때 모든 후보를 다시 검사하는
+기존의 보수적인 정책은 유지한다.
+
+`NoticeGovernanceIntegrationTest`가 PostgreSQL의 실제 커밋을 사이에 둔 회귀 사례를 검증한다.
+유료 동시 호출 검증은 `OVLO_LIVE_LLM=1 ./gradlew integrationTest --tests '*NoticeGovernanceIntegrationTest.realLlmAnswerOverlapsTranslationCommit'`로 실행한다.
+`ANTHROPIC_API_KEY`는 환경변수로만 전달하며, 한국어·영어 답변(Sonnet)과 프랑스어 번역(Opus)을 동시에 호출한다.
+제공자 호출 구간의 실제 중첩, 번역 저장에 따른 revision 증가, 답변 유지와 인용 저장을 확인한다.
+합성 데이터 결과는 `build/reports/live-answer-concurrency/{ko,en}.json`에 저장한다.

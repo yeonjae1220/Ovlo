@@ -1,0 +1,46 @@
+{
+  "baseCommit": "05811ad3efa5c2aaec5ce4b120e82b615fb03493",
+  "reproducedFailuresBeforeFix": 3,
+  "automatedTests": {
+    "test": {
+      "tests": 784,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 6
+    },
+    "integrationTest": {
+      "tests": 180,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 1
+    }
+  },
+  "pythonTestsPassed": 55,
+  "bootJar": "passed",
+  "liveConcurrentProviderCalls": [
+    {
+      "language": "ko",
+      "answerModel": "anthropic/claude-sonnet-5.5",
+      "translationModel": "anthropic/claude-opus-5.5",
+      "providerOverlapMs": 1316,
+      "revisionBefore": 3,
+      "revisionAfter": 4,
+      "sourceVersionUnchanged": true,
+      "outcome": "ANSWERED",
+      "citationsSaved": 1,
+      "answer": "현재 서류 제출 기한은 11월 20일입니다. [1]"
+    },
+    {
+      "language": "en",
+      "answerModel": "anthropic/claude-sonnet-5.5",
+      "translationModel": "anthropic/claude-opus-5.5",
+      "providerOverlapMs": 1462,
+      "revisionBefore": 4,
+      "revisionAfter": 5,
+      "sourceVersionUnchanged": true,
+      "outcome": "ANSWERED",
+      "citationsSaved": 1,
+      "answer": "The current document submission deadline is November 20. [1]"
+    }
+  ]
+}

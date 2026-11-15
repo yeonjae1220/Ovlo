@@ -160,4 +160,130 @@ class NoticeGovernanceIntegrationTest {
         assertThat(notices.findById(n.getId()).orElseThrow().getStatus()).isEqualTo(NoticeStatus.DRAFT);
     }
 
+    @org.junit.jupiter.params.ParameterizedTest
+    @org.junit.jupiter.params.provider.EnumSource(value=NoticeLang.class,names={"KO","EN"})
+    void unrelatedTranslationCommittedDuringAnswerDoesNotDiscardGrounding(NoticeLang lang) throws Exception {
+        Notice snapshot=approved("병행 번역",NoticeSource.Type.OFFICE_MATERIAL,List.of());
+        snapshot.putTranslation(NoticeLang.EN,"Deadline","Deadline is November 20.",NOW);
+        snapshot=notices.save(snapshot);
+        Notice before=snapshot;
+        try(var executor=Executors.newVirtualThreadPerTaskExecutor()) {
+            executor.submit(()->{
+                Notice concurrent=notices.findById(before.getId()).orElseThrow();
+                concurrent.putTranslation(NoticeLang.FR,"Échéance","Le 20 novembre.",NOW.plusSeconds(1));
+                notices.save(concurrent);
+            }).get(20,TimeUnit.SECONDS);
+        }
+        Notice after=notices.findById(snapshot.getId()).orElseThrow();
+        assertThat(after.getRowVersion()).isGreaterThan(snapshot.getRowVersion());
+        assertThat(after.getVersion()).isEqualTo(snapshot.getVersion());
+        Inquiry pending=Inquiry.answered(office,actor,lang,"Deadline?","November 20 [1].",List.of(snapshot.getId()),List.of(snapshot.getId()),NOW,30,"test");
+        Inquiry result=finalizer.finish(pending,List.of(snapshot),citation(snapshot),List.of());
+        assertThat(result.getOutcome()).isEqualTo(InquiryOutcome.ANSWERED);
+        assertThat(knowledge.citations(result.getId())).hasSize(1);
+    }
+
+    @Test void usedTranslationReviewKeepsAnswerButChangedTextRejectsIt() {
+        Notice snapshot=approved("영어 안내",NoticeSource.Type.OFFICE_MATERIAL,List.of());
+        snapshot.putTranslation(NoticeLang.EN,"Deadline","Deadline is November 20.",NOW);snapshot=notices.save(snapshot);
+        Notice current=notices.findById(snapshot.getId()).orElseThrow();current.reviewTranslation(NoticeLang.EN);notices.save(current);
+        Inquiry pending=Inquiry.answered(office,actor,NoticeLang.EN,"Deadline?","November 20 [1].",List.of(snapshot.getId()),List.of(snapshot.getId()),NOW,30,"test");
+        assertThat(finalizer.finish(pending,List.of(snapshot),citation(snapshot),List.of()).getOutcome()).isEqualTo(InquiryOutcome.ANSWERED);
+        current=notices.findById(snapshot.getId()).orElseThrow();current.putTranslation(NoticeLang.EN,"Deadline","Deadline is November 21.",NOW.plusSeconds(1));notices.save(current);
+        pending=Inquiry.answered(office,actor,NoticeLang.EN,"Deadline?","November 20 [1].",List.of(snapshot.getId()),List.of(snapshot.getId()),NOW,30,"test");
+        Inquiry rejected=finalizer.finish(pending,List.of(snapshot),citation(snapshot),List.of());
+        assertThat(rejected.getOutcome()).isEqualTo(InquiryOutcome.NO_GROUNDS);
+        assertThat(knowledge.citations(rejected.getId())).isEmpty();
+    }
+
+    @org.junit.jupiter.params.ParameterizedTest
+    @org.junit.jupiter.params.provider.ValueSource(strings={"body","source","archive","hold","review","reapprove","expiry","scope","basis"})
+    void materialChangesDuringAnswerStillDiscardCitations(String change) {
+        Notice base=approved("원천 자료",NoticeSource.Type.OFFICE_MATERIAL,List.of());
+        Notice snapshot=approved("검증 대상",NoticeSource.Type.REVIEWED_STAFF_QA,List.of(base.getId()));
+        if(change.equals("scope")) {
+            var scope=governance.saveScope(office,actor,new NoticeKnowledgePort.Scope(null,office,"국제처","https://university.example/office",true,0));
+            Notice n=draft("웹 안내");n.editContent(n.getCategory(),n.getTitle(),n.getBody(),"https://university.example/office/faq",List.of(),NOW);n=notices.save(n);
+            governance.configure(office,n.getId(),actor,n.getRowVersion(),source(NoticeSource.Type.UNIVERSITY_WEB,scope.id(),List.of()));
+            n=notices.findById(n.getId()).orElseThrow();governance.review(office,n.getId(),actor,n.getRowVersion(),"VERIFIED","검토",true,true,true,true);
+            n=notices.findById(n.getId()).orElseThrow();n.approve(actor.toString(),NOW,TODAY);snapshot=notices.save(n);
+            governance.saveScope(office,actor,new NoticeKnowledgePort.Scope(scope.id(),office,scope.department(),scope.url(),false,scope.revision()));
+        } else {
+            Notice changed=notices.findById(snapshot.getId()).orElseThrow();
+            switch(change) {
+                case "body" -> { changed.editContent(changed.getCategory(),changed.getTitle(),"정정된 내용",null,List.of(),NOW); changed.verifySource(TODAY);changed.approve(actor.toString(),NOW,TODAY); }
+                case "source" -> changed.configureSource(source(NoticeSource.Type.OFFICE_MATERIAL,null,List.of()),NOW);
+                case "archive" -> changed.archive();
+                case "hold" -> changed.holdSource("철회");
+                case "review" -> changed.verifySource(TODAY.plusDays(1));
+                case "reapprove" -> { changed.requireReapproval(NOW);changed.approve(actor.toString(),NOW.plusSeconds(1),TODAY); }
+                case "expiry" -> when(clock.instant()).thenReturn(NOW.plus(Duration.ofDays(100)));
+                case "basis" -> { base.archive();notices.save(base); }
+            }
+            if(!change.equals("expiry") && !change.equals("basis"))notices.save(changed);
+        }
+        Inquiry rejected=finalizer.finish(answer(snapshot),List.of(snapshot),citation(snapshot),List.of());
+        assertThat(rejected.getOutcome()).isEqualTo(InquiryOutcome.NO_GROUNDS);
+        assertThat(knowledge.citations(rejected.getId())).isEmpty();
+    }
+
+    @org.junit.jupiter.api.condition.EnabledIfEnvironmentVariable(named="OVLO_LIVE_LLM",matches="1")
+    @org.junit.jupiter.params.ParameterizedTest
+    @org.junit.jupiter.params.provider.EnumSource(value=NoticeLang.class,names={"KO","EN"})
+    @Tag("live-llm")
+    void realLlmAnswerOverlapsTranslationCommit(NoticeLang lang) throws Exception {
+        var llm=new me.yeonjae.ovlo.adapter.out.office.AnthropicLlmAdapter(
+                new me.yeonjae.ovlo.shared.metrics.OfficeMetrics(new io.micrometer.core.instrument.simple.SimpleMeterRegistry()),
+                System.getenv("ANTHROPIC_API_KEY"),System.getenv().getOrDefault("OVLO_LLM_BASE_URL","https://api.bizrouter.ai"),
+                "claude-opus-5-5","medium",2048,90,false,"claude-sonnet-5-5");
+        Notice snapshot=approved("서류 제출 안내",NoticeSource.Type.OFFICE_MATERIAL,List.of());
+        var gate=new NoticeTranslationGate();
+        if(lang==NoticeLang.EN) {
+            var seedRequest=new TranslationPort.Request(NoticeLang.KO,NoticeLang.EN,snapshot.getTitle(),snapshot.getBody());
+            var seed=llm.translate(seedRequest);assertThat(gate.check(seedRequest,seed).passed()).isTrue();
+            snapshot.putTranslation(NoticeLang.EN,seed.title(),seed.body(),NOW);snapshot=notices.save(snapshot);
+        }
+        Notice before=snapshot;
+        var text=before.getTranslation(lang);
+        var candidate=new AnswerGenerationPort.Candidate(1,before.getId(),text.map(NoticeTranslation::getTitle).orElse(before.getTitle()),
+                text.map(NoticeTranslation::getBody).orElse(before.getBody()),null);
+        String question=lang==NoticeLang.KO?"서류 제출 기한은 언제인가요?":"When is the document submission deadline?";
+        var request=new AnswerGenerationPort.Request(question,lang,List.of(candidate));
+        assertThat(llm.screen(question,List.of()).allowed()).isTrue();
+        var start=new CyclicBarrier(2);
+        var answerStarted=new java.util.concurrent.atomic.AtomicLong();var answerFinished=new java.util.concurrent.atomic.AtomicLong();
+        var translationStarted=new java.util.concurrent.atomic.AtomicLong();var translationFinished=new java.util.concurrent.atomic.AtomicLong();
+        AnswerGenerationPort.Result generated;
+        TranslationPort.Result translated;
+        try(var pool=Executors.newVirtualThreadPerTaskExecutor()) {
+            var answerTask=pool.submit(()->{start.await(10,TimeUnit.SECONDS);answerStarted.set(System.nanoTime());
+                assertThat(org.springframework.transaction.support.TransactionSynchronizationManager.isActualTransactionActive()).isFalse();
+                try{return llm.answer(request);}finally{answerFinished.set(System.nanoTime());}});
+            var translationTask=pool.submit(()->{start.await(10,TimeUnit.SECONDS);translationStarted.set(System.nanoTime());
+                var tr=new TranslationPort.Request(NoticeLang.KO,NoticeLang.FR,before.getTitle(),before.getBody());
+                TranslationPort.Result result;
+                try{result=llm.translate(tr);}finally{translationFinished.set(System.nanoTime());}
+                assertThat(gate.check(tr,result).passed()).isTrue();
+                Notice current=notices.findById(before.getId()).orElseThrow();
+                current.putTranslation(NoticeLang.FR,result.title(),result.body(),NOW);notices.save(current);return result;});
+            generated=answerTask.get(100,TimeUnit.SECONDS);translated=translationTask.get(100,TimeUnit.SECONDS);
+        }
+        long overlap=Math.min(answerFinished.get(),translationFinished.get())-Math.max(answerStarted.get(),translationStarted.get());
+        assertThat(overlap).as("Actual provider calls overlap, not just sequential requests").isPositive();
+        assertThat(generated.refused()).isFalse();
+        var validated=new GroundedAnswerValidator().validate(generated.text(),List.of(candidate));
+        assertThat(validated.passed()).isTrue();assertThat(llm.verify(request,validated.validated().text()).allowed()).isTrue();
+        Notice after=notices.findById(before.getId()).orElseThrow();assertThat(after.getRowVersion()).isGreaterThan(before.getRowVersion());
+        var pending=Inquiry.answered(office,actor,lang,question,validated.validated().text(),List.of(before.getId()),List.of(before.getId()),NOW,30,generated.modelId());
+        var result=finalizer.finish(pending,List.of(before),citation(before),List.of());
+        var evidence=new LinkedHashMap<String,Object>();
+        evidence.put("language",lang.code());evidence.put("answerModel",generated.modelId());evidence.put("translationModel",translated.modelId());
+        evidence.put("providerOverlapMs",overlap/1_000_000);evidence.put("revisionBefore",before.getRowVersion());evidence.put("revisionAfter",after.getRowVersion());
+        evidence.put("sourceVersionUnchanged",before.getVersion()==after.getVersion());evidence.put("outcome",result.getOutcome().name());
+        evidence.put("citationsSaved",knowledge.citations(result.getId()).size());evidence.put("answer",result.getAnswerText());
+        var path=java.nio.file.Path.of("build/reports/live-answer-concurrency/"+lang.code()+".json");java.nio.file.Files.createDirectories(path.getParent());
+        java.nio.file.Files.writeString(path,tools.jackson.databind.json.JsonMapper.builder().build().writerWithDefaultPrettyPrinter().writeValueAsString(evidence));
+        assertThat(result.getOutcome()).isEqualTo(InquiryOutcome.ANSWERED);assertThat(knowledge.citations(result.getId())).hasSize(1);
+    }
+
 }
