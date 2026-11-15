@@ -6,6 +6,7 @@ import type { Member } from '../types'
 import { clearAuthQueryCaches } from '../utils/authQueryCache'
 
 interface AuthState {
+  sessionVersion: number
   accessToken: string | null
   currentUser: Member | null
   setAuth: (accessToken: string, user: Member) => void
@@ -17,24 +18,25 @@ interface AuthState {
 export const useAuthStore = create<AuthState>()(
   persist(
     (set, get) => ({
+      sessionVersion: 0,
       accessToken: null,
       currentUser: null,
 
       setAuth: (accessToken, user) => {
         if (get().currentUser?.id !== user.id) clearAuthQueryCaches()
-        set({ accessToken, currentUser: user })
+        set({ accessToken, currentUser: user, sessionVersion: get().sessionVersion + (get().currentUser?.id !== user.id ? 1 : 0) })
       },
 
       setAccessToken: (token) => set({ accessToken: token }),
 
       setCurrentUser: (user) => {
         if (get().currentUser?.id !== user.id) clearAuthQueryCaches()
-        set({ currentUser: user })
+        set({ currentUser: user, sessionVersion: get().sessionVersion + (get().currentUser?.id !== user.id ? 1 : 0) })
       },
 
       clearAuth: () => {
         clearAuthQueryCaches()
-        set({ accessToken: null, currentUser: null })
+        set({ accessToken: null, currentUser: null, sessionVersion: get().sessionVersion + 1 })
       },
     }),
     {

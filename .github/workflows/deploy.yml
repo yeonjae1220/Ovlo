@@ -67,7 +67,7 @@ jobs:
         run: ./gradlew integrationTest --tests '*ChatAccessIntegrationTest' --tests '*LegacyDevelopmentAccountMigrationIntegrationTest' --no-daemon
 
       - name: Notice source approval and migration regressions
-        run: ./gradlew integrationTest --tests '*NoticeGovernanceIntegrationTest' --tests '*NoticeSourceMigrationIntegrationTest' --tests '*NoticeRetranslationIntegrationTest' --tests '*OfficeFullReviewIntegrationTest' --tests '*RedisTranslationWorkAdapterIntegrationTest' --no-daemon
+        run: ./gradlew integrationTest --tests '*NoticeGovernanceIntegrationTest' --tests '*NoticeSourceMigrationIntegrationTest' --tests '*NoticeRetranslationIntegrationTest' --tests '*OfficeFullReviewIntegrationTest' --tests '*RedisTranslationWorkAdapterIntegrationTest' --tests '*RedisTranslationAdmissionAdapterIntegrationTest' --no-daemon
 
   frontend-check:
     name: Frontend build
@@ -82,7 +82,9 @@ jobs:
       - run: npm ci
         working-directory: frontend
       - name: Test account cache isolation
-        run: node scripts/test-auth-query-cache.cjs
+        run: |
+          node scripts/test-auth-query-cache.cjs
+          node scripts/test-auth-session-race.cjs
         working-directory: frontend
       - run: npm run build
         working-directory: frontend

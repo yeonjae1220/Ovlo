@@ -203,6 +203,11 @@ class OfficeFullReviewIntegrationTest {
                 assertThat(entered.await(10,java.util.concurrent.TimeUnit.SECONDS)).isTrue();
                 // Simulate a crashed/expired lease: a replacement worker may finish, then receive human review.
                 redis.delete("office:translation:notice:"+notice.getId()+":"+notice.getVersion()+":en");
+                // Both work ownership and the paid-call slot expire after a crashed worker.
+                for (String scope : List.of("member:"+actor, "office:"+notice.getOfficeId(), "global")) {
+                    String active="ai:{translation}:"+scope+":active";
+                    for (String owner : redis.opsForZSet().range(active,0,-1)) redis.opsForZSet().add(active,owner,0);
+                }
                 translationUseCase.translateMissing(notice.getId());
                 Notice current=notices.findCommittedById(notice.getId()).orElseThrow();
                 current.reviewTranslation(NoticeLang.EN); notices.save(current);

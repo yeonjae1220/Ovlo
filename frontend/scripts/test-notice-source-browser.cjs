@@ -18,7 +18,7 @@ const url = process.env.NOTICE_SOURCE_URL || 'http://localhost:3347'
     await context.route('**/api/v1/**', async route => {
       const r = route.request(), path = new URL(r.url()).pathname
       const json = (data, status = 200) => route.fulfill({ status, contentType: 'application/json', body: JSON.stringify(data) })
-      if (path.endsWith('/auth/refresh')) return json({ accessToken: 'fixture' })
+      if (path.endsWith('/auth/refresh')) return json({ accessToken: 'fixture', memberId: 42 })
       if (path.endsWith('/office/me')) return json({ officeId: 5, officeName: '테스트 국제처', universityId: 1, status: 'ACTIVE', role: 'OFFICE_ADMIN', verifiedStudent: true })
       if (path === '/api/v1/office-admin/5') return json({ staff: [{ memberId: 42, nickname: '담당자', role: 'OFFICE_ADMIN', status: 'ACTIVE' }] })
       if (path.endsWith('/source-scopes') || path.endsWith('/history') || path.endsWith('/review-queue')) return json([])

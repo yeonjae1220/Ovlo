@@ -6,6 +6,7 @@ public final class TranslationWorkFixtures {
     public static TranslationWorkPort available() {
         return key -> Optional.of(new TranslationWorkPort.Lease() {
             public boolean isHeld() { return true; }
+            public boolean isRetryAllowed() { return true; }
             public boolean tryBeginAttempt() { return true; }
             public void translationFailed() {}
             public void translationSucceeded() {}

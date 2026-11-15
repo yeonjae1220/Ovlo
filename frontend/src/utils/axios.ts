@@ -3,6 +3,14 @@
 import axios from 'axios'
 import { useAuthStore } from '../store/authStore'
 import { refreshAuth } from './refreshAuth'
+import { assertAuthSession, captureAuthSession, isEndedAuthSession, type AuthSession } from './authSession'
+
+declare module 'axios' {
+  interface InternalAxiosRequestConfig {
+    _authSession?: AuthSession
+    _retry?: boolean
+  }
+}
 
 const apiClient = axios.create({
   baseURL: '/api/v1',
@@ -11,6 +19,8 @@ const apiClient = axios.create({
 })
 
 apiClient.interceptors.request.use((config) => {
+  config._authSession ??= captureAuthSession()
+  assertAuthSession(config._authSession)
   const token = useAuthStore.getState().accessToken
   if (token) config.headers.Authorization = `Bearer ${token}`
   return config
@@ -18,10 +28,14 @@ apiClient.interceptors.request.use((config) => {
 
 // 401 → refreshAuth() 싱글톤 — layout·선제 갱신 타이머와 같은 요청을 공유한다
 apiClient.interceptors.response.use(
-  (res) => res,
+  (res) => {
+    if (res.config._authSession) assertAuthSession(res.config._authSession)
+    return res
+  },
   async (error) => {
     const original = error.config
     const status = error.response?.status
+    if (original?._authSession) assertAuthSession(original._authSession)
 
     // 403 = 권한 없음 — 토큰 자체는 유효하므로 auth 클리어 안 함
     if (status !== 401 || !original || original._retry) return Promise.reject(error)
@@ -38,10 +52,11 @@ apiClient.interceptors.response.use(
 
     if (!newToken) {
       // 세션 종료 — refreshAuth 가 이미 인증 상태를 지웠다
-      if (typeof window !== 'undefined') window.location.href = '/login'
+      if (typeof window !== 'undefined' && isEndedAuthSession(original._authSession)) window.location.href = '/login'
       return Promise.reject(error)
     }
 
+    assertAuthSession(original._authSession)
     original.headers.Authorization = `Bearer ${newToken}`
     return apiClient(original)
   }

@@ -7,6 +7,7 @@ public interface TranslationWorkPort {
     Optional<Lease> tryAcquire(String workKey);
     interface Lease extends AutoCloseable {
         boolean isHeld();
+        boolean isRetryAllowed();
         /** Reserve a bounded message-translation attempt before calling the provider. */
         boolean tryBeginAttempt();
         void translationFailed();

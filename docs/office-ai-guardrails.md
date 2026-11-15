@@ -91,7 +91,7 @@ Redis·PostgreSQL 동시성과 HTTP 인증 경계는 별도 통합/보안 회귀
 한도에 도달해도 원문과 `translationFailed`를 반환하고 다른 메시지의 번역을 계속한다.
 호출 전에 횟수를 예약하므로 프로세스 종료도 한 회를 소비하며, 저장 성공 시 재시도 상태를 지운다.
 180초 작업 소유권과 Redis 소유자 검사를 함께 사용해 만료된 작업이 새 작업의 재시도 상태를 변경하지 못하게 한다.
-Redis 장애 시 유료 호출을 시작하지 않는다. 이 제한은 메시지별 재시도 제한이며 전체 번역 비용 예산은 별도 개선 과제다.
+Redis 장애 시 유료 호출을 시작하지 않는다. 메시지별 재시도 제한에 더해 아래 누적 번역 예산을 적용한다.
 스키마 변경은 없다. 구 버전으로 롤백하면 이 재시도 제한은 적용되지 않는다.
 
 `k8s/app.yaml`과 배포 workflow 모두 답변용 Sonnet 환경변수를 명시한다. 코드를 배포하기 전 운영 모델은 바뀌지 않는다.
@@ -99,3 +99,25 @@ Redis 장애 시 유료 호출을 시작하지 않는다. 이 제한은 메시�
 자세한 결정과 롤백 주의점은 [ADR-0007](adr/0007-office-ai-abuse-controls.md)을 참고한다.
 
 최종 로컬 검증: 일반 테스트 692개 통과(유료 LLM opt-in 진입점 2개는 기본 실행에서 제외), PostgreSQL/Redis 통합 테스트 142개 통과. 실제 LLM 평가는 별도 실행한 18개가 모두 통과했다. `bootJar`, 프론트엔드 lint·production build, `git diff --check`도 통과했다.
+
+## 번역 누적 예산 (ADR-0008)
+
+공지·상담 번역은 `ai:{translation}:` Redis 영역을 공유하고 챗봇 답변 예산과 별도로 제한한다.
+캐시를 읽을 때는 비용을 예약하지 않는다. 빈 캐시는 실패로 간주하고 새 번역에 성공하면 교체한다.
+아래 Spring 설정은 모두 `ovlo.office.` 접두사다. 학교·전체 한도는 먼저 도달한 횟수 또는 가중 토큰 한도로 차단된다.
+
+| 설정 | 기본값 |
+|---|---:|
+| translation-member-daily-limit | 100 |
+| translation-office-daily-limit | 2,000 |
+| translation-global-daily-limit | 10,000 |
+| translation-member-token-budget | 10,000,000 |
+| translation-office-token-budget | 50,000,000 |
+| translation-global-token-budget | 250,000,000 |
+| translation-office-concurrent-limit | 5 |
+| translation-global-concurrent-limit | 20 |
+
+회원 동시 호출은 1개이며, 호출당 75,776을 성공·실패 모두 예약한다. 일자는 Redis 시계의 UTC를 따른다.
+상담은 상담 학생, 공지는 최초 작성자의 누적 한도를 사용한다. Redis 장애도 유료 호출을 허용하지 않는다.
+한도 소진 시 번역은 보류되지만 상담 원문은 계속 조회할 수 있다. 정확한 통화 청구 원장으로 사용하지 않는다.
+결정과 제한 사항: [ADR-0008](adr/0008-auth-session-and-translation-admission.md).
