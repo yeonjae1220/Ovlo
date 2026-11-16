@@ -258,7 +258,7 @@ public class InquiryCommandService implements AskQuestionUseCase, GiveInquiryFee
     }
     private static List<Candidate> boundedContext(List<Candidate> candidates) {
         var kept=new java.util.ArrayList<Candidate>();
-        int left=30000;
+        int left=me.yeonjae.ovlo.application.service.office.SmallNoticeCorpus.MAX_CONTEXT_BYTES;
         for(var c:candidates) {
             String title=c.title().substring(0, Math.min(c.title().length(), 200));
             String body=c.body();

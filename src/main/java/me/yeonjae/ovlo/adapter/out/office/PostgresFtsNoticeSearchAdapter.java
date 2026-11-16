@@ -7,6 +7,7 @@ import me.yeonjae.ovlo.domain.office.model.NoticeLang;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
+import me.yeonjae.ovlo.application.service.office.SmallNoticeCorpus;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -66,6 +67,10 @@ public class PostgresFtsNoticeSearchAdapter implements NoticeSearchPort {
 
     @Override
     public List<Notice> findCandidates(Long officeId, NoticeLang lang, String question, LocalDate today, int limit) {
+        List<Notice> eligible = SmallNoticeCorpus.eligible(loadNoticePort.findActiveForStudent(officeId, null, today),
+                officeId, lang, today, governance);
+        var small = SmallNoticeCorpus.fitting(eligible, lang, limit);
+        if (small.isPresent()) return small.get();
         Map<Long, Notice> merged = new LinkedHashMap<>();
         String tsquery = toOrQuery(question);
         if (!tsquery.isEmpty()) {
