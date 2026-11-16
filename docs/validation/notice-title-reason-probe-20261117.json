@@ -1,0 +1,18 @@
+[
+  {
+    "decision": "DENY",
+    "reason": "Das Original sagt \"keine tatsächliche Schulinformation\" (학교 안내), die Übersetzung sagt \"Mitteilung der Universität\" – der Empfänger/Urheber wurde von Schule zu Universität geändert."
+  },
+  {
+    "decision": "DENY",
+    "reason": "Source says '실제 학교 안내' (actual school notice), but translation says 'der Universität' (of the university), changing the issuer from school to university."
+  },
+  {
+    "decision": "DENY",
+    "reason": "Source says '실제 학교 안내가 아닙니다' (not an actual school notice); translation says 'der Universität' (university), changing 'school' to 'university'."
+  },
+  {
+    "decision": "DENY",
+    "reason": "The source says '학교 안내' (school notice), but the translation says 'Mitteilung der Universität' (university notice), which changes the issuer from school to university."
+  }
+]
