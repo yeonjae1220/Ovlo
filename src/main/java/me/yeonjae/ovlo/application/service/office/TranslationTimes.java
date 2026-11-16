@@ -14,6 +14,7 @@ final class TranslationTimes {
     record Extracted(Map<LocalTime,Integer> times, String remainingText, boolean invalidTime) {}
     static Extracted extract(String text, NoticeLang language) {
         StringBuilder remaining = new StringBuilder(text);
+        if (language==NoticeLang.FR) maskExplicitDurationUnit(remaining);
         Map<LocalTime,Integer> times = new HashMap<>();
         boolean[] invalid = {false};
         // German "am Freitag" is a preposition, not an English AM suffix.
@@ -40,6 +41,12 @@ final class TranslationTimes {
                     m -> add(times,m.group("h"),m.group("m"),null,null),invalid);
         }
         return new Extracted(Map.copyOf(times),remaining.toString(),invalid[0]);
+    }
+    /** Only an explicit duration phrase disambiguates French h. Keep all digits for numeric comparison. */
+    private static void maskExplicitDurationUnit(StringBuilder text) {
+        var matcher=Pattern.compile("(?iu)\\b(?:dure(?:nt|ra|ront)?|durée(?:\\s+totale)?(?:\\s+de)?|pendant|durant)\\s*:?\\s*"
+                + "[0-9]+(?:,[0-9]+)?\\s*(?<unit>h)(?!\\p{L})").matcher(text.toString());
+        while(matcher.find()) text.setCharAt(matcher.start("unit"),' ');
     }
     private static void add(Map<LocalTime,Integer> times,String h,String m,String s,String meridiem) {
         int hour=Integer.parseInt(h);

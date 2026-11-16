@@ -32,5 +32,16 @@ class NoticeTranslationMigrationIntegrationTest {
         assertThat(db.queryForList("SELECT lang FROM notice_translation_job WHERE notice_id=?",String.class,notice)).containsExactlyInAnyOrder("en","fr","ja","zh","vi");
         assertThat(new NoticeTranslationJobAdapter(db).dueNotices()).containsExactly(notice);
         assertThat(migration("48").migrate().migrationsExecuted).isZero(); migration("48").validate();
+        db.update("UPDATE notice_translation_job SET state='CANCELLED',attempts=1,available_at=CURRENT_TIMESTAMP+INTERVAL '1 hour' WHERE notice_id=?",notice);
+        db.update("UPDATE notice_translation_job SET attempts=3 WHERE lang='ja'");
+        db.update("UPDATE notice_translation_job SET created_at=CURRENT_TIMESTAMP-INTERVAL '49 hours' WHERE lang='fr'");
+        db.update("UPDATE notice_translation_job SET source_version=0 WHERE lang='zh'");
+        var budgetBefore=db.queryForList("SELECT lang,attempts,available_at,created_at FROM notice_translation_job ORDER BY lang");
+        assertThat(migration("49").migrate().migrationsExecuted).isEqualTo(1);
+        assertThat(db.queryForList("SELECT lang FROM notice_translation_job WHERE state='PAUSED'",String.class)).containsExactlyInAnyOrder("en","vi");
+        assertThat(db.queryForList("SELECT lang,attempts,available_at,created_at FROM notice_translation_job ORDER BY lang")).isEqualTo(budgetBefore);
+        assertThat(new NoticeTranslationJobAdapter(db).dueNotices()).isEmpty(); // original cooldown remains
+        assertThat(db.queryForObject("SELECT state FROM notice_translation_job WHERE lang='en'",String.class)).isEqualTo("PENDING");
+        assertThat(migration("49").migrate().migrationsExecuted).isZero(); migration("49").validate();
     }
 }

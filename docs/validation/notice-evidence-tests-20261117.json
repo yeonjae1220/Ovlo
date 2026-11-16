@@ -1,0 +1,19 @@
+{
+  "test": {
+    "tests": 824,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 11
+  },
+  "integrationTest": {
+    "tests": 209,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 3
+  },
+  "frontendBuild": "passed",
+  "authRegressions": "passed",
+  "pythonTests": 55,
+  "gradleBuild": "passed",
+  "networkPolicyDiff": "generation metadata only"
+}

@@ -71,6 +71,18 @@ public class NoticeTranslationJobAdapter implements NoticeTranslationJobPort {
                 """,c.noticeId(),c.version(),c.lang().code(),c.owner())==1;
     }
 
+    private static final String RESUMABLE = """
+            state='PAUSED' AND attempts<3 AND created_at>CURRENT_TIMESTAMP-INTERVAL '48 hours'
+            AND EXISTS(SELECT 1 FROM office_notice n JOIN office o ON o.id=n.office_id
+                WHERE n.id=j.notice_id AND n.version=j.source_version AND n.status='APPROVED'
+                AND n.expires_at>=CURRENT_DATE AND o.status<>'SUSPENDED')
+            """;
+
+    @Override public void resumePaused(long id, int version) {
+        // Retain attempts, original lifetime and provider/budget cooldown; suspension is not a fresh budget.
+        jdbc.update("UPDATE notice_translation_job j SET state='PENDING' WHERE notice_id=? AND source_version=? AND "+RESUMABLE,id,version);
+    }
+
     @Override public void defer(Claim c, long delay) {
         jdbc.update("""
                 UPDATE notice_translation_job SET
@@ -84,18 +96,26 @@ public class NoticeTranslationJobAdapter implements NoticeTranslationJobPort {
     public List<Long> dueNotices() {
         jdbc.update("""
                 UPDATE notice_translation_job SET state='FAILED',owner=NULL,lease_until=NULL
-                WHERE attempts>=3 AND ((state='RUNNING' AND lease_until<CURRENT_TIMESTAMP) OR state='PENDING')
+                WHERE attempts>=3 AND ((state='RUNNING' AND lease_until<CURRENT_TIMESTAMP) OR state IN ('PENDING','PAUSED'))
                 """);
         jdbc.update("""
                 UPDATE notice_translation_job j SET state='CANCELLED',owner=NULL,lease_until=NULL
-                WHERE state IN ('PENDING','RUNNING') AND (created_at<CURRENT_TIMESTAMP-INTERVAL '48 hours'
+                WHERE state IN ('PENDING','RUNNING','PAUSED') AND (created_at<CURRENT_TIMESTAMP-INTERVAL '48 hours'
                 OR NOT EXISTS(SELECT 1 FROM office_notice n JOIN office o ON o.id=n.office_id
                     WHERE n.id=j.notice_id AND n.version=j.source_version AND n.status<>'ARCHIVED'
-                    AND n.expires_at>=CURRENT_DATE AND o.status<>'SUSPENDED'))
+                    AND n.expires_at>=CURRENT_DATE))
                 """);
+        jdbc.update("""
+                UPDATE notice_translation_job j SET state='PAUSED',owner=NULL,lease_until=NULL
+                WHERE state IN ('PENDING','RUNNING') AND EXISTS(
+                    SELECT 1 FROM office_notice n JOIN office o ON o.id=n.office_id
+                    WHERE n.id=j.notice_id AND o.status='SUSPENDED')
+                """);
+        jdbc.update("UPDATE notice_translation_job j SET state='PENDING' WHERE "+RESUMABLE);
         return jdbc.queryForList("""
                 SELECT notice_id FROM notice_translation_job j
-                WHERE EXISTS(SELECT 1 FROM office_notice n WHERE n.id=j.notice_id AND n.status='APPROVED')
+                WHERE EXISTS(SELECT 1 FROM office_notice n JOIN office o ON o.id=n.office_id
+                    WHERE n.id=j.notice_id AND n.status='APPROVED' AND o.status<>'SUSPENDED')
                 AND ((state='PENDING' AND available_at<=CURRENT_TIMESTAMP) OR (state='RUNNING' AND lease_until<CURRENT_TIMESTAMP))
                 GROUP BY notice_id ORDER BY min(available_at),notice_id LIMIT 10
                 """,Long.class);

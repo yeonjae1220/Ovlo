@@ -175,7 +175,8 @@ public class InquiryCommandService implements AskQuestionUseCase, GiveInquiryFee
             Notice n=candidates.get(i-1);
             return new me.yeonjae.ovlo.domain.office.model.NoticeCitation(i,n.getId(),n.getVersion(),titleIn(n,c.lang()),
                     n.getSource().publicSource()?n.getSourceUrl():null,n.getSource().type(),n.getSource().department(),
-                    n.getReview().verifiedOn(),n.getExpiresAt());
+                    n.getReview().verifiedOn(),n.getExpiresAt(),
+                    me.yeonjae.ovlo.application.service.office.NoticeTranslationEvidence.fingerprint(n,c.lang()));
         }).toList();
         Inquiry saved = finalizer.finish(Inquiry.answered(c.officeId(), c.memberId(), c.lang(), question, v.text(), v.citedNoticeIds(),
                 candidateIds, start, elapsed(start), generated.modelId()), candidates, evidence, history);
