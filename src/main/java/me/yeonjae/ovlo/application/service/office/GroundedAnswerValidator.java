@@ -2,6 +2,7 @@ package me.yeonjae.ovlo.application.service.office;
 
 import me.yeonjae.ovlo.application.port.out.office.AnswerGenerationPort.Candidate;
 import org.springframework.stereotype.Component;
+import me.yeonjae.ovlo.domain.office.model.InquiryRejectionReason;
 
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
@@ -31,7 +32,7 @@ public class GroundedAnswerValidator {
 
     public record Validated(String text, List<Long> citedNoticeIds, List<Integer> citedIndices) {}
 
-    public record Rejection(String reason) {}
+    public record Rejection(String reason, InquiryRejectionReason code) {}
 
     /** 왼쪽: 거부 사유, 오른쪽: 검증된 답변. */
     public record Outcome(Validated validated, Rejection rejection) {
@@ -40,11 +41,11 @@ public class GroundedAnswerValidator {
 
     public Outcome validate(String rawText, List<Candidate> candidates) {
         if (rawText == null || rawText.isBlank()) {
-            return reject("빈 응답");
+            return reject("빈 응답", InquiryRejectionReason.NO_CITATION);
         }
         String text = rawText.trim();
         if (text.toUpperCase().startsWith(NO_GROUNDS_MARKER)) {
-            return reject("모델이 근거 없음을 답함");
+            return reject("모델이 근거 없음을 답함", InquiryRejectionReason.MODEL_NO_GROUNDS);
         }
         Map<Integer, Candidate> byIndex = candidates.stream()
                 .collect(Collectors.toMap(Candidate::index, Function.identity()));
@@ -54,12 +55,12 @@ public class GroundedAnswerValidator {
         while (m.find()) {
             int idx = Integer.parseInt(m.group(1));
             if (!byIndex.containsKey(idx)) {
-                return reject("후보 범위 밖 인용 [" + idx + "]");
+                return reject("후보 범위 밖 인용 [" + idx + "]", InquiryRejectionReason.BAD_CITATION);
             }
             indices.add(idx);
         }
         if (indices.isEmpty()) {
-            return reject("인용 없음");
+            return reject("인용 없음", InquiryRejectionReason.NO_CITATION);
         }
 
         Set<String> allowedUrls = candidates.stream()
@@ -70,7 +71,7 @@ public class GroundedAnswerValidator {
                 .replaceAll("[ \\t]{2,}", " ")
                 .trim();
         if (cleaned.isEmpty()) {
-            return reject("URL 제거 뒤 본문 없음");
+            return reject("URL 제거 뒤 본문 없음", InquiryRejectionReason.NO_CITATION);
         }
 
         List<Integer> orderedIndices = new ArrayList<>(indices);
@@ -78,8 +79,8 @@ public class GroundedAnswerValidator {
         return new Outcome(new Validated(cleaned, ids, orderedIndices), null);
     }
 
-    private static Outcome reject(String reason) {
-        return new Outcome(null, new Rejection(reason));
+    private static Outcome reject(String reason, InquiryRejectionReason code) {
+        return new Outcome(null, new Rejection(reason, code));
     }
 
     public static Optional<Validated> asOptional(Outcome outcome) {

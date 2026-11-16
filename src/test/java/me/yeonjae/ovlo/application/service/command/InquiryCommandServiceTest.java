@@ -62,18 +62,20 @@ class InquiryCommandServiceTest {
     @Mock LoadInquiryPort loadInquiryPort;
     @Mock SaveInquiryPort saveInquiryPort;
 
+    private final io.micrometer.core.instrument.simple.SimpleMeterRegistry meters = new io.micrometer.core.instrument.simple.SimpleMeterRegistry();
     private InquiryCommandService sut;
+    private me.yeonjae.ovlo.application.port.out.office.LoadNoticePort candidateLoad;
     private Notice dorm;
     private Notice insurance;
 
     @BeforeEach
     void setUp() {
-        var candidateLoad=org.mockito.Mockito.mock(me.yeonjae.ovlo.application.port.out.office.LoadNoticePort.class);
+        candidateLoad=org.mockito.Mockito.mock(me.yeonjae.ovlo.application.port.out.office.LoadNoticePort.class);
         lenient().when(candidateLoad.findById(any())).thenAnswer(inv -> java.util.stream.Stream.of(dorm,insurance).filter(n -> n!=null && n.getId().equals(inv.getArgument(0))).findFirst());
         var governance=me.yeonjae.ovlo.support.NoticeFixtures.governance(candidateLoad);
         var finalizer=new me.yeonjae.ovlo.application.service.office.NoticeAnswerFinalizer(org.mockito.Mockito.mock(me.yeonjae.ovlo.application.port.out.office.NoticeKnowledgePort.class),candidateLoad,saveInquiryPort,governance,Clock.fixed(NOW,ZoneOffset.UTC));
         sut = new InquiryCommandService(accessPolicy, searchPort, answerPort, new GroundedAnswerValidator(),
-                loadInquiryPort, saveInquiryPort, Clock.fixed(NOW, ZoneOffset.UTC), finalizer, governance, 8, 500, guard, admission);
+                loadInquiryPort, saveInquiryPort, Clock.fixed(NOW, ZoneOffset.UTC), finalizer, governance, 8, 500, guard, admission, new me.yeonjae.ovlo.shared.metrics.OfficeMetrics(meters));
         lenient().when(admission.acquire(any(), any())).thenReturn(lease);
         var allowed = new me.yeonjae.ovlo.application.port.out.office.InquiryGuardPort.Verdict(true, "guard", 10, 1);
         lenient().when(guard.screen(anyString(), any())).thenReturn(allowed);
@@ -99,6 +101,34 @@ class InquiryCommandServiceTest {
         n.approve("11", NOW, LocalDate.of(2027, 2, 1));
         me.yeonjae.ovlo.support.NoticeFixtures.verify(n, NOW);
         return n;
+    }
+
+    @org.junit.jupiter.params.ParameterizedTest
+    @org.junit.jupiter.params.provider.EnumSource(me.yeonjae.ovlo.domain.office.model.InquiryRejectionReason.class)
+    void recordsEachRejectionPath(me.yeonjae.ovlo.domain.office.model.InquiryRejectionReason reason) {
+        given(searchPort.findCandidates(anyLong(), any(), anyString(), any(), anyInt()))
+                .willReturn(reason.name().equals("NO_CANDIDATES") ? List.of() : List.of(dorm));
+        if (!reason.name().equals("NO_CANDIDATES")) {
+            String text = switch (reason) {
+                case MODEL_NO_GROUNDS -> "NO_GROUNDS";
+                case NO_CITATION -> "신청 마감은 2월 10일입니다.";
+                case BAD_CITATION -> "신청 마감 [9]";
+                default -> "신청 마감 [1]";
+            };
+            given(answerPort.answer(any())).willReturn(new AnswerGenerationPort.Result(text, "test", 1, 1,
+                    reason.name().equals("MODEL_REFUSED")));
+        }
+        if (reason.name().equals("VERIFY_DENIED")) given(guard.verify(any(), anyString())).willReturn(
+                new me.yeonjae.ovlo.application.port.out.office.InquiryGuardPort.Verdict(false, "test", 1, 1));
+        if (reason.name().equals("EVIDENCE_CHANGED")) given(candidateLoad.findById(dorm.getId())).willReturn(Optional.empty());
+        AskResult result = sut.ask(new AskQuestionCommand(OFFICE, MEMBER, "기숙사 신청?", NoticeLang.KO));
+        assertThat(result.outcome()).isEqualTo(InquiryOutcome.NO_GROUNDS);
+        assertThat(result.answerText()).isNull();
+        ArgumentCaptor<Inquiry> saved = ArgumentCaptor.forClass(Inquiry.class);
+        verify(saveInquiryPort).save(saved.capture());
+        assertThat(saved.getValue().getRejectionReason()).isEqualTo(reason);
+        assertThat(meters.get("ovlo.office.inquiry").tag("rejection_reason", reason.name()).counter().count()).isEqualTo(1);
+        assertThat(meters.get("ovlo.office.inquiry.latency").timer().count()).isEqualTo(1);
     }
 
     @Test

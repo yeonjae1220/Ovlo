@@ -43,12 +43,12 @@ class OfficeExportServiceTest {
     void inquiriesCsv() {
         given(inquiryQuery.findForStaff(eq(5L), isNull(), isNull(), isNull(), any())).willReturn(new PageImpl<>(List.of(
                 new InquiryLogResult(1L, NoticeLang.EN, "Dorm, when?", InquiryOutcome.ANSWERED, "Feb 10 [1]",
-                        List.of(7L, 8L), 3, null, 800L, "claude-test", Boolean.TRUE, null))));
+                        List.of(7L, 8L), 3, null, 800L, "claude-test", Boolean.TRUE, null, null))));
 
         String csv = new OfficeExportService(inquiryQuery, consultationQuery, noticeQuery).inquiriesCsv(5L, null, null);
 
-        assertThat(csv).startsWith(CsvWriter.BOM + "id,askedAt,lang,outcome,question,answerText,citedNoticeIds,candidateCount,latencyMs,modelId,helpful,feedbackReason\r\n");
-        assertThat(csv).contains("1,,EN,ANSWERED,\"Dorm, when?\",Feb 10 [1],7;8,3,800,claude-test,true,\r\n");
+        assertThat(csv).startsWith(CsvWriter.BOM + "id,askedAt,lang,outcome,question,answerText,citedNoticeIds,candidateCount,latencyMs,modelId,helpful,feedbackReason,rejectionReason\r\n");
+        assertThat(csv).contains("1,,EN,ANSWERED,\"Dorm, when?\",Feb 10 [1],7;8,3,800,claude-test,true,,\r\n");
         assertThat(csv).doesNotContainIgnoringCase("memberId").doesNotContain("@");
     }
 

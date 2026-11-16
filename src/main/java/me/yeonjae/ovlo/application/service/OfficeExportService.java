@@ -45,10 +45,10 @@ public class OfficeExportService implements ExportOfficeDataQuery {
         List<InquiryLogResult> rows = inquiryQuery.findForStaff(officeId, null, f, t,
                 PageRequest.of(0, MAX_ROWS, Sort.by(Sort.Direction.DESC, "askedAt"))).getContent();
         CsvWriter csv = new CsvWriter().header("id", "askedAt", "lang", "outcome", "question", "answerText",
-                "citedNoticeIds", "candidateCount", "latencyMs", "modelId", "helpful", "feedbackReason");
+                "citedNoticeIds", "candidateCount", "latencyMs", "modelId", "helpful", "feedbackReason", "rejectionReason");
         for (InquiryLogResult r : rows) {
             csv.row(r.id(), r.askedAt(), r.lang(), r.outcome(), r.question(), r.answerText(),
-                    joinIds(r.citedNoticeIds()), r.candidateCount(), r.latencyMs(), r.modelId(), r.helpful(), r.feedbackReason());
+                    joinIds(r.citedNoticeIds()), r.candidateCount(), r.latencyMs(), r.modelId(), r.helpful(), r.feedbackReason(), r.rejectionReason());
         }
         return csv.build();
     }

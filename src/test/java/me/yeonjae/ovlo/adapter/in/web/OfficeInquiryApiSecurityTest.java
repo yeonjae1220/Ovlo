@@ -103,6 +103,7 @@ class OfficeInquiryApiSecurityTest {
                         .content("{\"question\":\"Khi nào hết hạn?\",\"lang\":\"vi\"}"))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.outcome").value("ANSWERED"))
+                .andExpect(jsonPath("$.rejectionReason").doesNotExist())
                 .andExpect(jsonPath("$.citations[0].noticeId").value(77));
 
         verify(rateLimiterService).checkOfficeInquiryRate(MEMBER_ID);
@@ -128,7 +129,10 @@ class OfficeInquiryApiSecurityTest {
     @Test
     @DisplayName("문의 로그는 그 Office 담당자만: 다른 Office 403, 같은 Office 200, 일반 회원 403, 비로그인 401")
     void staffLog() throws Exception {
-        given(getInquiryQuery.findForStaff(eq(OFFICE_ID), any(), any(), any(), any())).willReturn(new PageImpl<>(List.of()));
+        given(getInquiryQuery.findForStaff(eq(OFFICE_ID), any(), any(), any(), any())).willReturn(new PageImpl<>(List.of(
+                new me.yeonjae.ovlo.application.dto.result.InquiryLogResult(900L, NoticeLang.KO, "합성 질문",
+                        InquiryOutcome.NO_GROUNDS, null, List.of(), 0, java.time.Instant.EPOCH, 1, null, null, null,
+                        me.yeonjae.ovlo.domain.office.model.InquiryRejectionReason.NO_CANDIDATES))));
 
         mockMvc.perform(get("/api/v1/office-admin/" + OFFICE_ID + "/inquiries")
                         .header("Authorization", bearer(new OfficeMembership(7L, OfficeRole.OFFICE_ADMIN))))
@@ -140,7 +144,9 @@ class OfficeInquiryApiSecurityTest {
 
         mockMvc.perform(get("/api/v1/office-admin/" + OFFICE_ID + "/inquiries").param("outcome", "NO_GROUNDS")
                         .header("Authorization", bearer(new OfficeMembership(OFFICE_ID, OfficeRole.OFFICE_STAFF))))
-                .andExpect(status().isOk());
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content[0].rejectionReason").value("NO_CANDIDATES"))
+                .andExpect(jsonPath("$.content[0].memberId").doesNotExist());
         verify(getInquiryQuery).findForStaff(eq(OFFICE_ID), eq(InquiryOutcome.NO_GROUNDS), any(), any(), any());
     }
 
