@@ -1,8 +1,8 @@
 {
-  "validatedAt": "2026-11-16T09:53:21.195434+00:00",
+  "validatedAt": "2026-11-16T10:00:05.841237+00:00",
   "backend": {
     "test": {
-      "tests": 807,
+      "tests": 808,
       "failures": 0,
       "errors": 0,
       "skipped": 8
@@ -44,7 +44,8 @@
       "swapped fee and deposit",
       "reversed refund condition",
       "verifier prompt injection",
-      "same-author concurrent requests automatically recovered"
+      "same-author concurrent requests automatically recovered",
+      "URL decimal identifiers preserved across locales"
     ],
     "results": {
       "normalAndMutationTests": {

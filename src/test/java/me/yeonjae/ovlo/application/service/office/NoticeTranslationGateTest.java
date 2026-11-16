@@ -185,4 +185,12 @@ class NoticeTranslationGateTest {
         }
     }
 
+    @Test void contactIdentifiersKeepTheirExactDigitsWithoutLocaleParsing() {
+        String contacts="office1.5@university.example https://university.example/help?version=1.5&date=2026-11-20";
+        var source=new TranslationPort.Request(NoticeLang.KO,NoticeLang.FR,"안내","교육은 1.5시간입니다. "+contacts);
+        var target=new TranslationPort.Result("Formation","Durée : 1,5 heure. "+contacts,"m");
+        assertThat(gate.check(source,target).passed()).isTrue();
+        assertThat(gate.check(source,new TranslationPort.Result(target.title(),target.body().replace("version=1.5","version=15"),"m")).passed()).isFalse();
+    }
+
 }

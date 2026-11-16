@@ -40,7 +40,7 @@ class NoticeTranslationLiveEvaluationTest {
     void preservesNumbersAndTimesAndRejectsCorruptedRealOutput(NoticeLang target) {
         var request = new TranslationPort.Request(NoticeLang.KO, target, "기숙사 신청 안내",
                 "신청 마감은 2026년 11월 20일 18:00입니다. 안내 교육은 1.5시간입니다. "
-                        + "보증금은 1,500.25유로입니다. 지연 수수료는 0.05%입니다. 정원은 15명입니다. 문의 office@university.example https://university.example/help");
+                        + "보증금은 1,500.25유로입니다. 지연 수수료는 0.05%입니다. 정원은 15명입니다. 문의 office@university.example https://university.example/help?version=1.5");
         var gate = new NoticeTranslationGate();
         long started = System.nanoTime();
         var result = llm.translate(request);

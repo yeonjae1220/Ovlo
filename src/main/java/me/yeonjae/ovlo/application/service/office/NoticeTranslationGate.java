@@ -30,8 +30,14 @@ public class NoticeTranslationGate {
         if (result.title().trim().equals(request.title().trim()) && result.body().trim().equals(request.body().trim())) {
             reasons.add("번역이 원문과 동일합니다");
         }
-        var sourceDates = TranslationDates.extract(request.title() + "\n" + request.body(), request.from());
-        var targetDates = TranslationDates.extract(result.title() + "\n" + result.body(), request.to());
+        String sourceText=request.title()+"\n"+request.body();
+        String targetText=result.title()+"\n"+result.body();
+        if (!contacts(sourceText).equals(contacts(targetText))) {
+            reasons.add("원문과 번역의 URL 또는 이메일이 다릅니다");
+        }
+        // Contact identifiers are exact strings, never locale-formatted numbers/dates (e.g. ?version=1.5).
+        var sourceDates = TranslationDates.extract(CONTACT.matcher(sourceText).replaceAll(" "), request.from());
+        var targetDates = TranslationDates.extract(CONTACT.matcher(targetText).replaceAll(" "), request.to());
         if (sourceDates.invalidDate() || targetDates.invalidDate()) {
             reasons.add("유효하지 않은 날짜가 있습니다");
         }
@@ -49,9 +55,6 @@ public class NoticeTranslationGate {
         }
         if (!sourceNumbers.counts().equals(targetNumbers.counts())) {
             reasons.add("원문과 번역의 숫자 값 또는 출현 횟수가 다릅니다");
-        }
-        if (!contacts(request.title() + "\n" + request.body()).equals(contacts(result.title() + "\n" + result.body()))) {
-            reasons.add("원문과 번역의 URL 또는 이메일이 다릅니다");
         }
         return reasons.isEmpty() ? Verdict.ok() : new Verdict(false, reasons);
     }
