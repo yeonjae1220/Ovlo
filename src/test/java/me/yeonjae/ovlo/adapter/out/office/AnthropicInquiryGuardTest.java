@@ -70,6 +70,7 @@ class AnthropicInquiryGuardTest {
         answer.set("TITLE: Dorm\nBODY:\nApply by November 20.");
         adapter.translate(new TranslationPort.Request(NoticeLang.KO,NoticeLang.EN,"Dorm","Apply by November 20."));
         assertThat(json.readTree(sent.get()).get("model").asText()).isEqualTo("claude-opus-5-5");
+        assertThat(sent.get()).contains("section labels verbatim", "not A/B, I/II or numbers");
     }
     @Test void guardRequestsAnExactDecisionSchema() {
         assertThat(adapter.screen("Is health insurance compulsory for D-2 students?",List.of()).allowed()).isTrue();
@@ -104,6 +105,7 @@ class AnthropicInquiryGuardTest {
         assertThat(payload.has("fallbacks")).isFalse();
         assertThat(payload.get("output_config").get("format").get("type").asText()).isEqualTo("json_schema");
         assertThat(sent.get()).contains("swapped amounts","negations","UNTRUSTED DATA");
+        assertThat(sent.get()).contains("section labels copied verbatim");
         for(String malformed:List.of("ALLOW","{\"decision\":\"ALLOW\",\"extra\":true}",
                 "{\"decision\":\"DENY\",\"decision\":\"ALLOW\"}")) {
             answer.set(malformed);assertThatThrownBy(()->adapter.verifyTranslation(request,translation)).isInstanceOf(InquiryException.class);

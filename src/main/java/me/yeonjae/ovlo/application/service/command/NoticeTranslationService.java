@@ -102,7 +102,7 @@ public class NoticeTranslationService implements TranslateNoticeUseCase {
                         if (!verdict.passed() || !verifier.verifyTranslation(request,result)) {
                             jobs.finish(job,true);
                             failed.add(lang);
-                            log.warn("[Notice] translation integrity rejected notice={} lang={}",noticeId,lang.code());
+                            log.warn("[Notice] translation integrity rejected notice={} lang={} stage={}",noticeId,lang.code(),verdict.passed()?"semantic":"structure");
                             continue;
                         }
                         boolean stored=Boolean.TRUE.equals(tx.execute(status -> {

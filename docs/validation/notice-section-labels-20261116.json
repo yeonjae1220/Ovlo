@@ -1,0 +1,74 @@
+{
+  "validatedAt": "2026-11-16T10:30:20.338873+00:00",
+  "reproduction": "Korean section label 나 translated as B: numeric/contact gate passed, semantic guard rejected; preserving 나 in the identical translation passed.",
+  "unitTests": "./gradlew test passed",
+  "liveTests": {
+    "sectionLabels": {
+      "tests": 6,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "normalAndMutation": {
+      "tests": 7,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "concurrentRequests": {
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    }
+  },
+  "languages": [
+    {
+      "language": "en",
+      "title": "[For Operational Verification Only] Registration Notice 나",
+      "structurePassed": true,
+      "semanticPassed": true
+    },
+    {
+      "language": "ja",
+      "title": "[運用検証専用] 登録案内 나",
+      "structurePassed": true,
+      "semanticPassed": true
+    },
+    {
+      "language": "zh",
+      "title": "[运营验证专用] 注册须知 나",
+      "structurePassed": true,
+      "semanticPassed": true
+    },
+    {
+      "language": "de",
+      "title": "[Nur zur Betriebsprüfung] Hinweis zur Anmeldung 나",
+      "structurePassed": true,
+      "semanticPassed": true
+    },
+    {
+      "language": "fr",
+      "title": "[Réservé à la vérification opérationnelle] Avis d'inscription 나",
+      "structurePassed": true,
+      "semanticPassed": true
+    },
+    {
+      "language": "vi",
+      "title": "[Chỉ dùng để kiểm định vận hành] Hướng dẫn đăng ký 나",
+      "structurePassed": true,
+      "semanticPassed": true
+    }
+  ],
+  "productionFirstAttempt": {
+    "syntheticNotices": [
+      15,
+      16
+    ],
+    "deferredWithoutPaidAttempt": 12,
+    "translated": 8,
+    "rejectedSafely": 4,
+    "archived": true
+  },
+  "policy": "Preserve identifiers; do not relax fact, amount, condition or injection checks."
+}
