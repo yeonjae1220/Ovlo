@@ -76,6 +76,8 @@ public class AnthropicLlmAdapter implements me.yeonjae.ovlo.application.port.out
             Render clock times in 24-hour HH:MM format (HH:MM:SS if seconds are supplied); preserve AM/PM meaning.
             Do not turn durations into clock times. Preserve dates, time ranges and repeated times without omission.
             Keep email addresses and URLs exactly as in the source. Do not add, omit or summarize. Keep line breaks.
+            Preserve document identifiers and section labels verbatim in their original script, including title suffixes.
+            Do not renumber or transliterate section markers: Korean 가/나 must remain 가/나, not A/B, I/II or numbers.
             Reply in exactly this format and nothing else:
             TITLE: <translated title>
             BODY:
@@ -142,6 +144,7 @@ public class AnthropicLlmAdapter implements me.yeonjae.ovlo.application.port.out
             contacts, eligibility, obligations, exceptions, negations and conditions. Matching numbers alone is insufficient.
             DENY swapped amounts, reversed negations, changed recipients or payment destinations, invented facts,
             summaries, untranslated substantive text, or uncertainty. Natural wording and localized number/date formats are allowed.
+            Identifiers and section labels copied verbatim are allowed; they are not untranslated substantive prose.
             """;
 
     @Override public boolean verifyTranslation(TranslationPort.Request source, TranslationPort.Result translation) {
