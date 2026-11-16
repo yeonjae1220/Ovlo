@@ -142,6 +142,7 @@ public class NoticeTranslationService implements TranslateNoticeUseCase {
     @Override @Transactional(propagation=org.springframework.transaction.annotation.Propagation.NOT_SUPPORTED)
     public Outcome retryManually(Long id) {
         var notice=loadNoticePort.findCommittedById(id).orElseThrow();
+        jobs.resumePaused(id,notice.getVersion());
         jobs.reopenRejected(id,notice.getVersion());
         return translateMissing(id);
     }

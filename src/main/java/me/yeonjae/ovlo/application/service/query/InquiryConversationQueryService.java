@@ -50,7 +50,10 @@ public class InquiryConversationQueryService implements GetInquiryConversationQu
         List<AskResult.Citation> citations = new ArrayList<>();
         for (NoticeCitation snapshot:knowledge.citations(inquiry.getId())) {
             boolean current=notices.findById(snapshot.noticeId()).filter(n -> n.getOfficeId().equals(inquiry.getOfficeId())
-                    && n.getVersion()==snapshot.version() && governance.eligible(n,me.yeonjae.ovlo.application.service.office.OfficeDates.today(clock))).isPresent();
+                    && n.getVersion()==snapshot.version()
+                    && n.isGroundingEligible(me.yeonjae.ovlo.application.service.office.OfficeDates.today(clock),inquiry.getLang())
+                    && me.yeonjae.ovlo.application.service.office.NoticeTranslationEvidence.matches(n,inquiry.getLang(),snapshot.translationFingerprint())
+                    && governance.eligible(n,me.yeonjae.ovlo.application.service.office.OfficeDates.today(clock))).isPresent();
             citations.add(AskResult.Citation.from(snapshot,current));
         }
         if(citations.isEmpty()) for(Long id:inquiry.getCitedNoticeIds()) {

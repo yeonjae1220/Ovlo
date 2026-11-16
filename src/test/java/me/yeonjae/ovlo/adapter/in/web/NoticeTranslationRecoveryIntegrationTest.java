@@ -25,8 +25,8 @@ class NoticeTranslationRecoveryIntegrationTest extends NoticeRetranslationIntegr
     Notice approved(String title) {
         var n=Notice.register(notice.getOfficeId(),NoticeCategory.OTHER,title,
                 "등록비는 15유로입니다. 보증금은 150유로입니다. 등록비는 환불되지 않습니다. 문의 office@university.example https://university.example/help",
-                null,List.of(),"2026-2",LocalDate.now().minusDays(1),LocalDate.now().plusDays(30),notice.getCreatedBy(),Instant.now());
-        n.approve(notice.getCreatedBy().toString(),Instant.now(),LocalDate.now());
+                null,List.of(),"2026-2",today().minusDays(1),today().plusDays(30),notice.getCreatedBy(),Instant.now());
+        n.approve(notice.getCreatedBy().toString(),Instant.now(),today());
         me.yeonjae.ovlo.support.NoticeFixtures.verify(n,Instant.now());
         for (var lang:NoticeLang.ALL) if (lang!=NoticeLang.EN && lang!=NoticeLang.KO) n.putTranslation(lang,"fixture","fixture",Instant.now());
         return notices.save(n);
@@ -67,7 +67,7 @@ class NoticeTranslationRecoveryIntegrationTest extends NoticeRetranslationIntegr
         // New adapter/scheduler instances recover persisted work, with no approval event or HTTP retry.
         assertThat(new NoticeTranslationJobAdapter(jdbc).dueNotices()).contains(b.getId());
         new NoticeTranslationScheduler(translations).run();
-        assertThat(notices.findCommittedById(b.getId()).orElseThrow().isGroundingEligible(LocalDate.now(),NoticeLang.EN)).isTrue();
+        assertThat(notices.findCommittedById(b.getId()).orElseThrow().isGroundingEligible(today(),NoticeLang.EN)).isTrue();
         assertThat(jdbc.queryForList("SELECT state FROM notice_translation_job WHERE notice_id IN (?,?)",String.class,a.getId(),b.getId())).containsOnly("DONE");
         verify(translator,times(2)).translate(any()); verify(verifier,times(2)).verifyTranslation(any(),any());
     }
@@ -109,7 +109,7 @@ class NoticeTranslationRecoveryIntegrationTest extends NoticeRetranslationIntegr
         jdbc.update("UPDATE office_notice_translation SET integrity_verified=false WHERE notice_id=? AND lang='en'",n.getId());
         var read=notices.findCommittedById(n.getId()).orElseThrow();
         assertThat(read.getTranslation(NoticeLang.EN).orElseThrow().isStaleFor(read.getVersion())).isTrue();
-        assertThat(read.isGroundingEligible(LocalDate.now(),NoticeLang.EN)).isFalse();
+        assertThat(read.isGroundingEligible(today(),NoticeLang.EN)).isFalse();
         assertThat(read.translationsToGenerate(NoticeLang.ALL)).containsExactly(NoticeLang.EN);
     }
 
@@ -136,7 +136,7 @@ class NoticeTranslationRecoveryIntegrationTest extends NoticeRetranslationIntegr
         assertThat(jdbc.queryForObject("SELECT state FROM notice_translation_job WHERE notice_id=?",String.class,notice.getId())).isEqualTo("PENDING");
         jdbc.update("UPDATE notice_translation_job SET created_at=CURRENT_TIMESTAMP-INTERVAL '49 hours' WHERE notice_id=?",notice.getId());
         jobs.dueNotices();
-        notice.approve(notice.getCreatedBy().toString(),Instant.now(),LocalDate.now());notices.save(notice);
+        notice.approve(notice.getCreatedBy().toString(),Instant.now(),today());notices.save(notice);
         jobs.activateApproved(notice.getId(),notice.getVersion());assertThat(jobs.dueNotices()).contains(notice.getId());
         notice.archive();notices.save(notice);assertThat(jobs.dueNotices()).doesNotContain(notice.getId());
         assertThat(jobs.claim(notice.getId(),notice.getVersion(),NoticeLang.EN)).isEmpty();
@@ -145,4 +145,7 @@ class NoticeTranslationRecoveryIntegrationTest extends NoticeRetranslationIntegr
         assertThat(jobs.claim(n.getId(),n.getVersion()-1,NoticeLang.EN)).isEmpty();
         verifyNoInteractions(translator);
     }
+
+    // CI runs in UTC; eligibility and source verification use the international office's business date.
+    private static LocalDate today() { return LocalDate.now(me.yeonjae.ovlo.application.service.office.OfficeDates.ZONE); }
 }

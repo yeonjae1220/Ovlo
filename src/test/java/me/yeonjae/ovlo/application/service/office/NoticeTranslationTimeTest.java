@@ -14,13 +14,24 @@ class NoticeTranslationTimeTest {
   "EN|18시|18:00 amid the celebrations", "EN|오후 6시|6:00 p.m.",
   "JA|18시|締切は18:00です", "ZH|오후 6시|下午6:00", "EN|마감18:00입니다|Deadline 18:00",
   "VI|18시|18:00", "EN|14-17시|14:00–17:00", "EN|18시 30분 45초|18:30:45",
-  "EN|교육 1.5시간, 시작 18시|Training 1.5 hours, starts 18:00"
+  "EN|교육 1.5시간, 시작 18시|Training 1.5 hours, starts 18:00",
+  "FR|교육은 2시간입니다.|La formation dure 2 h.",
+  "FR|교육은 1.5시간입니다.|La formation dure 1,5 h.",
+  "FR|교육 기간 2시간 30분|Durée : 2 h 30 min",
+  "FR|교육은 48시간입니다.|La formation dure 48 h.",
+  "FR|교육은 2시간이고 18시에 시작합니다.|La formation dure 2 h et commence à 18 h.",
+  "FR|교육 기간 2시간|La formation se déroule pendant 2 h."
  }) void acceptsEquivalentClockTimes(NoticeLang to,String source,String translated) { assertThat(check(to,source,translated)).isTrue(); }
  @ParameterizedTest @CsvSource(delimiter='|',value={
   "EN|18시|18:59", "EN|오후 6시|6 AM", "EN|18:30:45|18:30:46", "EN|18시|18:00 and 19:00",
   "EN|18시, 18시|18:00", "EN|18시|25:00", "EN|18시|18:60", "EN|18시|18:123",
   "DE|18시|19 Uhr", "FR|18시|18 h 59", "EN|마감 18시, 번호 18과 59|Deadline 18:59, references 18 and 59",
-  "DE|18시|19:00 am Freitag", "FR|18시|19 h", "FR|18시|25 h", "FR|18시|18 h 60", "EN|18시|6:00 am"
+  "DE|18시|19:00 am Freitag", "FR|18시|19 h", "FR|18시|25 h", "FR|18시|18 h 60", "EN|18시|6:00 am",
+  "FR|교육은 2시간입니다.|La formation dure 3 h.",
+  "FR|교육은 1.5시간입니다.|La formation dure 15 h.",
+  "FR|교육은 2시간이고 18시에 시작합니다.|La formation dure 2 h et commence à 19 h.",
+  "FR|18시|La formation dure 18 h.",
+  "FR|교육 기간 2시간 30분|Durée : 2 h 31 min"
  }) void rejectsChangedMissingOrInvalidClockTimes(NoticeLang to,String source,String translated) { assertThat(check(to,source,translated)).isFalse(); }
  boolean check(NoticeLang to,String source,String translated) {
   return new NoticeTranslationGate().check(new TranslationPort.Request(NoticeLang.KO,to,"안내",source),

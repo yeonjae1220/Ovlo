@@ -1,0 +1,276 @@
+{
+  "initialLabelEvaluation": [
+    {
+      "body": "This is a fictitious notice for operational verification and is not an actual university notice. The registration fee is 15 euros. The deposit is 150 euros. The registration fee is non-refundable. The orientation session lasts 1.5 hours. Inquiries: office@university.example https://university.example/help",
+      "semantic": true,
+      "title": "[Operational Verification Only] Registration Notice 나",
+      "gate": {
+        "passed": true,
+        "reasons": []
+      },
+      "language": "en"
+    },
+    {
+      "body": "運用検証用の架空のお知らせであり、実際の学校の案内ではありません。登録費は15ユーロです。保証金は150ユーロです。登録費は返金されません。オリエンテーションは1.5時間です。お問い合わせ office@university.example https://university.example/help",
+      "semantic": true,
+      "title": "[運用検証専用] 登録案内 나",
+      "gate": {
+        "passed": true,
+        "reasons": []
+      },
+      "language": "ja"
+    },
+    {
+      "body": "这是用于运营验证的虚拟公告，并非实际的学校通知。注册费为15欧元。押金为150欧元。注册费不予退还。说明培训为1.5小时。咨询 office@university.example https://university.example/help",
+      "semantic": false,
+      "title": "[仅限运营验证] 注册须知 나",
+      "gate": {
+        "passed": true,
+        "reasons": []
+      },
+      "language": "zh"
+    },
+    {
+      "body": "Dies ist eine fiktive Mitteilung zur Betriebsprüfung und keine echte Mitteilung der Universität. Die Registrierungsgebühr beträgt 15 Euro. Die Kaution beträgt 150 Euro. Die Registrierungsgebühr wird nicht erstattet. Die Einführungsveranstaltung dauert 1,5 Stunden. Kontakt: office@university.example https://university.example/help",
+      "semantic": true,
+      "title": "[Nur zur Betriebsprüfung] Hinweis zur Registrierung 나",
+      "gate": {
+        "passed": true,
+        "reasons": []
+      },
+      "language": "de"
+    },
+    {
+      "body": "Ceci est un avis fictif destiné à la vérification opérationnelle et non un avis officiel de l'université. Les frais d'inscription s'élèvent à 15 euros. La caution s'élève à 150 euros. Les frais d'inscription ne sont pas remboursables. La séance d'orientation dure 1,5 heure. Contact : office@university.example https://university.example/help",
+      "semantic": true,
+      "title": "[Réservé à la vérification opérationnelle] Avis d'inscription 나",
+      "gate": {
+        "passed": true,
+        "reasons": []
+      },
+      "language": "fr"
+    },
+    {
+      "body": "Đây là thông báo giả lập dùng để kiểm tra vận hành, không phải thông báo thực tế của trường. Phí đăng ký là 15 euro. Tiền đặt cọc là 150 euro. Phí đăng ký không được hoàn lại. Buổi hướng dẫn kéo dài 1,5 giờ. Liên hệ office@university.example https://university.example/help",
+      "semantic": true,
+      "title": "[Chỉ dùng cho kiểm tra vận hành] Hướng dẫn đăng ký 나",
+      "gate": {
+        "passed": true,
+        "reasons": []
+      },
+      "language": "vi"
+    }
+  ],
+  "evidenceEvaluation": {
+    "french": {
+      "model": "anthropic/claude-opus-5.5",
+      "generated": "La formation dure 2 heures et commence à 18:00.",
+      "unitMutationRejected": true,
+      "abbreviationAccepted": true,
+      "durationMutationRejected": true
+    },
+    "answer": {
+      "model": "anthropic/claude-sonnet-5.5",
+      "changedEvidenceRejected": true,
+      "abuseRejected": true,
+      "text": "La formation dure 2 h [1] et commence à 18 h [1]."
+    }
+  },
+  "numbersEvaluation": {
+    "executedAt": "2026-11-16T15:09:01.953672227Z",
+    "results": [
+      {
+        "language": "en",
+        "model": "anthropic/claude-opus-5.5",
+        "title": "Dormitory Application Notice",
+        "body": "The application deadline is 18:00 on November 20, 2026. The orientation session lasts 1.5 hours. The deposit is 1,500.25 euros. The late fee is 0.05%. Capacity is 15 people. Inquiries: office@university.example https://university.example/help?version=1.5",
+        "originalPassed": true,
+        "semanticAllowed": true,
+        "contactMutationRejected": true,
+        "addedAmountRejected": true,
+        "originalReasons": [],
+        "decimalLossMutationApplied": true,
+        "decimalLossRejected": true,
+        "decimalLossReasons": [
+          "원문과 번역의 URL 또는 이메일이 다릅니다",
+          "원문과 번역의 숫자 값 또는 출현 횟수가 다릅니다"
+        ],
+        "changedTimeMutationApplied": true,
+        "changedTimeRejected": true,
+        "latencyMs": 4155
+      },
+      {
+        "language": "ja",
+        "model": "anthropic/claude-opus-5.5",
+        "title": "寮申請のご案内",
+        "body": "申請締切は2026年11月20日18:00です。オリエンテーションは1.5時間です。保証金は1,500.25ユーロです。延滞手数料は0.05%です。定員は15名です。お問い合わせ office@university.example https://university.example/help?version=1.5",
+        "originalPassed": true,
+        "semanticAllowed": true,
+        "contactMutationRejected": true,
+        "addedAmountRejected": true,
+        "originalReasons": [],
+        "decimalLossMutationApplied": true,
+        "decimalLossRejected": true,
+        "decimalLossReasons": [
+          "원문과 번역의 URL 또는 이메일이 다릅니다",
+          "원문과 번역의 숫자 값 또는 출현 횟수가 다릅니다"
+        ],
+        "changedTimeMutationApplied": true,
+        "changedTimeRejected": true,
+        "latencyMs": 4891
+      },
+      {
+        "language": "zh",
+        "model": "anthropic/claude-opus-5.5",
+        "title": "宿舍申请须知",
+        "body": "申请截止时间为2026年11月20日18:00。说明培训时长为1.5小时。押金为1,500.25欧元。逾期手续费为0.05%。名额为15人。咨询 office@university.example https://university.example/help?version=1.5",
+        "originalPassed": true,
+        "semanticAllowed": true,
+        "contactMutationRejected": true,
+        "addedAmountRejected": true,
+        "originalReasons": [],
+        "decimalLossMutationApplied": true,
+        "decimalLossRejected": true,
+        "decimalLossReasons": [
+          "원문과 번역의 URL 또는 이메일이 다릅니다",
+          "원문과 번역의 숫자 값 또는 출현 횟수가 다릅니다"
+        ],
+        "changedTimeMutationApplied": true,
+        "changedTimeRejected": true,
+        "latencyMs": 5504
+      },
+      {
+        "language": "de",
+        "model": "anthropic/claude-opus-5.5",
+        "title": "Hinweise zur Bewerbung für das Studentenwohnheim",
+        "body": "Bewerbungsschluss ist der 20. November 2026 um 18:00 Uhr. Die Einführungsschulung dauert 1,5 Stunden. Die Kaution beträgt 1.500,25 Euro. Die Verspätungsgebühr beträgt 0,05 %. Es gibt 15 Plätze. Kontakt: office@university.example https://university.example/help?version=1.5",
+        "originalPassed": true,
+        "semanticAllowed": true,
+        "contactMutationRejected": true,
+        "addedAmountRejected": true,
+        "originalReasons": [],
+        "decimalLossMutationApplied": true,
+        "decimalLossRejected": true,
+        "decimalLossReasons": [
+          "원문과 번역의 URL 또는 이메일이 다릅니다",
+          "원문과 번역의 숫자 값 또는 출현 횟수가 다릅니다"
+        ],
+        "changedTimeMutationApplied": true,
+        "changedTimeRejected": true,
+        "latencyMs": 5138
+      },
+      {
+        "language": "fr",
+        "model": "anthropic/claude-opus-5.5",
+        "title": "Informations sur la demande de logement en résidence universitaire",
+        "body": "La date limite de dépôt des demandes est fixée au 20 novembre 2026 à 18:00. La séance d'information dure 1,5 heure. Le dépôt de garantie s'élève à 1 500,25 euros. Les frais de retard sont de 0,05 %. La capacité d'accueil est de 15 personnes. Contact : office@university.example https://university.example/help?version=1.5",
+        "originalPassed": true,
+        "semanticAllowed": true,
+        "contactMutationRejected": true,
+        "addedAmountRejected": true,
+        "originalReasons": [],
+        "decimalLossMutationApplied": true,
+        "decimalLossRejected": true,
+        "decimalLossReasons": [
+          "원문과 번역의 URL 또는 이메일이 다릅니다",
+          "원문과 번역의 숫자 값 또는 출현 횟수가 다릅니다"
+        ],
+        "changedTimeMutationApplied": true,
+        "changedTimeRejected": true,
+        "latencyMs": 5400
+      },
+      {
+        "language": "vi",
+        "model": "anthropic/claude-opus-5.5",
+        "title": "Hướng dẫn đăng ký ký túc xá",
+        "body": "Hạn chót đăng ký là 18:00 ngày 20 tháng 11 năm 2026. Buổi hướng dẫn kéo dài 1,5 giờ. Tiền đặt cọc là 1.500,25 euro. Phí nộp trễ là 0,05%. Chỉ tiêu là 15 người. Liên hệ office@university.example https://university.example/help?version=1.5",
+        "originalPassed": true,
+        "semanticAllowed": true,
+        "contactMutationRejected": true,
+        "addedAmountRejected": true,
+        "originalReasons": [],
+        "decimalLossMutationApplied": true,
+        "decimalLossRejected": true,
+        "decimalLossReasons": [
+          "원문과 번역의 URL 또는 이메일이 다릅니다",
+          "원문과 번역의 숫자 값 또는 출현 횟수가 다릅니다"
+        ],
+        "changedTimeMutationApplied": true,
+        "changedTimeRejected": true,
+        "latencyMs": 8311
+      }
+    ],
+    "expectedLanguages": [
+      "en",
+      "de",
+      "fr",
+      "ja",
+      "zh",
+      "vi"
+    ]
+  },
+  "labelRecheck": [
+    {
+      "body": "This is a fictitious notice for operational verification and is not an actual university notice. The registration fee is 15 euros. The deposit is 150 euros. The registration fee is non-refundable. The orientation session lasts 1.5 hours. Inquiries: office@university.example https://university.example/help",
+      "semantic": true,
+      "title": "[For Operational Verification Only] Registration Notice 나",
+      "gate": {
+        "passed": true,
+        "reasons": []
+      },
+      "language": "en"
+    },
+    {
+      "body": "運用検証用の架空のお知らせであり、実際の学校のご案内ではありません。登録料は15ユーロです。保証金は150ユーロです。登録料は返金されません。オリエンテーションは1.5時間です。お問い合わせ office@university.example https://university.example/help",
+      "semantic": true,
+      "title": "[運用検証専用] 登録案内 나",
+      "gate": {
+        "passed": true,
+        "reasons": []
+      },
+      "language": "ja"
+    },
+    {
+      "body": "本通知为运营验证用的虚拟通知，并非实际的学校通知。注册费为15欧元。押金为150欧元。注册费不予退还。说明培训时长为1.5小时。咨询 office@university.example https://university.example/help",
+      "semantic": true,
+      "title": "[运营验证专用] 注册通知 나",
+      "gate": {
+        "passed": true,
+        "reasons": []
+      },
+      "language": "zh"
+    },
+    {
+      "body": "Dies ist eine fiktive Mitteilung zur Betriebsprüfung und kein tatsächlicher Hinweis der Universität. Die Registrierungsgebühr beträgt 15 Euro. Die Kaution beträgt 150 Euro. Die Registrierungsgebühr wird nicht erstattet. Die Einführungsschulung dauert 1,5 Stunden. Kontakt: office@university.example https://university.example/help",
+      "semantic": true,
+      "title": "[Nur zur Betriebsprüfung] Hinweis zur Registrierung 나",
+      "gate": {
+        "passed": true,
+        "reasons": []
+      },
+      "language": "de"
+    },
+    {
+      "body": "Ceci est un avis fictif destiné à la vérification opérationnelle et non un avis officiel de l'université. Les frais d'inscription sont de 15 euros. Le dépôt de garantie est de 150 euros. Les frais d'inscription ne sont pas remboursables. La séance d'orientation dure 1,5 heure. Contact : office@university.example https://university.example/help",
+      "semantic": true,
+      "title": "[Réservé à la vérification opérationnelle] Avis d'inscription 나",
+      "gate": {
+        "passed": true,
+        "reasons": []
+      },
+      "language": "fr"
+    },
+    {
+      "body": "Đây là thông báo giả định dùng để kiểm tra vận hành, không phải thông báo thực tế của trường. Phí đăng ký là 15 euro. Tiền đặt cọc là 150 euro. Phí đăng ký không được hoàn lại. Buổi hướng dẫn kéo dài 1,5 giờ. Liên hệ office@university.example https://university.example/help",
+      "semantic": true,
+      "title": "[Chỉ dùng để kiểm tra vận hành] Hướng dẫn đăng ký 나",
+      "gate": {
+        "passed": true,
+        "reasons": []
+      },
+      "language": "vi"
+    }
+  ],
+  "realLlmConcurrentRecovery": "passed",
+  "note": "Initial ZH label semantic verifier rejected one generated translation; unchanged recheck passed all six. No guard was weakened."
+}
