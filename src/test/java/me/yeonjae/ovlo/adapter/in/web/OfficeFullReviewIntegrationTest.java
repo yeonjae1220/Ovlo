@@ -60,6 +60,7 @@ class OfficeFullReviewIntegrationTest {
     @Autowired JwtTokenProvider jwt;
     @Autowired WebApplicationContext context;
     @MockitoBean TranslationPort translator;
+    @MockitoBean me.yeonjae.ovlo.application.port.out.office.NoticeTranslationVerificationPort verifier;
     MockMvc mvc;
     Notice notice;
     Long actor;
@@ -81,6 +82,7 @@ class OfficeFullReviewIntegrationTest {
                 "2026-2", today.minusDays(1), today.plusDays(30), actor, now));
         path = "/api/v1/office-admin/" + officeId + "/notices/" + notice.getId();
         token = "Bearer " + jwt.generateAccessToken(new MemberId(actor), MemberRole.MEMBER, new OfficeMembership(officeId, OfficeRole.OFFICE_ADMIN));
+        org.mockito.Mockito.lenient().when(verifier.verifyTranslation(any(),any())).thenReturn(true);
         when(translator.translate(any())).thenAnswer(inv -> {
             assertThat(TransactionSynchronizationManager.isActualTransactionActive()).as("No DB transaction during paid provider call").isFalse();
             TranslationPort.Request request = inv.getArgument(0);
@@ -203,6 +205,7 @@ class OfficeFullReviewIntegrationTest {
                 assertThat(entered.await(10,java.util.concurrent.TimeUnit.SECONDS)).isTrue();
                 // Simulate a crashed/expired lease: a replacement worker may finish, then receive human review.
                 redis.delete("office:translation:notice:"+notice.getId()+":"+notice.getVersion()+":en");
+                jdbc.update("UPDATE notice_translation_job SET lease_until=CURRENT_TIMESTAMP-INTERVAL '1 second' WHERE notice_id=? AND lang='en'",notice.getId());
                 // Both work ownership and the paid-call slot expire after a crashed worker.
                 for (String scope : List.of("member:"+actor, "office:"+notice.getOfficeId(), "global")) {
                     String active="ai:{translation}:"+scope+":active";

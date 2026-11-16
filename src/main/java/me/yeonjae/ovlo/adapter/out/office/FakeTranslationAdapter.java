@@ -11,7 +11,11 @@ import org.springframework.stereotype.Component;
  */
 @Component
 @ConditionalOnProperty(name = "ovlo.llm.provider", havingValue = "fake", matchIfMissing = true)
-public class FakeTranslationAdapter implements TranslationPort {
+public class FakeTranslationAdapter implements TranslationPort, me.yeonjae.ovlo.application.port.out.office.NoticeTranslationVerificationPort {
+    @Override public boolean verifyTranslation(Request request, Result result) {
+        var expected = translate(request);
+        return expected.title().equals(result.title()) && expected.body().equals(result.body());
+    }
 
     public static final String MODEL_ID = "fake-translator";
 

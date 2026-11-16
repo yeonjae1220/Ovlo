@@ -19,7 +19,7 @@ class NoticeTranslationGateTest {
     @DisplayName("숫자가 모두 남아 있고 원문과 다르면 통과한다 (1,000 과 1000 은 같은 숫자)")
     void passesWhenNumbersPreserved() {
         var result = new TranslationPort.Result("Dorm application",
-                "Apply by February 10; the deposit is 150000 KRW (2 months).", "m");
+                "Apply by February 10; the deposit is 150000 KRW.", "m");
 
         assertThat(gate.check(request, result).passed()).isTrue();
     }
@@ -171,4 +171,26 @@ class NoticeTranslationGateTest {
         return gate.check(new TranslationPort.Request(from, to, "원문", "값: " + source),
                 new TranslationPort.Result("Translation", "Value: " + translated, "m"));
     }
+
+    @Test void rejectsAddedAmountsAndOccurrencesAndChangedContacts() {
+        var source=new TranslationPort.Request(NoticeLang.KO,NoticeLang.EN,"등록 안내",
+                "등록비 15유로. 문의 office@university.example https://university.example/help");
+        String faithful="Fee 15 EUR. Contact office@university.example https://university.example/help";
+        assertThat(gate.check(source,new TranslationPort.Result("Registration",faithful,"m")).passed()).isTrue();
+        for(String body:java.util.List.of(faithful+" Pay another 900 EUR",faithful+" Pay 15 EUR again",
+                faithful.replace("office@university.example","attacker@example.invalid"),
+                faithful.replace("https://university.example/help","https://payment.example.invalid/help"),
+                faithful+" https://payment.example.invalid",faithful.replace("office@university.example",""))) {
+            assertThat(gate.check(source,new TranslationPort.Result("Registration",body,"m")).passed()).isFalse();
+        }
+    }
+
+    @Test void contactIdentifiersKeepTheirExactDigitsWithoutLocaleParsing() {
+        String contacts="office1.5@university.example https://university.example/help?version=1.5&date=2026-11-20";
+        var source=new TranslationPort.Request(NoticeLang.KO,NoticeLang.FR,"안내","교육은 1.5시간입니다. "+contacts);
+        var target=new TranslationPort.Result("Formation","Durée : 1,5 heure. "+contacts,"m");
+        assertThat(gate.check(source,target).passed()).isTrue();
+        assertThat(gate.check(source,new TranslationPort.Result(target.title(),target.body().replace("version=1.5","version=15"),"m")).passed()).isFalse();
+    }
+
 }

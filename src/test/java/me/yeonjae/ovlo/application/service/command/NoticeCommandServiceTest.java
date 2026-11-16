@@ -60,7 +60,7 @@ class NoticeCommandServiceTest {
     void setUp() {
         sut = new NoticeCommandService(loadNoticePort, saveNoticePort, loadOfficePort, translateNoticeUseCase,
                 eventPublisher, Clock.fixed(NOW, ZoneOffset.UTC), org.mockito.Mockito.mock(me.yeonjae.ovlo.application.port.out.office.NoticeKnowledgePort.class),
-                org.mockito.Mockito.mock(me.yeonjae.ovlo.application.service.office.NoticeGovernanceService.class));
+                org.mockito.Mockito.mock(me.yeonjae.ovlo.application.service.office.NoticeGovernanceService.class), me.yeonjae.ovlo.support.NoticeTranslationJobFixtures.available());
         office = Office.create(266L, "국제처", NOW);
         office.assignId(new OfficeId(OFFICE));
         lenient().when(loadOfficePort.findById(OFFICE)).thenReturn(Optional.of(office));
@@ -118,7 +118,7 @@ class NoticeCommandServiceTest {
         assertThat(result.approvedBy()).isEqualTo("11");
         assertThat(result.activeToday()).isTrue();
         verify(eventPublisher).publishEvent(new NoticeApprovedEvent(NOTICE));
-        verify(translateNoticeUseCase, never()).translateMissing(any());
+        verify(translateNoticeUseCase, never()).retryManually(any());
     }
 
     @Test
@@ -160,12 +160,12 @@ class NoticeCommandServiceTest {
     void retranslateDelegates() {
         draftInStore();
         given(loadNoticePort.findCommittedById(NOTICE)).willAnswer(inv -> loadNoticePort.findById(NOTICE));
-        given(translateNoticeUseCase.translateMissing(NOTICE))
+        given(translateNoticeUseCase.retryManually(NOTICE))
                 .willReturn(new TranslateNoticeUseCase.Outcome(List.of(NoticeLang.EN), List.of()));
 
         NoticeResult result = sut.retranslate(new NoticeActionCommand(OFFICE, NOTICE, "11"));
 
         assertThat(result.id()).isEqualTo(NOTICE);
-        verify(translateNoticeUseCase).translateMissing(NOTICE);
+        verify(translateNoticeUseCase).retryManually(NOTICE);
     }
 }

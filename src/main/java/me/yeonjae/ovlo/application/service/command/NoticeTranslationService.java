@@ -31,6 +31,9 @@ import java.util.List;
 @Service
 public class NoticeTranslationService implements TranslateNoticeUseCase {
 
+    private final me.yeonjae.ovlo.application.port.out.office.NoticeTranslationVerificationPort verifier;
+    private final me.yeonjae.ovlo.application.port.out.office.NoticeTranslationJobPort jobs;
+
     private static final Logger log = LoggerFactory.getLogger(NoticeTranslationService.class);
 
     private final me.yeonjae.ovlo.application.port.out.office.TranslationAdmissionPort admission;
@@ -52,7 +55,10 @@ public class NoticeTranslationService implements TranslateNoticeUseCase {
                                     OfficeNotificationPort notificationPort, Clock clock, org.springframework.transaction.support.TransactionTemplate tx,
                                     me.yeonjae.ovlo.application.port.out.office.NoticeKnowledgePort knowledge,
                                     me.yeonjae.ovlo.application.port.out.office.TranslationWorkPort work,
-                                    me.yeonjae.ovlo.application.port.out.office.TranslationAdmissionPort admission) {
+                                    me.yeonjae.ovlo.application.port.out.office.TranslationAdmissionPort admission,
+                                    me.yeonjae.ovlo.application.port.out.office.NoticeTranslationVerificationPort verifier,
+                                    me.yeonjae.ovlo.application.port.out.office.NoticeTranslationJobPort jobs) {
+        this.verifier=verifier; this.jobs=jobs;
         this.loadNoticePort = loadNoticePort;
         this.saveNoticePort = saveNoticePort;
         this.loadOfficePort = loadOfficePort;
@@ -69,50 +75,83 @@ public class NoticeTranslationService implements TranslateNoticeUseCase {
         Notice notice = loadNoticePort.findById(noticeId)
                 .orElseThrow(() -> new NoticeException("공지를 찾을 수 없습니다: id=" + noticeId,
                         NoticeException.ErrorType.NOT_FOUND));
-        List<NoticeLang> targets = notice.translationsToGenerate(NoticeLang.ALL);
         List<NoticeLang> generated = new ArrayList<>();
         List<NoticeLang> failed = new ArrayList<>();
-
+        List<NoticeLang> deferred = new ArrayList<>();
+        if (notice.getStatus()==me.yeonjae.ovlo.domain.office.model.NoticeStatus.ARCHIVED) return new Outcome(List.of(),List.of(),List.of());
+        Office office=loadOfficePort.findById(notice.getOfficeId()).orElse(null);
+        if (office==null || office.isSuspended()) return new Outcome(List.of(),List.of(),List.of());
+        List<NoticeLang> targets = notice.translationsToGenerate(NoticeLang.ALL);
+        jobs.enqueue(noticeId, notice.getVersion(), targets);
         for (NoticeLang lang : targets) {
-            TranslationPort.Request request = new TranslationPort.Request(notice.getSourceLang(), lang,
-                    notice.getTitle(), notice.getBody());
+            var claimedJob=jobs.claim(noticeId,notice.getVersion(),lang);
+            if (claimedJob.isEmpty()) { deferred.add(lang); continue; }
+            var job=claimedJob.get();
+            TranslationPort.Request request = new TranslationPort.Request(notice.getSourceLang(), lang,notice.getTitle(),notice.getBody());
             try {
                 var claimed = work.tryAcquire("notice:" + noticeId + ":" + notice.getVersion() + ":" + lang.code());
-                if (claimed.isEmpty()) continue;
+                if (claimed.isEmpty()) { jobs.defer(job,30); deferred.add(lang); continue; }
                 try (var lease = claimed.get()) {
-                Notice latest = loadNoticePort.findCommittedById(noticeId).orElseThrow();
-                if (latest.getVersion()!=notice.getVersion() || latest.getStatus()==me.yeonjae.ovlo.domain.office.model.NoticeStatus.ARCHIVED
-                        || latest.getTranslation(lang).filter(t -> !t.isStaleFor(latest.getVersion())).isPresent()) continue;
-                TranslationPort.Result result;
-                try (var admitted = admission.acquire(notice.getOfficeId(), notice.getCreatedBy())) {
-                    result = translationPort.translate(request);
+                    Notice latest = loadNoticePort.findCommittedById(noticeId).orElseThrow();
+                    if (!current(latest,notice,lang)) { jobs.finish(job,false); continue; }
+                    try (var admitted = admission.acquire(notice.getOfficeId(),notice.getCreatedBy(),2)) {
+                        // Reserve an attempt durably before either paid call, including worker crashes.
+                        if (!jobs.beginAttempt(job)) { jobs.finish(job,true); continue; }
+                        TranslationPort.Result result=translationPort.translate(request);
+                        var verdict=gate.check(request,result);
+                        if (!verdict.passed() || !verifier.verifyTranslation(request,result)) {
+                            jobs.finish(job,true);
+                            failed.add(lang);
+                            log.warn("[Notice] translation integrity rejected notice={} lang={}",noticeId,lang.code());
+                            continue;
+                        }
+                        boolean stored=Boolean.TRUE.equals(tx.execute(status -> {
+                            knowledge.lockOffice(notice.getOfficeId());
+                            Notice current=loadNoticePort.findById(noticeId).orElseThrow();
+                            Office currentOffice=loadOfficePort.findById(notice.getOfficeId()).orElseThrow();
+                            if (!lease.isHeld() || !jobs.isHeld(job) || currentOffice.isSuspended() || !current(current,notice,lang)) return false;
+                            current.putTranslation(lang,result.title(),result.body(),clock.instant());
+                            saveNoticePort.save(current);
+                            jobs.finish(job,false);
+                            return true;
+                        }));
+                        if (stored) generated.add(lang);
+                        else jobs.finish(job,false);
+                    }
                 }
-                NoticeTranslationGate.Verdict verdict = gate.check(request, result);
-                if (!verdict.passed()) {
-                    log.warn("[Notice] translation rejected notice={} lang={} reasons={}", noticeId, lang.code(), verdict.reasons());
-                    failed.add(lang);
-                    continue;
-                }
-                boolean stored=Boolean.TRUE.equals(tx.execute(status -> {
-                    knowledge.lockOffice(notice.getOfficeId());
-                    Notice current=loadNoticePort.findById(noticeId).orElseThrow();
-                    if (!lease.isHeld() || current.getVersion()!=notice.getVersion() || current.getStatus()==me.yeonjae.ovlo.domain.office.model.NoticeStatus.ARCHIVED
-                            || current.getTranslation(lang).filter(t -> !t.isStaleFor(current.getVersion())).isPresent())
-                        return false;
-                    current.putTranslation(lang,result.title(),result.body(),clock.instant()); saveNoticePort.save(current); return true;
-                }));
-                if(stored) generated.add(lang);
-                }
+            } catch (me.yeonjae.ovlo.application.port.out.office.TranslationAdmissionPort.Unavailable e) {
+                jobs.defer(job,e.retryAfterSeconds());
+                deferred.add(lang);
             } catch (RuntimeException e) {
-                log.warn("[Notice] translation failed notice={} lang={}: {}", noticeId, lang.code(), e.getClass().getSimpleName());
+                log.warn("[Notice] translation failed notice={} lang={}: {}",noticeId,lang.code(),e.getClass().getSimpleName());
+                jobs.defer(job,300);
                 failed.add(lang);
             }
         }
+        if (!failed.isEmpty()) notifyAdmins(notice,failed);
+        return new Outcome(List.copyOf(generated),List.copyOf(failed),List.copyOf(deferred));
+    }
 
-        if (!failed.isEmpty()) {
-            notifyAdmins(notice, failed);
+    private boolean current(Notice latest, Notice original, NoticeLang lang) {
+        return latest.getVersion()==original.getVersion()
+                && latest.getStatus()!=me.yeonjae.ovlo.domain.office.model.NoticeStatus.ARCHIVED
+                && !latest.getExpiresAt().isBefore(me.yeonjae.ovlo.application.service.office.OfficeDates.today(clock))
+                && latest.getTranslation(lang).filter(t -> !t.isStaleFor(latest.getVersion())).isEmpty();
+    }
+
+    @Override @Transactional(propagation=org.springframework.transaction.annotation.Propagation.NOT_SUPPORTED)
+    public Outcome retryManually(Long id) {
+        var notice=loadNoticePort.findCommittedById(id).orElseThrow();
+        jobs.reopenRejected(id,notice.getVersion());
+        return translateMissing(id);
+    }
+
+    @Override @Transactional(propagation=org.springframework.transaction.annotation.Propagation.NOT_SUPPORTED)
+    public void retryDue() {
+        for (Long id:jobs.dueNotices()) {
+            try { translateMissing(id); }
+            catch (RuntimeException e) { log.warn("Notice translation retry failed notice={} type={}",id,e.getClass().getSimpleName()); }
         }
-        return new Outcome(List.copyOf(generated), List.copyOf(failed));
     }
 
     private void notifyAdmins(Notice notice, List<NoticeLang> failed) {

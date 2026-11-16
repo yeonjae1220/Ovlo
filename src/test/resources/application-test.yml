@@ -22,6 +22,8 @@ spring:
       - org.springdoc.webmvc.core.configuration.SpringDocWebMvcConfiguration
 
 ovlo:
+  office:
+    translation-retry-enabled: false
   marketplace:
     photos:
       cleanup-enabled: false # Cleanup is exercised explicitly, never by wall-clock timing in tests.

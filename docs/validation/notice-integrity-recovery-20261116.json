@@ -1,0 +1,65 @@
+{
+  "validatedAt": "2026-11-16T10:00:05.841237+00:00",
+  "backend": {
+    "test": {
+      "tests": 808,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 8
+    },
+    "integrationTest": {
+      "tests": 202,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 3
+    }
+  },
+  "frontend": {
+    "build": "passed",
+    "authQueryCache": "passed",
+    "authSessionRace": "passed"
+  },
+  "python": {
+    "tests": 55,
+    "result": "passed"
+  },
+  "migration": "V47 -> V48: passed",
+  "liveLlm": {
+    "normalLanguages": [
+      "en",
+      "de",
+      "fr",
+      "ja",
+      "zh",
+      "vi"
+    ],
+    "translationModel": "claude-opus-5-5",
+    "verificationModel": "claude-sonnet-5-5",
+    "cases": [
+      "faithful translations",
+      "added amounts",
+      "changed email",
+      "decimal loss",
+      "changed time",
+      "swapped fee and deposit",
+      "reversed refund condition",
+      "verifier prompt injection",
+      "same-author concurrent requests automatically recovered",
+      "URL decimal identifiers preserved across locales"
+    ],
+    "results": {
+      "normalAndMutationTests": {
+        "tests": 7,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      "concurrentRequests": {
+        "tests": 1,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      }
+    }
+  }
+}

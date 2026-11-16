@@ -59,6 +59,7 @@ class NoticeRetranslationIntegrationTest {
     @Autowired JwtTokenProvider jwt;
     @Autowired WebApplicationContext context;
     @MockitoBean TranslationPort translator;
+    @MockitoBean me.yeonjae.ovlo.application.port.out.office.NoticeTranslationVerificationPort verifier;
     MockMvc mvc;
     Notice notice;
     String path, token;
@@ -79,6 +80,7 @@ class NoticeRetranslationIntegrationTest {
                 "2026-2", today.minusDays(1), today.plusDays(30), actor, now));
         path = "/api/v1/office-admin/" + officeId + "/notices/" + notice.getId();
         token = "Bearer " + jwt.generateAccessToken(new MemberId(actor), MemberRole.MEMBER, new OfficeMembership(officeId, OfficeRole.OFFICE_ADMIN));
+        org.mockito.Mockito.lenient().when(verifier.verifyTranslation(any(),any())).thenReturn(true);
         when(translator.translate(any())).thenAnswer(inv -> {
             assertThat(TransactionSynchronizationManager.isActualTransactionActive()).as("No DB transaction during paid provider call").isFalse();
             TranslationPort.Request request = inv.getArgument(0);

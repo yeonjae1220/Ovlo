@@ -119,6 +119,7 @@ public class OfficeNoticePersistenceAdapter implements LoadNoticePort, SaveNotic
             row.setStatus(t.getStatus().name());
             row.setSourceVersion(t.getSourceVersion());
             row.setGeneratedAt(t.getGeneratedAt());
+            row.setIntegrityVerified(t.isIntegrityVerified());
         }
         OfficeNoticeJpaEntity saved = repository.saveAndFlush(e);
         // 호출자가 넘긴 객체를 계속 쓰더라도 두 번째 save 가 새 행을 만들지 않도록 id 를 돌려준다
@@ -130,7 +131,7 @@ public class OfficeNoticePersistenceAdapter implements LoadNoticePort, SaveNotic
     private Notice toDomain(OfficeNoticeJpaEntity e) {
         List<NoticeTranslation> translations = e.getTranslations().stream()
                 .map(t -> NoticeTranslation.restore(NoticeLang.fromCode(t.getLang()).orElseThrow(), t.getTitle(), t.getBody(),
-                        TranslationStatus.valueOf(t.getStatus()), t.getSourceVersion(), t.getGeneratedAt()))
+                        TranslationStatus.valueOf(t.getStatus()), t.getSourceVersion(), t.getGeneratedAt(), t.isIntegrityVerified()))
                 .toList();
         Notice notice = Notice.restore(e.getId(), e.getOfficeId(), NoticeCategory.valueOf(e.getCategory()), e.getTitle(), e.getBody(),
                 NoticeLang.fromCode(e.getSourceLang()).orElse(NoticeLang.KO), e.getSourceUrl(), splitIds(e.getAttachmentMediaIds()),
