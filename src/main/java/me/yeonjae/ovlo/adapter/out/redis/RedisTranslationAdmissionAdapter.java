@@ -18,13 +18,13 @@ public class RedisTranslationAdmissionAdapter implements TranslationAdmissionPor
         -- A hash per scope uses Redis time, so midnight and app clock skew cannot bypass limits.
         for i=1,3 do
             redis.call('ZREMRANGEBYSCORE', KEYS[i+3], '-inf', now)
-            if redis.call('ZCARD', KEYS[i+3]) >= tonumber(ARGV[i+6]) then return 0 end
+            if redis.call('ZCARD', KEYS[i+3]) >= tonumber(ARGV[i+6]) then return -30 end
             local count, budget = 0, 0
             if tonumber(redis.call('HGET', KEYS[i], 'day') or '-1') == day then
                 count = tonumber(redis.call('HGET', KEYS[i], 'count') or '0')
                 budget = tonumber(redis.call('HGET', KEYS[i], 'budget') or '0')
             end
-            if count >= tonumber(ARGV[i]) or budget + tonumber(ARGV[10]) > tonumber(ARGV[i+3]) then return 0 end
+            if count >= tonumber(ARGV[i]) or budget + tonumber(ARGV[10]) > tonumber(ARGV[i+3]) then return -(86400 - now % 86400 + 1) end
         end
         for i=1,3 do
             if tonumber(redis.call('HGET', KEYS[i], 'day') or '-1') ~= day then
@@ -33,8 +33,8 @@ public class RedisTranslationAdmissionAdapter implements TranslationAdmissionPor
             redis.call('HINCRBY', KEYS[i], 'count', 1)
             redis.call('HINCRBY', KEYS[i], 'budget', ARGV[10])
             redis.call('EXPIRE', KEYS[i], 172800)
-            redis.call('ZADD', KEYS[i+3], now+180, ARGV[11])
-            redis.call('EXPIRE', KEYS[i+3], 360)
+            redis.call('ZADD', KEYS[i+3], now+tonumber(ARGV[12]), ARGV[11])
+            redis.call('EXPIRE', KEYS[i+3], 600)
         end
         return 1
         """, Long.class);
@@ -59,16 +59,20 @@ public class RedisTranslationAdmissionAdapter implements TranslationAdmissionPor
         limits=List.of(""+memberDaily,""+officeDaily,""+globalDaily,""+memberBudget,""+officeBudget,""+globalBudget,
                 "1",""+officeConcurrent,""+globalConcurrent,""+RESERVATION);
     }
-    @Override public Lease acquire(Long officeId, Long memberId) {
+    @Override public Lease acquire(Long officeId, Long memberId) { return acquire(officeId, memberId, 1); }
+    @Override public Lease acquire(Long officeId, Long memberId, int maxProviderCalls) {
+        if (maxProviderCalls < 1 || maxProviderCalls > 2) throw new IllegalArgumentException("Invalid provider call reservation");
         if (officeId==null || memberId==null) throw new IllegalArgumentException("Translation owner required");
         String prefix="ai:{translation}:";
         List<String> scopes=List.of(prefix+"member:"+memberId,prefix+"office:"+officeId,prefix+"global");
         List<String> active=scopes.stream().map(s->s+":active").toList();
         var keys=new java.util.ArrayList<>(scopes.stream().map(s->s+":daily").toList()); keys.addAll(active);
         String owner=UUID.randomUUID().toString();
-        var args=new java.util.ArrayList<>(limits); args.add(owner);
-        if (!Long.valueOf(1).equals(redis.execute(ACQUIRE,keys,args.toArray())))
-            throw new IllegalStateException("Translation capacity unavailable");
+        var args=new java.util.ArrayList<>(limits);
+        args.set(9, Long.toString(RESERVATION * maxProviderCalls)); args.add(owner); args.add(maxProviderCalls == 2 ? "300" : "180");
+        Long outcome=redis.execute(ACQUIRE,keys,args.toArray());
+        if (outcome == null) throw new IllegalStateException("Translation admission unavailable");
+        if (outcome != 1) throw new Unavailable(Math.max(30, -outcome));
         return new Lease() {
             private boolean closed;
             public void close() { if (!closed) { closed=true; redis.execute(RELEASE,active,owner); } }

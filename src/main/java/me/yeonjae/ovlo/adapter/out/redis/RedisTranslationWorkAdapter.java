@@ -57,7 +57,7 @@ public class RedisTranslationWorkAdapter implements TranslationWorkPort {
         String key="office:translation:"+workKey;
         String retryKey="office:translation:retry:"+workKey;
         String owner=UUID.randomUUID().toString();
-        if (!Boolean.TRUE.equals(redis.opsForValue().setIfAbsent(key,owner,Duration.ofSeconds(180)))) return Optional.empty();
+        if (!Boolean.TRUE.equals(redis.opsForValue().setIfAbsent(key,owner,Duration.ofSeconds(workKey.startsWith("notice:") ? 300 : 180)))) return Optional.empty();
         return Optional.of(new Lease() {
             private boolean closed;
             private boolean attempted;

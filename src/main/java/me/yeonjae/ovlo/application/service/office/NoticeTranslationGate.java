@@ -11,7 +11,7 @@ import java.util.List;
  * - 비어 있지 않을 것
  * - 원문과 동일하지 않을 것(번역이 안 된 복사)
  * - 날짜는 표기 대신 연·월·일과 출현 횟수를 비교한다(월 이름 번역 허용, 없는 연도 추측 금지).
- * - 날짜를 제외한 숫자는 언어별 소수점·천 단위 구분자를 검증하고 정확한 값·최소 출현 횟수를 보존한다.
+ * - 날짜를 제외한 숫자는 언어별 소수점·천 단위 구분자를 검증하고 정확한 값·동일한 출현 횟수를 보존한다.
  * 실패하면 그 언어 번역은 저장하지 않는다. "확인 못 한 내용은 쓰지 않는다"와 같은 원칙.
  */
 @Component
@@ -47,13 +47,21 @@ public class NoticeTranslationGate {
         if (sourceNumbers.invalidNumber() || targetNumbers.invalidNumber()) {
             reasons.add("언어의 소수점·천 단위 표기와 맞지 않는 숫자가 있습니다");
         }
-        var missing = sourceNumbers.counts().entrySet().stream()
-                .filter(entry -> targetNumbers.counts().getOrDefault(entry.getKey(), 0) < entry.getValue())
-                .map(entry -> entry.getKey().toPlainString()).sorted().toList();
-        if (!missing.isEmpty()) {
-            reasons.add("원문 숫자의 값 또는 출현 횟수가 번역에서 누락되었습니다: " + String.join(", ", missing));
+        if (!sourceNumbers.counts().equals(targetNumbers.counts())) {
+            reasons.add("원문과 번역의 숫자 값 또는 출현 횟수가 다릅니다");
+        }
+        if (!contacts(request.title() + "\n" + request.body()).equals(contacts(result.title() + "\n" + result.body()))) {
+            reasons.add("원문과 번역의 URL 또는 이메일이 다릅니다");
         }
         return reasons.isEmpty() ? Verdict.ok() : new Verdict(false, reasons);
+    }
+
+    // ASCII URI characters stop before Korean/Japanese punctuation. Preserve paths, query and case exactly.
+    private static final java.util.regex.Pattern CONTACT = java.util.regex.Pattern.compile(
+            "(?i:https?)://[a-zA-Z0-9%._~:/?#\\[\\]@!$&'()*+,;=+-]+|[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}");
+    private static java.util.Map<String, Long> contacts(String text) {
+        return CONTACT.matcher(text).results().map(m -> m.group().replaceAll("[.,;:!?)]+$", ""))
+                .collect(java.util.stream.Collectors.groupingBy(java.util.function.Function.identity(), java.util.stream.Collectors.counting()));
     }
 
     private static boolean isBlank(String s) {

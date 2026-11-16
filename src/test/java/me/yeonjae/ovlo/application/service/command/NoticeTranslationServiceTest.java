@@ -57,7 +57,7 @@ class NoticeTranslationServiceTest {
         sut = new NoticeTranslationService(loadNoticePort, saveNoticePort, loadOfficePort, loadMemberPort,
                 translationPort, new NoticeTranslationGate(), notificationPort, Clock.fixed(NOW, ZoneOffset.UTC),new org.springframework.transaction.support.TransactionTemplate(org.mockito.Mockito.mock(org.springframework.transaction.PlatformTransactionManager.class)),
                 org.mockito.Mockito.mock(me.yeonjae.ovlo.application.port.out.office.NoticeKnowledgePort.class),
-                me.yeonjae.ovlo.support.TranslationWorkFixtures.available(), me.yeonjae.ovlo.support.TranslationAdmissionFixtures.available());
+                me.yeonjae.ovlo.support.TranslationWorkFixtures.available(), me.yeonjae.ovlo.support.TranslationAdmissionFixtures.available(), (source,result)->true, me.yeonjae.ovlo.support.NoticeTranslationJobFixtures.available());
         notice = Notice.register(5L, NoticeCategory.HOUSING, "기숙사 신청", "신청은 2월 10일까지입니다.", null, List.of(),
                 "2027-1", LocalDate.of(2027, 2, 1), LocalDate.of(2027, 3, 15), 11L, NOW);
         notice.assignId(NOTICE);

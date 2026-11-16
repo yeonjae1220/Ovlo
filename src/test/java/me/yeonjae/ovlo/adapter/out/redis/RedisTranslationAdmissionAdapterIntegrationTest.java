@@ -82,4 +82,19 @@ class RedisTranslationAdmissionAdapterIntegrationTest {
         var sut=new RedisTranslationAdmissionAdapter(broken,100,100,100,R,R,R,5,20);
         assertThatThrownBy(()->sut.acquire(1L,1L)).isInstanceOf(IllegalStateException.class);
     }
+
+    @Test void noticeReservesTranslationAndVerificationTogetherWithLongerLease() {
+        var sut=adapter(100,100,100,2*R,100*R,100*R,5,20);
+        try(var lease=sut.acquire(1L,1L,2)) {
+            assertThat(redis.opsForHash().get("ai:{translation}:member:1:daily","budget")).isEqualTo(""+(2*R));
+            var entries=redis.opsForZSet().rangeWithScores("ai:{translation}:member:1:active",0,-1);
+            assertThat(entries).hasSize(1);
+            assertThat(entries.iterator().next().getScore()).isGreaterThan((double)java.time.Instant.now().getEpochSecond()+270);
+            assertThatThrownBy(()->sut.acquire(2L,1L)).isInstanceOf(TranslationAdmissionPort.Unavailable.class)
+                    .satisfies(e->assertThat(((TranslationAdmissionPort.Unavailable)e).retryAfterSeconds()).isEqualTo(30));
+        }
+        assertThatThrownBy(()->sut.acquire(1L,1L)).isInstanceOf(TranslationAdmissionPort.Unavailable.class)
+                .satisfies(e->assertThat(((TranslationAdmissionPort.Unavailable)e).retryAfterSeconds()).isBetween(1L,86401L));
+    }
+
 }

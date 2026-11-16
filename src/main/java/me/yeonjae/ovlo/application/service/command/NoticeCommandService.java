@@ -33,6 +33,7 @@ import java.time.LocalDate;
 @Transactional
 public class NoticeCommandService implements ManageNoticeUseCase {
 
+    private final me.yeonjae.ovlo.application.port.out.office.NoticeTranslationJobPort jobs;
     private static final Logger log = LoggerFactory.getLogger(NoticeCommandService.class);
 
     private final LoadNoticePort loadNoticePort;
@@ -47,7 +48,9 @@ public class NoticeCommandService implements ManageNoticeUseCase {
     public NoticeCommandService(LoadNoticePort loadNoticePort, SaveNoticePort saveNoticePort, LoadOfficePort loadOfficePort,
                                 TranslateNoticeUseCase translateNoticeUseCase, ApplicationEventPublisher eventPublisher,
                                 Clock clock, me.yeonjae.ovlo.application.port.out.office.NoticeKnowledgePort knowledge,
-                                me.yeonjae.ovlo.application.service.office.NoticeGovernanceService governance) {
+                                me.yeonjae.ovlo.application.service.office.NoticeGovernanceService governance,
+                                me.yeonjae.ovlo.application.port.out.office.NoticeTranslationJobPort jobs) {
+        this.jobs=jobs;
         this.loadNoticePort = loadNoticePort;
         this.saveNoticePort = saveNoticePort;
         this.loadOfficePort = loadOfficePort;
@@ -96,6 +99,8 @@ public class NoticeCommandService implements ManageNoticeUseCase {
         notice.approve(c.actor(), clock.instant(), today());
         Notice saved = saveNoticePort.save(notice);
         knowledge.audit(saved,Long.parseLong(c.actor()),"APPROVED","검토한 현재 버전 승인",clock.instant());
+        jobs.enqueue(saved.getId(),saved.getVersion(),saved.translationsToGenerate(me.yeonjae.ovlo.domain.office.model.NoticeLang.ALL));
+        jobs.activateApproved(saved.getId(),saved.getVersion());
         // 커밋 뒤 비동기 번역(NoticeTranslationEventListener)
         eventPublisher.publishEvent(new NoticeApprovedEvent(saved.getId()));
         log.info("[Notice] approved office={} notice={} by={} expiresAt={}", c.officeId(), saved.getId(), c.actor(),
@@ -135,7 +140,7 @@ public class NoticeCommandService implements ManageNoticeUseCase {
         governance.authorize(c.officeId(),Long.valueOf(c.actor()),false);
         Notice notice=requireNotice(c.officeId(), c.noticeId());
         if(c.revision()!=null) notice.expectRevision(c.revision());
-        translateNoticeUseCase.translateMissing(c.noticeId());
+        translateNoticeUseCase.retryManually(c.noticeId());
         Notice committed = loadNoticePort.findCommittedById(c.noticeId())
                 .filter(n -> n.getOfficeId().equals(c.officeId()))
                 .orElseThrow(() -> new NoticeException("공지를 찾을 수 없습니다: id=" + c.noticeId(), NoticeException.ErrorType.NOT_FOUND));

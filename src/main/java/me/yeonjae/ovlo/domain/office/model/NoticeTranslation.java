@@ -12,6 +12,7 @@ public class NoticeTranslation {
     private TranslationStatus status;
     private int sourceVersion;
     private Instant generatedAt;
+    private boolean integrityVerified = true;
 
     private NoticeTranslation(NoticeLang lang, String title, String body, TranslationStatus status,
                               int sourceVersion, Instant generatedAt) {
@@ -36,6 +37,14 @@ public class NoticeTranslation {
         return new NoticeTranslation(lang, title, body, status, sourceVersion, generatedAt);
     }
 
+    public static NoticeTranslation restore(NoticeLang lang, String title, String body, TranslationStatus status,
+            int sourceVersion, Instant generatedAt, boolean integrityVerified) {
+        var restored = restore(lang, title, body, status, sourceVersion, generatedAt);
+        restored.integrityVerified = integrityVerified;
+        return restored;
+    }
+    public boolean isIntegrityVerified() { return integrityVerified; }
+
     void replace(String title, String body, int sourceVersion, Instant now) {
         if (title == null || title.isBlank() || body == null || body.isBlank()) {
             throw new IllegalArgumentException("번역 제목·본문은 비어 있을 수 없습니다");
@@ -43,6 +52,7 @@ public class NoticeTranslation {
         this.title = title.trim();
         this.body = body.trim();
         this.status = TranslationStatus.MACHINE;
+        this.integrityVerified = true;
         this.sourceVersion = sourceVersion;
         this.generatedAt = now;
     }
@@ -52,7 +62,7 @@ public class NoticeTranslation {
     }
 
     public boolean isStaleFor(int noticeVersion) {
-        return sourceVersion != noticeVersion;
+        return sourceVersion != noticeVersion || (status == TranslationStatus.MACHINE && !integrityVerified);
     }
 
     public NoticeLang getLang()            { return lang; }

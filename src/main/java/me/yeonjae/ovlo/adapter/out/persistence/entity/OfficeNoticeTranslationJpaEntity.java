@@ -34,6 +34,10 @@ public class OfficeNoticeTranslationJpaEntity {
     @Column(name = "generated_at", nullable = false)
     private Instant generatedAt;
 
+    @Column(name = "integrity_verified", nullable = false)
+    private boolean integrityVerified;
+    public boolean isIntegrityVerified() { return integrityVerified; }
+    public void setIntegrityVerified(boolean value) { integrityVerified = value; }
     public OfficeNoticeTranslationJpaEntity() {}
 
     public Long getId() { return id; }

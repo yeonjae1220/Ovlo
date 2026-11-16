@@ -7,5 +7,13 @@ public interface TranslationAdmissionPort {
     long RESERVATION = MAX_INPUT_BYTES + 5L * MAX_OUTPUT_TOKENS;
     /** Conservative full reservation remains charged even on timeout, rejection or process crash. */
     Lease acquire(Long officeId, Long responsibleMemberId);
+    default Lease acquire(Long officeId, Long memberId, int maxProviderCalls) {
+        return acquire(officeId, memberId);
+    }
+    class Unavailable extends IllegalStateException {
+        private final long retryAfterSeconds;
+        public Unavailable(long retryAfterSeconds) { super("Translation capacity unavailable"); this.retryAfterSeconds=retryAfterSeconds; }
+        public long retryAfterSeconds() { return retryAfterSeconds; }
+    }
     interface Lease extends AutoCloseable { @Override void close(); }
 }
