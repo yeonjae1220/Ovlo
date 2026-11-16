@@ -32,6 +32,18 @@ public class NoticeTranslationGate {
         }
         String sourceText=request.title()+"\n"+request.body();
         String targetText=result.title()+"\n"+result.body();
+        if (request.from()==me.yeonjae.ovlo.domain.office.model.NoticeLang.KO
+                && request.to()!=me.yeonjae.ovlo.domain.office.model.NoticeLang.KO) {
+            // Only known descriptive labels, not arbitrary Hangul/proper names or section identifiers.
+            var sourceLabels=TITLE_LABEL.matcher(request.title());
+            String translatedTitle=java.text.Normalizer.normalize(result.title(),java.text.Normalizer.Form.NFKC);
+            while (sourceLabels.find()) {
+                String label=normalizedLabel(sourceLabels.group(1));
+                if (DESCRIPTIVE_LABELS.contains(label) && containsLabel(translatedTitle,label)) {
+                    reasons.add("제목의 설명 표지가 번역되지 않았습니다");
+                }
+            }
+        }
         if (!contacts(sourceText).equals(contacts(targetText))) {
             reasons.add("원문과 번역의 URL 또는 이메일이 다릅니다");
         }
@@ -69,5 +81,16 @@ public class NoticeTranslationGate {
 
     private static boolean isBlank(String s) {
         return s == null || s.isBlank();
+    }
+
+    private static final java.util.Set<String> DESCRIPTIVE_LABELS=java.util.Set.of("운영검증전용","검증용","중요","교환학생안내");
+    private static final java.util.regex.Pattern TITLE_LABEL=java.util.regex.Pattern.compile("[\\[［【]([^\\]］】\\r\\n]{1,80})[\\]］】]");
+    private static String normalizedLabel(String text) {
+        return java.text.Normalizer.normalize(text,java.text.Normalizer.Form.NFKC).replaceAll("[\\s\\p{Z}]+","");
+    }
+    private static boolean containsLabel(String title,String label) {
+        String expression=label.codePoints().mapToObj(c -> java.util.regex.Pattern.quote(new String(Character.toChars(c))))
+                .collect(java.util.stream.Collectors.joining("[\\s\\p{Z}]*"));
+        return java.util.regex.Pattern.compile("(?<![\\p{L}\\p{N}])"+expression+"(?![\\p{L}\\p{N}])").matcher(title).find();
     }
 }

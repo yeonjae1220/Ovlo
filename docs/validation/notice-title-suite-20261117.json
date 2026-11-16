@@ -1,0 +1,20 @@
+{
+  "test": {
+    "tests": 835,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 13
+  },
+  "integrationTest": {
+    "tests": 209,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 3
+  },
+  "frontendBuild": "passed",
+  "frontendAuthRegressions": "passed",
+  "pythonTests": 55,
+  "liveTranslations": 18,
+  "liveIndependentAudits": 36,
+  "liveMutationsDenied": 5
+}

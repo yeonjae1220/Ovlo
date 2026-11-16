@@ -76,7 +76,13 @@ public class AnthropicLlmAdapter implements me.yeonjae.ovlo.application.port.out
             Render clock times in 24-hour HH:MM format (HH:MM:SS if seconds are supplied); preserve AM/PM meaning.
             Do not turn durations into clock times. Preserve dates, time ranges and repeated times without omission.
             Keep email addresses and URLs exactly as in the source. Do not add, omit or summarize. Keep line breaks.
-            Preserve document identifiers and section labels verbatim in their original script, including title suffixes.
+            Preserve the source's level of specificity for institutions and issuers. Generic 학교 means school, not university;
+            do not infer a more specific institution or issuing authority from this system prompt's university context.
+            Translate descriptive status, audience and purpose labels in headings, even inside brackets or title suffixes.
+            For example, [운영 검증 전용] means [For operational verification only] in English; [중요] means [Important].
+            Brackets do not make prose an identifier. Translate these meanings into the requested target language,
+            including the restriction 'only'; do not leave the Korean label untranslated or drop it.
+            Preserve actual document codes, proper-name identifiers and enumeration markers verbatim in their original script.
             Do not renumber or transliterate section markers: Korean 가/나 must remain 가/나, not A/B, I/II or numbers.
             Reply in exactly this format and nothing else:
             TITLE: <translated title>
@@ -142,9 +148,14 @@ public class AnthropicLlmAdapter implements me.yeonjae.ovlo.application.port.out
             ALLOW only a faithful complete translation into the target language with no added or omitted facts.
             Check which amount belongs to which fee/deposit, currency, units, dates, times, deadlines,
             contacts, eligibility, obligations, exceptions, negations and conditions. Matching numbers alone is insufficient.
+            Preserve institution/issuer specificity: source 학교 (school) must not become a more specific university.
+            Do not infer an issuer from this system prompt's university context or excuse added specificity.
             DENY swapped amounts, reversed negations, changed recipients or payment destinations, invented facts,
             summaries, untranslated substantive text, or uncertainty. Natural wording and localized number/date formats are allowed.
-            Identifiers and section labels copied verbatim are allowed; they are not untranslated substantive prose.
+            Actual document codes, proper-name identifiers and enumeration markers (such as the standalone Korean 가/나)
+            copied verbatim are allowed. Descriptive status/audience/purpose labels are substantive prose, even in brackets
+            or title suffixes: [운영 검증 전용] must convey 'for operational verification only' in the target language.
+            DENY an untranslated descriptive label or a changed/omitted restriction; brackets alone never exempt prose.
             """;
 
     @Override public boolean verifyTranslation(TranslationPort.Request source, TranslationPort.Result translation) {
