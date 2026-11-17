@@ -15,6 +15,8 @@ import java.time.Duration;
  * 태그 값은 enum·고정 문자열만 — 질문 본문·회원 id 같은 고카디널리티 값은 절대 넣지 않는다.
  *
  * <pre>
+ * ovlo.office.search.completed  counter  provider=KEYWORD|POSTGRES  path=NO_ELIGIBLE|SMALL_CORPUS|RANKED  candidates=EMPTY|PRESENT
+ * ovlo.office.inquiry.retrieval counter  query_kind=SINGLE|FOLLOW_UP  result=EMPTY|PRESENT|ERROR
  * ovlo.office.notice.long_body   counter  action=REGISTER|UPDATE (committed long-body saves, not unique notices)
  * ovlo.office.inquiry            counter  outcome=ANSWERED|NO_GROUNDS|OUT_OF_SCOPE|ESCALATED  rejection_reason=NONE|enum
  * ovlo.office.inquiry.latency    timer    outcome
@@ -29,13 +31,50 @@ import java.time.Duration;
 @Component
 public class OfficeMetrics {
 
+    public enum SearchProvider { KEYWORD, POSTGRES }
+    public enum SearchPath { NO_ELIGIBLE, SMALL_CORPUS, RANKED }
+    public enum RetrievalResult { EMPTY, PRESENT, ERROR }
+
     private final MeterRegistry registry;
 
     public OfficeMetrics(MeterRegistry registry) {
         this.registry = registry;
+        // Fixed enum/boolean dimensions only. Expose zero series before the first real search.
+        for (var provider : SearchProvider.values()) {
+            for (var path : SearchPath.values()) {
+                for (boolean present : new boolean[]{false, true}) searchCounter(provider, path, present);
+            }
+        }
+        for (boolean followUp : new boolean[]{false, true}) {
+            for (var result : RetrievalResult.values()) retrievalCounter(followUp, result);
+        }
         for (var action : LongNoticeSavedEvent.Action.values()) {
             longNoticeCounter(action);
         }
+    }
+
+    /** One successful outer adapter call, before the service rechecks eligibility. */
+    public void searchCompleted(SearchProvider provider, SearchPath path, boolean hasCandidates) {
+        searchCounter(provider, path, hasCandidates).increment();
+    }
+
+    private Counter searchCounter(SearchProvider provider, SearchPath path, boolean hasCandidates) {
+        return Counter.builder("ovlo.office.search.completed")
+                .description("Completed outer notice searches; internal CJK fallback calls are excluded")
+                .tag("provider", provider.name()).tag("path", path.name())
+                .tag("candidates", hasCandidates ? "PRESENT" : "EMPTY").register(registry);
+    }
+
+    /** One search-stage observation after admission/screening, not a saved inquiry or answer outcome. */
+    public void inquiryRetrieval(boolean followUp, RetrievalResult result) {
+        retrievalCounter(followUp, result).increment();
+    }
+
+    private Counter retrievalCounter(boolean followUp, RetrievalResult result) {
+        return Counter.builder("ovlo.office.inquiry.retrieval")
+                .description("Inquiry retrieval stage after final eligibility filtering, including stage errors")
+                .tag("query_kind", followUp ? "FOLLOW_UP" : "SINGLE")
+                .tag("result", result.name()).register(registry);
     }
 
     public void longNoticeSaved(LongNoticeSavedEvent.Action action) {

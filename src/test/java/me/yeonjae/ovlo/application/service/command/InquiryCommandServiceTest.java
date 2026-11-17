@@ -94,6 +94,32 @@ class InquiryCommandServiceTest {
         insurance = approved(78L, "보험 가입 안내", "입국 후 2주 안에 보험에 가입해야 합니다.");
     }
 
+    private double retrievalTotal() {
+        return meters.find("ovlo.office.inquiry.retrieval").counters().stream().mapToDouble(c -> c.count()).sum();
+    }
+    private void assertRetrieval(boolean followUp, String result) {
+        assertThat(meters.get("ovlo.office.inquiry.retrieval")
+                .tags("query_kind", followUp ? "FOLLOW_UP" : "SINGLE", "result", result).counter().count()).isEqualTo(1);
+        assertThat(retrievalTotal()).isEqualTo(1);
+    }
+
+    @Test void retrievalErrorKeepsItsExceptionAndDoesNotBecomeAnEmptyResult() {
+        var failure = new IllegalStateException("synthetic search failure");
+        given(searchPort.findCandidates(any(), any(), anyString(), any(), anyInt())).willThrow(failure);
+        assertThatThrownBy(() -> sut.ask(new AskQuestionCommand(OFFICE, MEMBER, "기숙사", NoticeLang.KO))).isSameAs(failure);
+        assertRetrieval(false, "ERROR");
+        verify(answerPort, never()).answer(any());
+        verify(saveInquiryPort, never()).save(any());
+    }
+
+    @Test void laterModelErrorDoesNotReclassifySuccessfulRetrieval() {
+        given(searchPort.findCandidates(any(), any(), anyString(), any(), anyInt())).willReturn(List.of(dorm));
+        var failure = new IllegalStateException("synthetic model failure");
+        given(answerPort.answer(any())).willThrow(failure);
+        assertThatThrownBy(() -> sut.ask(new AskQuestionCommand(OFFICE, MEMBER, "기숙사", NoticeLang.KO))).isSameAs(failure);
+        assertRetrieval(false, "PRESENT");
+    }
+
     private static Notice approved(Long id, String title, String body) {
         Notice n = Notice.register(OFFICE, NoticeCategory.HOUSING, title, body, "https://univ.ac.kr/" + id, List.of(), "2027-1",
                 LocalDate.of(2027, 2, 1), LocalDate.of(2027, 6, 30), 11L, NOW);
@@ -141,6 +167,7 @@ class InquiryCommandServiceTest {
 
         AskResult r = sut.ask(new AskQuestionCommand(OFFICE, MEMBER, "When does dorm application close?", NoticeLang.EN));
 
+        assertRetrieval(false, "PRESENT");
         assertThat(r.outcome()).isEqualTo(InquiryOutcome.ANSWERED);
         assertThat(r.answerText()).isEqualTo("Applications close on February 10 [1].");
         assertThat(r.citations()).singleElement().satisfies(c -> {
@@ -194,6 +221,7 @@ class InquiryCommandServiceTest {
         assertThat(r.outcome()).isEqualTo(InquiryOutcome.NO_GROUNDS);
         verify(answerPort, never()).answer(any());
         verify(saveInquiryPort).save(any());
+        assertRetrieval(false, "EMPTY");
     }
 
     @Test
@@ -216,6 +244,7 @@ class InquiryCommandServiceTest {
                 .isInstanceOf(InquiryException.class)
                 .extracting(e -> ((InquiryException) e).getErrorType())
                 .isEqualTo(InquiryException.ErrorType.RATE_LIMITED);
+        assertThat(retrievalTotal()).isZero();
         verify(searchPort, never()).findCandidates(anyLong(), any(), anyString(), any(), anyInt());
         verify(admission, never()).acquire(any(), any());
     }
@@ -247,6 +276,7 @@ class InquiryCommandServiceTest {
         given(answerPort.answer(any())).willReturn(new AnswerGenerationPort.Result("공지 확인 [1]", "test", 1, 1, false));
         sut.ask(new AskQuestionCommand(OFFICE, MEMBER, "어디서 신청해?", NoticeLang.KO, 100L));
         verify(searchPort).findCandidates(OFFICE, NoticeLang.KO, "기숙사 신청은 언제까지? 어디서 신청해?", TODAY, 8);
+        assertRetrieval(true, "PRESENT");
         ArgumentCaptor<AnswerGenerationPort.Request> request = ArgumentCaptor.forClass(AnswerGenerationPort.Request.class);
         verify(answerPort).answer(request.capture());
         assertThat(request.getValue().history()).containsExactly(new AnswerGenerationPort.Turn(previous.getQuestion(), previous.getAnswerText()));
@@ -262,6 +292,7 @@ class InquiryCommandServiceTest {
         assertThatThrownBy(() -> sut.ask(new AskQuestionCommand(OFFICE, MEMBER, "이어서", NoticeLang.KO, 100L)))
                 .isInstanceOfSatisfying(InquiryException.class, e -> assertThat(e.getErrorType()).isEqualTo(InquiryException.ErrorType.NOT_FOUND));
         verify(answerPort, never()).answer(any());
+        assertThat(retrievalTotal()).isZero();
         verify(searchPort, never()).findCandidates(any(), any(), any(), any(), anyInt());
     }
 
@@ -274,6 +305,7 @@ class InquiryCommandServiceTest {
         AskResult result = sut.ask(new AskQuestionCommand(OFFICE, MEMBER, "그럼 어디서?", NoticeLang.KO, 100L));
         assertThat(result.outcome()).isEqualTo(InquiryOutcome.NO_GROUNDS);
         assertThat(result.canEscalate()).isTrue();
+        assertRetrieval(true, "EMPTY");
         verify(answerPort, never()).answer(any());
     }
 
@@ -331,6 +363,7 @@ class InquiryCommandServiceTest {
         assertThat(r.outcome()).isEqualTo(InquiryOutcome.OUT_OF_SCOPE);
         assertThat(r.answerText()).isNull();
         assertThat(r.canEscalate()).isFalse();
+        assertThat(retrievalTotal()).isZero();
         verify(searchPort, never()).findCandidates(anyLong(), any(), anyString(), any(), anyInt());
         verify(answerPort, never()).answer(any());
         verify(lease).usage(25,2);

@@ -8,6 +8,9 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
 import me.yeonjae.ovlo.application.service.office.SmallNoticeCorpus;
+import me.yeonjae.ovlo.shared.metrics.OfficeMetrics;
+import me.yeonjae.ovlo.shared.metrics.OfficeMetrics.SearchPath;
+import me.yeonjae.ovlo.shared.metrics.OfficeMetrics.SearchProvider;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -55,14 +58,16 @@ public class PostgresFtsNoticeSearchAdapter implements NoticeSearchPort {
             "là", "và", "của", "các", "cho", "với", "der", "die", "das", "und", "ist", "les", "des", "une", "est", "pour");
 
     private final JdbcTemplate jdbc;
+    private final OfficeMetrics metrics;
     private final LoadNoticePort loadNoticePort;
     private final me.yeonjae.ovlo.application.service.office.NoticeGovernanceService governance;
     private final KeywordNoticeSearchAdapter cjkFallback;
 
-    public PostgresFtsNoticeSearchAdapter(JdbcTemplate jdbc, LoadNoticePort loadNoticePort, me.yeonjae.ovlo.application.service.office.NoticeGovernanceService governance) {
+    public PostgresFtsNoticeSearchAdapter(JdbcTemplate jdbc, LoadNoticePort loadNoticePort, me.yeonjae.ovlo.application.service.office.NoticeGovernanceService governance, OfficeMetrics metrics) {
+        this.metrics = metrics;
         this.jdbc = jdbc;
         this.loadNoticePort = loadNoticePort; this.governance=governance;
-        this.cjkFallback = new KeywordNoticeSearchAdapter(loadNoticePort,governance);
+        this.cjkFallback = new KeywordNoticeSearchAdapter(loadNoticePort,governance,metrics);
     }
 
     @Override
@@ -70,7 +75,7 @@ public class PostgresFtsNoticeSearchAdapter implements NoticeSearchPort {
         List<Notice> eligible = SmallNoticeCorpus.eligible(loadNoticePort.findActiveForStudent(officeId, null, today),
                 officeId, lang, today, governance);
         var small = SmallNoticeCorpus.fitting(eligible, lang, limit);
-        if (small.isPresent()) return small.get();
+        if (small.isPresent()) return observed(eligible.isEmpty() ? SearchPath.NO_ELIGIBLE : SearchPath.SMALL_CORPUS, small.get());
         Map<Long, Notice> merged = new LinkedHashMap<>();
         String tsquery = toOrQuery(question);
         if (!tsquery.isEmpty()) {
@@ -81,12 +86,17 @@ public class PostgresFtsNoticeSearchAdapter implements NoticeSearchPort {
             }
         }
         if (merged.size() < limit && containsCjk(question)) {
-            for (Notice n : cjkFallback.findCandidates(officeId, lang, question, today, limit)) {
+            for (Notice n : cjkFallback.retrieve(officeId, lang, question, today, limit).candidates()) {
                 merged.putIfAbsent(n.getId(), n);
                 if (merged.size() >= limit) break;
             }
         }
-        return new ArrayList<>(merged.values());
+        return observed(SearchPath.RANKED, new ArrayList<>(merged.values()));
+    }
+
+    private List<Notice> observed(SearchPath path, List<Notice> candidates) {
+        metrics.searchCompleted(SearchProvider.POSTGRES, path, !candidates.isEmpty());
+        return candidates;
     }
 
     /** "when does the dormitory application close" → "dormitory | application | close". 길이 3 미만·불용어·따옴표 제거. */

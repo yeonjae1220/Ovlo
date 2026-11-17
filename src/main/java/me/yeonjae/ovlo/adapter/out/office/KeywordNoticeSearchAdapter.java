@@ -8,6 +8,9 @@ import me.yeonjae.ovlo.domain.office.model.NoticeTranslation;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 import me.yeonjae.ovlo.application.service.office.SmallNoticeCorpus;
+import me.yeonjae.ovlo.shared.metrics.OfficeMetrics;
+import me.yeonjae.ovlo.shared.metrics.OfficeMetrics.SearchPath;
+import me.yeonjae.ovlo.shared.metrics.OfficeMetrics.SearchProvider;
 
 import java.time.LocalDate;
 import java.util.Comparator;
@@ -26,21 +29,30 @@ import java.util.Set;
 public class KeywordNoticeSearchAdapter implements NoticeSearchPort {
 
     private final LoadNoticePort loadNoticePort;
+    private final OfficeMetrics metrics;
     private final me.yeonjae.ovlo.application.service.office.NoticeGovernanceService governance;
 
-    public KeywordNoticeSearchAdapter(LoadNoticePort loadNoticePort, me.yeonjae.ovlo.application.service.office.NoticeGovernanceService governance) {
+    public KeywordNoticeSearchAdapter(LoadNoticePort loadNoticePort, me.yeonjae.ovlo.application.service.office.NoticeGovernanceService governance, OfficeMetrics metrics) {
+        this.metrics = metrics;
         this.loadNoticePort = loadNoticePort; this.governance=governance;
     }
 
     @Override
     public List<Notice> findCandidates(Long officeId, NoticeLang lang, String question, LocalDate today, int limit) {
+        Retrieval retrieval = retrieve(officeId, lang, question, today, limit);
+        metrics.searchCompleted(SearchProvider.KEYWORD, retrieval.path(), !retrieval.candidates().isEmpty());
+        return retrieval.candidates();
+    }
+
+    /** Internal PostgreSQL fallback must not emit a second top-level search observation. */
+    Retrieval retrieve(Long officeId, NoticeLang lang, String question, LocalDate today, int limit) {
         List<Notice> eligible = SmallNoticeCorpus.eligible(loadNoticePort.findActiveForStudent(officeId, null, today),
                 officeId, lang, today, governance);
         var small = SmallNoticeCorpus.fitting(eligible, lang, limit);
-        if (small.isPresent()) return small.get();
+        if (small.isPresent()) return new Retrieval(small.get(), eligible.isEmpty() ? SearchPath.NO_ELIGIBLE : SearchPath.SMALL_CORPUS);
         Set<String> queryTokens = tokens(question);
-        if (queryTokens.isEmpty()) return List.of();
-        return eligible.stream()
+        if (queryTokens.isEmpty()) return new Retrieval(List.of(), SearchPath.RANKED);
+        List<Notice> candidates = eligible.stream()
                 .map(n -> new Scored(n, score(queryTokens, textOf(n, lang))))
                 .filter(s -> s.score > 0)
                 .sorted(Comparator.comparingInt((Scored s) -> s.score).reversed()
@@ -48,7 +60,10 @@ public class KeywordNoticeSearchAdapter implements NoticeSearchPort {
                 .limit(limit)
                 .map(s -> s.notice)
                 .toList();
+        return new Retrieval(candidates, SearchPath.RANKED);
     }
+
+    record Retrieval(List<Notice> candidates, SearchPath path) {}
 
     private record Scored(Notice notice, int score) {}
 
