@@ -81,6 +81,13 @@ Collector 방향 egress 허용이 없었다. 기존 통계나 질문은 조회�
 - 전송은 비동기이며 전송/수집 장애·재시작 전 미전송분의 유실이 가능하다. 전송 시각은 개별 문의 시각이 아니며,
   배포 후 두 이름의 시계열 존재와 수집 상태를 확인해야 한다. 정상 등록된 0과 시계열 부재를 구분한다.
 
+2026-11-17 `469088a` 배포 뒤, 운영 Collector의 Prometheus exporter가 `namespace: app`을 적용하는 것을 확인했다.
+위의 접두사 없는 이름은 앱의 Prometheus endpoint 기준이며, **현재 운영 Prometheus 조회 이름은**
+`app_ovlo_office_search_completed_total`, `app_ovlo_office_inquiry_retrieval_total`이다.
+Collector의 resource processor는 `service.namespace`를 `k3s-cluster`로 바꾼다. 운영 selector에 `service_namespace="ovlo"`를 쓰지 않는다.
+`service_name="ovlo-search-metrics"`와 승인된 모니터링 환경 selector를 사용하고, `service_instance_id`/`exported_instance`는 인프라 파드 식별자로만 해석한다.
+이 수집 설정은 변경하지 않았다. 새 지표 두 개만 조회하여 검색 12개·문의 검색 6개 조합의 수집을 확인했으며, 기존 §1 통계/질문 조회나 검증용 운영 질문 생성은 하지 않았다.
+
 구현 근거: [Micrometer OTLP registry](https://docs.micrometer.io/micrometer/reference/implementations/otlp.html).
 로컬 수신기로 실제 protobuf 전송을 파싱해 허용 지표와 빈 exemplar를 검증하고, prod 설정 로딩으로 registry 중복·필터 범위를 확인한다.
 
@@ -92,8 +99,8 @@ Collector 방향 egress 허용이 없었다. 기존 통계나 질문은 조회�
 이 지표에는 계정 구분 태그가 없으므로 합성 요청만 사후에 골라 차감하거나 질문/계정 조회로 연결하지 않는다.
 
 ```promql
-sum by (provider, path, candidates) (increase(ovlo_office_search_completed_total[7d]))
-sum by (query_kind, result) (increase(ovlo_office_inquiry_retrieval_total[7d]))
+sum by (provider, path, candidates) (increase(app_ovlo_office_search_completed_total{service_name="ovlo-search-metrics"}[7d]))
+sum by (query_kind, result) (increase(app_ovlo_office_inquiry_retrieval_total{service_name="ovlo-search-metrics"}[7d]))
 ```
 
 - S-03 사용 비중: 같은 provider·W에서 SMALL_CORPUS / 정상 완료 검색 전체. NO_ELIGIBLE은 별도 비중으로 표시한다.
