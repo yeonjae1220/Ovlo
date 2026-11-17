@@ -26,7 +26,7 @@ public class NoticeAnswerFinalizer {
                 && n.isGroundingEligible(OfficeDates.today(clock),answer.getLang())
                 && governance.eligible(n,OfficeDates.today(clock))).isPresent());
         Inquiry result=valid?answer:Inquiry.noGrounds(answer.getOfficeId(),answer.getMemberId(),answer.getLang(),answer.getQuestion(),
-                answer.getCandidateNoticeIds(),answer.getAskedAt(),answer.getLatencyMs(),answer.getModelId());
+                answer.getCandidateNoticeIds(),answer.getAskedAt(),answer.getLatencyMs(),answer.getModelId(),InquiryRejectionReason.EVIDENCE_CHANGED);
         if(!history.isEmpty()) result.following(history.getLast());
         Inquiry saved=inquiries.save(result);
         if(valid) knowledge.saveCitations(saved.getId(),citations);

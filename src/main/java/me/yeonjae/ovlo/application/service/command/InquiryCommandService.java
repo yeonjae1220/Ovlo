@@ -15,6 +15,8 @@ import me.yeonjae.ovlo.application.service.office.InquiryHistory;
 import me.yeonjae.ovlo.application.service.office.StudentOfficeAccessPolicy;
 import me.yeonjae.ovlo.domain.office.exception.InquiryException;
 import me.yeonjae.ovlo.domain.office.model.Inquiry;
+import me.yeonjae.ovlo.domain.office.model.InquiryRejectionReason;
+import me.yeonjae.ovlo.shared.metrics.OfficeMetrics;
 import me.yeonjae.ovlo.domain.office.model.InquiryFeedback;
 import me.yeonjae.ovlo.domain.office.model.Notice;
 import me.yeonjae.ovlo.domain.office.model.NoticeLang;
@@ -56,6 +58,7 @@ public class InquiryCommandService implements AskQuestionUseCase, GiveInquiryFee
     private final Clock clock;
     private final me.yeonjae.ovlo.application.service.office.NoticeAnswerFinalizer finalizer;
     private final me.yeonjae.ovlo.application.service.office.NoticeGovernanceService governance;
+    private final OfficeMetrics metrics;
     private final int candidateLimit;
     private final int officeDailyLimit;
 
@@ -67,7 +70,8 @@ public class InquiryCommandService implements AskQuestionUseCase, GiveInquiryFee
                                  @Value("${ovlo.office.inquiry-candidate-limit:8}") int candidateLimit,
                                  @Value("${ovlo.office.inquiry-office-daily-limit:500}") int officeDailyLimit,
                                  me.yeonjae.ovlo.application.port.out.office.InquiryGuardPort guard,
-                                 me.yeonjae.ovlo.application.port.out.office.InquiryAdmissionPort admission) {
+                                 me.yeonjae.ovlo.application.port.out.office.InquiryAdmissionPort admission, OfficeMetrics metrics) {
+        this.metrics = metrics;
         this.guard=guard; this.admission=admission;
         this.accessPolicy = accessPolicy;
         this.searchPort = searchPort;
@@ -133,7 +137,7 @@ public class InquiryCommandService implements AskQuestionUseCase, GiveInquiryFee
 
         if (candidates.isEmpty()) {
             Inquiry saved = record(Inquiry.noGrounds(c.officeId(), c.memberId(), c.lang(), question, candidateIds, start,
-                    elapsed(start), null), history);
+                    elapsed(start), null, InquiryRejectionReason.NO_CANDIDATES), history);
             return noGroundsResult(saved);
         }
 
@@ -148,7 +152,7 @@ public class InquiryCommandService implements AskQuestionUseCase, GiveInquiryFee
         if (generated.refused()) {
             log.warn("[Inquiry] model refused office={} member={} model={}", c.officeId(), c.memberId(), generated.modelId());
             Inquiry saved = record(Inquiry.noGrounds(c.officeId(), c.memberId(), c.lang(), question, candidateIds, start,
-                    elapsed(start), generated.modelId()), history);
+                    elapsed(start), generated.modelId(), InquiryRejectionReason.MODEL_REFUSED), history);
             return noGroundsResult(saved);
         }
 
@@ -158,7 +162,7 @@ public class InquiryCommandService implements AskQuestionUseCase, GiveInquiryFee
             log.warn("[Inquiry] answer rejected office={} reason={} model={} in={} out={}", c.officeId(),
                     outcome.rejection().reason(), generated.modelId(), generated.inputTokens(), generated.outputTokens());
             Inquiry saved = record(Inquiry.noGrounds(c.officeId(), c.memberId(), c.lang(), question, candidateIds, start,
-                    elapsed(start), generated.modelId()), history);
+                    elapsed(start), generated.modelId(), outcome.rejection().code()), history);
             return noGroundsResult(saved);
         }
 
@@ -167,7 +171,7 @@ public class InquiryCommandService implements AskQuestionUseCase, GiveInquiryFee
         lease.usage(verified.inputTokens(), verified.outputTokens());
         if (!verified.allowed()) {
             Inquiry saved=record(Inquiry.noGrounds(c.officeId(), c.memberId(), c.lang(), question, candidateIds, start,
-                    elapsed(start), generated.modelId()), history);
+                    elapsed(start), generated.modelId(), InquiryRejectionReason.VERIFY_DENIED), history);
             return noGroundsResult(saved);
         }
         GroundedAnswerValidator.Validated v = outcome.validated();
@@ -180,6 +184,7 @@ public class InquiryCommandService implements AskQuestionUseCase, GiveInquiryFee
         }).toList();
         Inquiry saved = finalizer.finish(Inquiry.answered(c.officeId(), c.memberId(), c.lang(), question, v.text(), v.citedNoticeIds(),
                 candidateIds, start, elapsed(start), generated.modelId()), candidates, evidence, history);
+        observe(saved);
         if(saved.getOutcome()!=me.yeonjae.ovlo.domain.office.model.InquiryOutcome.ANSWERED) return noGroundsResult(saved);
         log.info("[Inquiry] answered office={} inquiry={} cited={} latencyMs={} model={} in={} out={}", c.officeId(),
                 saved.getId(), v.citedNoticeIds(), saved.getLatencyMs(), generated.modelId(), generated.inputTokens(),
@@ -216,7 +221,13 @@ public class InquiryCommandService implements AskQuestionUseCase, GiveInquiryFee
     @Transactional
     protected Inquiry record(Inquiry inquiry, List<Inquiry> history) {
         if (!history.isEmpty()) inquiry.following(history.getLast());
-        return saveInquiryPort.save(inquiry);
+        Inquiry saved = saveInquiryPort.save(inquiry);
+        observe(saved);
+        return saved;
+    }
+
+    private void observe(Inquiry saved) {
+        metrics.inquiry(saved.getOutcome(), saved.getLatencyMs(), saved.getRejectionReason());
     }
 
     private long elapsed(Instant start) {

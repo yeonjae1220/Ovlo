@@ -101,6 +101,7 @@ public class OfficeInquiryPersistenceAdapter implements LoadInquiryPort, SaveInq
         e.setAskedAt(inquiry.getAskedAt());
         e.setLatencyMs(inquiry.getLatencyMs());
         e.setModelId(inquiry.getModelId());
+        e.setRejectionReason(inquiry.getRejectionReason() == null ? null : inquiry.getRejectionReason().name());
         OfficeInquiryJpaEntity saved = repository.saveAndFlush(e);
         if (inquiry.getId() == null) inquiry.assignId(saved.getId());
         return toDomain(saved);
@@ -122,7 +123,8 @@ public class OfficeInquiryPersistenceAdapter implements LoadInquiryPort, SaveInq
         return Inquiry.restore(e.getId(), e.getOfficeId(), e.getMemberId(),
                 NoticeLang.fromCode(e.getLang()).orElse(NoticeLang.KO), e.getQuestion(),
                 InquiryOutcome.valueOf(e.getOutcome()), e.getAnswerText(), split(e.getCitedNoticeIds()),
-                split(e.getCandidateNoticeIds()), e.getAskedAt(), e.getLatencyMs(), e.getModelId(), e.getPreviousInquiryId());
+                split(e.getCandidateNoticeIds()), e.getAskedAt(), e.getLatencyMs(), e.getModelId(), e.getPreviousInquiryId(),
+                e.getRejectionReason() == null ? null : me.yeonjae.ovlo.domain.office.model.InquiryRejectionReason.valueOf(e.getRejectionReason()));
     }
 
     private static String join(List<Long> ids) {

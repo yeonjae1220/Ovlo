@@ -34,4 +34,16 @@ class OfficeMetricsTest {
         assertThat(registry.get("ovlo.office.partner.click").tag("category", "SIM").counter().count()).isEqualTo(1);
         assertThat(registry.get("ovlo.office.notification").tag("kind", "staff_invitation").tag("result", "error").counter().count()).isEqualTo(1);
     }
+    @Test void allOutcomesUseTheSameBoundedTagKeys() {
+        var registry = new SimpleMeterRegistry();
+        var metrics = new OfficeMetrics(registry);
+        metrics.inquiry(InquiryOutcome.ANSWERED, 1, null);
+        metrics.inquiry(InquiryOutcome.OUT_OF_SCOPE, 1, null);
+        for (var reason : me.yeonjae.ovlo.domain.office.model.InquiryRejectionReason.values()) {
+            metrics.inquiry(InquiryOutcome.NO_GROUNDS, 1, reason);
+            assertThat(registry.get("ovlo.office.inquiry").tag("rejection_reason", reason.name()).counter().count()).isEqualTo(1);
+        }
+        assertThat(registry.get("ovlo.office.inquiry").tag("outcome", "ANSWERED").tag("rejection_reason", "NONE").counter().count()).isEqualTo(1);
+    }
+
 }

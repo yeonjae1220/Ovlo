@@ -33,6 +33,6 @@ public class InquiryQueryService implements GetInquiryQuery {
         Optional<InquiryFeedback> fb = loadInquiryPort.findFeedback(i.getId());
         return new InquiryLogResult(i.getId(), i.getLang(), i.getQuestion(), i.getOutcome(), i.getAnswerText(),
                 i.getCitedNoticeIds(), i.getCandidateNoticeIds().size(), i.getAskedAt(), i.getLatencyMs(), i.getModelId(),
-                fb.map(InquiryFeedback::helpful).orElse(null), fb.map(InquiryFeedback::reason).orElse(null));
+                fb.map(InquiryFeedback::helpful).orElse(null), fb.map(InquiryFeedback::reason).orElse(null), i.getRejectionReason());
     }
 }

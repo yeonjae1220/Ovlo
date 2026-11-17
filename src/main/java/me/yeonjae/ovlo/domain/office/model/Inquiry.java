@@ -33,10 +33,23 @@ public class Inquiry {
     private final Instant askedAt;
     private final long latencyMs;
     private final String modelId;
+    private final InquiryRejectionReason rejectionReason;
+
+    public InquiryRejectionReason getRejectionReason() { return rejectionReason; }
 
     private Inquiry(Long id, Long officeId, Long memberId, NoticeLang lang, String question, InquiryOutcome outcome,
                     String answerText, List<Long> citedNoticeIds, List<Long> candidateNoticeIds, Instant askedAt,
                     long latencyMs, String modelId) {
+        this(id, officeId, memberId, lang, question, outcome, answerText, citedNoticeIds,
+                candidateNoticeIds, askedAt, latencyMs, modelId, null);
+    }
+
+    private Inquiry(Long id, Long officeId, Long memberId, NoticeLang lang, String question, InquiryOutcome outcome,
+                    String answerText, List<Long> citedNoticeIds, List<Long> candidateNoticeIds, Instant askedAt,
+                    long latencyMs, String modelId, InquiryRejectionReason rejectionReason) {
+        if (rejectionReason != null && outcome != InquiryOutcome.NO_GROUNDS && outcome != InquiryOutcome.ESCALATED)
+            throw new IllegalArgumentException("탈락 사유는 근거 없음 또는 상담 이관 문의에만 기록합니다");
+        this.rejectionReason = rejectionReason;
         this.id = id;
         this.officeId = officeId;
         this.memberId = memberId;
@@ -123,6 +136,25 @@ public class Inquiry {
                                   List<Long> candidateNoticeIds, Instant askedAt, long latencyMs, String modelId) {
         return new Inquiry(id, officeId, memberId, lang, question, outcome, answerText, citedNoticeIds,
                 candidateNoticeIds, askedAt, latencyMs, modelId);
+    }
+
+    public static Inquiry noGrounds(Long officeId, Long memberId, NoticeLang lang, String question,
+                                    List<Long> candidateNoticeIds, Instant askedAt, long latencyMs, String modelId,
+                                    InquiryRejectionReason reason) {
+        requireCommon(officeId, memberId, lang, askedAt);
+        return new Inquiry(null, officeId, memberId, lang, validateQuestion(question), InquiryOutcome.NO_GROUNDS, null,
+                List.of(), candidateNoticeIds == null ? List.of() : candidateNoticeIds, askedAt, latencyMs, modelId,
+                Objects.requireNonNull(reason, "rejectionReason"));
+    }
+
+    public static Inquiry restore(Long id, Long officeId, Long memberId, NoticeLang lang, String question,
+                                  InquiryOutcome outcome, String answerText, List<Long> citedNoticeIds,
+                                  List<Long> candidateNoticeIds, Instant askedAt, long latencyMs, String modelId,
+                                  Long previousInquiryId, InquiryRejectionReason reason) {
+        Inquiry inquiry = new Inquiry(id, officeId, memberId, lang, question, outcome, answerText, citedNoticeIds,
+                candidateNoticeIds, askedAt, latencyMs, modelId, reason);
+        inquiry.previousInquiryId = previousInquiryId;
+        return inquiry;
     }
 
     private static void requireCommon(Long officeId, Long memberId, NoticeLang lang, Instant askedAt) {

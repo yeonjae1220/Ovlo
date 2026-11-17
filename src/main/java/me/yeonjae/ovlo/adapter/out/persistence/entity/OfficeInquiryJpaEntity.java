@@ -77,6 +77,11 @@ public class OfficeInquiryJpaEntity {
     public void setAskedAt(Instant askedAt) { this.askedAt = askedAt; }
     public long getLatencyMs() { return latencyMs; }
     public void setLatencyMs(long latencyMs) { this.latencyMs = latencyMs; }
+    @jakarta.persistence.Column(name = "rejection_reason", length = 32)
+    private String rejectionReason;
+    public String getRejectionReason() { return rejectionReason; }
+    public void setRejectionReason(String rejectionReason) { this.rejectionReason = rejectionReason; }
+
     public String getModelId() { return modelId; }
     public void setModelId(String modelId) { this.modelId = modelId; }
 }
