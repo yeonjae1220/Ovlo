@@ -12,7 +12,12 @@ import java.util.List;
 public interface AnswerGenerationPort {
 
     /** index 는 1부터. 프롬프트의 [index] 인용 번호와 같다. */
-    record Candidate(int index, Long noticeId, String title, String body, String sourceUrl) {}
+    record Candidate(int index, Long noticeId, String title, String body, String sourceUrl,
+                     String audience, String campus) {
+        public Candidate(int index, Long noticeId, String title, String body, String sourceUrl) {
+            this(index, noticeId, title, body, sourceUrl, null, null);
+        }
+    }
 
     record Turn(String question, String answer) {}
     record Request(String question, NoticeLang lang, List<Candidate> candidates, List<Turn> history) {

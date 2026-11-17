@@ -94,6 +94,34 @@ class InquiryCommandServiceTest {
         insurance = approved(78L, "보험 가입 안내", "입국 후 2주 안에 보험에 가입해야 합니다.");
     }
 
+    @Test void contextBudgetShortensBodiesWithoutLosingApplicability() {
+        var notices = java.util.stream.LongStream.range(100, 108).mapToObj(id -> {
+            var n = approved(id, "교육", "긴 본문 ".repeat(700));
+            n.configureSource(new me.yeonjae.ovlo.domain.office.model.NoticeSource(
+                    me.yeonjae.ovlo.domain.office.model.NoticeSource.Type.OFFICE_MATERIAL, "국제처", "PRIVATE_REFERENCE",
+                    "대".repeat(500), "캠".repeat(200), TODAY, null, MEMBER, false, false, null, List.of()), NOW);
+            n.verifySource(TODAY); n.approve("staff", NOW, TODAY);
+            return n;
+        }).toList();
+        given(searchPort.findCandidates(any(), any(), anyString(), any(), anyInt())).willReturn(notices);
+        given(answerPort.answer(any())).willReturn(new AnswerGenerationPort.Result("", "test", 1, 1, true));
+        sut.ask(new AskQuestionCommand(OFFICE, MEMBER, "교육 안내", NoticeLang.KO));
+        var capture = ArgumentCaptor.forClass(AnswerGenerationPort.Request.class);
+        verify(answerPort).answer(capture.capture());
+        var candidates = capture.getValue().candidates();
+        assertThat(candidates).hasSizeGreaterThan(1).hasSizeLessThan(8);
+        int bytes = 0;
+        for (var c : candidates) {
+            assertThat(c.audience()).isEqualTo("대".repeat(500));
+            assertThat(c.campus()).isEqualTo("캠".repeat(200));
+            assertThat(c.body()).isNotBlank();
+            bytes += (c.title() + c.body() + java.util.Objects.toString(c.sourceUrl(), "") + c.audience() + c.campus())
+                    .getBytes(java.nio.charset.StandardCharsets.UTF_8).length;
+        }
+        assertThat(bytes).isLessThanOrEqualTo(me.yeonjae.ovlo.application.service.office.SmallNoticeCorpus.MAX_CONTEXT_BYTES);
+        assertThat(me.yeonjae.ovlo.application.service.office.SmallNoticeCorpus.fitting(notices, NoticeLang.KO, 8)).isEmpty();
+    }
+
     private double retrievalTotal() {
         return meters.find("ovlo.office.inquiry.retrieval").counters().stream().mapToDouble(c -> c.count()).sum();
     }

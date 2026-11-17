@@ -86,8 +86,10 @@ export interface NoticeSummary {
   updatedAt: string
 }
 
-/** 학생용 */
+/** 학생용. 적용 범위는 승인된 원문 값이며 내부 출처 메모는 포함하지 않는다. */
 export interface StudentNotice {
+  audience: string | null
+  campus: string | null
   id: number
   category: NoticeCategory
   title: string

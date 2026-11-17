@@ -57,10 +57,14 @@ class SmallNoticeCorpusSearchTest {
     @ParameterizedTest @ValueSource(strings = {"keyword", "postgres"})
     void thirtyThousandUtf8BytesFitButOneMoreFallsBack(String provider) {
         var first = notice(1, 5, "a", "가".repeat(4999));
-        var exact = notice(2, 5, "b", "나".repeat(5000) + "x");
+        // Public applicability consumes the same budget as the full title/body; preserve the exact 30,000/30,001 boundary.
+        int metadataBytes = (first.getSource().audience() + first.getSource().campus()).getBytes(java.nio.charset.StandardCharsets.UTF_8).length;
+        int remaining = 30_000 - 2 - 4999 * 3 - 2 * metadataBytes;
+        String exactBody = "나".repeat(remaining / 3) + "x".repeat(remaining % 3);
+        var exact = notice(2, 5, "b", exactBody);
         assertThat(adapter(provider, List.of(first, exact)).findCandidates(5L, NoticeLang.KO, "unmatchedsynonym", TODAY, 8)).hasSize(2);
         verifyNoInteractions(jdbc);
-        var over = notice(2, 5, "b", "나".repeat(5000) + "xx");
+        var over = notice(2, 5, "b", exactBody + "x");
         assertThat(adapter(provider, List.of(first, over)).findCandidates(5L, NoticeLang.KO, "unmatchedsynonym", TODAY, 8)).isEmpty();
     }
     @ParameterizedTest @ValueSource(strings = {"keyword", "postgres"})

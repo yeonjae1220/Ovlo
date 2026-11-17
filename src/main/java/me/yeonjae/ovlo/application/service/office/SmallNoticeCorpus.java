@@ -21,7 +21,7 @@ public final class SmallNoticeCorpus {
     }
 
     /** Present empty list means no eligible corpus; empty Optional means use normal ranked retrieval.
-     * Count the full requested-language title/body before the legacy 200/3000-character truncation.
+     * Count the full requested-language title/body and public applicability before the legacy 200/3000-character truncation.
      * Thus no additional truncation is needed to fit the byte budget on this path.
      */
     public static Optional<List<Notice>> fitting(List<Notice> eligible, NoticeLang lang, int candidateLimit) {
@@ -31,7 +31,10 @@ public final class SmallNoticeCorpus {
             var translation = notice.getTranslation(lang).filter(t -> !t.isStaleFor(notice.getVersion()));
             String title = translation.map(t -> t.getTitle()).orElse(notice.getTitle());
             String body = translation.map(t -> t.getBody()).orElse(notice.getBody());
-            remaining -= (title + body).getBytes(StandardCharsets.UTF_8).length;
+            var source = notice.getSource();
+            String metadata = Objects.toString(notice.getSourceUrl(), "")
+                    + (source == null ? "" : source.audience() + source.campus());
+            remaining -= (title + body + metadata).getBytes(StandardCharsets.UTF_8).length;
             if (remaining < 0) return Optional.empty();
         }
         return Optional.of(eligible.stream().sorted(Comparator.comparing(Notice::getId).reversed()).toList());

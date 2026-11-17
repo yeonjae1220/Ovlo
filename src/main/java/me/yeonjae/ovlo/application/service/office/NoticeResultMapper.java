@@ -43,9 +43,11 @@ public final class NoticeResultMapper {
             NoticeTranslation t = fresh.get();
             return new StudentNoticeResult(n.getId(), n.getCategory(), t.getTitle(), t.getBody(), t.getLang(),
                     t.getStatus() == TranslationStatus.MACHINE, n.getSourceUrl(), n.getAttachmentMediaIds(), n.getTerm(),
-                    n.getEffectiveFrom(), n.getExpiresAt());
+                    n.getEffectiveFrom(), n.getExpiresAt(), n.getSource() == null ? null : n.getSource().audience(),
+                    n.getSource() == null ? null : n.getSource().campus());
         }
         return new StudentNoticeResult(n.getId(), n.getCategory(), n.getTitle(), n.getBody(), n.getSourceLang(), false,
-                n.getSourceUrl(), n.getAttachmentMediaIds(), n.getTerm(), n.getEffectiveFrom(), n.getExpiresAt());
+                n.getSourceUrl(), n.getAttachmentMediaIds(), n.getTerm(), n.getEffectiveFrom(), n.getExpiresAt(),
+                n.getSource() == null ? null : n.getSource().audience(), n.getSource() == null ? null : n.getSource().campus());
     }
 }

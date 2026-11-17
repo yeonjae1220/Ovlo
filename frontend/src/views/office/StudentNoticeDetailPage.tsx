@@ -15,6 +15,13 @@ export default function StudentNoticeDetailPage() {
   if (!notice.data) return <EmptyState title={t('office.knowledge.outdated')} />
   const n = notice.data
   return <Card><h1>{n.title}</h1><p>{n.term} · {n.effectiveFrom} – {n.expiresAt}</p>
+    {(n.audience || n.campus) && <section aria-label={t('office.notice.applicability')}>
+      <dl style={{ whiteSpace: 'pre-wrap', overflowWrap: 'anywhere' }}>
+        {n.audience && <><dt>{t('office.knowledge.audience')}</dt><dd>{n.audience}</dd></>}
+        {n.campus && <><dt>{t('office.knowledge.campus')}</dt><dd>{n.campus}</dd></>}
+      </dl>
+      <p>{t('office.notice.applicabilityOriginal')}</p>
+    </section>}
     {n.machineTranslated && <p>{t('office.notice.machine')}</p>}
     <p style={{ whiteSpace: 'pre-wrap', overflowWrap: 'anywhere' }}>{n.body}</p>
     {n.sourceUrl && /^https?:\/\//i.test(n.sourceUrl) && <a href={n.sourceUrl} target="_blank" rel="noreferrer">{t('office.notice.sourceUrl')}</a>}
