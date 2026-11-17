@@ -1,0 +1,22 @@
+{
+  "test": {
+    "tests": 859,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 13
+  },
+  "integrationTest": {
+    "tests": 220,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 4
+  },
+  "frontendBuild": "passed",
+  "authRegressions": "passed",
+  "liveLlm": "passed",
+  "productionDependencyAudit": {
+    "high": 0,
+    "critical": 0
+  },
+  "mergedBase": "fb02bcc"
+}
