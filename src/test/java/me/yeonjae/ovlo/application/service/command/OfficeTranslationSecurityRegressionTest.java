@@ -85,7 +85,7 @@ class OfficeTranslationSecurityRegressionTest {
             when(cache.findTranslations(anyList(),eq(NoticeLang.KO))).thenAnswer(inv->Map.copyOf(saved));
             doAnswer(inv->{saved.put(inv.getArgument(0),inv.getArgument(2));return null;}).when(cache).save(any(),any(),any(),any());
             service=new ConsultationTranscriptService(consultations,chat,cache,request->{calls.add(request.body());return provider.translate(request);},
-                me.yeonjae.ovlo.support.TranslationWorkFixtures.available(), admission);
+                me.yeonjae.ovlo.support.TranslationWorkFixtures.available(), admission, mock(me.yeonjae.ovlo.application.service.office.ConsultationTranscriptAccess.class));
         }
     }
 }

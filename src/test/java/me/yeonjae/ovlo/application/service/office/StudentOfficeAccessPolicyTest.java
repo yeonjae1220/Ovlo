@@ -33,13 +33,15 @@ class StudentOfficeAccessPolicyTest {
 
     @Mock LoadOfficePort loadOfficePort;
     @Mock LoadVerificationCredentialPort loadCredentialPort;
+    @Mock me.yeonjae.ovlo.application.port.out.member.LoadMemberPort members;
 
     private StudentOfficeAccessPolicy policy;
     private Office office;
 
     @BeforeEach
     void setUp() {
-        policy = new StudentOfficeAccessPolicy(loadOfficePort, loadCredentialPort);
+        policy = new StudentOfficeAccessPolicy(loadOfficePort, loadCredentialPort, members);
+        org.mockito.Mockito.lenient().when(members.isActive(org.mockito.ArgumentMatchers.any())).thenReturn(true);
         office = Office.create(UNIV, "국제처", NOW);
         office.assignId(new OfficeId(OFFICE_ID));
     }
@@ -52,7 +54,7 @@ class StudentOfficeAccessPolicyTest {
     @DisplayName("그 대학의 활성 인증 자격이 있으면 Office 를 돌려준다")
     void verifiedStudentPasses() {
         given(loadOfficePort.findById(OFFICE_ID)).willReturn(Optional.of(office));
-        given(loadCredentialPort.findByMemberId(MEMBER)).willReturn(List.of(active(UNIV)));
+        given(loadCredentialPort.hasActiveAt(MEMBER,UNIV)).willReturn(true);
 
         assertThat(policy.assertMember(MEMBER, OFFICE_ID)).isSameAs(office);
     }
@@ -63,7 +65,7 @@ class StudentOfficeAccessPolicyTest {
         given(loadOfficePort.findById(OFFICE_ID)).willReturn(Optional.of(office));
         VerificationCredential expired = active(UNIV);
         expired.expire();
-        given(loadCredentialPort.findByMemberId(MEMBER)).willReturn(List.of(active(OTHER_UNIV), expired));
+        given(loadCredentialPort.hasActiveAt(MEMBER,UNIV)).willReturn(false);
 
         assertThatThrownBy(() -> policy.assertMember(MEMBER, OFFICE_ID))
                 .isInstanceOf(OfficeException.class)

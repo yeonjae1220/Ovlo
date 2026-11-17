@@ -337,7 +337,7 @@ export const officeApi = {
   clickPartner: (officeId: number, partnerId: number) =>
     apiClient.post<{ url: string }>(`/office/${officeId}/partners/${partnerId}/click`).then((r) => r.data.url),
 
-  openConsultation: (officeId: number, body: { inquiryId?: number | null; consentVersion: string; message?: string | null }) =>
+  openConsultation: (officeId: number, body: { inquiryId?: number | null; consentVersion: string; message?: string | null; lang?: NoticeLang | Lowercase<NoticeLang> }) =>
     apiClient.post<Consultation>(`/office/${officeId}/consultations`, body).then((r) => r.data),
 
   myConsultations: (officeId: number, signal?: AbortSignal) =>

@@ -129,7 +129,7 @@ public class ConsultationCommandService implements OpenConsultationUseCase, Mana
             throw new ConsultationException("하루에 새 상담은 3개까지 열 수 있습니다. 기존 상담방을 이용해 주세요.", ConsultationException.ErrorType.INVALID_STATE);
         String question = inquiry.map(Inquiry::getQuestion).orElseGet(() -> requireText(c.message()));
         String answer = inquiry.map(Inquiry::getAnswerText).orElse(null);
-        NoticeLang lang = inquiry.map(Inquiry::getLang).orElse(NoticeLang.KO);
+        NoticeLang lang = inquiry.map(Inquiry::getLang).orElse(c.lang() == null ? NoticeLang.KO : c.lang());
 
         // 채팅방: 학생 + 활동 담당자 전원. 첫 메시지는 학생 이름으로 질문(또는 직접 쓴 메시지)
         List<MemberId> participants = new ArrayList<>();

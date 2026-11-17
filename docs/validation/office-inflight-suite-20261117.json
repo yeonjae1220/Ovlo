@@ -1,0 +1,64 @@
+{
+  "test": {
+    "tests": 871,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 16
+  },
+  "integrationTest": {
+    "tests": 242,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 7
+  },
+  "backendBuild": "passed",
+  "frontendBuild": "passed",
+  "pythonTests": 55,
+  "frontendRegressionScripts": 3,
+  "base": "e600eb4c04340f1a39279079559acbd57e6f8e52",
+  "liveExistingPipeline": {
+    "tests": 23,
+    "failures": 0,
+    "skipped": 0
+  },
+  "liveNewAnswerCasesPassed": 2,
+  "liveNewTranslationCasesPassed": 2,
+  "liveTotalPassed": 27,
+  "liveTestHarnessCorrection": "Two translation cases initially stopped before provider invocation because Mockito when() invoked the existing stub with null; corrected to doAnswer(), then both passed.",
+  "mergedBase": "fa92f4f",
+  "mergedtest": {
+    "tests": 885,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 16
+  },
+  "mergedintegrationTest": {
+    "tests": 242,
+    "failures": 16,
+    "errors": 0,
+    "skipped": 7
+  },
+  "mergedIntegrationStartupFailures": [
+    "me.yeonjae.ovlo.adapter.out.persistence.UniversityCatalogPersistenceAdapterIntegrationTest",
+    "me.yeonjae.ovlo.adapter.out.persistence.OfficeInquiryPersistenceAdapterIntegrationTest"
+  ],
+  "finaltest": {
+    "tests": 885,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 16
+  },
+  "finalintegrationTest": {
+    "tests": 243,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 7
+  },
+  "finalBase": "fa92f4fc4e6d3a6ec04d7a14dd40e41275a8ed6b",
+  "startupFailureResolution": "Both affected classes passed in fresh containers; subsequent complete build/integrationTest run passed without failures.",
+  "finalLiveIntegration": {
+    "tests": 4,
+    "failures": 0,
+    "skipped": 0
+  }
+}

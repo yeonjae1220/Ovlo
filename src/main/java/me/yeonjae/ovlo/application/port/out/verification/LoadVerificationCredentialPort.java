@@ -7,6 +7,8 @@ import java.util.List;
 public interface LoadVerificationCredentialPort {
 
     List<VerificationCredential> findByMemberId(Long memberId);
+    /** Current scalar authority check; must not reuse cached credential entities. */
+    boolean hasActiveAt(Long memberId, Long universityId);
 
     /** 다른 멤버가 이미 이 학교 이메일을 인증했는지 (학교 이메일 유일성). */
     boolean existsActiveByVerifiedEmailAndMemberIdNot(String verifiedEmail, Long memberId);

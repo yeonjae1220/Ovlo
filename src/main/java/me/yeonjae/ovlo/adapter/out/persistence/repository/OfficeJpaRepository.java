@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Optional;
 
 public interface OfficeJpaRepository extends JpaRepository<OfficeJpaEntity, Long> {
+    boolean existsByIdAndStatus(Long id, String status);
 
     @EntityGraph(attributePaths = "staff")
     Optional<OfficeJpaEntity> findWithStaffById(Long id);

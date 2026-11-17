@@ -121,7 +121,7 @@ class RedisTranslationWorkAdapterIntegrationTest {
         redis.delete(java.util.List.of("ai:{translation}:member:42:daily","ai:{translation}:office:5:daily","ai:{translation}:global:daily"));
         long budget=6*me.yeonjae.ovlo.application.port.out.office.TranslationAdmissionPort.RESERVATION;
         var admission=new RedisTranslationAdmissionAdapter(redis,6,6,6,budget,budget,budget,5,20);
-        var service=new me.yeonjae.ovlo.application.service.command.ConsultationTranscriptService(consultations,chat,cache,provider,sut,admission);
+        var service=new me.yeonjae.ovlo.application.service.command.ConsultationTranscriptService(consultations,chat,cache,provider,sut,admission,org.mockito.Mockito.mock(me.yeonjae.ovlo.application.service.office.ConsultationTranscriptAccess.class));
         var first=service.transcript(5L,700L,11L,true,lang,100);
         assertThat(attempted).hasSize(5);
         assertThat(first).allSatisfy(m->assertThat(m.translationFailed()).isTrue());

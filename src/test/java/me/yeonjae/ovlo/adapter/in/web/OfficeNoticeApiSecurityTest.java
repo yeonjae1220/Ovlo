@@ -145,15 +145,14 @@ class OfficeNoticeApiSecurityTest {
     @DisplayName("학생: 그 대학 활성 인증 자격이 없으면 403, 있으면 200")
     void student_requiresVerifiedCredential() throws Exception {
         String token = bearer(null);
-        given(loadCredentialPort.findByMemberId(MEMBER_ID)).willReturn(List.of());
+        given(loadCredentialPort.hasActiveAt(MEMBER_ID,UNIV)).willReturn(false);
 
         mockMvc.perform(get("/api/v1/office/" + OFFICE_ID + "/notices").header("Authorization", token))
                 .andExpect(status().isForbidden())
                 .andExpect(jsonPath("$.code").value("OFFICE_FORBIDDEN"));
         verify(getNoticeQuery, never()).findForStudent(anyLong(), any(), any());
 
-        given(loadCredentialPort.findByMemberId(MEMBER_ID)).willReturn(List.of(
-                VerificationCredential.issue(MEMBER_ID, VerificationType.SCHOOL_EMAIL, UNIV, "s@univ.ac.kr", Instant.now())));
+        given(loadCredentialPort.hasActiveAt(MEMBER_ID,UNIV)).willReturn(true);
 
         mockMvc.perform(get("/api/v1/office/" + OFFICE_ID + "/notices").param("lang", "vi").header("Authorization", token))
                 .andExpect(status().isOk());

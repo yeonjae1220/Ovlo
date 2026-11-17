@@ -16,21 +16,25 @@ public class StudentOfficeAccessPolicy {
 
     private final LoadOfficePort loadOfficePort;
     private final LoadVerificationCredentialPort loadCredentialPort;
+    private final me.yeonjae.ovlo.application.port.out.member.LoadMemberPort members;
 
     public StudentOfficeAccessPolicy(LoadOfficePort loadOfficePort,
-                                     LoadVerificationCredentialPort loadCredentialPort) {
+                                     LoadVerificationCredentialPort loadCredentialPort,
+                                     me.yeonjae.ovlo.application.port.out.member.LoadMemberPort members) {
         this.loadOfficePort = loadOfficePort;
         this.loadCredentialPort = loadCredentialPort;
+        this.members = members;
     }
 
     public Office assertMember(Long memberId, Long officeId) {
         Office office = loadOfficePort.findById(officeId)
                 .orElseThrow(() -> new OfficeException("국제처를 찾을 수 없습니다: id=" + officeId,
                         OfficeException.ErrorType.NOT_FOUND));
-        if (office.isSuspended()) {
+        if (office.isSuspended() || loadOfficePort.isCurrentlySuspended(officeId)) {
             throw new OfficeException("정지된 국제처입니다", OfficeException.ErrorType.SUSPENDED);
         }
-        if (!isVerifiedAt(memberId, office.getGlobalUnivId())) {
+        if (!members.isActive(new me.yeonjae.ovlo.domain.member.model.MemberId(memberId))
+                || !loadCredentialPort.hasActiveAt(memberId, office.getGlobalUnivId())) {
             throw new OfficeException("이 대학의 인증된 학생만 이용할 수 있습니다",
                     OfficeException.ErrorType.FORBIDDEN);
         }

@@ -17,7 +17,7 @@ public class OfficePersonalDataAdapter implements OfficePersonalDataPort {
     public OfficePersonalDataAdapter(JdbcTemplate jdbc,TransactionTemplate tx) { this.jdbc=jdbc;this.tx=tx; }
 
     public void lockActiveMember(long id) {
-        String state=jdbc.queryForObject("SELECT status FROM member WHERE id=? FOR UPDATE",String.class,id);
+        String state=jdbc.queryForObject("SELECT status FROM member WHERE id=? FOR NO KEY UPDATE",String.class,id);
         if (!"ACTIVE".equals(state)) throw unavailable();
     }
     public void lockInquiry(long id) {
@@ -59,7 +59,7 @@ public class OfficePersonalDataAdapter implements OfficePersonalDataPort {
             ) due ORDER BY member_id LIMIT 100
             """,Long.class);
         for(long member:members) tx.executeWithoutResult(status->{
-            String state=jdbc.queryForObject("SELECT status FROM member WHERE id=? FOR UPDATE",String.class,member);
+            String state=jdbc.queryForObject("SELECT status FROM member WHERE id=? FOR NO KEY UPDATE",String.class,member);
             erase(member,"WITHDRAWN".equals(state));
         });
         return members.size();

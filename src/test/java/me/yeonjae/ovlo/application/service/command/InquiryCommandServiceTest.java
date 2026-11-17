@@ -73,7 +73,7 @@ class InquiryCommandServiceTest {
         candidateLoad=org.mockito.Mockito.mock(me.yeonjae.ovlo.application.port.out.office.LoadNoticePort.class);
         lenient().when(candidateLoad.findById(any())).thenAnswer(inv -> java.util.stream.Stream.of(dorm,insurance).filter(n -> n!=null && n.getId().equals(inv.getArgument(0))).findFirst());
         var governance=me.yeonjae.ovlo.support.NoticeFixtures.governance(candidateLoad);
-        var finalizer=new me.yeonjae.ovlo.application.service.office.NoticeAnswerFinalizer(org.mockito.Mockito.mock(me.yeonjae.ovlo.application.port.out.office.NoticeKnowledgePort.class),candidateLoad,saveInquiryPort,governance,Clock.fixed(NOW,ZoneOffset.UTC));
+        var finalizer=new me.yeonjae.ovlo.application.service.office.NoticeAnswerFinalizer(org.mockito.Mockito.mock(me.yeonjae.ovlo.application.port.out.office.NoticeKnowledgePort.class),candidateLoad,saveInquiryPort,governance,Clock.fixed(NOW,ZoneOffset.UTC),org.mockito.Mockito.mock(me.yeonjae.ovlo.application.port.out.office.OfficePersonalDataPort.class),accessPolicy);
         sut = new InquiryCommandService(accessPolicy, searchPort, answerPort, new GroundedAnswerValidator(),
                 loadInquiryPort, saveInquiryPort, Clock.fixed(NOW, ZoneOffset.UTC), finalizer, governance, 8, 500, guard, admission, new me.yeonjae.ovlo.shared.metrics.OfficeMetrics(meters));
         lenient().when(admission.acquire(any(), any())).thenReturn(lease);

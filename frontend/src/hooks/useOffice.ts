@@ -126,7 +126,7 @@ export function useOfficeInquiries(officeId: number | undefined, outcome: Inquir
 export function useOpenConsultation(officeId: number | undefined) {
   const qc = useQueryClient()
   return useMutation({
-    mutationFn: (body: { inquiryId?: number | null; consentVersion: string; message?: string | null }) =>
+    mutationFn: (body: { inquiryId?: number | null; consentVersion: string; message?: string | null; lang?: NoticeLang | Lowercase<NoticeLang> }) =>
       officeApi.openConsultation(officeId as number, body),
     onSuccess: () => qc.invalidateQueries({ queryKey: ['office', officeId, 'my-consultations'] }),
   })
