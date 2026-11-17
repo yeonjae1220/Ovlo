@@ -1,5 +1,7 @@
 package me.yeonjae.ovlo.application.service.command;
 
+import static me.yeonjae.ovlo.application.service.office.NoticeAnswerLimits.MAX_BODY_CHARS;
+
 import me.yeonjae.ovlo.application.dto.command.AskQuestionCommand;
 import me.yeonjae.ovlo.application.dto.command.InquiryFeedbackCommand;
 import me.yeonjae.ovlo.application.dto.result.AskResult;
@@ -44,8 +46,6 @@ import java.util.stream.IntStream;
 public class InquiryCommandService implements AskQuestionUseCase, GiveInquiryFeedbackUseCase {
 
     private static final Logger log = LoggerFactory.getLogger(InquiryCommandService.class);
-    /** 후보 본문이 너무 길면 토큰이 늘고 답변 품질은 오르지 않는다. 자료 등록 시 상한(20,000자)보다 훨씬 작게 둔다. */
-    private static final int MAX_CANDIDATE_BODY_CHARS = 3000;
 
     private final me.yeonjae.ovlo.application.port.out.office.InquiryGuardPort guard;
     private final me.yeonjae.ovlo.application.port.out.office.InquiryAdmissionPort admission;
@@ -243,8 +243,8 @@ public class InquiryCommandService implements AskQuestionUseCase, GiveInquiryFee
         Optional<NoticeTranslation> fresh = n.getTranslation(lang).filter(t -> !t.isStaleFor(n.getVersion()));
         String title = fresh.map(NoticeTranslation::getTitle).orElse(n.getTitle());
         String body = fresh.map(NoticeTranslation::getBody).orElse(n.getBody());
-        if (body.length() > MAX_CANDIDATE_BODY_CHARS) {
-            body = body.substring(0, MAX_CANDIDATE_BODY_CHARS);
+        if (body.length() > MAX_BODY_CHARS) {
+            body = body.substring(0, MAX_BODY_CHARS);
         }
         return new Candidate(index, n.getId(), title, body, n.getSourceUrl());
     }

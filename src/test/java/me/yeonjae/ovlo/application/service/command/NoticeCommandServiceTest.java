@@ -9,6 +9,7 @@ import me.yeonjae.ovlo.application.port.out.office.LoadNoticePort;
 import me.yeonjae.ovlo.application.port.out.office.LoadOfficePort;
 import me.yeonjae.ovlo.application.port.out.office.SaveNoticePort;
 import me.yeonjae.ovlo.application.service.office.NoticeApprovedEvent;
+import me.yeonjae.ovlo.application.service.office.LongNoticeSavedEvent;
 import me.yeonjae.ovlo.domain.office.exception.NoticeException;
 import me.yeonjae.ovlo.domain.office.exception.OfficeException;
 import me.yeonjae.ovlo.domain.office.model.Notice;
@@ -82,6 +83,37 @@ class NoticeCommandServiceTest {
         n.assignId(NOTICE);
         given(loadNoticePort.findById(NOTICE)).willReturn(Optional.of(n));
         return n;
+    }
+
+    @org.junit.jupiter.params.ParameterizedTest
+    @org.junit.jupiter.params.provider.ValueSource(ints = {2999, 3000, 3001, 20000})
+    void longNoticeWarningDoesNotBlockRegisterOrUpdate(int length) {
+        String body = "가".repeat(length);
+        var c = registerCommand();
+        NoticeResult registered = sut.register(new RegisterNoticeCommand(c.officeId(), c.category(), c.title(),
+                " \n" + body + " \n", c.sourceUrl(), c.attachmentMediaIds(), c.term(), c.effectiveFrom(), c.expiresAt(), c.createdBy()));
+        assertThat(registered.body()).isEqualTo(body);
+        var registerEvent = new LongNoticeSavedEvent(
+                LongNoticeSavedEvent.Action.REGISTER);
+        verify(eventPublisher, org.mockito.Mockito.times(length > 3000 ? 1 : 0)).publishEvent(registerEvent);
+
+        draftInStore();
+        NoticeResult updated = sut.update(new UpdateNoticeCommand(OFFICE, NOTICE, c.category(), c.title(),
+                body, c.sourceUrl(), c.attachmentMediaIds(), c.term(), c.effectiveFrom(), c.expiresAt()));
+        assertThat(updated.body()).isEqualTo(body);
+        var updateEvent = new LongNoticeSavedEvent(
+                LongNoticeSavedEvent.Action.UPDATE);
+        verify(eventPublisher, org.mockito.Mockito.times(length > 3000 ? 1 : 0)).publishEvent(updateEvent);
+    }
+
+    @Test
+    void failedLongNoticeSaveDoesNotPublishMetric() {
+        given(saveNoticePort.save(any())).willThrow(new IllegalStateException("save failed"));
+        var c = registerCommand();
+        assertThatThrownBy(() -> sut.register(new RegisterNoticeCommand(c.officeId(), c.category(), c.title(),
+                "가".repeat(3001), c.sourceUrl(), c.attachmentMediaIds(), c.term(), c.effectiveFrom(), c.expiresAt(), c.createdBy())))
+                .isInstanceOf(IllegalStateException.class);
+        verify(eventPublisher, never()).publishEvent(any());
     }
 
     @Test

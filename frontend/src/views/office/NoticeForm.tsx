@@ -1,6 +1,7 @@
 'use client'
 
-import { useState } from 'react'
+import { useId, useState } from 'react'
+import { exceedsNoticeAnswerLimit } from './noticeLimits'
 import { useI18n } from '../../i18n/I18nProvider'
 import { NOTICE_CATEGORIES, type NoticeCategory, type NoticeRequest } from '../../api/office'
 import { Button, FieldGroup, SelectField, TextAreaField, TextField } from '../../components/ui'
@@ -27,8 +28,10 @@ export default function NoticeForm({
   onCancel: () => void
 }) {
   const { t } = useI18n()
+  const warningId = useId()
   const [form, setForm] = useState<NoticeRequest>(initial ?? EMPTY)
   const set = <K extends keyof NoticeRequest>(key: K) => (value: NoticeRequest[K]) => setForm((f) => ({ ...f, [key]: value }))
+  const longBody = exceedsNoticeAnswerLimit(form.body)
   const valid = form.title.trim() && form.body.trim() && /^\d{4}-[12S]$/.test(form.term) && form.effectiveFrom && form.expiresAt && form.expiresAt > form.effectiveFrom
 
   return (
@@ -51,8 +54,11 @@ export default function NoticeForm({
         <TextField value={form.title} maxLength={300} onChange={(e) => set('title')(e.target.value)} required />
       </FieldGroup>
       <FieldGroup label={t('office.notice.body')} hint={initial ? t('office.notice.editHint') : undefined}>
-        <TextAreaField value={form.body} rows={10} maxLength={20000} onChange={(e) => set('body')(e.target.value)} required />
+        <TextAreaField aria-describedby={longBody ? warningId : undefined} value={form.body} rows={10} maxLength={20000} onChange={(e) => set('body')(e.target.value)} required />
       </FieldGroup>
+      <p id={warningId} role="status" style={{ margin: 0, color: 'var(--color-warning, #92400e)' }}>
+        {longBody ? t('office.notice.longBodyWarning') : null}
+      </p>
       <FieldGroup label={t('office.notice.sourceUrl')}>
         <TextField value={form.sourceUrl ?? ''} type="url" onChange={(e) => set('sourceUrl')(e.target.value)} />
       </FieldGroup>
