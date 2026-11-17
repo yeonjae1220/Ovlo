@@ -7,6 +7,7 @@ import me.yeonjae.ovlo.domain.office.model.NoticeLang;
 import me.yeonjae.ovlo.domain.office.model.NoticeTranslation;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
+import me.yeonjae.ovlo.application.service.office.SmallNoticeCorpus;
 
 import java.time.LocalDate;
 import java.util.Comparator;
@@ -33,10 +34,13 @@ public class KeywordNoticeSearchAdapter implements NoticeSearchPort {
 
     @Override
     public List<Notice> findCandidates(Long officeId, NoticeLang lang, String question, LocalDate today, int limit) {
+        List<Notice> eligible = SmallNoticeCorpus.eligible(loadNoticePort.findActiveForStudent(officeId, null, today),
+                officeId, lang, today, governance);
+        var small = SmallNoticeCorpus.fitting(eligible, lang, limit);
+        if (small.isPresent()) return small.get();
         Set<String> queryTokens = tokens(question);
         if (queryTokens.isEmpty()) return List.of();
-        return loadNoticePort.findActiveForStudent(officeId, null, today).stream()
-                .filter(n -> n.isGroundingEligible(today, lang) && governance.eligible(n,today))
+        return eligible.stream()
                 .map(n -> new Scored(n, score(queryTokens, textOf(n, lang))))
                 .filter(s -> s.score > 0)
                 .sorted(Comparator.comparingInt((Scored s) -> s.score).reversed()

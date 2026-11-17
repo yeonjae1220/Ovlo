@@ -128,6 +128,9 @@ class OfficeInquiryPersistenceAdapterIntegrationTest {
         reloaded.putTranslation(NoticeLang.EN, "Cafeteria hours", "Student cafeteria opening hours", NOW);
         noticeAdapter.save(reloaded);
 
+        // Keep this test on the ranked fallback path, independently of the small-corpus bypass.
+        for (int i = 0; i < 9; i++) approvedNotice("Jazz concert", "Auditorium reservation");
+
         assertThat(searchAdapter.findCandidates(officeId, NoticeLang.EN, "when does the dormitory application close", TODAY, 8))
                 .extracting(Notice::getId).containsExactly(dorm.getId());
         assertThat(searchAdapter.findCandidates(officeId, NoticeLang.EN, "cafeteria opening hours", TODAY, 8))
@@ -136,6 +139,19 @@ class OfficeInquiryPersistenceAdapterIntegrationTest {
         assertThat(searchAdapter.findCandidates(officeId, NoticeLang.EN, "dormitory application close", TODAY, 1)).extracting(Notice::getId).containsExactly(dorm.getId());
         assertThat(searchAdapter.findCandidates(officeId, NoticeLang.EN, "extend stay immigration", TODAY, 8))
                 .extracting(Notice::getId).containsExactly(visa.getId());
+    }
+
+    @Test void smallEligibleCorpusBypassesVocabularyButNeverEligibility() {
+        Notice dorm = approvedNotice("기숙사 신청", "학생증 제출");
+        Notice visa = approvedNotice("체류기간 연장", "방문 예약");
+        Notice held = approvedNotice("건강보험", "가입 안내");
+        held.holdSource("재검토 필요"); noticeAdapter.save(held);
+        assertThat(searchAdapter.findCandidates(officeId, NoticeLang.KO, "생활관 입주", TODAY, 8))
+                .extracting(Notice::getId).containsExactly(visa.getId(), dorm.getId());
+        // No English translation: these same notices are not eligible for English questions.
+        assertThat(searchAdapter.findCandidates(officeId, NoticeLang.EN, "accommodation", TODAY, 8)).isEmpty();
+        for (int i = 0; i < 7; i++) approvedNotice("일정 안내", "행사 장소");
+        assertThat(searchAdapter.findCandidates(officeId, NoticeLang.KO, "unmatchedsynonym", TODAY, 8)).isEmpty();
     }
 
     @Test void concurrentContinuationsAppendExactlyOneWithoutLosingPreviousTurn() throws Exception {
