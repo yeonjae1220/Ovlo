@@ -148,3 +148,10 @@ S-06 동작 및 계측:
   이 이벤트나 자료 총량 증가가 확인되면 §4의 청킹 검토를 시작할 수 있지만, 이번에는 청킹을 추가하지 않는다.
 - 검증: `./gradlew test --tests '*NoticeCommandServiceTest' --tests '*LongNoticeMetricsListenerTest'`,
   `cd frontend && node scripts/test-notice-length.cjs`. UI 검사는 등록/편집·경계·공백·이모지·저장 가능 여부를 확인하며 CI에서도 실행한다.
+
+### S-04·S-05 판단을 위한 최소 계측
+
+위키 OV-FEAT-017 절차와 `origin/main@e600eb4`를 대조해, 개인정보 없는 검색 경로·후보 유무와 단발/후속 검색 단계 결과만 추가한다.
+이는 S-04 검색 보정이나 S-05 재작성 착수가 아니다. 자격 자료 수/바이트·언어/학교 coverage·정답 포함률은 이번 계측 범위에서 제외한다.
+분모·예외·CJK 내부 중복 집계 방지·미구현 항목·개인정보 경계는 [검색 최소 계측](office-search-observability.md)에 기록한다.
+§1 실측값은 그대로 유지했고 운영 표본이나 원문은 조회하지 않았다.

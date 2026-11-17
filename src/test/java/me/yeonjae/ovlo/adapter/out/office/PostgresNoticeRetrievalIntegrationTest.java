@@ -30,6 +30,7 @@ class PostgresNoticeRetrievalIntegrationTest {
         r.add("ovlo.search.provider", () -> "postgres");
     }
     @Autowired JdbcTemplate jdbc;
+    @Autowired io.micrometer.core.instrument.MeterRegistry meters;
     @Autowired OfficeNoticePersistenceAdapter notices;
     @Autowired OfficePersistenceAdapter offices;
     @Autowired MemberPersistenceAdapter members;
@@ -44,6 +45,14 @@ class PostgresNoticeRetrievalIntegrationTest {
         Map<Long, Notice> documents = new LinkedHashMap<>();
         for (var doc : NoticeRetrievalGoldenSet.corpus().notices())
             documents.put(doc.id(), notices.save(NoticeRetrievalGoldenSet.notice(doc, office, memberId)));
+        double postgresBefore = observations("POSTGRES");
+        double keywordBefore = observations("KEYWORD");
         NoticeRetrievalGoldenSet.evaluate("postgres", search, office, documents);
+        org.assertj.core.api.Assertions.assertThat(observations("POSTGRES") - postgresBefore).isEqualTo(70);
+        org.assertj.core.api.Assertions.assertThat(observations("KEYWORD") - keywordBefore).isZero();
+    }
+    private double observations(String provider) {
+        return meters.find("ovlo.office.search.completed").tag("provider", provider)
+                .counters().stream().mapToDouble(c -> c.count()).sum();
     }
 }

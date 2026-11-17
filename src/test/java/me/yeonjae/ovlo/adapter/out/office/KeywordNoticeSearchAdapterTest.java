@@ -1,5 +1,8 @@
 package me.yeonjae.ovlo.adapter.out.office;
 
+import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
+import me.yeonjae.ovlo.shared.metrics.OfficeMetrics;
+
 import me.yeonjae.ovlo.application.port.out.office.LoadNoticePort;
 import me.yeonjae.ovlo.domain.office.model.Notice;
 import me.yeonjae.ovlo.domain.office.model.NoticeCategory;
@@ -51,7 +54,7 @@ class KeywordNoticeSearchAdapterTest {
             corpus.add(other);
         }
         given(loadNoticePort.findActiveForStudent(eq(5L), isNull(), any())).willReturn(corpus);
-        var adapter = new KeywordNoticeSearchAdapter(loadNoticePort,me.yeonjae.ovlo.support.NoticeFixtures.governance(loadNoticePort));
+        var adapter = new KeywordNoticeSearchAdapter(loadNoticePort,me.yeonjae.ovlo.support.NoticeFixtures.governance(loadNoticePort), new OfficeMetrics(new SimpleMeterRegistry()));
 
         assertThat(adapter.findCandidates(5L, NoticeLang.KO, "기숙사 신청은 언제까지예요?", TODAY, 8))
                 .extracting(Notice::getId).containsExactly(1L, 2L);   // 2번은 '신청'만 겹침

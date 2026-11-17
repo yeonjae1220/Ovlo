@@ -10,6 +10,41 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 class OfficeMetricsTest {
 
+    @Test void searchMetricsExposeOnlyFixedDimensionsAndStartAtZero() {
+        var registry = new io.micrometer.prometheusmetrics.PrometheusMeterRegistry(
+                io.micrometer.prometheusmetrics.PrometheusConfig.DEFAULT);
+        try {
+            var metrics = new OfficeMetrics(registry);
+            var searches = registry.find("ovlo.office.search.completed").counters();
+            var retrievals = registry.find("ovlo.office.inquiry.retrieval").counters();
+            assertThat(searches).hasSize(12).allSatisfy(c -> {
+                assertThat(c.count()).isZero();
+                assertThat(c.getId().getTags()).extracting(t -> t.getKey())
+                        .containsExactlyInAnyOrder("provider", "path", "candidates");
+            });
+            assertThat(retrievals).hasSize(6).allSatisfy(c -> {
+                assertThat(c.count()).isZero();
+                assertThat(c.getId().getTags()).extracting(t -> t.getKey())
+                        .containsExactlyInAnyOrder("query_kind", "result");
+            });
+            for (var provider : OfficeMetrics.SearchProvider.values()) {
+                for (var path : OfficeMetrics.SearchPath.values()) {
+                    for (boolean present : new boolean[]{false, true}) metrics.searchCompleted(provider, path, present);
+                }
+            }
+            for (boolean followUp : new boolean[]{false, true}) {
+                for (var result : OfficeMetrics.RetrievalResult.values()) metrics.inquiryRetrieval(followUp, result);
+            }
+            assertThat(registry.find("ovlo.office.search.completed").counters()).hasSize(12)
+                    .allSatisfy(c -> assertThat(c.count()).isEqualTo(1));
+            assertThat(registry.find("ovlo.office.inquiry.retrieval").counters()).hasSize(6)
+                    .allSatisfy(c -> assertThat(c.count()).isEqualTo(1));
+            assertThat(registry.scrape()).contains("ovlo_office_search_completed_total{", "ovlo_office_inquiry_retrieval_total{");
+        } finally {
+            registry.close();
+        }
+    }
+
     @Test
     @DisplayName("문의·LLM·상담·클릭이 고정 태그로 집계된다 (토큰은 방향별 누적, 0 이면 생략)")
     void recordsWithFixedTags() {
