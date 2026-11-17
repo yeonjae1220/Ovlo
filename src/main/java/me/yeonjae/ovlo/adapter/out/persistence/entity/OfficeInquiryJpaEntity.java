@@ -12,6 +12,15 @@ import java.time.Instant;
         })
 public class OfficeInquiryJpaEntity {
 
+    @Column(name="personal_data_expires_at",updatable=false)
+    private Instant personalDataExpiresAt=Instant.now().atZone(java.time.ZoneOffset.UTC).plusYears(1).toInstant();
+    public void setPersonalDataExpiresAt(Instant value) { personalDataExpiresAt=value; }
+    @Column(name="personal_data_erased_at",insertable=false,updatable=false)
+    private Instant personalDataErasedAt;
+    public boolean personalDataUnavailable() {
+        return personalDataErasedAt!=null || (personalDataExpiresAt!=null && !personalDataExpiresAt.isAfter(Instant.now()));
+    }
+
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 

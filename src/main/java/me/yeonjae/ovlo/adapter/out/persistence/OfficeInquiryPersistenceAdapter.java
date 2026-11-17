@@ -28,11 +28,13 @@ public class OfficeInquiryPersistenceAdapter implements LoadInquiryPort, SaveInq
     /** 기간 상한이 없을 때의 경계값(timestamptz 범위 안). */
     private static final Instant FAR_FUTURE = Instant.parse("9999-12-31T00:00:00Z");
 
+    private final OfficePersonalDataAdapter privacy;
     private final OfficeInquiryJpaRepository repository;
     private final OfficeInquiryFeedbackJpaRepository feedbackRepository;
 
-    public OfficeInquiryPersistenceAdapter(OfficeInquiryJpaRepository repository,
+    public OfficeInquiryPersistenceAdapter(OfficePersonalDataAdapter privacy, OfficeInquiryJpaRepository repository,
                                            OfficeInquiryFeedbackJpaRepository feedbackRepository) {
+        this.privacy=privacy;
         this.repository = repository;
         this.feedbackRepository = feedbackRepository;
     }
@@ -74,6 +76,9 @@ public class OfficeInquiryPersistenceAdapter implements LoadInquiryPort, SaveInq
     @Override
     @Transactional
     public Inquiry save(Inquiry inquiry) {
+        privacy.lockActiveMember(inquiry.getMemberId());
+        if(inquiry.getId()!=null) privacy.lockInquiry(inquiry.getId());
+        if(inquiry.getPreviousInquiryId()!=null) privacy.lockInquiry(inquiry.getPreviousInquiryId());
         if (inquiry.getId() == null && inquiry.getPreviousInquiryId() != null) {
             Inquiry previous = findByIdForUpdate(inquiry.getPreviousInquiryId()).orElseThrow();
             previous.assertCanContinue();
@@ -90,6 +95,7 @@ public class OfficeInquiryPersistenceAdapter implements LoadInquiryPort, SaveInq
                 : repository.findById(inquiry.getId())
                         .orElseThrow(() -> new IllegalStateException("저장할 문의가 없습니다: id=" + inquiry.getId()));
         e.setPreviousInquiryId(inquiry.getPreviousInquiryId());
+        if(inquiry.getId()==null) e.setPersonalDataExpiresAt(inquiry.getAskedAt().atZone(java.time.ZoneOffset.UTC).plusYears(1).toInstant());
         e.setOfficeId(inquiry.getOfficeId());
         e.setMemberId(inquiry.getMemberId());
         e.setLang(inquiry.getLang().code());
@@ -110,6 +116,7 @@ public class OfficeInquiryPersistenceAdapter implements LoadInquiryPort, SaveInq
     @Override
     @Transactional
     public void saveFeedback(InquiryFeedback feedback) {
+        privacy.lockInquiry(feedback.inquiryId());
         OfficeInquiryFeedbackJpaEntity e = feedbackRepository.findById(feedback.inquiryId())
                 .orElseGet(OfficeInquiryFeedbackJpaEntity::new);
         e.setInquiryId(feedback.inquiryId());
@@ -120,11 +127,12 @@ public class OfficeInquiryPersistenceAdapter implements LoadInquiryPort, SaveInq
     }
 
     private Inquiry toDomain(OfficeInquiryJpaEntity e) {
-        return Inquiry.restore(e.getId(), e.getOfficeId(), e.getMemberId(),
+        Inquiry result=Inquiry.restore(e.getId(), e.getOfficeId(), e.getMemberId(),
                 NoticeLang.fromCode(e.getLang()).orElse(NoticeLang.KO), e.getQuestion(),
                 InquiryOutcome.valueOf(e.getOutcome()), e.getAnswerText(), split(e.getCitedNoticeIds()),
                 split(e.getCandidateNoticeIds()), e.getAskedAt(), e.getLatencyMs(), e.getModelId(), e.getPreviousInquiryId(),
                 e.getRejectionReason() == null ? null : me.yeonjae.ovlo.domain.office.model.InquiryRejectionReason.valueOf(e.getRejectionReason()));
+        return e.personalDataUnavailable()?result.withoutPersonalData():result;
     }
 
     private static String join(List<Long> ids) {

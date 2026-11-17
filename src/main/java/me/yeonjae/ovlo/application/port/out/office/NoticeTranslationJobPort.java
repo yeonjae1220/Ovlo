@@ -17,5 +17,6 @@ public interface NoticeTranslationJobPort {
     void reopenRejected(long noticeId, int version);
     void resumePaused(long noticeId, int version);
     void defer(Claim claim, long delaySeconds);
+    void pause(Claim claim);
     List<Long> dueNotices();
 }

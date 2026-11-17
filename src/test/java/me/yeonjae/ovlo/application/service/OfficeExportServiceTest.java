@@ -42,13 +42,13 @@ class OfficeExportServiceTest {
     @DisplayName("문의 CSV: 헤더 + 행, 질문의 쉼표는 감싸고 인용 id 는 ; 로 잇는다. 회원 id 열은 없다")
     void inquiriesCsv() {
         given(inquiryQuery.findForStaff(eq(5L), isNull(), isNull(), isNull(), any())).willReturn(new PageImpl<>(List.of(
-                new InquiryLogResult(1L, NoticeLang.EN, "Dorm, when?", InquiryOutcome.ANSWERED, "Feb 10 [1]",
-                        List.of(7L, 8L), 3, null, 800L, "claude-test", Boolean.TRUE, null, null))));
+                new InquiryLogResult(1L, NoticeLang.EN, InquiryOutcome.ANSWERED,
+                        List.of(7L, 8L), 3, null, 800L, "claude-test", Boolean.TRUE, null))));
 
         String csv = new OfficeExportService(inquiryQuery, consultationQuery, noticeQuery).inquiriesCsv(5L, null, null);
 
-        assertThat(csv).startsWith(CsvWriter.BOM + "id,askedAt,lang,outcome,question,answerText,citedNoticeIds,candidateCount,latencyMs,modelId,helpful,feedbackReason,rejectionReason\r\n");
-        assertThat(csv).contains("1,,EN,ANSWERED,\"Dorm, when?\",Feb 10 [1],7;8,3,800,claude-test,true,,\r\n");
+        assertThat(csv).startsWith(CsvWriter.BOM + "id,askedAt,lang,outcome,citedNoticeIds,candidateCount,latencyMs,modelId,helpful,rejectionReason\r\n");
+        assertThat(csv).contains("1,,EN,ANSWERED,7;8,3,800,claude-test,true,\r\n");
         assertThat(csv).doesNotContainIgnoringCase("memberId").doesNotContain("@");
     }
 

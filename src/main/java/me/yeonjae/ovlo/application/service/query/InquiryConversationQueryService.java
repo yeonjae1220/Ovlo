@@ -43,7 +43,7 @@ public class InquiryConversationQueryService implements GetInquiryConversationQu
         Inquiry last = history.getLast();
         Long consultationId = consultations.findFirstByInquiryId(last.getId()).map(Consultation::getId).orElse(null);
         return new InquiryConversationResult(history.stream().map(i -> new InquiryConversationResult.Turn(i.getQuestion(), result(i))).toList(),
-                consultationId, last.getOutcome() != InquiryOutcome.ESCALATED && history.size() < InquiryHistory.MAX_TURNS);
+                consultationId, last.isPersonalDataAvailable() && last.getOutcome() != InquiryOutcome.ESCALATED && history.size() < InquiryHistory.MAX_TURNS);
     }
 
     private AskResult result(Inquiry inquiry) {
@@ -61,6 +61,6 @@ public class InquiryConversationQueryService implements GetInquiryConversationQu
             citations.add(new AskResult.Citation(inquiry.getCandidateNoticeIds().indexOf(id)+1,id,"과거 출처 (버전 미기록)",null,null));
         }
         return new AskResult(inquiry.getId(), inquiry.getOutcome(), inquiry.getLang(), inquiry.getAnswerText(), citations,
-                inquiry.getOutcome() != InquiryOutcome.ESCALATED && inquiry.getOutcome() != InquiryOutcome.OUT_OF_SCOPE);
+                inquiry.isPersonalDataAvailable() && inquiry.getOutcome() != InquiryOutcome.ESCALATED && inquiry.getOutcome() != InquiryOutcome.OUT_OF_SCOPE);
     }
 }

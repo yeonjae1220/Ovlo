@@ -24,16 +24,19 @@ import java.util.stream.Collectors;
 @Component
 public class OfficeConsultationPersistenceAdapter implements LoadConsultationPort, SaveConsultationPort, MessageTranslationPort {
 
+    private final OfficePersonalDataAdapter privacy;
     private final OfficeConsultationJpaRepository repository;
     private final ChatMessageTranslationJpaRepository translationRepository;
 
-    public OfficeConsultationPersistenceAdapter(OfficeConsultationJpaRepository repository,
+    public OfficeConsultationPersistenceAdapter(OfficePersonalDataAdapter privacy, OfficeConsultationJpaRepository repository,
                                                 ChatMessageTranslationJpaRepository translationRepository) {
+        this.privacy=privacy;
         this.repository = repository;
         this.translationRepository = translationRepository;
     }
 
     @Override public void lockStudentForCreation(Long memberId) {
+        privacy.lockActiveMember(memberId);
         if (repository.lockStudentForCreation(memberId)==null) throw new IllegalStateException("Student not found");
     }
     @Override public long countOpenedSince(Long memberId, Instant since) {
@@ -81,10 +84,13 @@ public class OfficeConsultationPersistenceAdapter implements LoadConsultationPor
     @Override
     @Transactional
     public Consultation save(Consultation c) {
+        privacy.lockActiveMember(c.getMemberId());
+        if(c.getId()!=null) privacy.lockConsultation(c.getId());
         OfficeConsultationJpaEntity e = c.getId() == null
                 ? new OfficeConsultationJpaEntity()
                 : repository.findById(c.getId())
                         .orElseThrow(() -> new IllegalStateException("저장할 상담이 없습니다: id=" + c.getId()));
+        if(c.getId()==null) e.setPersonalDataExpiresAt(c.getOpenedAt().atZone(java.time.ZoneOffset.UTC).plusYears(1).toInstant());
         e.setOfficeId(c.getOfficeId());
         e.setMemberId(c.getMemberId());
         e.setInquiryId(c.getInquiryId());
@@ -119,6 +125,7 @@ public class OfficeConsultationPersistenceAdapter implements LoadConsultationPor
     @Override
     @Transactional
     public void save(Long messageId, NoticeLang lang, String text, String modelId) {
+        privacy.lockMessage(messageId);
         if (text == null || text.isBlank()) throw new IllegalArgumentException("Empty message translation");
         ChatMessageTranslationJpaEntity e = translationRepository.findByMessageIdAndLang(messageId, lang.code())
                 .orElseGet(ChatMessageTranslationJpaEntity::new);
@@ -132,9 +139,9 @@ public class OfficeConsultationPersistenceAdapter implements LoadConsultationPor
     private Consultation toDomain(OfficeConsultationJpaEntity e) {
         return Consultation.restore(e.getId(), e.getOfficeId(), e.getMemberId(), e.getInquiryId(), e.getConsentVersion(),
                 e.getConsentText(),
-                new Consultation.SharedContext(e.getSharedQuestion(), e.getSharedAnswer(),
-                        NoticeLang.fromCode(e.getSharedLang()).orElse(NoticeLang.KO), e.isSharedVerifiedStudent(), e.getSharedConversation()),
-                ConsultationStatus.valueOf(e.getStatus()), e.getAssignedStaffMemberId(), e.getChatRoomId(), e.getOpenedAt(),
+                new Consultation.SharedContext(e.personalDataUnavailable()?OfficePersonalDataAdapter.DELETED:e.getSharedQuestion(), e.personalDataUnavailable()?null:e.getSharedAnswer(),
+                        NoticeLang.fromCode(e.getSharedLang()).orElse(NoticeLang.KO), e.isSharedVerifiedStudent(), e.personalDataUnavailable()?null:e.getSharedConversation()),
+                e.personalDataUnavailable()?ConsultationStatus.CLOSED:ConsultationStatus.valueOf(e.getStatus()), e.getAssignedStaffMemberId(), e.getChatRoomId(), e.getOpenedAt(),
                 e.getFirstStaffReplyAt(), e.getResolvedAt(), e.getClosedAt());
     }
 }

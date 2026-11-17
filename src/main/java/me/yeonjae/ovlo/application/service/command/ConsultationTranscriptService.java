@@ -120,7 +120,8 @@ public class ConsultationTranscriptService implements GetConsultationTranscriptQ
             out.add(new TranscriptMessageResult(m.getId().value(), m.getSenderId().value(), !fromStudent, m.getContent(),
                     translated, failed, m.getSentAt()));
         }
-        return out;
+        var visible=loadChatPort.findMessages(new ChatRoomId(c.getChatRoomId()),0,MAX_LIMIT).stream().map(m -> m.getId().value()).collect(java.util.stream.Collectors.toSet());
+        return out.stream().filter(m -> visible.contains(m.messageId())).toList();
     }
 
     private static String nonblank(String value) { return value == null || value.isBlank() ? null : value; }

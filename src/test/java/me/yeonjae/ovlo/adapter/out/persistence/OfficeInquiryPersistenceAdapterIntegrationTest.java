@@ -209,7 +209,7 @@ class OfficeInquiryPersistenceAdapterIntegrationTest {
                 .satisfies(row -> assertThat(row.rejectionReason()).isNull());
         var csv = new me.yeonjae.ovlo.application.service.OfficeExportService(query, null, null)
                 .inquiriesCsv(officeId, null, null);
-        assertThat(csv).contains("rejectionReason").contains("VERIFY_DENIED").contains("legacy");
+        assertThat(csv).contains("rejectionReason").contains("VERIFY_DENIED").doesNotContain("legacy","합성 질문");
     }
 
 }
