@@ -63,6 +63,17 @@ jobs:
           --tests '*RedisInquiryAdmissionAdapterIntegrationTest'
           --no-daemon
 
+      - name: Measure notice retrieval with PostgreSQL (synthetic corpus, no LLM)
+        run: ./gradlew integrationTest --tests '*PostgresNoticeRetrievalIntegrationTest' --no-daemon
+
+      - name: Upload notice retrieval reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: notice-retrieval-reports
+          path: build/reports/retrieval/
+          if-no-files-found: error
+
       - name: Chat authorization and legacy account migration regressions
         run: ./gradlew integrationTest --tests '*ChatAccessIntegrationTest' --tests '*LegacyDevelopmentAccountMigrationIntegrationTest' --no-daemon
 
