@@ -4,6 +4,7 @@ import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.Timer;
 import me.yeonjae.ovlo.domain.office.model.InquiryOutcome;
+import me.yeonjae.ovlo.application.service.office.LongNoticeSavedEvent;
 import me.yeonjae.ovlo.domain.office.model.PartnerCategory;
 import org.springframework.stereotype.Component;
 
@@ -14,6 +15,7 @@ import java.time.Duration;
  * 태그 값은 enum·고정 문자열만 — 질문 본문·회원 id 같은 고카디널리티 값은 절대 넣지 않는다.
  *
  * <pre>
+ * ovlo.office.notice.long_body   counter  action=REGISTER|UPDATE (committed long-body saves, not unique notices)
  * ovlo.office.inquiry            counter  outcome=ANSWERED|NO_GROUNDS|OUT_OF_SCOPE|ESCALATED  rejection_reason=NONE|enum
  * ovlo.office.inquiry.latency    timer    outcome
  * ovlo.office.llm.calls          counter  purpose=answer|inquiry-screen|inquiry-verify|translate|marketplace-translate  result=ok|refused|error  model
@@ -31,6 +33,19 @@ public class OfficeMetrics {
 
     public OfficeMetrics(MeterRegistry registry) {
         this.registry = registry;
+        for (var action : LongNoticeSavedEvent.Action.values()) {
+            longNoticeCounter(action);
+        }
+    }
+
+    public void longNoticeSaved(LongNoticeSavedEvent.Action action) {
+        longNoticeCounter(action).increment();
+    }
+
+    private Counter longNoticeCounter(LongNoticeSavedEvent.Action action) {
+        return Counter.builder("ovlo.office.notice.long_body")
+                .description("Committed notice saves whose original body exceeds the answer context character limit")
+                .tag("action", action.name()).register(registry);
     }
 
     public void inquiry(InquiryOutcome outcome, long latencyMs) {

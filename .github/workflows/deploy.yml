@@ -97,6 +97,9 @@ jobs:
           node scripts/test-auth-query-cache.cjs
           node scripts/test-auth-session-race.cjs
         working-directory: frontend
+      - name: Test long notice warning
+        run: node scripts/test-notice-length.cjs
+        working-directory: frontend
       - run: npm run build
         working-directory: frontend
 

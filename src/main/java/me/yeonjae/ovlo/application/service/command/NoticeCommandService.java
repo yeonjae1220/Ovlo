@@ -11,6 +11,8 @@ import me.yeonjae.ovlo.application.port.out.office.LoadNoticePort;
 import me.yeonjae.ovlo.application.port.out.office.LoadOfficePort;
 import me.yeonjae.ovlo.application.port.out.office.SaveNoticePort;
 import me.yeonjae.ovlo.application.service.office.NoticeApprovedEvent;
+import me.yeonjae.ovlo.application.service.office.LongNoticeSavedEvent;
+import me.yeonjae.ovlo.application.service.office.NoticeAnswerLimits;
 import me.yeonjae.ovlo.application.service.office.NoticeResultMapper;
 import me.yeonjae.ovlo.domain.office.exception.NoticeException;
 import me.yeonjae.ovlo.domain.office.exception.OfficeException;
@@ -67,6 +69,7 @@ public class NoticeCommandService implements ManageNoticeUseCase {
         Notice notice = Notice.register(c.officeId(), c.category(), c.title(), c.body(), c.sourceUrl(),
                 c.attachmentMediaIds(), c.term(), c.effectiveFrom(), c.expiresAt(), c.createdBy(), clock.instant());
         Notice saved = saveNoticePort.save(notice);
+        publishLongBodyWarning(saved, LongNoticeSavedEvent.Action.REGISTER);
         log.info("[Notice] registered office={} notice={} by={}", c.officeId(), saved.getId(), c.createdBy());
         return NoticeResultMapper.toResult(saved, today());
     }
@@ -83,6 +86,7 @@ public class NoticeCommandService implements ManageNoticeUseCase {
         Notice saved = saveNoticePort.save(notice);
         if(saved.getVersion()!=previousVersion) governance.invalidateDependents(c.officeId(),saved.getId());
         knowledge.audit(saved,c.actor()==null?0:c.actor(),"UPDATED","자료 수정",clock.instant());
+        publishLongBodyWarning(saved, LongNoticeSavedEvent.Action.UPDATE);
         log.info("[Notice] updated office={} notice={} version={} status={}", c.officeId(), saved.getId(),
                 saved.getVersion(), saved.getStatus());
         return NoticeResultMapper.toResult(saved, today());
@@ -145,6 +149,12 @@ public class NoticeCommandService implements ManageNoticeUseCase {
                 .filter(n -> n.getOfficeId().equals(c.officeId()))
                 .orElseThrow(() -> new NoticeException("공지를 찾을 수 없습니다: id=" + c.noticeId(), NoticeException.ErrorType.NOT_FOUND));
         return NoticeResultMapper.toResult(committed, today());
+    }
+
+    private void publishLongBodyWarning(Notice saved, LongNoticeSavedEvent.Action action) {
+        if (saved.getBody().length() > NoticeAnswerLimits.MAX_BODY_CHARS) {
+            eventPublisher.publishEvent(new LongNoticeSavedEvent(action));
+        }
     }
 
     private Office requireWritableOffice(Long officeId) {
