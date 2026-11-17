@@ -128,7 +128,28 @@ export function useOpenConsultation(officeId: number | undefined) {
   return useMutation({
     mutationFn: (body: { inquiryId?: number | null; consentVersion: string; message?: string | null; lang?: NoticeLang | Lowercase<NoticeLang> }) =>
       officeApi.openConsultation(officeId as number, body),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ['office', officeId, 'my-consultations'] }),
+    onSuccess: () => Promise.all([
+      qc.invalidateQueries({ queryKey: ['office', officeId, 'my-consultations'] }),
+      qc.invalidateQueries({ queryKey: ['office', 'own-consultations'] }),
+    ]),
+  })
+}
+
+export function useOwnConsultations(page: number) {
+  const memberId = useAuthStore(s => s.currentUser?.id)
+  return useQuery({
+    queryKey: ['office', 'own-consultations', memberId, page],
+    queryFn: ({ signal }) => officeApi.ownConsultations(page, signal),
+    enabled: memberId !== undefined,
+  })
+}
+
+export function useOwnConsultation(id: number | undefined) {
+  const memberId = useAuthStore(s => s.currentUser?.id)
+  return useQuery({
+    queryKey: ['office', 'own-consultation', memberId, id],
+    queryFn: ({ signal }) => officeApi.ownConsultation(id as number, signal),
+    enabled: memberId !== undefined && id !== undefined,
   })
 }
 
@@ -154,7 +175,7 @@ export function useCloseConsultation(officeId: number | undefined) {
   const qc = useQueryClient()
   return useMutation({
     mutationFn: (id: number) => officeApi.closeConsultation(officeId as number, id),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ['office', officeId] }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['office'] }),
   })
 }
 

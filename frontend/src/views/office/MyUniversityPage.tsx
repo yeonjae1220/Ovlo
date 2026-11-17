@@ -32,7 +32,7 @@ export default function MyUniversityPage() {
   if (!office) {
     return (
       <div style={{ maxWidth: 760, margin: '0 auto' }}>
-        <PageHeader title={t('office.title')} />
+        <PageHeader title={t('office.title')} actions={<Link href="/my-university/consultations">{t('consult.mine')}</Link>} />
         <EmptyState title={t('office.none')} action={<Link href={profileHref}>{t('nav.profile')}</Link>} />
       </div>
     )
@@ -47,7 +47,7 @@ export default function MyUniversityPage() {
         actions={
           <span style={{ display: 'inline-flex', gap: 12 }}>
             {office.verifiedStudent && <Link href="/my-university/ask">{t('ask.link')}</Link>}
-            {office.verifiedStudent && <Link href="/my-university/consultations">{t('consult.mine')}</Link>}
+            <Link href="/my-university/consultations">{t('consult.mine')}</Link>
             {office.verifiedStudent && <Link href="/my-university/arrival">{t('student.arrival.link')}</Link>}
             {office.role && <Link href="/office/notices">{t('office.staffLink')}</Link>}
           </span>

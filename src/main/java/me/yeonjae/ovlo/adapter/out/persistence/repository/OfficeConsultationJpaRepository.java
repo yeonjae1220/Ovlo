@@ -13,6 +13,9 @@ import java.util.Optional;
 
 public interface OfficeConsultationJpaRepository extends JpaRepository<OfficeConsultationJpaEntity, Long> {
 
+    Page<OfficeConsultationJpaEntity> findByMemberId(Long memberId, Pageable pageable);
+    Optional<OfficeConsultationJpaEntity> findByIdAndMemberId(Long id, Long memberId);
+
     @Query(value="SELECT id FROM member WHERE id = :memberId FOR NO KEY UPDATE", nativeQuery=true)
     Long lockStudentForCreation(@Param("memberId") Long memberId);
     long countByMemberIdAndOpenedAtGreaterThanEqual(Long memberId, Instant since);

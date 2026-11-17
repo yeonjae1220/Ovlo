@@ -8,7 +8,7 @@ import { useAuthStore } from '../../store/authStore'
 import {
   useAssignConsultation,
   useCloseConsultation,
-  useMyConsultation,
+  useOwnConsultation,
   useMyOffice,
   useResolveConsultation,
   useStaffConsultation,
@@ -31,11 +31,12 @@ export default function ConsultationDetailPage({ staff }: { staff: boolean }) {
 
   const myOffice = useMyOffice()
   const office = myOffice.data ?? null
-  const officeId = staff ? (office?.role ? office.officeId : undefined) : office && office.verifiedStudent ? office.officeId : undefined
+  const staffOfficeId = staff && office?.role ? office.officeId : undefined
 
-  const staffQuery = useStaffConsultation(staff ? officeId : undefined, validId ? id : undefined)
-  const mineQuery = useMyConsultation(staff ? undefined : officeId, validId ? id : undefined)
+  const staffQuery = useStaffConsultation(staffOfficeId, validId ? id : undefined)
+  const mineQuery = useOwnConsultation(!staff && validId ? id : undefined)
   const consultation = staff ? staffQuery.data : mineQuery.data
+  const officeId = staff ? staffOfficeId : consultation?.officeId
   const detailLoading = staff ? staffQuery.isLoading : mineQuery.isLoading
   const detailError = staff ? staffQuery.isError : mineQuery.isError
   const refetchDetail = staff ? staffQuery.refetch : mineQuery.refetch
@@ -48,9 +49,9 @@ export default function ConsultationDetailPage({ staff }: { staff: boolean }) {
   const resolve = useResolveConsultation(officeId)
   const close = useCloseConsultation(officeId)
 
-  if (myOffice.isLoading || detailLoading) return <SkeletonLines count={6} />
-  if (myOffice.isError) return <QueryErrorNotice onRetry={() => myOffice.refetch()} />
-  if (!office || officeId === undefined) return <EmptyState title={staff ? t('office.staffOnly') : t('office.none')} />
+  if ((staff && myOffice.isLoading) || detailLoading) return <SkeletonLines count={6} />
+  if (staff && myOffice.isError) return <QueryErrorNotice onRetry={() => myOffice.refetch()} />
+  if (staff && staffOfficeId === undefined) return <EmptyState title={t('office.staffOnly')} />
   if (detailError) return <QueryErrorNotice onRetry={() => refetchDetail()} />
   if (!consultation) return <EmptyState title={t('consult.none')} />
 

@@ -35,6 +35,13 @@ public class OfficeConsultationPersistenceAdapter implements LoadConsultationPor
         this.translationRepository = translationRepository;
     }
 
+    @Override public Page<Consultation> findByMember(Long memberId, Pageable pageable) {
+        return repository.findByMemberId(memberId,pageable).map(this::toDomain);
+    }
+    @Override public Optional<Consultation> findByIdAndMember(Long id, Long memberId) {
+        return repository.findByIdAndMemberId(id,memberId).map(this::toDomain);
+    }
+
     @Override public void lockStudentForCreation(Long memberId) {
         privacy.lockActiveMember(memberId);
         if (repository.lockStudentForCreation(memberId)==null) throw new IllegalStateException("Student not found");
