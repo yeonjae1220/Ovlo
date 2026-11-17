@@ -14,7 +14,7 @@ import java.time.Duration;
  * 태그 값은 enum·고정 문자열만 — 질문 본문·회원 id 같은 고카디널리티 값은 절대 넣지 않는다.
  *
  * <pre>
- * ovlo.office.inquiry            counter  outcome=ANSWERED|NO_GROUNDS|OUT_OF_SCOPE|ESCALATED
+ * ovlo.office.inquiry            counter  outcome=ANSWERED|NO_GROUNDS|OUT_OF_SCOPE|ESCALATED  rejection_reason=NONE|enum
  * ovlo.office.inquiry.latency    timer    outcome
  * ovlo.office.llm.calls          counter  purpose=answer|inquiry-screen|inquiry-verify|translate|marketplace-translate  result=ok|refused|error  model
  * ovlo.office.llm.tokens         counter  purpose  direction=input|output  model
@@ -34,8 +34,14 @@ public class OfficeMetrics {
     }
 
     public void inquiry(InquiryOutcome outcome, long latencyMs) {
+        inquiry(outcome, latencyMs, null);
+    }
+
+    public void inquiry(InquiryOutcome outcome, long latencyMs,
+                        me.yeonjae.ovlo.domain.office.model.InquiryRejectionReason reason) {
         String tag = outcome.name();
-        Counter.builder("ovlo.office.inquiry").tag("outcome", tag).register(registry).increment();
+        Counter.builder("ovlo.office.inquiry").tag("outcome", tag)
+                .tag("rejection_reason", reason == null ? "NONE" : reason.name()).register(registry).increment();
         Timer.builder("ovlo.office.inquiry.latency").tag("outcome", tag).register(registry).record(Duration.ofMillis(latencyMs));
     }
 

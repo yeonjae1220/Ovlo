@@ -1,0 +1,1688 @@
+{
+  "schemaVersion": 1,
+  "description": "Synthetic retrieval-only corpus; fixed 2027-03-02 date; no production or LLM data. IDs and relevance are human-readable topic judgments. Long guide evidence occurs after character 3000.",
+  "notices": [
+    {
+      "id": 1,
+      "category": "HOUSING",
+      "texts": {
+        "ko": {
+          "title": "기숙사 입사 신청",
+          "body": "기숙사 입사 신청. 이 합성 안내는 교환학생 대상입니다. 담당 창구에 학생증을 제출합니다."
+        },
+        "en": {
+          "title": "Dormitory application",
+          "body": "Dormitory application. This synthetic notice is for exchange students. Present a student card at the designated desk."
+        },
+        "ja": {
+          "title": "寮の入居申請",
+          "body": "寮の入居申請. この架空の案内は交換留学生向けです。担当窓口に学生証を提出してください。"
+        },
+        "zh": {
+          "title": "宿舍入住申请",
+          "body": "宿舍入住申请. 本虚构通知面向交换生。请向负责窗口提交学生证。"
+        },
+        "vi": {
+          "title": "Đăng ký ký túc xá",
+          "body": "Đăng ký ký túc xá. Thông báo giả lập này dành cho sinh viên trao đổi. Nộp thẻ sinh viên tại quầy phụ trách."
+        },
+        "de": {
+          "title": "Wohnheim Bewerbung",
+          "body": "Wohnheim Bewerbung. Diese fiktive Mitteilung gilt für Austauschstudierende. Den Studierendenausweis am zuständigen Schalter vorlegen."
+        },
+        "fr": {
+          "title": "Candidature en résidence",
+          "body": "Candidature en résidence. Cet avis fictif concerne les étudiants en échange. Présentez votre carte au guichet compétent."
+        }
+      }
+    },
+    {
+      "id": 2,
+      "category": "HOUSING",
+      "texts": {
+        "ko": {
+          "title": "기숙사 퇴사 환불",
+          "body": "기숙사 퇴사 환불. 이 합성 안내는 교환학생 대상입니다. 담당 창구에 학생증을 제출합니다."
+        },
+        "en": {
+          "title": "Dormitory withdrawal refund",
+          "body": "Dormitory withdrawal refund. This synthetic notice is for exchange students. Present a student card at the designated desk."
+        },
+        "ja": {
+          "title": "寮の退去返金",
+          "body": "寮の退去返金. この架空の案内は交換留学生向けです。担当窓口に学生証を提出してください。"
+        },
+        "zh": {
+          "title": "宿舍退宿退款",
+          "body": "宿舍退宿退款. 本虚构通知面向交换生。请向负责窗口提交学生证。"
+        },
+        "vi": {
+          "title": "Hoàn phí ký túc xá",
+          "body": "Hoàn phí ký túc xá. Thông báo giả lập này dành cho sinh viên trao đổi. Nộp thẻ sinh viên tại quầy phụ trách."
+        },
+        "de": {
+          "title": "Wohnheim Rückerstattung",
+          "body": "Wohnheim Rückerstattung. Diese fiktive Mitteilung gilt für Austauschstudierende. Den Studierendenausweis am zuständigen Schalter vorlegen."
+        },
+        "fr": {
+          "title": "Remboursement de résidence",
+          "body": "Remboursement de résidence. Cet avis fictif concerne les étudiants en échange. Présentez votre carte au guichet compétent."
+        }
+      }
+    },
+    {
+      "id": 3,
+      "category": "VISA_STAY",
+      "texts": {
+        "ko": {
+          "title": "체류기간 연장",
+          "body": "체류기간 연장. 이 합성 안내는 교환학생 대상입니다. 담당 창구에 학생증을 제출합니다."
+        },
+        "en": {
+          "title": "Visa extension",
+          "body": "Visa extension. This synthetic notice is for exchange students. Present a student card at the designated desk."
+        },
+        "ja": {
+          "title": "在留期間の延長",
+          "body": "在留期間の延長. この架空の案内は交換留学生向けです。担当窓口に学生証を提出してください。"
+        },
+        "zh": {
+          "title": "签证延期",
+          "body": "签证延期. 本虚构通知面向交换生。请向负责窗口提交学生证。"
+        },
+        "vi": {
+          "title": "Gia hạn thị thực",
+          "body": "Gia hạn thị thực. Thông báo giả lập này dành cho sinh viên trao đổi. Nộp thẻ sinh viên tại quầy phụ trách."
+        },
+        "de": {
+          "title": "Visum Verlängerung",
+          "body": "Visum Verlängerung. Diese fiktive Mitteilung gilt für Austauschstudierende. Den Studierendenausweis am zuständigen Schalter vorlegen."
+        },
+        "fr": {
+          "title": "Prolongation du visa",
+          "body": "Prolongation du visa. Cet avis fictif concerne les étudiants en échange. Présentez votre carte au guichet compétent."
+        }
+      }
+    },
+    {
+      "id": 4,
+      "category": "VISA_STAY",
+      "texts": {
+        "ko": {
+          "title": "주소 변경 신고",
+          "body": "주소 변경 신고. 이 합성 안내는 교환학생 대상입니다. 담당 창구에 학생증을 제출합니다."
+        },
+        "en": {
+          "title": "Address change registration",
+          "body": "Address change registration. This synthetic notice is for exchange students. Present a student card at the designated desk."
+        },
+        "ja": {
+          "title": "住所変更の届出",
+          "body": "住所変更の届出. この架空の案内は交換留学生向けです。担当窓口に学生証を提出してください。"
+        },
+        "zh": {
+          "title": "地址变更申报",
+          "body": "地址变更申报. 本虚构通知面向交换生。请向负责窗口提交学生证。"
+        },
+        "vi": {
+          "title": "Đăng ký thay đổi địa chỉ",
+          "body": "Đăng ký thay đổi địa chỉ. Thông báo giả lập này dành cho sinh viên trao đổi. Nộp thẻ sinh viên tại quầy phụ trách."
+        },
+        "de": {
+          "title": "Adressänderung melden",
+          "body": "Adressänderung melden. Diese fiktive Mitteilung gilt für Austauschstudierende. Den Studierendenausweis am zuständigen Schalter vorlegen."
+        },
+        "fr": {
+          "title": "Déclaration de changement d'adresse",
+          "body": "Déclaration de changement d'adresse. Cet avis fictif concerne les étudiants en échange. Présentez votre carte au guichet compétent."
+        }
+      }
+    },
+    {
+      "id": 5,
+      "category": "INSURANCE",
+      "texts": {
+        "ko": {
+          "title": "건강보험 가입",
+          "body": "건강보험 가입. 이 합성 안내는 교환학생 대상입니다. 담당 창구에 학생증을 제출합니다."
+        },
+        "en": {
+          "title": "Health insurance enrollment",
+          "body": "Health insurance enrollment. This synthetic notice is for exchange students. Present a student card at the designated desk."
+        },
+        "ja": {
+          "title": "健康保険の加入",
+          "body": "健康保険の加入. この架空の案内は交換留学生向けです。担当窓口に学生証を提出してください。"
+        },
+        "zh": {
+          "title": "医疗保险加入",
+          "body": "医疗保险加入. 本虚构通知面向交换生。请向负责窗口提交学生证。"
+        },
+        "vi": {
+          "title": "Đăng ký bảo hiểm y tế",
+          "body": "Đăng ký bảo hiểm y tế. Thông báo giả lập này dành cho sinh viên trao đổi. Nộp thẻ sinh viên tại quầy phụ trách."
+        },
+        "de": {
+          "title": "Krankenversicherung Anmeldung",
+          "body": "Krankenversicherung Anmeldung. Diese fiktive Mitteilung gilt für Austauschstudierende. Den Studierendenausweis am zuständigen Schalter vorlegen."
+        },
+        "fr": {
+          "title": "Inscription à l'assurance maladie",
+          "body": "Inscription à l'assurance maladie. Cet avis fictif concerne les étudiants en échange. Présentez votre carte au guichet compétent."
+        }
+      }
+    },
+    {
+      "id": 6,
+      "category": "INSURANCE",
+      "texts": {
+        "ko": {
+          "title": "보험 진료비 청구",
+          "body": "보험 진료비 청구. 이 합성 안내는 교환학생 대상입니다. 담당 창구에 학생증을 제출합니다."
+        },
+        "en": {
+          "title": "Insurance medical reimbursement",
+          "body": "Insurance medical reimbursement. This synthetic notice is for exchange students. Present a student card at the designated desk."
+        },
+        "ja": {
+          "title": "保険の診療費請求",
+          "body": "保険の診療費請求. この架空の案内は交換留学生向けです。担当窓口に学生証を提出してください。"
+        },
+        "zh": {
+          "title": "保险医疗费报销",
+          "body": "保险医疗费报销. 本虚构通知面向交换生。请向负责窗口提交学生证。"
+        },
+        "vi": {
+          "title": "Yêu cầu hoàn tiền bảo hiểm",
+          "body": "Yêu cầu hoàn tiền bảo hiểm. Thông báo giả lập này dành cho sinh viên trao đổi. Nộp thẻ sinh viên tại quầy phụ trách."
+        },
+        "de": {
+          "title": "Versicherung Kostenerstattung",
+          "body": "Versicherung Kostenerstattung. Diese fiktive Mitteilung gilt für Austauschstudierende. Den Studierendenausweis am zuständigen Schalter vorlegen."
+        },
+        "fr": {
+          "title": "Remboursement des frais médicaux",
+          "body": "Remboursement des frais médicaux. Cet avis fictif concerne les étudiants en échange. Présentez votre carte au guichet compétent."
+        }
+      }
+    },
+    {
+      "id": 7,
+      "category": "ACADEMIC",
+      "texts": {
+        "ko": {
+          "title": "수강 신청 일정",
+          "body": "수강 신청 일정. 이 합성 안내는 교환학생 대상입니다. 담당 창구에 학생증을 제출합니다."
+        },
+        "en": {
+          "title": "Course registration dates",
+          "body": "Course registration dates. This synthetic notice is for exchange students. Present a student card at the designated desk."
+        },
+        "ja": {
+          "title": "履修登録の日程",
+          "body": "履修登録の日程. この架空の案内は交換留学生向けです。担当窓口に学生証を提出してください。"
+        },
+        "zh": {
+          "title": "选课登记日期",
+          "body": "选课登记日期. 本虚构通知面向交换生。请向负责窗口提交学生证。"
+        },
+        "vi": {
+          "title": "Lịch đăng ký học phần",
+          "body": "Lịch đăng ký học phần. Thông báo giả lập này dành cho sinh viên trao đổi. Nộp thẻ sinh viên tại quầy phụ trách."
+        },
+        "de": {
+          "title": "Kursanmeldung Termine",
+          "body": "Kursanmeldung Termine. Diese fiktive Mitteilung gilt für Austauschstudierende. Den Studierendenausweis am zuständigen Schalter vorlegen."
+        },
+        "fr": {
+          "title": "Dates d'inscription aux cours",
+          "body": "Dates d'inscription aux cours. Cet avis fictif concerne les étudiants en échange. Présentez votre carte au guichet compétent."
+        }
+      }
+    },
+    {
+      "id": 8,
+      "category": "ACADEMIC",
+      "texts": {
+        "ko": {
+          "title": "수강 철회 절차",
+          "body": "수강 철회 절차. 이 합성 안내는 교환학생 대상입니다. 담당 창구에 학생증을 제출합니다."
+        },
+        "en": {
+          "title": "Course withdrawal procedure",
+          "body": "Course withdrawal procedure. This synthetic notice is for exchange students. Present a student card at the designated desk."
+        },
+        "ja": {
+          "title": "履修取消の手続き",
+          "body": "履修取消の手続き. この架空の案内は交換留学生向けです。担当窓口に学生証を提出してください。"
+        },
+        "zh": {
+          "title": "退课流程",
+          "body": "退课流程. 本虚构通知面向交换生。请向负责窗口提交学生证。"
+        },
+        "vi": {
+          "title": "Thủ tục rút học phần",
+          "body": "Thủ tục rút học phần. Thông báo giả lập này dành cho sinh viên trao đổi. Nộp thẻ sinh viên tại quầy phụ trách."
+        },
+        "de": {
+          "title": "Kursabmeldung Verfahren",
+          "body": "Kursabmeldung Verfahren. Diese fiktive Mitteilung gilt für Austauschstudierende. Den Studierendenausweis am zuständigen Schalter vorlegen."
+        },
+        "fr": {
+          "title": "Procédure d'abandon de cours",
+          "body": "Procédure d'abandon de cours. Cet avis fictif concerne les étudiants en échange. Présentez votre carte au guichet compétent."
+        }
+      }
+    },
+    {
+      "id": 9,
+      "category": "SCHOLARSHIP",
+      "texts": {
+        "ko": {
+          "title": "성적 장학금 자격",
+          "body": "성적 장학금 자격. 이 합성 안내는 교환학생 대상입니다. 담당 창구에 학생증을 제출합니다."
+        },
+        "en": {
+          "title": "Merit scholarship eligibility",
+          "body": "Merit scholarship eligibility. This synthetic notice is for exchange students. Present a student card at the designated desk."
+        },
+        "ja": {
+          "title": "成績奨学金の資格",
+          "body": "成績奨学金の資格. この架空の案内は交換留学生向けです。担当窓口に学生証を提出してください。"
+        },
+        "zh": {
+          "title": "成绩奖学金资格",
+          "body": "成绩奖学金资格. 本虚构通知面向交换生。请向负责窗口提交学生证。"
+        },
+        "vi": {
+          "title": "Điều kiện học bổng thành tích",
+          "body": "Điều kiện học bổng thành tích. Thông báo giả lập này dành cho sinh viên trao đổi. Nộp thẻ sinh viên tại quầy phụ trách."
+        },
+        "de": {
+          "title": "Leistungsstipendium Voraussetzungen",
+          "body": "Leistungsstipendium Voraussetzungen. Diese fiktive Mitteilung gilt für Austauschstudierende. Den Studierendenausweis am zuständigen Schalter vorlegen."
+        },
+        "fr": {
+          "title": "Conditions de bourse au mérite",
+          "body": "Conditions de bourse au mérite. Cet avis fictif concerne les étudiants en échange. Présentez votre carte au guichet compétent."
+        }
+      }
+    },
+    {
+      "id": 10,
+      "category": "SCHOLARSHIP",
+      "texts": {
+        "ko": {
+          "title": "생활비 장학금 지급",
+          "body": "생활비 장학금 지급. 이 합성 안내는 교환학생 대상입니다. 담당 창구에 학생증을 제출합니다."
+        },
+        "en": {
+          "title": "Living allowance scholarship payment",
+          "body": "Living allowance scholarship payment. This synthetic notice is for exchange students. Present a student card at the designated desk."
+        },
+        "ja": {
+          "title": "生活費奨学金の支給",
+          "body": "生活費奨学金の支給. この架空の案内は交換留学生向けです。担当窓口に学生証を提出してください。"
+        },
+        "zh": {
+          "title": "生活补助奖学金发放",
+          "body": "生活补助奖学金发放. 本虚构通知面向交换生。请向负责窗口提交学生证。"
+        },
+        "vi": {
+          "title": "Chi trả học bổng sinh hoạt",
+          "body": "Chi trả học bổng sinh hoạt. Thông báo giả lập này dành cho sinh viên trao đổi. Nộp thẻ sinh viên tại quầy phụ trách."
+        },
+        "de": {
+          "title": "Lebenshaltungsstipendium Auszahlung",
+          "body": "Lebenshaltungsstipendium Auszahlung. Diese fiktive Mitteilung gilt für Austauschstudierende. Den Studierendenausweis am zuständigen Schalter vorlegen."
+        },
+        "fr": {
+          "title": "Versement de bourse de subsistance",
+          "body": "Versement de bourse de subsistance. Cet avis fictif concerne les étudiants en échange. Présentez votre carte au guichet compétent."
+        }
+      }
+    },
+    {
+      "id": 11,
+      "category": "ARRIVAL",
+      "texts": {
+        "ko": {
+          "title": "신입생 오리엔테이션",
+          "body": "신입생 오리엔테이션. 이 합성 안내는 교환학생 대상입니다. 담당 창구에 학생증을 제출합니다."
+        },
+        "en": {
+          "title": "New student orientation",
+          "body": "New student orientation. This synthetic notice is for exchange students. Present a student card at the designated desk."
+        },
+        "ja": {
+          "title": "新入生オリエンテーション",
+          "body": "新入生オリエンテーション. この架空の案内は交換留学生向けです。担当窓口に学生証を提出してください。"
+        },
+        "zh": {
+          "title": "新生迎新说明会",
+          "body": "新生迎新说明会. 本虚构通知面向交换生。请向负责窗口提交学生证。"
+        },
+        "vi": {
+          "title": "Định hướng sinh viên mới",
+          "body": "Định hướng sinh viên mới. Thông báo giả lập này dành cho sinh viên trao đổi. Nộp thẻ sinh viên tại quầy phụ trách."
+        },
+        "de": {
+          "title": "Orientierung für neue Studierende",
+          "body": "Orientierung für neue Studierende. Diese fiktive Mitteilung gilt für Austauschstudierende. Den Studierendenausweis am zuständigen Schalter vorlegen."
+        },
+        "fr": {
+          "title": "Orientation des nouveaux étudiants",
+          "body": "Orientation des nouveaux étudiants. Cet avis fictif concerne les étudiants en échange. Présentez votre carte au guichet compétent."
+        }
+      }
+    },
+    {
+      "id": 12,
+      "category": "ARRIVAL",
+      "texts": {
+        "ko": {
+          "title": "공항 픽업 예약",
+          "body": "공항 픽업 예약. 이 합성 안내는 교환학생 대상입니다. 담당 창구에 학생증을 제출합니다."
+        },
+        "en": {
+          "title": "Airport pickup reservation",
+          "body": "Airport pickup reservation. This synthetic notice is for exchange students. Present a student card at the designated desk."
+        },
+        "ja": {
+          "title": "空港送迎の予約",
+          "body": "空港送迎の予約. この架空の案内は交換留学生向けです。担当窓口に学生証を提出してください。"
+        },
+        "zh": {
+          "title": "机场接送预约",
+          "body": "机场接送预约. 本虚构通知面向交换生。请向负责窗口提交学生证。"
+        },
+        "vi": {
+          "title": "Đặt xe đón sân bay",
+          "body": "Đặt xe đón sân bay. Thông báo giả lập này dành cho sinh viên trao đổi. Nộp thẻ sinh viên tại quầy phụ trách."
+        },
+        "de": {
+          "title": "Flughafenabholung Reservierung",
+          "body": "Flughafenabholung Reservierung. Diese fiktive Mitteilung gilt für Austauschstudierende. Den Studierendenausweis am zuständigen Schalter vorlegen."
+        },
+        "fr": {
+          "title": "Réservation de navette aéroport",
+          "body": "Réservation de navette aéroport. Cet avis fictif concerne les étudiants en échange. Présentez votre carte au guichet compétent."
+        }
+      }
+    },
+    {
+      "id": 13,
+      "category": "LIFE",
+      "texts": {
+        "ko": {
+          "title": "도서관 개관 시간",
+          "body": "도서관 개관 시간. 이 합성 안내는 교환학생 대상입니다. 담당 창구에 학생증을 제출합니다."
+        },
+        "en": {
+          "title": "Library opening hours",
+          "body": "Library opening hours. This synthetic notice is for exchange students. Present a student card at the designated desk."
+        },
+        "ja": {
+          "title": "図書館の開館時間",
+          "body": "図書館の開館時間. この架空の案内は交換留学生向けです。担当窓口に学生証を提出してください。"
+        },
+        "zh": {
+          "title": "图书馆开放时间",
+          "body": "图书馆开放时间. 本虚构通知面向交换生。请向负责窗口提交学生证。"
+        },
+        "vi": {
+          "title": "Giờ mở cửa thư viện",
+          "body": "Giờ mở cửa thư viện. Thông báo giả lập này dành cho sinh viên trao đổi. Nộp thẻ sinh viên tại quầy phụ trách."
+        },
+        "de": {
+          "title": "Bibliothek Öffnungszeiten",
+          "body": "Bibliothek Öffnungszeiten. Diese fiktive Mitteilung gilt für Austauschstudierende. Den Studierendenausweis am zuständigen Schalter vorlegen."
+        },
+        "fr": {
+          "title": "Horaires d'ouverture de bibliothèque",
+          "body": "Horaires d'ouverture de bibliothèque. Cet avis fictif concerne les étudiants en échange. Présentez votre carte au guichet compétent."
+        }
+      }
+    },
+    {
+      "id": 14,
+      "category": "LIFE",
+      "texts": {
+        "ko": {
+          "title": "도서 대출 연장",
+          "body": "도서 대출 연장. 이 합성 안내는 교환학생 대상입니다. 담당 창구에 학생증을 제출합니다."
+        },
+        "en": {
+          "title": "Book loan renewal",
+          "body": "Book loan renewal. This synthetic notice is for exchange students. Present a student card at the designated desk."
+        },
+        "ja": {
+          "title": "図書貸出の延長",
+          "body": "図書貸出の延長. この架空の案内は交換留学生向けです。担当窓口に学生証を提出してください。"
+        },
+        "zh": {
+          "title": "图书续借",
+          "body": "图书续借. 本虚构通知面向交换生。请向负责窗口提交学生证。"
+        },
+        "vi": {
+          "title": "Gia hạn mượn sách",
+          "body": "Gia hạn mượn sách. Thông báo giả lập này dành cho sinh viên trao đổi. Nộp thẻ sinh viên tại quầy phụ trách."
+        },
+        "de": {
+          "title": "Buchausleihe Verlängerung",
+          "body": "Buchausleihe Verlängerung. Diese fiktive Mitteilung gilt für Austauschstudierende. Den Studierendenausweis am zuständigen Schalter vorlegen."
+        },
+        "fr": {
+          "title": "Renouvellement de prêt de livres",
+          "body": "Renouvellement de prêt de livres. Cet avis fictif concerne les étudiants en échange. Présentez votre carte au guichet compétent."
+        }
+      }
+    },
+    {
+      "id": 15,
+      "category": "LIFE",
+      "texts": {
+        "ko": {
+          "title": "보건실 진료 예약",
+          "body": "보건실 진료 예약. 이 합성 안내는 교환학생 대상입니다. 담당 창구에 학생증을 제출합니다."
+        },
+        "en": {
+          "title": "Campus clinic appointment",
+          "body": "Campus clinic appointment. This synthetic notice is for exchange students. Present a student card at the designated desk."
+        },
+        "ja": {
+          "title": "保健室の診療予約",
+          "body": "保健室の診療予約. この架空の案内は交換留学生向けです。担当窓口に学生証を提出してください。"
+        },
+        "zh": {
+          "title": "校医室就诊预约",
+          "body": "校医室就诊预约. 本虚构通知面向交换生。请向负责窗口提交学生证。"
+        },
+        "vi": {
+          "title": "Đặt lịch phòng y tế",
+          "body": "Đặt lịch phòng y tế. Thông báo giả lập này dành cho sinh viên trao đổi. Nộp thẻ sinh viên tại quầy phụ trách."
+        },
+        "de": {
+          "title": "Sprechstunde im Gesundheitszentrum",
+          "body": "Sprechstunde im Gesundheitszentrum. Diese fiktive Mitteilung gilt für Austauschstudierende. Den Studierendenausweis am zuständigen Schalter vorlegen."
+        },
+        "fr": {
+          "title": "Rendez-vous au centre de santé",
+          "body": "Rendez-vous au centre de santé. Cet avis fictif concerne les étudiants en échange. Présentez votre carte au guichet compétent."
+        }
+      }
+    },
+    {
+      "id": 16,
+      "category": "LIFE",
+      "texts": {
+        "ko": {
+          "title": "응급 의료 연락",
+          "body": "응급 의료 연락. 이 합성 안내는 교환학생 대상입니다. 담당 창구에 학생증을 제출합니다."
+        },
+        "en": {
+          "title": "Emergency medical contact",
+          "body": "Emergency medical contact. This synthetic notice is for exchange students. Present a student card at the designated desk."
+        },
+        "ja": {
+          "title": "救急医療の連絡先",
+          "body": "救急医療の連絡先. この架空の案内は交換留学生向けです。担当窓口に学生証を提出してください。"
+        },
+        "zh": {
+          "title": "紧急医疗联系",
+          "body": "紧急医疗联系. 本虚构通知面向交换生。请向负责窗口提交学生证。"
+        },
+        "vi": {
+          "title": "Liên hệ cấp cứu y tế",
+          "body": "Liên hệ cấp cứu y tế. Thông báo giả lập này dành cho sinh viên trao đổi. Nộp thẻ sinh viên tại quầy phụ trách."
+        },
+        "de": {
+          "title": "Medizinischer Notfall Kontakt",
+          "body": "Medizinischer Notfall Kontakt. Diese fiktive Mitteilung gilt für Austauschstudierende. Den Studierendenausweis am zuständigen Schalter vorlegen."
+        },
+        "fr": {
+          "title": "Contact médical d'urgence",
+          "body": "Contact médical d'urgence. Cet avis fictif concerne les étudiants en échange. Présentez votre carte au guichet compétent."
+        }
+      }
+    },
+    {
+      "id": 17,
+      "category": "LIFE",
+      "texts": {
+        "ko": {
+          "title": "은행 계좌 개설",
+          "body": "은행 계좌 개설. 이 합성 안내는 교환학생 대상입니다. 담당 창구에 학생증을 제출합니다."
+        },
+        "en": {
+          "title": "Bank account opening",
+          "body": "Bank account opening. This synthetic notice is for exchange students. Present a student card at the designated desk."
+        },
+        "ja": {
+          "title": "銀行口座の開設",
+          "body": "銀行口座の開設. この架空の案内は交換留学生向けです。担当窓口に学生証を提出してください。"
+        },
+        "zh": {
+          "title": "银行开户",
+          "body": "银行开户. 本虚构通知面向交换生。请向负责窗口提交学生证。"
+        },
+        "vi": {
+          "title": "Mở tài khoản ngân hàng",
+          "body": "Mở tài khoản ngân hàng. Thông báo giả lập này dành cho sinh viên trao đổi. Nộp thẻ sinh viên tại quầy phụ trách."
+        },
+        "de": {
+          "title": "Bankkonto Eröffnung",
+          "body": "Bankkonto Eröffnung. Diese fiktive Mitteilung gilt für Austauschstudierende. Den Studierendenausweis am zuständigen Schalter vorlegen."
+        },
+        "fr": {
+          "title": "Ouverture de compte bancaire",
+          "body": "Ouverture de compte bancaire. Cet avis fictif concerne les étudiants en échange. Présentez votre carte au guichet compétent."
+        }
+      }
+    },
+    {
+      "id": 18,
+      "category": "LIFE",
+      "texts": {
+        "ko": {
+          "title": "분실 카드 재발급",
+          "body": "분실 카드 재발급. 이 합성 안내는 교환학생 대상입니다. 담당 창구에 학생증을 제출합니다."
+        },
+        "en": {
+          "title": "Lost bank card replacement",
+          "body": "Lost bank card replacement. This synthetic notice is for exchange students. Present a student card at the designated desk."
+        },
+        "ja": {
+          "title": "紛失カードの再発行",
+          "body": "紛失カードの再発行. この架空の案内は交換留学生向けです。担当窓口に学生証を提出してください。"
+        },
+        "zh": {
+          "title": "银行卡挂失补办",
+          "body": "银行卡挂失补办. 本虚构通知面向交换生。请向负责窗口提交学生证。"
+        },
+        "vi": {
+          "title": "Cấp lại thẻ ngân hàng bị mất",
+          "body": "Cấp lại thẻ ngân hàng bị mất. Thông báo giả lập này dành cho sinh viên trao đổi. Nộp thẻ sinh viên tại quầy phụ trách."
+        },
+        "de": {
+          "title": "Verlorene Bankkarte ersetzen",
+          "body": "Verlorene Bankkarte ersetzen. Diese fiktive Mitteilung gilt für Austauschstudierende. Den Studierendenausweis am zuständigen Schalter vorlegen."
+        },
+        "fr": {
+          "title": "Remplacement de carte bancaire perdue",
+          "body": "Remplacement de carte bancaire perdue. Cet avis fictif concerne les étudiants en échange. Présentez votre carte au guichet compétent."
+        }
+      }
+    },
+    {
+      "id": 19,
+      "category": "LIFE",
+      "texts": {
+        "ko": {
+          "title": "통학 버스 노선",
+          "body": "통학 버스 노선. 이 합성 안내는 교환학생 대상입니다. 담당 창구에 학생증을 제출합니다."
+        },
+        "en": {
+          "title": "Campus shuttle bus route",
+          "body": "Campus shuttle bus route. This synthetic notice is for exchange students. Present a student card at the designated desk."
+        },
+        "ja": {
+          "title": "通学バスの路線",
+          "body": "通学バスの路線. この架空の案内は交換留学生向けです。担当窓口に学生証を提出してください。"
+        },
+        "zh": {
+          "title": "校园班车路线",
+          "body": "校园班车路线. 本虚构通知面向交换生。请向负责窗口提交学生证。"
+        },
+        "vi": {
+          "title": "Tuyến xe buýt trường",
+          "body": "Tuyến xe buýt trường. Thông báo giả lập này dành cho sinh viên trao đổi. Nộp thẻ sinh viên tại quầy phụ trách."
+        },
+        "de": {
+          "title": "Campus Shuttlebus Strecke",
+          "body": "Campus Shuttlebus Strecke. Diese fiktive Mitteilung gilt für Austauschstudierende. Den Studierendenausweis am zuständigen Schalter vorlegen."
+        },
+        "fr": {
+          "title": "Itinéraire de navette du campus",
+          "body": "Itinéraire de navette du campus. Cet avis fictif concerne les étudiants en échange. Présentez votre carte au guichet compétent."
+        }
+      }
+    },
+    {
+      "id": 20,
+      "category": "LIFE",
+      "texts": {
+        "ko": {
+          "title": "교통 정기권 신청",
+          "body": "교통 정기권 신청. 이 합성 안내는 교환학생 대상입니다. 담당 창구에 학생증을 제출합니다."
+        },
+        "en": {
+          "title": "Transport season pass",
+          "body": "Transport season pass. This synthetic notice is for exchange students. Present a student card at the designated desk."
+        },
+        "ja": {
+          "title": "交通定期券の申請",
+          "body": "交通定期券の申請. この架空の案内は交換留学生向けです。担当窓口に学生証を提出してください。"
+        },
+        "zh": {
+          "title": "交通月票申请",
+          "body": "交通月票申请. 本虚构通知面向交换生。请向负责窗口提交学生证。"
+        },
+        "vi": {
+          "title": "Đăng ký vé tháng giao thông",
+          "body": "Đăng ký vé tháng giao thông. Thông báo giả lập này dành cho sinh viên trao đổi. Nộp thẻ sinh viên tại quầy phụ trách."
+        },
+        "de": {
+          "title": "Verkehr Monatskarte beantragen",
+          "body": "Verkehr Monatskarte beantragen. Diese fiktive Mitteilung gilt für Austauschstudierende. Den Studierendenausweis am zuständigen Schalter vorlegen."
+        },
+        "fr": {
+          "title": "Demande d'abonnement de transport",
+          "body": "Demande d'abonnement de transport. Cet avis fictif concerne les étudiants en échange. Présentez votre carte au guichet compétent."
+        }
+      }
+    },
+    {
+      "id": 21,
+      "category": "VISA_STAY",
+      "texts": {
+        "ko": {
+          "title": "시간제 취업 허가",
+          "body": "시간제 취업 허가. 이 합성 안내는 교환학생 대상입니다. 담당 창구에 학생증을 제출합니다."
+        },
+        "en": {
+          "title": "Part-time work permit",
+          "body": "Part-time work permit. This synthetic notice is for exchange students. Present a student card at the designated desk."
+        },
+        "ja": {
+          "title": "資格外活動の許可",
+          "body": "資格外活動の許可. この架空の案内は交換留学生向けです。担当窓口に学生証を提出してください。"
+        },
+        "zh": {
+          "title": "兼职工作许可",
+          "body": "兼职工作许可. 本虚构通知面向交换生。请向负责窗口提交学生证。"
+        },
+        "vi": {
+          "title": "Giấy phép làm việc bán thời gian",
+          "body": "Giấy phép làm việc bán thời gian. Thông báo giả lập này dành cho sinh viên trao đổi. Nộp thẻ sinh viên tại quầy phụ trách."
+        },
+        "de": {
+          "title": "Genehmigung für Teilzeitarbeit",
+          "body": "Genehmigung für Teilzeitarbeit. Diese fiktive Mitteilung gilt für Austauschstudierende. Den Studierendenausweis am zuständigen Schalter vorlegen."
+        },
+        "fr": {
+          "title": "Autorisation de travail à temps partiel",
+          "body": "Autorisation de travail à temps partiel. Cet avis fictif concerne les étudiants en échange. Présentez votre carte au guichet compétent."
+        }
+      }
+    },
+    {
+      "id": 22,
+      "category": "VISA_STAY",
+      "texts": {
+        "ko": {
+          "title": "시간제 근로 시간",
+          "body": "시간제 근로 시간. 이 합성 안내는 교환학생 대상입니다. 담당 창구에 학생증을 제출합니다."
+        },
+        "en": {
+          "title": "Part-time working hours",
+          "body": "Part-time working hours. This synthetic notice is for exchange students. Present a student card at the designated desk."
+        },
+        "ja": {
+          "title": "アルバイトの勤務時間",
+          "body": "アルバイトの勤務時間. この架空の案内は交換留学生向けです。担当窓口に学生証を提出してください。"
+        },
+        "zh": {
+          "title": "兼职工作时长",
+          "body": "兼职工作时长. 本虚构通知面向交换生。请向负责窗口提交学生证。"
+        },
+        "vi": {
+          "title": "Giờ làm việc bán thời gian",
+          "body": "Giờ làm việc bán thời gian. Thông báo giả lập này dành cho sinh viên trao đổi. Nộp thẻ sinh viên tại quầy phụ trách."
+        },
+        "de": {
+          "title": "Arbeitszeiten bei Teilzeitarbeit",
+          "body": "Arbeitszeiten bei Teilzeitarbeit. Diese fiktive Mitteilung gilt für Austauschstudierende. Den Studierendenausweis am zuständigen Schalter vorlegen."
+        },
+        "fr": {
+          "title": "Horaires de travail à temps partiel",
+          "body": "Horaires de travail à temps partiel. Cet avis fictif concerne les étudiants en échange. Présentez votre carte au guichet compétent."
+        }
+      }
+    },
+    {
+      "id": 23,
+      "category": "ACADEMIC",
+      "texts": {
+        "ko": {
+          "title": "성적 증명서 발급",
+          "body": "성적 증명서 발급. 이 합성 안내는 교환학생 대상입니다. 담당 창구에 학생증을 제출합니다."
+        },
+        "en": {
+          "title": "Academic transcript request",
+          "body": "Academic transcript request. This synthetic notice is for exchange students. Present a student card at the designated desk."
+        },
+        "ja": {
+          "title": "成績証明書の発行",
+          "body": "成績証明書の発行. この架空の案内は交換留学生向けです。担当窓口に学生証を提出してください。"
+        },
+        "zh": {
+          "title": "成绩单申请",
+          "body": "成绩单申请. 本虚构通知面向交换生。请向负责窗口提交学生证。"
+        },
+        "vi": {
+          "title": "Cấp bảng điểm",
+          "body": "Cấp bảng điểm. Thông báo giả lập này dành cho sinh viên trao đổi. Nộp thẻ sinh viên tại quầy phụ trách."
+        },
+        "de": {
+          "title": "Leistungsübersicht beantragen",
+          "body": "Leistungsübersicht beantragen. Diese fiktive Mitteilung gilt für Austauschstudierende. Den Studierendenausweis am zuständigen Schalter vorlegen."
+        },
+        "fr": {
+          "title": "Demande de relevé de notes",
+          "body": "Demande de relevé de notes. Cet avis fictif concerne les étudiants en échange. Présentez votre carte au guichet compétent."
+        }
+      }
+    },
+    {
+      "id": 24,
+      "category": "ACADEMIC",
+      "texts": {
+        "ko": {
+          "title": "재학 증명서 발급",
+          "body": "재학 증명서 발급. 이 합성 안내는 교환학생 대상입니다. 담당 창구에 학생증을 제출합니다."
+        },
+        "en": {
+          "title": "Enrollment certificate request",
+          "body": "Enrollment certificate request. This synthetic notice is for exchange students. Present a student card at the designated desk."
+        },
+        "ja": {
+          "title": "在学証明書の発行",
+          "body": "在学証明書の発行. この架空の案内は交換留学生向けです。担当窓口に学生証を提出してください。"
+        },
+        "zh": {
+          "title": "在读证明申请",
+          "body": "在读证明申请. 本虚构通知面向交换生。请向负责窗口提交学生证。"
+        },
+        "vi": {
+          "title": "Cấp giấy xác nhận sinh viên",
+          "body": "Cấp giấy xác nhận sinh viên. Thông báo giả lập này dành cho sinh viên trao đổi. Nộp thẻ sinh viên tại quầy phụ trách."
+        },
+        "de": {
+          "title": "Immatrikulationsbescheinigung beantragen",
+          "body": "Immatrikulationsbescheinigung beantragen. Diese fiktive Mitteilung gilt für Austauschstudierende. Den Studierendenausweis am zuständigen Schalter vorlegen."
+        },
+        "fr": {
+          "title": "Demande de certificat de scolarité",
+          "body": "Demande de certificat de scolarité. Cet avis fictif concerne les étudiants en échange. Présentez votre carte au guichet compétent."
+        }
+      }
+    },
+    {
+      "id": 25,
+      "category": "ACADEMIC",
+      "texts": {
+        "ko": {
+          "title": "등록금 고지서",
+          "body": "등록금 고지서. 이 합성 안내는 교환학생 대상입니다. 담당 창구에 학생증을 제출합니다."
+        },
+        "en": {
+          "title": "Tuition invoice",
+          "body": "Tuition invoice. This synthetic notice is for exchange students. Present a student card at the designated desk."
+        },
+        "ja": {
+          "title": "授業料の請求書",
+          "body": "授業料の請求書. この架空の案内は交換留学生向けです。担当窓口に学生証を提出してください。"
+        },
+        "zh": {
+          "title": "学费缴费单",
+          "body": "学费缴费单. 本虚构通知面向交换生。请向负责窗口提交学生证。"
+        },
+        "vi": {
+          "title": "Hóa đơn học phí",
+          "body": "Hóa đơn học phí. Thông báo giả lập này dành cho sinh viên trao đổi. Nộp thẻ sinh viên tại quầy phụ trách."
+        },
+        "de": {
+          "title": "Studiengebühren Rechnung",
+          "body": "Studiengebühren Rechnung. Diese fiktive Mitteilung gilt für Austauschstudierende. Den Studierendenausweis am zuständigen Schalter vorlegen."
+        },
+        "fr": {
+          "title": "Facture des frais de scolarité",
+          "body": "Facture des frais de scolarité. Cet avis fictif concerne les étudiants en échange. Présentez votre carte au guichet compétent."
+        }
+      }
+    },
+    {
+      "id": 26,
+      "category": "ACADEMIC",
+      "texts": {
+        "ko": {
+          "title": "등록금 납부 연장",
+          "body": "등록금 납부 연장. 이 합성 안내는 교환학생 대상입니다. 담당 창구에 학생증을 제출합니다."
+        },
+        "en": {
+          "title": "Tuition payment extension",
+          "body": "Tuition payment extension. This synthetic notice is for exchange students. Present a student card at the designated desk."
+        },
+        "ja": {
+          "title": "授業料納付の延長",
+          "body": "授業料納付の延長. この架空の案内は交換留学生向けです。担当窓口に学生証を提出してください。"
+        },
+        "zh": {
+          "title": "学费缴纳延期",
+          "body": "学费缴纳延期. 本虚构通知面向交换生。请向负责窗口提交学生证。"
+        },
+        "vi": {
+          "title": "Gia hạn đóng học phí",
+          "body": "Gia hạn đóng học phí. Thông báo giả lập này dành cho sinh viên trao đổi. Nộp thẻ sinh viên tại quầy phụ trách."
+        },
+        "de": {
+          "title": "Studiengebühren Zahlungsaufschub",
+          "body": "Studiengebühren Zahlungsaufschub. Diese fiktive Mitteilung gilt für Austauschstudierende. Den Studierendenausweis am zuständigen Schalter vorlegen."
+        },
+        "fr": {
+          "title": "Report du paiement des frais de scolarité",
+          "body": "Report du paiement des frais de scolarité. Cet avis fictif concerne les étudiants en échange. Présentez votre carte au guichet compétent."
+        }
+      }
+    },
+    {
+      "id": 27,
+      "category": "OTHER",
+      "texts": {
+        "ko": {
+          "title": "국제처 방문 시간",
+          "body": "국제처 방문 시간. 이 합성 안내는 교환학생 대상입니다. 담당 창구에 학생증을 제출합니다."
+        },
+        "en": {
+          "title": "International office visiting hours",
+          "body": "International office visiting hours. This synthetic notice is for exchange students. Present a student card at the designated desk."
+        },
+        "ja": {
+          "title": "国際課の訪問時間",
+          "body": "国際課の訪問時間. この架空の案内は交換留学生向けです。担当窓口に学生証を提出してください。"
+        },
+        "zh": {
+          "title": "国际处接待时间",
+          "body": "国际处接待时间. 本虚构通知面向交换生。请向负责窗口提交学生证。"
+        },
+        "vi": {
+          "title": "Giờ tiếp khách phòng quốc tế",
+          "body": "Giờ tiếp khách phòng quốc tế. Thông báo giả lập này dành cho sinh viên trao đổi. Nộp thẻ sinh viên tại quầy phụ trách."
+        },
+        "de": {
+          "title": "Internationales Büro Besuchszeiten",
+          "body": "Internationales Büro Besuchszeiten. Diese fiktive Mitteilung gilt für Austauschstudierende. Den Studierendenausweis am zuständigen Schalter vorlegen."
+        },
+        "fr": {
+          "title": "Horaires de visite du bureau international",
+          "body": "Horaires de visite du bureau international. Cet avis fictif concerne les étudiants en échange. Présentez votre carte au guichet compétent."
+        }
+      }
+    },
+    {
+      "id": 28,
+      "category": "OTHER",
+      "texts": {
+        "ko": {
+          "title": "실험실 안전 안내",
+          "body": "실험실 안전 안내. 이 합성 안내는 교환학생 대상입니다. 담당 창구에 학생증을 제출합니다.\n이 합성 안내는 교환학생 대상입니다. 담당 창구에 학생증을 제출합니다.\n이 합성 안내는 교환학생 대상입니다. 담당 창구에 학생증을 제출합니다.\n이 합성 안내는 교환학생 대상입니다. 담당 창구에 학생증을 제출합니다.\n이 합성 안내는 교환학생 대상입니다. 담당 창구에 학생증을 제출합니다.\n이 합성 안내는 교환학생 대상입니다. 담당 창구에 학생증을 제출합니다.\n이 합성 안내는 교환학생 대상입니다. 담당 창구에 학생증을 제출합니다.\n이 합성 안내는 교환학생 대상입니다. 담당 창구에 학생증을 제출합니다.\n이 합성 안내는 교환학생 대상입니다. 담당 창구에 학생증을 제출합니다.\n이 합성 안내는 교환학생 대상입니다. 담당 창구에 학생증을 제출합니다.\n이 합성 안내는 교환학생 대상입니다. 담당 창구에 학생증을 제출합니다.\n이 합성 안내는 교환학생 대상입니다. 담당 창구에 학생증을 제출합니다.\n이 합성 안내는 교환학생 대상입니다. 담당 창구에 학생증을 제출합니다.\n이 합성 안내는 교환학생 대상입니다. 담당 창구에 학생증을 제출합니다.\n이 합성 안내는 교환학생 대상입니다. 담당 창구에 학생증을 제출합니다.\n이 합성 안내는 교환학생 대상입니다. 담당 창구에 학생증을 제출합니다.\n이 합성 안내는 교환학생 대상입니다. 담당 창구에 학생증을 제출합니다.\n이 합성 안내는 교환학생 대상입니다. 담당 창구에 학생증을 제출합니다.\n이 합성 안내는 교환학생 대상입니다. 담당 창구에 학생증을 제출합니다.\n이 합성 안내는 교환학생 대상입니다. 담당 창구에 학생증을 제출합니다.\n이 합성 안내는 교환학생 대상입니다. 담당 창구에 학생증을 제출합니다.\n이 합성 안내는 교환학생 대상입니다. 담당 창구에 학생증을 제출합니다.\n이 합성 안내는 교환학생 대상입니다. 담당 창구에 학생증을 제출합니다.\n이 합성 안내는 교환학생 대상입니다. 담당 창구에 학생증을 제출합니다.\n이 합성 안내는 교환학생 대상입니다. 담당 창구에 학생증을 제출합니다.\n이 합성 안내는 교환학생 대상입니다. 담당 창구에 학생증을 제출합니다.\n이 합성 안내는 교환학생 대상입니다. 담당 창구에 학생증을 제출합니다.\n이 합성 안내는 교환학생 대상입니다. 담당 창구에 학생증을 제출합니다.\n이 합성 안내는 교환학생 대상입니다. 담당 창구에 학생증을 제출합니다.\n이 합성 안내는 교환학생 대상입니다. 담당 창구에 학생증을 제출합니다.\n이 합성 안내는 교환학생 대상입니다. 담당 창구에 학생증을 제출합니다.\n이 합성 안내는 교환학생 대상입니다. 담당 창구에 학생증을 제출합니다.\n이 합성 안내는 교환학생 대상입니다. 담당 창구에 학생증을 제출합니다.\n이 합성 안내는 교환학생 대상입니다. 담당 창구에 학생증을 제출합니다.\n이 합성 안내는 교환학생 대상입니다. 담당 창구에 학생증을 제출합니다.\n이 합성 안내는 교환학생 대상입니다. 담당 창구에 학생증을 제출합니다.\n이 합성 안내는 교환학생 대상입니다. 담당 창구에 학생증을 제출합니다.\n이 합성 안내는 교환학생 대상입니다. 담당 창구에 학생증을 제출합니다.\n이 합성 안내는 교환학생 대상입니다. 담당 창구에 학생증을 제출합니다.\n이 합성 안내는 교환학생 대상입니다. 담당 창구에 학생증을 제출합니다.\n이 합성 안내는 교환학생 대상입니다. 담당 창구에 학생증을 제출합니다.\n이 합성 안내는 교환학생 대상입니다. 담당 창구에 학생증을 제출합니다.\n이 합성 안내는 교환학생 대상입니다. 담당 창구에 학생증을 제출합니다.\n이 합성 안내는 교환학생 대상입니다. 담당 창구에 학생증을 제출합니다.\n이 합성 안내는 교환학생 대상입니다. 담당 창구에 학생증을 제출합니다.\n이 합성 안내는 교환학생 대상입니다. 담당 창구에 학생증을 제출합니다.\n이 합성 안내는 교환학생 대상입니다. 담당 창구에 학생증을 제출합니다.\n이 합성 안내는 교환학생 대상입니다. 담당 창구에 학생증을 제출합니다.\n이 합성 안내는 교환학생 대상입니다. 담당 창구에 학생증을 제출합니다.\n이 합성 안내는 교환학생 대상입니다. 담당 창구에 학생증을 제출합니다.\n이 합성 안내는 교환학생 대상입니다. 담당 창구에 학생증을 제출합니다.\n이 합성 안내는 교환학생 대상입니다. 담당 창구에 학생증을 제출합니다.\n이 합성 안내는 교환학생 대상입니다. 담당 창구에 학생증을 제출합니다.\n이 합성 안내는 교환학생 대상입니다. 담당 창구에 학생증을 제출합니다.\n이 합성 안내는 교환학생 대상입니다. 담당 창구에 학생증을 제출합니다.\n이 합성 안내는 교환학생 대상입니다. 담당 창구에 학생증을 제출합니다.이 합성 안내는 교환학생 대상입니다. 담당 창구에 학생증을 제출합니다.\n이 합성 안내는 교환학생 대상입니다. 담당 창구에 학생증을 제출합니다.\n이 합성 안내는 교환학생 대상입니다. 담당 창구에 학생증을 제출합니다.\n이 합성 안내는 교환학생 대상입니다. 담당 창구에 학생증을 제출합니다.\n이 합성 안내는 교환학생 대상입니다. 담당 창구에 학생증을 제출합니다.\n이 합성 안내는 교환학생 대상입니다. 담당 창구에 학생증을 제출합니다.\n이 합성 안내는 교환학생 대상입니다. 담당 창구에 학생증을 제출합니다.\n이 합성 안내는 교환학생 대상입니다. 담당 창구에 학생증을 제출합니다.\n이 합성 안내는 교환학생 대상입니다. 담당 창구에 학생증을 제출합니다.\n이 합성 안내는 교환학생 대상입니다. 담당 창구에 학생증을 제출합니다.\n이 합성 안내는 교환학생 대상입니다. 담당 창구에 학생증을 제출합니다.\n이 합성 안내는 교환학생 대상입니다. 담당 창구에 학생증을 제출합니다.\n이 합성 안내는 교환학생 대상입니다. 담당 창구에 학생증을 제출합니다.\n이 합성 안내는 교환학생 대상입니다. 담당 창구에 학생증을 제출합니다.\n이 합성 안내는 교환학생 대상입니다. 담당 창구에 학생증을 제출합니다.\n이 합성 안내는 교환학생 대상입니다. 담당 창구에 학생증을 제출합니다.\n이 합성 안내는 교환학생 대상입니다. 담당 창구에 학생증을 제출합니다.\n이 합성 안내는 교환학생 대상입니다. 담당 창구에 학생증을 제출합니다.\n이 합성 안내는 교환학생 대상입니다. 담당 창구에 학생증을 제출합니다.\n이 합성 안내는 교환학생 대상입니다. 담당 창구에 학생증을 제출합니다.\n이 합성 안내는 교환학생 대상입니다. 담당 창구에 학생증을 제출합니다.\n이 합성 안내는 교환학생 대상입니다. 담당 창구에 학생증을 제출합니다.\n이 합성 안내는 교환학생 대상입니다. 담당 창구에 학생증을 제출합니다.\n이 합성 안내는 교환학생 대상입니다. 담당 창구에 학생증을 제출합니다.\n이 합성 안내는 교환학생 대상입니다. 담당 창구에 학생증을 제출합니다.\n이 합성 안내는 교환학생 대상입니다. 담당 창구에 학생증을 제출합니다.\n이 합성 안내는 교환학생 대상입니다. 담당 창구에 학생증을 제출합니다.\n이 합성 안내는 교환학생 대상입니다. 담당 창구에 학생증을 제출합니다.\n이 합성 안내는 교환학생 대상입니다. 담당 창구에 학생증을 제출합니다.\n이 합성 안내는 교환학생 대상입니다. 담당 창구에 학생증을 제출합니다.\n이 합성 안내는 교환학생 대상입니다. 담당 창구에 학생증을 제출합니다.\n이 합성 안내는 교환학생 대상입니다. 담당 창구에 학생증을 제출합니다.\n이 합성 안내는 교환학생 대상입니다. 담당 창구에 학생증을 제출합니다.\n이 합성 안내는 교환학생 대상입니다. 담당 창구에 학생증을 제출합니다.\n이 합성 안내는 교환학생 대상입니다. 담당 창구에 학생증을 제출합니다.\n이 합성 안내는 교환학생 대상입니다. 담당 창구에 학생증을 제출합니다.\n이 합성 안내는 교환학생 대상입니다. 담당 창구에 학생증을 제출합니다.\n이 합성 안내는 교환학생 대상입니다. 담당 창구에 학생증을 제출합니다.\n이 합성 안내는 교환학생 대상입니다. 담당 창구에 학생증을 제출합니다.\n이 합성 안내는 교환학생 대상입니다. 담당 창구에 학생증을 제출합니다.\n이 합성 안내는 교환학생 대상입니다. 담당 창구에 학생증을 제출합니다.\n이 합성 안내는 교환학생 대상입니다. 담당 창구에 학생증을 제출합니다.\n이 합성 안내는 교환학생 대상입니다. 담당 창구에 학생증을 제출합니다.\n이 합성 안내는 교환학생 대상입니다. 담당 창구에 학생증을 제출합니다.\n이 합성 안내는 교환학생 대상입니다. 담당 창구에 학생증을 제출합니다.\n이 합성 안내는 교환학생 대상입니다. 담당 창구에 학생증을 제출합니다.\n이 합성 안내는 교환학생 대상입니다. 담당 창구에 학생증을 제출합니다.\n이 합성 안내는 교환학생 대상입니다. 담당 창구에 학생증을 제출합니다.\n이 합성 안내는 교환학생 대상입니다. 담당 창구에 학생증을 제출합니다.\n이 합성 안내는 교환학생 대상입니다. 담당 창구에 학생증을 제출합니다.\n이 합성 안내는 교환학생 대상입니다. 담당 창구에 학생증을 제출합니다.\n이 합성 안내는 교환학생 대상입니다. 담당 창구에 학생증을 제출합니다.\n이 합성 안내는 교환학생 대상입니다. 담당 창구에 학생증을 제출합니다.\n이 합성 안내는 교환학생 대상입니다. 담당 창구에 학생증을 제출합니다.\n이 합성 안내는 교환학생 대상입니다. 담당 창구에 학생증을 제출합니다.이 합성 안내는 교환학생 대상입니다. 담당 창구에 학생증을 제출합니다.\n이 합성 안내는 교환학생 대상입니다. 담당 창구에 학생증을 제출합니다.\n이 합성 안내는 교환학생 대상입니다. 담당 창구에 학생증을 제출합니다.\n이 합성 안내는 교환학생 대상입니다. 담당 창구에 학생증을 제출합니다.\n이 합성 안내는 교환학생 대상입니다. 담당 창구에 학생증을 제출합니다.\n이 합성 안내는 교환학생 대상입니다. 담당 창구에 학생증을 제출합니다.\n이 합성 안내는 교환학생 대상입니다. 담당 창구에 학생증을 제출합니다.\n이 합성 안내는 교환학생 대상입니다. 담당 창구에 학생증을 제출합니다.\n이 합성 안내는 교환학생 대상입니다. 담당 창구에 학생증을 제출합니다.\n이 합성 안내는 교환학생 대상입니다. 담당 창구에 학생증을 제출합니다.\n이 합성 안내는 교환학생 대상입니다. 담당 창구에 학생증을 제출합니다.\n이 합성 안내는 교환학생 대상입니다. 담당 창구에 학생증을 제출합니다.\n이 합성 안내는 교환학생 대상입니다. 담당 창구에 학생증을 제출합니다.\n이 합성 안내는 교환학생 대상입니다. 담당 창구에 학생증을 제출합니다.\n이 합성 안내는 교환학생 대상입니다. 담당 창구에 학생증을 제출합니다.\n이 합성 안내는 교환학생 대상입니다. 담당 창구에 학생증을 제출합니다.\n이 합성 안내는 교환학생 대상입니다. 담당 창구에 학생증을 제출합니다.\n이 합성 안내는 교환학생 대상입니다. 담당 창구에 학생증을 제출합니다.\n이 합성 안내는 교환학생 대상입니다. 담당 창구에 학생증을 제출합니다.\n이 합성 안내는 교환학생 대상입니다. 담당 창구에 학생증을 제출합니다.\n이 합성 안내는 교환학생 대상입니다. 담당 창구에 학생증을 제출합니다.\n이 합성 안내는 교환학생 대상입니다. 담당 창구에 학생증을 제출합니다.\n이 합성 안내는 교환학생 대상입니다. 담당 창구에 학생증을 제출합니다.\n이 합성 안내는 교환학생 대상입니다. 담당 창구에 학생증을 제출합니다.\n이 합성 안내는 교환학생 대상입니다. 담당 창구에 학생증을 제출합니다.\n이 합성 안내는 교환학생 대상입니다. 담당 창구에 학생증을 제출합니다.\n이 합성 안내는 교환학생 대상입니다. 담당 창구에 학생증을 제출합니다.\n이 합성 안내는 교환학생 대상입니다. 담당 창구에 학생증을 제출합니다.\n이 합성 안내는 교환학생 대상입니다. 담당 창구에 학생증을 제출합니다.\n이 합성 안내는 교환학생 대상입니다. 담당 창구에 학생증을 제출합니다.\n이 합성 안내는 교환학생 대상입니다. 담당 창구에 학생증을 제출합니다.\n이 합성 안내는 교환학생 대상입니다. 담당 창구에 학생증을 제출합니다.\n이 합성 안내는 교환학생 대상입니다. 담당 창구에 학생증을 제출합니다.\n이 합성 안내는 교환학생 대상입니다. 담당 창구에 학생증을 제출합니다.\n이 합성 안내는 교환학생 대상입니다. 담당 창구에 학생증을 제출합니다.\n이 합성 안내는 교환학생 대상입니다. 담당 창구에 학생증을 제출합니다.\n이 합성 안내는 교환학생 대상입니다. 담당 창구에 학생증을 제출합니다.\n이 합성 안내는 교환학생 대상입니다. 담당 창구에 학생증을 제출합니다.\n이 합성 안내는 교환학생 대상입니다. 담당 창구에 학생증을 제출합니다.\n이 합성 안내는 교환학생 대상입니다. 담당 창구에 학생증을 제출합니다.\n이 합성 안내는 교환학생 대상입니다. 담당 창구에 학생증을 제출합니다.\n이 합성 안내는 교환학생 대상입니다. 담당 창구에 학생증을 제출합니다.\n이 합성 안내는 교환학생 대상입니다. 담당 창구에 학생증을 제출합니다.\n이 합성 안내는 교환학생 대상입니다. 담당 창구에 학생증을 제출합니다.\n이 합성 안내는 교환학생 대상입니다. 담당 창구에 학생증을 제출합니다.\n이 합성 안내는 교환학생 대상입니다. 담당 창구에 학생증을 제출합니다.\n이 합성 안내는 교환학생 대상입니다. 담당 창구에 학생증을 제출합니다.\n이 합성 안내는 교환학생 대상입니다. 담당 창구에 학생증을 제출합니다.\n이 합성 안내는 교환학생 대상입니다. 담당 창구에 학생증을 제출합니다.\n이 합성 안내는 교환학생 대상입니다. 담당 창구에 학생증을 제출합니다.\n이 합성 안내는 교환학생 대상입니다. 담당 창구에 학생증을 제출합니다.\n이 합성 안내는 교환학생 대상입니다. 담당 창구에 학생증을 제출합니다.\n이 합성 안내는 교환학생 대상입니다. 담당 창구에 학생증을 제출합니다.\n이 합성 안내는 교환학생 대상입니다. 담당 창구에 학생증을 제출합니다.\n이 합성 안내는 교환학생 대상입니다. 담당 창구에 학생증을 제출합니다.\n보호안경 보관함은 청록동 417호입니다."
+        },
+        "en": {
+          "title": "Laboratory safety guide",
+          "body": "Laboratory safety guide. This synthetic notice is for exchange students. Present a student card at the designated desk.\nThis synthetic notice is for exchange students. Present a student card at the designated desk.\nThis synthetic notice is for exchange students. Present a student card at the designated desk.\nThis synthetic notice is for exchange students. Present a student card at the designated desk.\nThis synthetic notice is for exchange students. Present a student card at the designated desk.\nThis synthetic notice is for exchange students. Present a student card at the designated desk.\nThis synthetic notice is for exchange students. Present a student card at the designated desk.\nThis synthetic notice is for exchange students. Present a student card at the designated desk.\nThis synthetic notice is for exchange students. Present a student card at the designated desk.\nThis synthetic notice is for exchange students. Present a student card at the designated desk.\nThis synthetic notice is for exchange students. Present a student card at the designated desk.\nThis synthetic notice is for exchange students. Present a student card at the designated desk.\nThis synthetic notice is for exchange students. Present a student card at the designated desk.\nThis synthetic notice is for exchange students. Present a student card at the designated desk.\nThis synthetic notice is for exchange students. Present a student card at the designated desk.\nThis synthetic notice is for exchange students. Present a student card at the designated desk.\nThis synthetic notice is for exchange students. Present a student card at the designated desk.\nThis synthetic notice is for exchange students. Present a student card at the designated desk.\nThis synthetic notice is for exchange students. Present a student card at the designated desk.\nThis synthetic notice is for exchange students. Present a student card at the designated desk.\nThis synthetic notice is for exchange students. Present a student card at the designated desk.\nThis synthetic notice is for exchange students. Present a student card at the designated desk.\nThis synthetic notice is for exchange students. Present a student card at the designated desk.\nThis synthetic notice is for exchange students. Present a student card at the designated desk.\nThis synthetic notice is for exchange students. Present a student card at the designated desk.\nThis synthetic notice is for exchange students. Present a student card at the designated desk.\nThis synthetic notice is for exchange students. Present a student card at the designated desk.\nThis synthetic notice is for exchange students. Present a student card at the designated desk.\nThis synthetic notice is for exchange students. Present a student card at the designated desk.\nThis synthetic notice is for exchange students. Present a student card at the designated desk.\nThis synthetic notice is for exchange students. Present a student card at the designated desk.\nThis synthetic notice is for exchange students. Present a student card at the designated desk.\nThis synthetic notice is for exchange students. Present a student card at the designated desk.\nThis synthetic notice is for exchange students. Present a student card at the designated desk.\nThis synthetic notice is for exchange students. Present a student card at the designated desk.\nThis synthetic notice is for exchange students. Present a student card at the designated desk.\nThis synthetic notice is for exchange students. Present a student card at the designated desk.\nThis synthetic notice is for exchange students. Present a student card at the designated desk.\nThis synthetic notice is for exchange students. Present a student card at the designated desk.\nThis synthetic notice is for exchange students. Present a student card at the designated desk.\nThis synthetic notice is for exchange students. Present a student card at the designated desk.\nThis synthetic notice is for exchange students. Present a student card at the designated desk.\nThis synthetic notice is for exchange students. Present a student card at the designated desk.\nThis synthetic notice is for exchange students. Present a student card at the designated desk.\nThis synthetic notice is for exchange students. Present a student card at the designated desk.\nThis synthetic notice is for exchange students. Present a student card at the designated desk.\nThis synthetic notice is for exchange students. Present a student card at the designated desk.\nThis synthetic notice is for exchange students. Present a student card at the designated desk.\nThis synthetic notice is for exchange students. Present a student card at the designated desk.\nThis synthetic notice is for exchange students. Present a student card at the designated desk.\nThis synthetic notice is for exchange students. Present a student card at the designated desk.\nThis synthetic notice is for exchange students. Present a student card at the designated desk.\nThis synthetic notice is for exchange students. Present a student card at the designated desk.\nThis synthetic notice is for exchange students. Present a student card at the designated desk.\nThis synthetic notice is for exchange students. Present a student card at the designated desk.\nThis synthetic notice is for exchange students. Present a student card at the designated desk.This synthetic notice is for exchange students. Present a student card at the designated desk.\nThis synthetic notice is for exchange students. Present a student card at the designated desk.\nThis synthetic notice is for exchange students. Present a student card at the designated desk.\nThis synthetic notice is for exchange students. Present a student card at the designated desk.\nThis synthetic notice is for exchange students. Present a student card at the designated desk.\nThis synthetic notice is for exchange students. Present a student card at the designated desk.\nThis synthetic notice is for exchange students. Present a student card at the designated desk.\nThis synthetic notice is for exchange students. Present a student card at the designated desk.\nThis synthetic notice is for exchange students. Present a student card at the designated desk.\nThis synthetic notice is for exchange students. Present a student card at the designated desk.\nThis synthetic notice is for exchange students. Present a student card at the designated desk.\nThis synthetic notice is for exchange students. Present a student card at the designated desk.\nThis synthetic notice is for exchange students. Present a student card at the designated desk.\nThis synthetic notice is for exchange students. Present a student card at the designated desk.\nThis synthetic notice is for exchange students. Present a student card at the designated desk.\nThis synthetic notice is for exchange students. Present a student card at the designated desk.\nThis synthetic notice is for exchange students. Present a student card at the designated desk.\nThis synthetic notice is for exchange students. Present a student card at the designated desk.\nThis synthetic notice is for exchange students. Present a student card at the designated desk.\nThis synthetic notice is for exchange students. Present a student card at the designated desk.\nThis synthetic notice is for exchange students. Present a student card at the designated desk.\nThis synthetic notice is for exchange students. Present a student card at the designated desk.\nThis synthetic notice is for exchange students. Present a student card at the designated desk.\nThis synthetic notice is for exchange students. Present a student card at the designated desk.\nThis synthetic notice is for exchange students. Present a student card at the designated desk.\nThis synthetic notice is for exchange students. Present a student card at the designated desk.\nThis synthetic notice is for exchange students. Present a student card at the designated desk.\nThis synthetic notice is for exchange students. Present a student card at the designated desk.\nThis synthetic notice is for exchange students. Present a student card at the designated desk.\nThis synthetic notice is for exchange students. Present a student card at the designated desk.\nThis synthetic notice is for exchange students. Present a student card at the designated desk.\nThis synthetic notice is for exchange students. Present a student card at the designated desk.\nThis synthetic notice is for exchange students. Present a student card at the designated desk.\nThis synthetic notice is for exchange students. Present a student card at the designated desk.\nThis synthetic notice is for exchange students. Present a student card at the designated desk.\nThis synthetic notice is for exchange students. Present a student card at the designated desk.\nThis synthetic notice is for exchange students. Present a student card at the designated desk.\nThis synthetic notice is for exchange students. Present a student card at the designated desk.\nThis synthetic notice is for exchange students. Present a student card at the designated desk.\nThis synthetic notice is for exchange students. Present a student card at the designated desk.\nThis synthetic notice is for exchange students. Present a student card at the designated desk.\nThis synthetic notice is for exchange students. Present a student card at the designated desk.\nThis synthetic notice is for exchange students. Present a student card at the designated desk.\nThis synthetic notice is for exchange students. Present a student card at the designated desk.\nThis synthetic notice is for exchange students. Present a student card at the designated desk.\nThis synthetic notice is for exchange students. Present a student card at the designated desk.\nThis synthetic notice is for exchange students. Present a student card at the designated desk.\nThis synthetic notice is for exchange students. Present a student card at the designated desk.\nThis synthetic notice is for exchange students. Present a student card at the designated desk.\nThis synthetic notice is for exchange students. Present a student card at the designated desk.\nThis synthetic notice is for exchange students. Present a student card at the designated desk.\nThis synthetic notice is for exchange students. Present a student card at the designated desk.\nThis synthetic notice is for exchange students. Present a student card at the designated desk.\nThis synthetic notice is for exchange students. Present a student card at the designated desk.\nThis synthetic notice is for exchange students. Present a student card at the designated desk.This synthetic notice is for exchange students. Present a student card at the designated desk.\nThis synthetic notice is for exchange students. Present a student card at the designated desk.\nThis synthetic notice is for exchange students. Present a student card at the designated desk.\nThis synthetic notice is for exchange students. Present a student card at the designated desk.\nThis synthetic notice is for exchange students. Present a student card at the designated desk.\nThis synthetic notice is for exchange students. Present a student card at the designated desk.\nThis synthetic notice is for exchange students. Present a student card at the designated desk.\nThis synthetic notice is for exchange students. Present a student card at the designated desk.\nThis synthetic notice is for exchange students. Present a student card at the designated desk.\nThis synthetic notice is for exchange students. Present a student card at the designated desk.\nThis synthetic notice is for exchange students. Present a student card at the designated desk.\nThis synthetic notice is for exchange students. Present a student card at the designated desk.\nThis synthetic notice is for exchange students. Present a student card at the designated desk.\nThis synthetic notice is for exchange students. Present a student card at the designated desk.\nThis synthetic notice is for exchange students. Present a student card at the designated desk.\nThis synthetic notice is for exchange students. Present a student card at the designated desk.\nThis synthetic notice is for exchange students. Present a student card at the designated desk.\nThis synthetic notice is for exchange students. Present a student card at the designated desk.\nThis synthetic notice is for exchange students. Present a student card at the designated desk.\nThis synthetic notice is for exchange students. Present a student card at the designated desk.\nThis synthetic notice is for exchange students. Present a student card at the designated desk.\nThis synthetic notice is for exchange students. Present a student card at the designated desk.\nThis synthetic notice is for exchange students. Present a student card at the designated desk.\nThis synthetic notice is for exchange students. Present a student card at the designated desk.\nThis synthetic notice is for exchange students. Present a student card at the designated desk.\nThis synthetic notice is for exchange students. Present a student card at the designated desk.\nThis synthetic notice is for exchange students. Present a student card at the designated desk.\nThis synthetic notice is for exchange students. Present a student card at the designated desk.\nThis synthetic notice is for exchange students. Present a student card at the designated desk.\nThis synthetic notice is for exchange students. Present a student card at the designated desk.\nThis synthetic notice is for exchange students. Present a student card at the designated desk.\nThis synthetic notice is for exchange students. Present a student card at the designated desk.\nThis synthetic notice is for exchange students. Present a student card at the designated desk.\nThis synthetic notice is for exchange students. Present a student card at the designated desk.\nThis synthetic notice is for exchange students. Present a student card at the designated desk.\nThis synthetic notice is for exchange students. Present a student card at the designated desk.\nThis synthetic notice is for exchange students. Present a student card at the designated desk.\nThis synthetic notice is for exchange students. Present a student card at the designated desk.\nThis synthetic notice is for exchange students. Present a student card at the designated desk.\nThis synthetic notice is for exchange students. Present a student card at the designated desk.\nThis synthetic notice is for exchange students. Present a student card at the designated desk.\nThis synthetic notice is for exchange students. Present a student card at the designated desk.\nThis synthetic notice is for exchange students. Present a student card at the designated desk.\nThis synthetic notice is for exchange students. Present a student card at the designated desk.\nThis synthetic notice is for exchange students. Present a student card at the designated desk.\nThis synthetic notice is for exchange students. Present a student card at the designated desk.\nThis synthetic notice is for exchange students. Present a student card at the designated desk.\nThis synthetic notice is for exchange students. Present a student card at the designated desk.\nThis synthetic notice is for exchange students. Present a student card at the designated desk.\nThis synthetic notice is for exchange students. Present a student card at the designated desk.\nThis synthetic notice is for exchange students. Present a student card at the designated desk.\nThis synthetic notice is for exchange students. Present a student card at the designated desk.\nThis synthetic notice is for exchange students. Present a student card at the designated desk.\nThis synthetic notice is for exchange students. Present a student card at the designated desk.\nThis synthetic notice is for exchange students. Present a student card at the designated desk.\nProtective goggles are stored in room 417 of the Teal building."
+        },
+        "ja": {
+          "title": "実験室の安全案内",
+          "body": "実験室の安全案内. この架空の案内は交換留学生向けです。担当窓口に学生証を提出してください。\nこの架空の案内は交換留学生向けです。担当窓口に学生証を提出してください。\nこの架空の案内は交換留学生向けです。担当窓口に学生証を提出してください。\nこの架空の案内は交換留学生向けです。担当窓口に学生証を提出してください。\nこの架空の案内は交換留学生向けです。担当窓口に学生証を提出してください。\nこの架空の案内は交換留学生向けです。担当窓口に学生証を提出してください。\nこの架空の案内は交換留学生向けです。担当窓口に学生証を提出してください。\nこの架空の案内は交換留学生向けです。担当窓口に学生証を提出してください。\nこの架空の案内は交換留学生向けです。担当窓口に学生証を提出してください。\nこの架空の案内は交換留学生向けです。担当窓口に学生証を提出してください。\nこの架空の案内は交換留学生向けです。担当窓口に学生証を提出してください。\nこの架空の案内は交換留学生向けです。担当窓口に学生証を提出してください。\nこの架空の案内は交換留学生向けです。担当窓口に学生証を提出してください。\nこの架空の案内は交換留学生向けです。担当窓口に学生証を提出してください。\nこの架空の案内は交換留学生向けです。担当窓口に学生証を提出してください。\nこの架空の案内は交換留学生向けです。担当窓口に学生証を提出してください。\nこの架空の案内は交換留学生向けです。担当窓口に学生証を提出してください。\nこの架空の案内は交換留学生向けです。担当窓口に学生証を提出してください。\nこの架空の案内は交換留学生向けです。担当窓口に学生証を提出してください。\nこの架空の案内は交換留学生向けです。担当窓口に学生証を提出してください。\nこの架空の案内は交換留学生向けです。担当窓口に学生証を提出してください。\nこの架空の案内は交換留学生向けです。担当窓口に学生証を提出してください。\nこの架空の案内は交換留学生向けです。担当窓口に学生証を提出してください。\nこの架空の案内は交換留学生向けです。担当窓口に学生証を提出してください。\nこの架空の案内は交換留学生向けです。担当窓口に学生証を提出してください。\nこの架空の案内は交換留学生向けです。担当窓口に学生証を提出してください。\nこの架空の案内は交換留学生向けです。担当窓口に学生証を提出してください。\nこの架空の案内は交換留学生向けです。担当窓口に学生証を提出してください。\nこの架空の案内は交換留学生向けです。担当窓口に学生証を提出してください。\nこの架空の案内は交換留学生向けです。担当窓口に学生証を提出してください。\nこの架空の案内は交換留学生向けです。担当窓口に学生証を提出してください。\nこの架空の案内は交換留学生向けです。担当窓口に学生証を提出してください。\nこの架空の案内は交換留学生向けです。担当窓口に学生証を提出してください。\nこの架空の案内は交換留学生向けです。担当窓口に学生証を提出してください。\nこの架空の案内は交換留学生向けです。担当窓口に学生証を提出してください。\nこの架空の案内は交換留学生向けです。担当窓口に学生証を提出してください。\nこの架空の案内は交換留学生向けです。担当窓口に学生証を提出してください。\nこの架空の案内は交換留学生向けです。担当窓口に学生証を提出してください。\nこの架空の案内は交換留学生向けです。担当窓口に学生証を提出してください。\nこの架空の案内は交換留学生向けです。担当窓口に学生証を提出してください。\nこの架空の案内は交換留学生向けです。担当窓口に学生証を提出してください。\nこの架空の案内は交換留学生向けです。担当窓口に学生証を提出してください。\nこの架空の案内は交換留学生向けです。担当窓口に学生証を提出してください。\nこの架空の案内は交換留学生向けです。担当窓口に学生証を提出してください。\nこの架空の案内は交換留学生向けです。担当窓口に学生証を提出してください。\nこの架空の案内は交換留学生向けです。担当窓口に学生証を提出してください。\nこの架空の案内は交換留学生向けです。担当窓口に学生証を提出してください。\nこの架空の案内は交換留学生向けです。担当窓口に学生証を提出してください。\nこの架空の案内は交換留学生向けです。担当窓口に学生証を提出してください。\nこの架空の案内は交換留学生向けです。担当窓口に学生証を提出してください。\nこの架空の案内は交換留学生向けです。担当窓口に学生証を提出してください。\nこの架空の案内は交換留学生向けです。担当窓口に学生証を提出してください。\nこの架空の案内は交換留学生向けです。担当窓口に学生証を提出してください。\nこの架空の案内は交換留学生向けです。担当窓口に学生証を提出してください。\nこの架空の案内は交換留学生向けです。担当窓口に学生証を提出してください。\nこの架空の案内は交換留学生向けです。担当窓口に学生証を提出してください。この架空の案内は交換留学生向けです。担当窓口に学生証を提出してください。\nこの架空の案内は交換留学生向けです。担当窓口に学生証を提出してください。\nこの架空の案内は交換留学生向けです。担当窓口に学生証を提出してください。\nこの架空の案内は交換留学生向けです。担当窓口に学生証を提出してください。\nこの架空の案内は交換留学生向けです。担当窓口に学生証を提出してください。\nこの架空の案内は交換留学生向けです。担当窓口に学生証を提出してください。\nこの架空の案内は交換留学生向けです。担当窓口に学生証を提出してください。\nこの架空の案内は交換留学生向けです。担当窓口に学生証を提出してください。\nこの架空の案内は交換留学生向けです。担当窓口に学生証を提出してください。\nこの架空の案内は交換留学生向けです。担当窓口に学生証を提出してください。\nこの架空の案内は交換留学生向けです。担当窓口に学生証を提出してください。\nこの架空の案内は交換留学生向けです。担当窓口に学生証を提出してください。\nこの架空の案内は交換留学生向けです。担当窓口に学生証を提出してください。\nこの架空の案内は交換留学生向けです。担当窓口に学生証を提出してください。\nこの架空の案内は交換留学生向けです。担当窓口に学生証を提出してください。\nこの架空の案内は交換留学生向けです。担当窓口に学生証を提出してください。\nこの架空の案内は交換留学生向けです。担当窓口に学生証を提出してください。\nこの架空の案内は交換留学生向けです。担当窓口に学生証を提出してください。\nこの架空の案内は交換留学生向けです。担当窓口に学生証を提出してください。\nこの架空の案内は交換留学生向けです。担当窓口に学生証を提出してください。\nこの架空の案内は交換留学生向けです。担当窓口に学生証を提出してください。\nこの架空の案内は交換留学生向けです。担当窓口に学生証を提出してください。\nこの架空の案内は交換留学生向けです。担当窓口に学生証を提出してください。\nこの架空の案内は交換留学生向けです。担当窓口に学生証を提出してください。\nこの架空の案内は交換留学生向けです。担当窓口に学生証を提出してください。\nこの架空の案内は交換留学生向けです。担当窓口に学生証を提出してください。\nこの架空の案内は交換留学生向けです。担当窓口に学生証を提出してください。\nこの架空の案内は交換留学生向けです。担当窓口に学生証を提出してください。\nこの架空の案内は交換留学生向けです。担当窓口に学生証を提出してください。\nこの架空の案内は交換留学生向けです。担当窓口に学生証を提出してください。\nこの架空の案内は交換留学生向けです。担当窓口に学生証を提出してください。\nこの架空の案内は交換留学生向けです。担当窓口に学生証を提出してください。\nこの架空の案内は交換留学生向けです。担当窓口に学生証を提出してください。\nこの架空の案内は交換留学生向けです。担当窓口に学生証を提出してください。\nこの架空の案内は交換留学生向けです。担当窓口に学生証を提出してください。\nこの架空の案内は交換留学生向けです。担当窓口に学生証を提出してください。\nこの架空の案内は交換留学生向けです。担当窓口に学生証を提出してください。\nこの架空の案内は交換留学生向けです。担当窓口に学生証を提出してください。\nこの架空の案内は交換留学生向けです。担当窓口に学生証を提出してください。\nこの架空の案内は交換留学生向けです。担当窓口に学生証を提出してください。\nこの架空の案内は交換留学生向けです。担当窓口に学生証を提出してください。\nこの架空の案内は交換留学生向けです。担当窓口に学生証を提出してください。\nこの架空の案内は交換留学生向けです。担当窓口に学生証を提出してください。\nこの架空の案内は交換留学生向けです。担当窓口に学生証を提出してください。\nこの架空の案内は交換留学生向けです。担当窓口に学生証を提出してください。\nこの架空の案内は交換留学生向けです。担当窓口に学生証を提出してください。\nこの架空の案内は交換留学生向けです。担当窓口に学生証を提出してください。\nこの架空の案内は交換留学生向けです。担当窓口に学生証を提出してください。\nこの架空の案内は交換留学生向けです。担当窓口に学生証を提出してください。\nこの架空の案内は交換留学生向けです。担当窓口に学生証を提出してください。\nこの架空の案内は交換留学生向けです。担当窓口に学生証を提出してください。\nこの架空の案内は交換留学生向けです。担当窓口に学生証を提出してください。\nこの架空の案内は交換留学生向けです。担当窓口に学生証を提出してください。\nこの架空の案内は交換留学生向けです。担当窓口に学生証を提出してください。\nこの架空の案内は交換留学生向けです。担当窓口に学生証を提出してください。この架空の案内は交換留学生向けです。担当窓口に学生証を提出してください。\nこの架空の案内は交換留学生向けです。担当窓口に学生証を提出してください。\nこの架空の案内は交換留学生向けです。担当窓口に学生証を提出してください。\nこの架空の案内は交換留学生向けです。担当窓口に学生証を提出してください。\nこの架空の案内は交換留学生向けです。担当窓口に学生証を提出してください。\nこの架空の案内は交換留学生向けです。担当窓口に学生証を提出してください。\nこの架空の案内は交換留学生向けです。担当窓口に学生証を提出してください。\nこの架空の案内は交換留学生向けです。担当窓口に学生証を提出してください。\nこの架空の案内は交換留学生向けです。担当窓口に学生証を提出してください。\nこの架空の案内は交換留学生向けです。担当窓口に学生証を提出してください。\nこの架空の案内は交換留学生向けです。担当窓口に学生証を提出してください。\nこの架空の案内は交換留学生向けです。担当窓口に学生証を提出してください。\nこの架空の案内は交換留学生向けです。担当窓口に学生証を提出してください。\nこの架空の案内は交換留学生向けです。担当窓口に学生証を提出してください。\nこの架空の案内は交換留学生向けです。担当窓口に学生証を提出してください。\nこの架空の案内は交換留学生向けです。担当窓口に学生証を提出してください。\nこの架空の案内は交換留学生向けです。担当窓口に学生証を提出してください。\nこの架空の案内は交換留学生向けです。担当窓口に学生証を提出してください。\nこの架空の案内は交換留学生向けです。担当窓口に学生証を提出してください。\nこの架空の案内は交換留学生向けです。担当窓口に学生証を提出してください。\nこの架空の案内は交換留学生向けです。担当窓口に学生証を提出してください。\nこの架空の案内は交換留学生向けです。担当窓口に学生証を提出してください。\nこの架空の案内は交換留学生向けです。担当窓口に学生証を提出してください。\nこの架空の案内は交換留学生向けです。担当窓口に学生証を提出してください。\nこの架空の案内は交換留学生向けです。担当窓口に学生証を提出してください。\nこの架空の案内は交換留学生向けです。担当窓口に学生証を提出してください。\nこの架空の案内は交換留学生向けです。担当窓口に学生証を提出してください。\nこの架空の案内は交換留学生向けです。担当窓口に学生証を提出してください。\nこの架空の案内は交換留学生向けです。担当窓口に学生証を提出してください。\nこの架空の案内は交換留学生向けです。担当窓口に学生証を提出してください。\nこの架空の案内は交換留学生向けです。担当窓口に学生証を提出してください。\nこの架空の案内は交換留学生向けです。担当窓口に学生証を提出してください。\nこの架空の案内は交換留学生向けです。担当窓口に学生証を提出してください。\nこの架空の案内は交換留学生向けです。担当窓口に学生証を提出してください。\nこの架空の案内は交換留学生向けです。担当窓口に学生証を提出してください。\nこの架空の案内は交換留学生向けです。担当窓口に学生証を提出してください。\nこの架空の案内は交換留学生向けです。担当窓口に学生証を提出してください。\nこの架空の案内は交換留学生向けです。担当窓口に学生証を提出してください。\nこの架空の案内は交換留学生向けです。担当窓口に学生証を提出してください。\nこの架空の案内は交換留学生向けです。担当窓口に学生証を提出してください。\nこの架空の案内は交換留学生向けです。担当窓口に学生証を提出してください。\nこの架空の案内は交換留学生向けです。担当窓口に学生証を提出してください。\nこの架空の案内は交換留学生向けです。担当窓口に学生証を提出してください。\nこの架空の案内は交換留学生向けです。担当窓口に学生証を提出してください。\nこの架空の案内は交換留学生向けです。担当窓口に学生証を提出してください。\nこの架空の案内は交換留学生向けです。担当窓口に学生証を提出してください。\nこの架空の案内は交換留学生向けです。担当窓口に学生証を提出してください。\nこの架空の案内は交換留学生向けです。担当窓口に学生証を提出してください。\nこの架空の案内は交換留学生向けです。担当窓口に学生証を提出してください。\nこの架空の案内は交換留学生向けです。担当窓口に学生証を提出してください。\nこの架空の案内は交換留学生向けです。担当窓口に学生証を提出してください。\nこの架空の案内は交換留学生向けです。担当窓口に学生証を提出してください。\nこの架空の案内は交換留学生向けです。担当窓口に学生証を提出してください。\nこの架空の案内は交換留学生向けです。担当窓口に学生証を提出してください。\nこの架空の案内は交換留学生向けです。担当窓口に学生証を提出してください。\n保護ゴーグルは青緑棟の417号室に保管しています。"
+        },
+        "zh": {
+          "title": "实验室安全指南",
+          "body": "实验室安全指南. 本虚构通知面向交换生。请向负责窗口提交学生证。\n本虚构通知面向交换生。请向负责窗口提交学生证。\n本虚构通知面向交换生。请向负责窗口提交学生证。\n本虚构通知面向交换生。请向负责窗口提交学生证。\n本虚构通知面向交换生。请向负责窗口提交学生证。\n本虚构通知面向交换生。请向负责窗口提交学生证。\n本虚构通知面向交换生。请向负责窗口提交学生证。\n本虚构通知面向交换生。请向负责窗口提交学生证。\n本虚构通知面向交换生。请向负责窗口提交学生证。\n本虚构通知面向交换生。请向负责窗口提交学生证。\n本虚构通知面向交换生。请向负责窗口提交学生证。\n本虚构通知面向交换生。请向负责窗口提交学生证。\n本虚构通知面向交换生。请向负责窗口提交学生证。\n本虚构通知面向交换生。请向负责窗口提交学生证。\n本虚构通知面向交换生。请向负责窗口提交学生证。\n本虚构通知面向交换生。请向负责窗口提交学生证。\n本虚构通知面向交换生。请向负责窗口提交学生证。\n本虚构通知面向交换生。请向负责窗口提交学生证。\n本虚构通知面向交换生。请向负责窗口提交学生证。\n本虚构通知面向交换生。请向负责窗口提交学生证。\n本虚构通知面向交换生。请向负责窗口提交学生证。\n本虚构通知面向交换生。请向负责窗口提交学生证。\n本虚构通知面向交换生。请向负责窗口提交学生证。\n本虚构通知面向交换生。请向负责窗口提交学生证。\n本虚构通知面向交换生。请向负责窗口提交学生证。\n本虚构通知面向交换生。请向负责窗口提交学生证。\n本虚构通知面向交换生。请向负责窗口提交学生证。\n本虚构通知面向交换生。请向负责窗口提交学生证。\n本虚构通知面向交换生。请向负责窗口提交学生证。\n本虚构通知面向交换生。请向负责窗口提交学生证。\n本虚构通知面向交换生。请向负责窗口提交学生证。\n本虚构通知面向交换生。请向负责窗口提交学生证。\n本虚构通知面向交换生。请向负责窗口提交学生证。\n本虚构通知面向交换生。请向负责窗口提交学生证。\n本虚构通知面向交换生。请向负责窗口提交学生证。\n本虚构通知面向交换生。请向负责窗口提交学生证。\n本虚构通知面向交换生。请向负责窗口提交学生证。\n本虚构通知面向交换生。请向负责窗口提交学生证。\n本虚构通知面向交换生。请向负责窗口提交学生证。\n本虚构通知面向交换生。请向负责窗口提交学生证。\n本虚构通知面向交换生。请向负责窗口提交学生证。\n本虚构通知面向交换生。请向负责窗口提交学生证。\n本虚构通知面向交换生。请向负责窗口提交学生证。\n本虚构通知面向交换生。请向负责窗口提交学生证。\n本虚构通知面向交换生。请向负责窗口提交学生证。\n本虚构通知面向交换生。请向负责窗口提交学生证。\n本虚构通知面向交换生。请向负责窗口提交学生证。\n本虚构通知面向交换生。请向负责窗口提交学生证。\n本虚构通知面向交换生。请向负责窗口提交学生证。\n本虚构通知面向交换生。请向负责窗口提交学生证。\n本虚构通知面向交换生。请向负责窗口提交学生证。\n本虚构通知面向交换生。请向负责窗口提交学生证。\n本虚构通知面向交换生。请向负责窗口提交学生证。\n本虚构通知面向交换生。请向负责窗口提交学生证。\n本虚构通知面向交换生。请向负责窗口提交学生证。\n本虚构通知面向交换生。请向负责窗口提交学生证。本虚构通知面向交换生。请向负责窗口提交学生证。\n本虚构通知面向交换生。请向负责窗口提交学生证。\n本虚构通知面向交换生。请向负责窗口提交学生证。\n本虚构通知面向交换生。请向负责窗口提交学生证。\n本虚构通知面向交换生。请向负责窗口提交学生证。\n本虚构通知面向交换生。请向负责窗口提交学生证。\n本虚构通知面向交换生。请向负责窗口提交学生证。\n本虚构通知面向交换生。请向负责窗口提交学生证。\n本虚构通知面向交换生。请向负责窗口提交学生证。\n本虚构通知面向交换生。请向负责窗口提交学生证。\n本虚构通知面向交换生。请向负责窗口提交学生证。\n本虚构通知面向交换生。请向负责窗口提交学生证。\n本虚构通知面向交换生。请向负责窗口提交学生证。\n本虚构通知面向交换生。请向负责窗口提交学生证。\n本虚构通知面向交换生。请向负责窗口提交学生证。\n本虚构通知面向交换生。请向负责窗口提交学生证。\n本虚构通知面向交换生。请向负责窗口提交学生证。\n本虚构通知面向交换生。请向负责窗口提交学生证。\n本虚构通知面向交换生。请向负责窗口提交学生证。\n本虚构通知面向交换生。请向负责窗口提交学生证。\n本虚构通知面向交换生。请向负责窗口提交学生证。\n本虚构通知面向交换生。请向负责窗口提交学生证。\n本虚构通知面向交换生。请向负责窗口提交学生证。\n本虚构通知面向交换生。请向负责窗口提交学生证。\n本虚构通知面向交换生。请向负责窗口提交学生证。\n本虚构通知面向交换生。请向负责窗口提交学生证。\n本虚构通知面向交换生。请向负责窗口提交学生证。\n本虚构通知面向交换生。请向负责窗口提交学生证。\n本虚构通知面向交换生。请向负责窗口提交学生证。\n本虚构通知面向交换生。请向负责窗口提交学生证。\n本虚构通知面向交换生。请向负责窗口提交学生证。\n本虚构通知面向交换生。请向负责窗口提交学生证。\n本虚构通知面向交换生。请向负责窗口提交学生证。\n本虚构通知面向交换生。请向负责窗口提交学生证。\n本虚构通知面向交换生。请向负责窗口提交学生证。\n本虚构通知面向交换生。请向负责窗口提交学生证。\n本虚构通知面向交换生。请向负责窗口提交学生证。\n本虚构通知面向交换生。请向负责窗口提交学生证。\n本虚构通知面向交换生。请向负责窗口提交学生证。\n本虚构通知面向交换生。请向负责窗口提交学生证。\n本虚构通知面向交换生。请向负责窗口提交学生证。\n本虚构通知面向交换生。请向负责窗口提交学生证。\n本虚构通知面向交换生。请向负责窗口提交学生证。\n本虚构通知面向交换生。请向负责窗口提交学生证。\n本虚构通知面向交换生。请向负责窗口提交学生证。\n本虚构通知面向交换生。请向负责窗口提交学生证。\n本虚构通知面向交换生。请向负责窗口提交学生证。\n本虚构通知面向交换生。请向负责窗口提交学生证。\n本虚构通知面向交换生。请向负责窗口提交学生证。\n本虚构通知面向交换生。请向负责窗口提交学生证。\n本虚构通知面向交换生。请向负责窗口提交学生证。\n本虚构通知面向交换生。请向负责窗口提交学生证。\n本虚构通知面向交换生。请向负责窗口提交学生证。\n本虚构通知面向交换生。请向负责窗口提交学生证。\n本虚构通知面向交换生。请向负责窗口提交学生证。本虚构通知面向交换生。请向负责窗口提交学生证。\n本虚构通知面向交换生。请向负责窗口提交学生证。\n本虚构通知面向交换生。请向负责窗口提交学生证。\n本虚构通知面向交换生。请向负责窗口提交学生证。\n本虚构通知面向交换生。请向负责窗口提交学生证。\n本虚构通知面向交换生。请向负责窗口提交学生证。\n本虚构通知面向交换生。请向负责窗口提交学生证。\n本虚构通知面向交换生。请向负责窗口提交学生证。\n本虚构通知面向交换生。请向负责窗口提交学生证。\n本虚构通知面向交换生。请向负责窗口提交学生证。\n本虚构通知面向交换生。请向负责窗口提交学生证。\n本虚构通知面向交换生。请向负责窗口提交学生证。\n本虚构通知面向交换生。请向负责窗口提交学生证。\n本虚构通知面向交换生。请向负责窗口提交学生证。\n本虚构通知面向交换生。请向负责窗口提交学生证。\n本虚构通知面向交换生。请向负责窗口提交学生证。\n本虚构通知面向交换生。请向负责窗口提交学生证。\n本虚构通知面向交换生。请向负责窗口提交学生证。\n本虚构通知面向交换生。请向负责窗口提交学生证。\n本虚构通知面向交换生。请向负责窗口提交学生证。\n本虚构通知面向交换生。请向负责窗口提交学生证。\n本虚构通知面向交换生。请向负责窗口提交学生证。\n本虚构通知面向交换生。请向负责窗口提交学生证。\n本虚构通知面向交换生。请向负责窗口提交学生证。\n本虚构通知面向交换生。请向负责窗口提交学生证。\n本虚构通知面向交换生。请向负责窗口提交学生证。\n本虚构通知面向交换生。请向负责窗口提交学生证。\n本虚构通知面向交换生。请向负责窗口提交学生证。\n本虚构通知面向交换生。请向负责窗口提交学生证。\n本虚构通知面向交换生。请向负责窗口提交学生证。\n本虚构通知面向交换生。请向负责窗口提交学生证。\n本虚构通知面向交换生。请向负责窗口提交学生证。\n本虚构通知面向交换生。请向负责窗口提交学生证。\n本虚构通知面向交换生。请向负责窗口提交学生证。\n本虚构通知面向交换生。请向负责窗口提交学生证。\n本虚构通知面向交换生。请向负责窗口提交学生证。\n本虚构通知面向交换生。请向负责窗口提交学生证。\n本虚构通知面向交换生。请向负责窗口提交学生证。\n本虚构通知面向交换生。请向负责窗口提交学生证。\n本虚构通知面向交换生。请向负责窗口提交学生证。\n本虚构通知面向交换生。请向负责窗口提交学生证。\n本虚构通知面向交换生。请向负责窗口提交学生证。\n本虚构通知面向交换生。请向负责窗口提交学生证。\n本虚构通知面向交换生。请向负责窗口提交学生证。\n本虚构通知面向交换生。请向负责窗口提交学生证。\n本虚构通知面向交换生。请向负责窗口提交学生证。\n本虚构通知面向交换生。请向负责窗口提交学生证。\n本虚构通知面向交换生。请向负责窗口提交学生证。\n本虚构通知面向交换生。请向负责窗口提交学生证。\n本虚构通知面向交换生。请向负责窗口提交学生证。\n本虚构通知面向交换生。请向负责窗口提交学生证。\n本虚构通知面向交换生。请向负责窗口提交学生证。\n本虚构通知面向交换生。请向负责窗口提交学生证。\n本虚构通知面向交换生。请向负责窗口提交学生证。\n本虚构通知面向交换生。请向负责窗口提交学生证。\n防护护目镜存放在青绿楼417室。"
+        },
+        "vi": {
+          "title": "Hướng dẫn an toàn phòng thí nghiệm",
+          "body": "Hướng dẫn an toàn phòng thí nghiệm. Thông báo giả lập này dành cho sinh viên trao đổi. Nộp thẻ sinh viên tại quầy phụ trách.\nThông báo giả lập này dành cho sinh viên trao đổi. Nộp thẻ sinh viên tại quầy phụ trách.\nThông báo giả lập này dành cho sinh viên trao đổi. Nộp thẻ sinh viên tại quầy phụ trách.\nThông báo giả lập này dành cho sinh viên trao đổi. Nộp thẻ sinh viên tại quầy phụ trách.\nThông báo giả lập này dành cho sinh viên trao đổi. Nộp thẻ sinh viên tại quầy phụ trách.\nThông báo giả lập này dành cho sinh viên trao đổi. Nộp thẻ sinh viên tại quầy phụ trách.\nThông báo giả lập này dành cho sinh viên trao đổi. Nộp thẻ sinh viên tại quầy phụ trách.\nThông báo giả lập này dành cho sinh viên trao đổi. Nộp thẻ sinh viên tại quầy phụ trách.\nThông báo giả lập này dành cho sinh viên trao đổi. Nộp thẻ sinh viên tại quầy phụ trách.\nThông báo giả lập này dành cho sinh viên trao đổi. Nộp thẻ sinh viên tại quầy phụ trách.\nThông báo giả lập này dành cho sinh viên trao đổi. Nộp thẻ sinh viên tại quầy phụ trách.\nThông báo giả lập này dành cho sinh viên trao đổi. Nộp thẻ sinh viên tại quầy phụ trách.\nThông báo giả lập này dành cho sinh viên trao đổi. Nộp thẻ sinh viên tại quầy phụ trách.\nThông báo giả lập này dành cho sinh viên trao đổi. Nộp thẻ sinh viên tại quầy phụ trách.\nThông báo giả lập này dành cho sinh viên trao đổi. Nộp thẻ sinh viên tại quầy phụ trách.\nThông báo giả lập này dành cho sinh viên trao đổi. Nộp thẻ sinh viên tại quầy phụ trách.\nThông báo giả lập này dành cho sinh viên trao đổi. Nộp thẻ sinh viên tại quầy phụ trách.\nThông báo giả lập này dành cho sinh viên trao đổi. Nộp thẻ sinh viên tại quầy phụ trách.\nThông báo giả lập này dành cho sinh viên trao đổi. Nộp thẻ sinh viên tại quầy phụ trách.\nThông báo giả lập này dành cho sinh viên trao đổi. Nộp thẻ sinh viên tại quầy phụ trách.\nThông báo giả lập này dành cho sinh viên trao đổi. Nộp thẻ sinh viên tại quầy phụ trách.\nThông báo giả lập này dành cho sinh viên trao đổi. Nộp thẻ sinh viên tại quầy phụ trách.\nThông báo giả lập này dành cho sinh viên trao đổi. Nộp thẻ sinh viên tại quầy phụ trách.\nThông báo giả lập này dành cho sinh viên trao đổi. Nộp thẻ sinh viên tại quầy phụ trách.\nThông báo giả lập này dành cho sinh viên trao đổi. Nộp thẻ sinh viên tại quầy phụ trách.\nThông báo giả lập này dành cho sinh viên trao đổi. Nộp thẻ sinh viên tại quầy phụ trách.\nThông báo giả lập này dành cho sinh viên trao đổi. Nộp thẻ sinh viên tại quầy phụ trách.\nThông báo giả lập này dành cho sinh viên trao đổi. Nộp thẻ sinh viên tại quầy phụ trách.\nThông báo giả lập này dành cho sinh viên trao đổi. Nộp thẻ sinh viên tại quầy phụ trách.\nThông báo giả lập này dành cho sinh viên trao đổi. Nộp thẻ sinh viên tại quầy phụ trách.\nThông báo giả lập này dành cho sinh viên trao đổi. Nộp thẻ sinh viên tại quầy phụ trách.\nThông báo giả lập này dành cho sinh viên trao đổi. Nộp thẻ sinh viên tại quầy phụ trách.\nThông báo giả lập này dành cho sinh viên trao đổi. Nộp thẻ sinh viên tại quầy phụ trách.\nThông báo giả lập này dành cho sinh viên trao đổi. Nộp thẻ sinh viên tại quầy phụ trách.\nThông báo giả lập này dành cho sinh viên trao đổi. Nộp thẻ sinh viên tại quầy phụ trách.\nThông báo giả lập này dành cho sinh viên trao đổi. Nộp thẻ sinh viên tại quầy phụ trách.\nThông báo giả lập này dành cho sinh viên trao đổi. Nộp thẻ sinh viên tại quầy phụ trách.\nThông báo giả lập này dành cho sinh viên trao đổi. Nộp thẻ sinh viên tại quầy phụ trách.\nThông báo giả lập này dành cho sinh viên trao đổi. Nộp thẻ sinh viên tại quầy phụ trách.\nThông báo giả lập này dành cho sinh viên trao đổi. Nộp thẻ sinh viên tại quầy phụ trách.\nThông báo giả lập này dành cho sinh viên trao đổi. Nộp thẻ sinh viên tại quầy phụ trách.\nThông báo giả lập này dành cho sinh viên trao đổi. Nộp thẻ sinh viên tại quầy phụ trách.\nThông báo giả lập này dành cho sinh viên trao đổi. Nộp thẻ sinh viên tại quầy phụ trách.\nThông báo giả lập này dành cho sinh viên trao đổi. Nộp thẻ sinh viên tại quầy phụ trách.\nThông báo giả lập này dành cho sinh viên trao đổi. Nộp thẻ sinh viên tại quầy phụ trách.\nThông báo giả lập này dành cho sinh viên trao đổi. Nộp thẻ sinh viên tại quầy phụ trách.\nThông báo giả lập này dành cho sinh viên trao đổi. Nộp thẻ sinh viên tại quầy phụ trách.\nThông báo giả lập này dành cho sinh viên trao đổi. Nộp thẻ sinh viên tại quầy phụ trách.\nThông báo giả lập này dành cho sinh viên trao đổi. Nộp thẻ sinh viên tại quầy phụ trách.\nThông báo giả lập này dành cho sinh viên trao đổi. Nộp thẻ sinh viên tại quầy phụ trách.\nThông báo giả lập này dành cho sinh viên trao đổi. Nộp thẻ sinh viên tại quầy phụ trách.\nThông báo giả lập này dành cho sinh viên trao đổi. Nộp thẻ sinh viên tại quầy phụ trách.\nThông báo giả lập này dành cho sinh viên trao đổi. Nộp thẻ sinh viên tại quầy phụ trách.\nThông báo giả lập này dành cho sinh viên trao đổi. Nộp thẻ sinh viên tại quầy phụ trách.\nThông báo giả lập này dành cho sinh viên trao đổi. Nộp thẻ sinh viên tại quầy phụ trách.\nThông báo giả lập này dành cho sinh viên trao đổi. Nộp thẻ sinh viên tại quầy phụ trách.Thông báo giả lập này dành cho sinh viên trao đổi. Nộp thẻ sinh viên tại quầy phụ trách.\nThông báo giả lập này dành cho sinh viên trao đổi. Nộp thẻ sinh viên tại quầy phụ trách.\nThông báo giả lập này dành cho sinh viên trao đổi. Nộp thẻ sinh viên tại quầy phụ trách.\nThông báo giả lập này dành cho sinh viên trao đổi. Nộp thẻ sinh viên tại quầy phụ trách.\nThông báo giả lập này dành cho sinh viên trao đổi. Nộp thẻ sinh viên tại quầy phụ trách.\nThông báo giả lập này dành cho sinh viên trao đổi. Nộp thẻ sinh viên tại quầy phụ trách.\nThông báo giả lập này dành cho sinh viên trao đổi. Nộp thẻ sinh viên tại quầy phụ trách.\nThông báo giả lập này dành cho sinh viên trao đổi. Nộp thẻ sinh viên tại quầy phụ trách.\nThông báo giả lập này dành cho sinh viên trao đổi. Nộp thẻ sinh viên tại quầy phụ trách.\nThông báo giả lập này dành cho sinh viên trao đổi. Nộp thẻ sinh viên tại quầy phụ trách.\nThông báo giả lập này dành cho sinh viên trao đổi. Nộp thẻ sinh viên tại quầy phụ trách.\nThông báo giả lập này dành cho sinh viên trao đổi. Nộp thẻ sinh viên tại quầy phụ trách.\nThông báo giả lập này dành cho sinh viên trao đổi. Nộp thẻ sinh viên tại quầy phụ trách.\nThông báo giả lập này dành cho sinh viên trao đổi. Nộp thẻ sinh viên tại quầy phụ trách.\nThông báo giả lập này dành cho sinh viên trao đổi. Nộp thẻ sinh viên tại quầy phụ trách.\nThông báo giả lập này dành cho sinh viên trao đổi. Nộp thẻ sinh viên tại quầy phụ trách.\nThông báo giả lập này dành cho sinh viên trao đổi. Nộp thẻ sinh viên tại quầy phụ trách.\nThông báo giả lập này dành cho sinh viên trao đổi. Nộp thẻ sinh viên tại quầy phụ trách.\nThông báo giả lập này dành cho sinh viên trao đổi. Nộp thẻ sinh viên tại quầy phụ trách.\nThông báo giả lập này dành cho sinh viên trao đổi. Nộp thẻ sinh viên tại quầy phụ trách.\nThông báo giả lập này dành cho sinh viên trao đổi. Nộp thẻ sinh viên tại quầy phụ trách.\nThông báo giả lập này dành cho sinh viên trao đổi. Nộp thẻ sinh viên tại quầy phụ trách.\nThông báo giả lập này dành cho sinh viên trao đổi. Nộp thẻ sinh viên tại quầy phụ trách.\nThông báo giả lập này dành cho sinh viên trao đổi. Nộp thẻ sinh viên tại quầy phụ trách.\nThông báo giả lập này dành cho sinh viên trao đổi. Nộp thẻ sinh viên tại quầy phụ trách.\nThông báo giả lập này dành cho sinh viên trao đổi. Nộp thẻ sinh viên tại quầy phụ trách.\nThông báo giả lập này dành cho sinh viên trao đổi. Nộp thẻ sinh viên tại quầy phụ trách.\nThông báo giả lập này dành cho sinh viên trao đổi. Nộp thẻ sinh viên tại quầy phụ trách.\nThông báo giả lập này dành cho sinh viên trao đổi. Nộp thẻ sinh viên tại quầy phụ trách.\nThông báo giả lập này dành cho sinh viên trao đổi. Nộp thẻ sinh viên tại quầy phụ trách.\nThông báo giả lập này dành cho sinh viên trao đổi. Nộp thẻ sinh viên tại quầy phụ trách.\nThông báo giả lập này dành cho sinh viên trao đổi. Nộp thẻ sinh viên tại quầy phụ trách.\nThông báo giả lập này dành cho sinh viên trao đổi. Nộp thẻ sinh viên tại quầy phụ trách.\nThông báo giả lập này dành cho sinh viên trao đổi. Nộp thẻ sinh viên tại quầy phụ trách.\nThông báo giả lập này dành cho sinh viên trao đổi. Nộp thẻ sinh viên tại quầy phụ trách.\nThông báo giả lập này dành cho sinh viên trao đổi. Nộp thẻ sinh viên tại quầy phụ trách.\nThông báo giả lập này dành cho sinh viên trao đổi. Nộp thẻ sinh viên tại quầy phụ trách.\nThông báo giả lập này dành cho sinh viên trao đổi. Nộp thẻ sinh viên tại quầy phụ trách.\nThông báo giả lập này dành cho sinh viên trao đổi. Nộp thẻ sinh viên tại quầy phụ trách.\nThông báo giả lập này dành cho sinh viên trao đổi. Nộp thẻ sinh viên tại quầy phụ trách.\nThông báo giả lập này dành cho sinh viên trao đổi. Nộp thẻ sinh viên tại quầy phụ trách.\nThông báo giả lập này dành cho sinh viên trao đổi. Nộp thẻ sinh viên tại quầy phụ trách.\nThông báo giả lập này dành cho sinh viên trao đổi. Nộp thẻ sinh viên tại quầy phụ trách.\nThông báo giả lập này dành cho sinh viên trao đổi. Nộp thẻ sinh viên tại quầy phụ trách.\nThông báo giả lập này dành cho sinh viên trao đổi. Nộp thẻ sinh viên tại quầy phụ trách.\nThông báo giả lập này dành cho sinh viên trao đổi. Nộp thẻ sinh viên tại quầy phụ trách.\nThông báo giả lập này dành cho sinh viên trao đổi. Nộp thẻ sinh viên tại quầy phụ trách.\nThông báo giả lập này dành cho sinh viên trao đổi. Nộp thẻ sinh viên tại quầy phụ trách.\nThông báo giả lập này dành cho sinh viên trao đổi. Nộp thẻ sinh viên tại quầy phụ trách.\nThông báo giả lập này dành cho sinh viên trao đổi. Nộp thẻ sinh viên tại quầy phụ trách.\nThông báo giả lập này dành cho sinh viên trao đổi. Nộp thẻ sinh viên tại quầy phụ trách.\nThông báo giả lập này dành cho sinh viên trao đổi. Nộp thẻ sinh viên tại quầy phụ trách.\nThông báo giả lập này dành cho sinh viên trao đổi. Nộp thẻ sinh viên tại quầy phụ trách.\nThông báo giả lập này dành cho sinh viên trao đổi. Nộp thẻ sinh viên tại quầy phụ trách.\nThông báo giả lập này dành cho sinh viên trao đổi. Nộp thẻ sinh viên tại quầy phụ trách.Thông báo giả lập này dành cho sinh viên trao đổi. Nộp thẻ sinh viên tại quầy phụ trách.\nThông báo giả lập này dành cho sinh viên trao đổi. Nộp thẻ sinh viên tại quầy phụ trách.\nThông báo giả lập này dành cho sinh viên trao đổi. Nộp thẻ sinh viên tại quầy phụ trách.\nThông báo giả lập này dành cho sinh viên trao đổi. Nộp thẻ sinh viên tại quầy phụ trách.\nThông báo giả lập này dành cho sinh viên trao đổi. Nộp thẻ sinh viên tại quầy phụ trách.\nThông báo giả lập này dành cho sinh viên trao đổi. Nộp thẻ sinh viên tại quầy phụ trách.\nThông báo giả lập này dành cho sinh viên trao đổi. Nộp thẻ sinh viên tại quầy phụ trách.\nThông báo giả lập này dành cho sinh viên trao đổi. Nộp thẻ sinh viên tại quầy phụ trách.\nThông báo giả lập này dành cho sinh viên trao đổi. Nộp thẻ sinh viên tại quầy phụ trách.\nThông báo giả lập này dành cho sinh viên trao đổi. Nộp thẻ sinh viên tại quầy phụ trách.\nThông báo giả lập này dành cho sinh viên trao đổi. Nộp thẻ sinh viên tại quầy phụ trách.\nThông báo giả lập này dành cho sinh viên trao đổi. Nộp thẻ sinh viên tại quầy phụ trách.\nThông báo giả lập này dành cho sinh viên trao đổi. Nộp thẻ sinh viên tại quầy phụ trách.\nThông báo giả lập này dành cho sinh viên trao đổi. Nộp thẻ sinh viên tại quầy phụ trách.\nThông báo giả lập này dành cho sinh viên trao đổi. Nộp thẻ sinh viên tại quầy phụ trách.\nThông báo giả lập này dành cho sinh viên trao đổi. Nộp thẻ sinh viên tại quầy phụ trách.\nThông báo giả lập này dành cho sinh viên trao đổi. Nộp thẻ sinh viên tại quầy phụ trách.\nThông báo giả lập này dành cho sinh viên trao đổi. Nộp thẻ sinh viên tại quầy phụ trách.\nThông báo giả lập này dành cho sinh viên trao đổi. Nộp thẻ sinh viên tại quầy phụ trách.\nThông báo giả lập này dành cho sinh viên trao đổi. Nộp thẻ sinh viên tại quầy phụ trách.\nThông báo giả lập này dành cho sinh viên trao đổi. Nộp thẻ sinh viên tại quầy phụ trách.\nThông báo giả lập này dành cho sinh viên trao đổi. Nộp thẻ sinh viên tại quầy phụ trách.\nThông báo giả lập này dành cho sinh viên trao đổi. Nộp thẻ sinh viên tại quầy phụ trách.\nThông báo giả lập này dành cho sinh viên trao đổi. Nộp thẻ sinh viên tại quầy phụ trách.\nThông báo giả lập này dành cho sinh viên trao đổi. Nộp thẻ sinh viên tại quầy phụ trách.\nThông báo giả lập này dành cho sinh viên trao đổi. Nộp thẻ sinh viên tại quầy phụ trách.\nThông báo giả lập này dành cho sinh viên trao đổi. Nộp thẻ sinh viên tại quầy phụ trách.\nThông báo giả lập này dành cho sinh viên trao đổi. Nộp thẻ sinh viên tại quầy phụ trách.\nThông báo giả lập này dành cho sinh viên trao đổi. Nộp thẻ sinh viên tại quầy phụ trách.\nThông báo giả lập này dành cho sinh viên trao đổi. Nộp thẻ sinh viên tại quầy phụ trách.\nThông báo giả lập này dành cho sinh viên trao đổi. Nộp thẻ sinh viên tại quầy phụ trách.\nThông báo giả lập này dành cho sinh viên trao đổi. Nộp thẻ sinh viên tại quầy phụ trách.\nThông báo giả lập này dành cho sinh viên trao đổi. Nộp thẻ sinh viên tại quầy phụ trách.\nThông báo giả lập này dành cho sinh viên trao đổi. Nộp thẻ sinh viên tại quầy phụ trách.\nThông báo giả lập này dành cho sinh viên trao đổi. Nộp thẻ sinh viên tại quầy phụ trách.\nThông báo giả lập này dành cho sinh viên trao đổi. Nộp thẻ sinh viên tại quầy phụ trách.\nThông báo giả lập này dành cho sinh viên trao đổi. Nộp thẻ sinh viên tại quầy phụ trách.\nThông báo giả lập này dành cho sinh viên trao đổi. Nộp thẻ sinh viên tại quầy phụ trách.\nThông báo giả lập này dành cho sinh viên trao đổi. Nộp thẻ sinh viên tại quầy phụ trách.\nThông báo giả lập này dành cho sinh viên trao đổi. Nộp thẻ sinh viên tại quầy phụ trách.\nThông báo giả lập này dành cho sinh viên trao đổi. Nộp thẻ sinh viên tại quầy phụ trách.\nThông báo giả lập này dành cho sinh viên trao đổi. Nộp thẻ sinh viên tại quầy phụ trách.\nThông báo giả lập này dành cho sinh viên trao đổi. Nộp thẻ sinh viên tại quầy phụ trách.\nThông báo giả lập này dành cho sinh viên trao đổi. Nộp thẻ sinh viên tại quầy phụ trách.\nThông báo giả lập này dành cho sinh viên trao đổi. Nộp thẻ sinh viên tại quầy phụ trách.\nThông báo giả lập này dành cho sinh viên trao đổi. Nộp thẻ sinh viên tại quầy phụ trách.\nThông báo giả lập này dành cho sinh viên trao đổi. Nộp thẻ sinh viên tại quầy phụ trách.\nThông báo giả lập này dành cho sinh viên trao đổi. Nộp thẻ sinh viên tại quầy phụ trách.\nThông báo giả lập này dành cho sinh viên trao đổi. Nộp thẻ sinh viên tại quầy phụ trách.\nThông báo giả lập này dành cho sinh viên trao đổi. Nộp thẻ sinh viên tại quầy phụ trách.\nThông báo giả lập này dành cho sinh viên trao đổi. Nộp thẻ sinh viên tại quầy phụ trách.\nThông báo giả lập này dành cho sinh viên trao đổi. Nộp thẻ sinh viên tại quầy phụ trách.\nThông báo giả lập này dành cho sinh viên trao đổi. Nộp thẻ sinh viên tại quầy phụ trách.\nThông báo giả lập này dành cho sinh viên trao đổi. Nộp thẻ sinh viên tại quầy phụ trách.\nThông báo giả lập này dành cho sinh viên trao đổi. Nộp thẻ sinh viên tại quầy phụ trách.\nKính bảo hộ được cất ở phòng 417 của tòa nhà Xanh Ngọc."
+        },
+        "de": {
+          "title": "Labor Sicherheitsleitfaden",
+          "body": "Labor Sicherheitsleitfaden. Diese fiktive Mitteilung gilt für Austauschstudierende. Den Studierendenausweis am zuständigen Schalter vorlegen.\nDiese fiktive Mitteilung gilt für Austauschstudierende. Den Studierendenausweis am zuständigen Schalter vorlegen.\nDiese fiktive Mitteilung gilt für Austauschstudierende. Den Studierendenausweis am zuständigen Schalter vorlegen.\nDiese fiktive Mitteilung gilt für Austauschstudierende. Den Studierendenausweis am zuständigen Schalter vorlegen.\nDiese fiktive Mitteilung gilt für Austauschstudierende. Den Studierendenausweis am zuständigen Schalter vorlegen.\nDiese fiktive Mitteilung gilt für Austauschstudierende. Den Studierendenausweis am zuständigen Schalter vorlegen.\nDiese fiktive Mitteilung gilt für Austauschstudierende. Den Studierendenausweis am zuständigen Schalter vorlegen.\nDiese fiktive Mitteilung gilt für Austauschstudierende. Den Studierendenausweis am zuständigen Schalter vorlegen.\nDiese fiktive Mitteilung gilt für Austauschstudierende. Den Studierendenausweis am zuständigen Schalter vorlegen.\nDiese fiktive Mitteilung gilt für Austauschstudierende. Den Studierendenausweis am zuständigen Schalter vorlegen.\nDiese fiktive Mitteilung gilt für Austauschstudierende. Den Studierendenausweis am zuständigen Schalter vorlegen.\nDiese fiktive Mitteilung gilt für Austauschstudierende. Den Studierendenausweis am zuständigen Schalter vorlegen.\nDiese fiktive Mitteilung gilt für Austauschstudierende. Den Studierendenausweis am zuständigen Schalter vorlegen.\nDiese fiktive Mitteilung gilt für Austauschstudierende. Den Studierendenausweis am zuständigen Schalter vorlegen.\nDiese fiktive Mitteilung gilt für Austauschstudierende. Den Studierendenausweis am zuständigen Schalter vorlegen.\nDiese fiktive Mitteilung gilt für Austauschstudierende. Den Studierendenausweis am zuständigen Schalter vorlegen.\nDiese fiktive Mitteilung gilt für Austauschstudierende. Den Studierendenausweis am zuständigen Schalter vorlegen.\nDiese fiktive Mitteilung gilt für Austauschstudierende. Den Studierendenausweis am zuständigen Schalter vorlegen.\nDiese fiktive Mitteilung gilt für Austauschstudierende. Den Studierendenausweis am zuständigen Schalter vorlegen.\nDiese fiktive Mitteilung gilt für Austauschstudierende. Den Studierendenausweis am zuständigen Schalter vorlegen.\nDiese fiktive Mitteilung gilt für Austauschstudierende. Den Studierendenausweis am zuständigen Schalter vorlegen.\nDiese fiktive Mitteilung gilt für Austauschstudierende. Den Studierendenausweis am zuständigen Schalter vorlegen.\nDiese fiktive Mitteilung gilt für Austauschstudierende. Den Studierendenausweis am zuständigen Schalter vorlegen.\nDiese fiktive Mitteilung gilt für Austauschstudierende. Den Studierendenausweis am zuständigen Schalter vorlegen.\nDiese fiktive Mitteilung gilt für Austauschstudierende. Den Studierendenausweis am zuständigen Schalter vorlegen.\nDiese fiktive Mitteilung gilt für Austauschstudierende. Den Studierendenausweis am zuständigen Schalter vorlegen.\nDiese fiktive Mitteilung gilt für Austauschstudierende. Den Studierendenausweis am zuständigen Schalter vorlegen.\nDiese fiktive Mitteilung gilt für Austauschstudierende. Den Studierendenausweis am zuständigen Schalter vorlegen.\nDiese fiktive Mitteilung gilt für Austauschstudierende. Den Studierendenausweis am zuständigen Schalter vorlegen.\nDiese fiktive Mitteilung gilt für Austauschstudierende. Den Studierendenausweis am zuständigen Schalter vorlegen.\nDiese fiktive Mitteilung gilt für Austauschstudierende. Den Studierendenausweis am zuständigen Schalter vorlegen.\nDiese fiktive Mitteilung gilt für Austauschstudierende. Den Studierendenausweis am zuständigen Schalter vorlegen.\nDiese fiktive Mitteilung gilt für Austauschstudierende. Den Studierendenausweis am zuständigen Schalter vorlegen.\nDiese fiktive Mitteilung gilt für Austauschstudierende. Den Studierendenausweis am zuständigen Schalter vorlegen.\nDiese fiktive Mitteilung gilt für Austauschstudierende. Den Studierendenausweis am zuständigen Schalter vorlegen.\nDiese fiktive Mitteilung gilt für Austauschstudierende. Den Studierendenausweis am zuständigen Schalter vorlegen.\nDiese fiktive Mitteilung gilt für Austauschstudierende. Den Studierendenausweis am zuständigen Schalter vorlegen.\nDiese fiktive Mitteilung gilt für Austauschstudierende. Den Studierendenausweis am zuständigen Schalter vorlegen.\nDiese fiktive Mitteilung gilt für Austauschstudierende. Den Studierendenausweis am zuständigen Schalter vorlegen.\nDiese fiktive Mitteilung gilt für Austauschstudierende. Den Studierendenausweis am zuständigen Schalter vorlegen.\nDiese fiktive Mitteilung gilt für Austauschstudierende. Den Studierendenausweis am zuständigen Schalter vorlegen.\nDiese fiktive Mitteilung gilt für Austauschstudierende. Den Studierendenausweis am zuständigen Schalter vorlegen.\nDiese fiktive Mitteilung gilt für Austauschstudierende. Den Studierendenausweis am zuständigen Schalter vorlegen.\nDiese fiktive Mitteilung gilt für Austauschstudierende. Den Studierendenausweis am zuständigen Schalter vorlegen.\nDiese fiktive Mitteilung gilt für Austauschstudierende. Den Studierendenausweis am zuständigen Schalter vorlegen.\nDiese fiktive Mitteilung gilt für Austauschstudierende. Den Studierendenausweis am zuständigen Schalter vorlegen.\nDiese fiktive Mitteilung gilt für Austauschstudierende. Den Studierendenausweis am zuständigen Schalter vorlegen.\nDiese fiktive Mitteilung gilt für Austauschstudierende. Den Studierendenausweis am zuständigen Schalter vorlegen.\nDiese fiktive Mitteilung gilt für Austauschstudierende. Den Studierendenausweis am zuständigen Schalter vorlegen.\nDiese fiktive Mitteilung gilt für Austauschstudierende. Den Studierendenausweis am zuständigen Schalter vorlegen.\nDiese fiktive Mitteilung gilt für Austauschstudierende. Den Studierendenausweis am zuständigen Schalter vorlegen.\nDiese fiktive Mitteilung gilt für Austauschstudierende. Den Studierendenausweis am zuständigen Schalter vorlegen.\nDiese fiktive Mitteilung gilt für Austauschstudierende. Den Studierendenausweis am zuständigen Schalter vorlegen.\nDiese fiktive Mitteilung gilt für Austauschstudierende. Den Studierendenausweis am zuständigen Schalter vorlegen.\nDiese fiktive Mitteilung gilt für Austauschstudierende. Den Studierendenausweis am zuständigen Schalter vorlegen.\nDiese fiktive Mitteilung gilt für Austauschstudierende. Den Studierendenausweis am zuständigen Schalter vorlegen.Diese fiktive Mitteilung gilt für Austauschstudierende. Den Studierendenausweis am zuständigen Schalter vorlegen.\nDiese fiktive Mitteilung gilt für Austauschstudierende. Den Studierendenausweis am zuständigen Schalter vorlegen.\nDiese fiktive Mitteilung gilt für Austauschstudierende. Den Studierendenausweis am zuständigen Schalter vorlegen.\nDiese fiktive Mitteilung gilt für Austauschstudierende. Den Studierendenausweis am zuständigen Schalter vorlegen.\nDiese fiktive Mitteilung gilt für Austauschstudierende. Den Studierendenausweis am zuständigen Schalter vorlegen.\nDiese fiktive Mitteilung gilt für Austauschstudierende. Den Studierendenausweis am zuständigen Schalter vorlegen.\nDiese fiktive Mitteilung gilt für Austauschstudierende. Den Studierendenausweis am zuständigen Schalter vorlegen.\nDiese fiktive Mitteilung gilt für Austauschstudierende. Den Studierendenausweis am zuständigen Schalter vorlegen.\nDiese fiktive Mitteilung gilt für Austauschstudierende. Den Studierendenausweis am zuständigen Schalter vorlegen.\nDiese fiktive Mitteilung gilt für Austauschstudierende. Den Studierendenausweis am zuständigen Schalter vorlegen.\nDiese fiktive Mitteilung gilt für Austauschstudierende. Den Studierendenausweis am zuständigen Schalter vorlegen.\nDiese fiktive Mitteilung gilt für Austauschstudierende. Den Studierendenausweis am zuständigen Schalter vorlegen.\nDiese fiktive Mitteilung gilt für Austauschstudierende. Den Studierendenausweis am zuständigen Schalter vorlegen.\nDiese fiktive Mitteilung gilt für Austauschstudierende. Den Studierendenausweis am zuständigen Schalter vorlegen.\nDiese fiktive Mitteilung gilt für Austauschstudierende. Den Studierendenausweis am zuständigen Schalter vorlegen.\nDiese fiktive Mitteilung gilt für Austauschstudierende. Den Studierendenausweis am zuständigen Schalter vorlegen.\nDiese fiktive Mitteilung gilt für Austauschstudierende. Den Studierendenausweis am zuständigen Schalter vorlegen.\nDiese fiktive Mitteilung gilt für Austauschstudierende. Den Studierendenausweis am zuständigen Schalter vorlegen.\nDiese fiktive Mitteilung gilt für Austauschstudierende. Den Studierendenausweis am zuständigen Schalter vorlegen.\nDiese fiktive Mitteilung gilt für Austauschstudierende. Den Studierendenausweis am zuständigen Schalter vorlegen.\nDiese fiktive Mitteilung gilt für Austauschstudierende. Den Studierendenausweis am zuständigen Schalter vorlegen.\nDiese fiktive Mitteilung gilt für Austauschstudierende. Den Studierendenausweis am zuständigen Schalter vorlegen.\nDiese fiktive Mitteilung gilt für Austauschstudierende. Den Studierendenausweis am zuständigen Schalter vorlegen.\nDiese fiktive Mitteilung gilt für Austauschstudierende. Den Studierendenausweis am zuständigen Schalter vorlegen.\nDiese fiktive Mitteilung gilt für Austauschstudierende. Den Studierendenausweis am zuständigen Schalter vorlegen.\nDiese fiktive Mitteilung gilt für Austauschstudierende. Den Studierendenausweis am zuständigen Schalter vorlegen.\nDiese fiktive Mitteilung gilt für Austauschstudierende. Den Studierendenausweis am zuständigen Schalter vorlegen.\nDiese fiktive Mitteilung gilt für Austauschstudierende. Den Studierendenausweis am zuständigen Schalter vorlegen.\nDiese fiktive Mitteilung gilt für Austauschstudierende. Den Studierendenausweis am zuständigen Schalter vorlegen.\nDiese fiktive Mitteilung gilt für Austauschstudierende. Den Studierendenausweis am zuständigen Schalter vorlegen.\nDiese fiktive Mitteilung gilt für Austauschstudierende. Den Studierendenausweis am zuständigen Schalter vorlegen.\nDiese fiktive Mitteilung gilt für Austauschstudierende. Den Studierendenausweis am zuständigen Schalter vorlegen.\nDiese fiktive Mitteilung gilt für Austauschstudierende. Den Studierendenausweis am zuständigen Schalter vorlegen.\nDiese fiktive Mitteilung gilt für Austauschstudierende. Den Studierendenausweis am zuständigen Schalter vorlegen.\nDiese fiktive Mitteilung gilt für Austauschstudierende. Den Studierendenausweis am zuständigen Schalter vorlegen.\nDiese fiktive Mitteilung gilt für Austauschstudierende. Den Studierendenausweis am zuständigen Schalter vorlegen.\nDiese fiktive Mitteilung gilt für Austauschstudierende. Den Studierendenausweis am zuständigen Schalter vorlegen.\nDiese fiktive Mitteilung gilt für Austauschstudierende. Den Studierendenausweis am zuständigen Schalter vorlegen.\nDiese fiktive Mitteilung gilt für Austauschstudierende. Den Studierendenausweis am zuständigen Schalter vorlegen.\nDiese fiktive Mitteilung gilt für Austauschstudierende. Den Studierendenausweis am zuständigen Schalter vorlegen.\nDiese fiktive Mitteilung gilt für Austauschstudierende. Den Studierendenausweis am zuständigen Schalter vorlegen.\nDiese fiktive Mitteilung gilt für Austauschstudierende. Den Studierendenausweis am zuständigen Schalter vorlegen.\nDiese fiktive Mitteilung gilt für Austauschstudierende. Den Studierendenausweis am zuständigen Schalter vorlegen.\nDiese fiktive Mitteilung gilt für Austauschstudierende. Den Studierendenausweis am zuständigen Schalter vorlegen.\nDiese fiktive Mitteilung gilt für Austauschstudierende. Den Studierendenausweis am zuständigen Schalter vorlegen.\nDiese fiktive Mitteilung gilt für Austauschstudierende. Den Studierendenausweis am zuständigen Schalter vorlegen.\nDiese fiktive Mitteilung gilt für Austauschstudierende. Den Studierendenausweis am zuständigen Schalter vorlegen.\nDiese fiktive Mitteilung gilt für Austauschstudierende. Den Studierendenausweis am zuständigen Schalter vorlegen.\nDiese fiktive Mitteilung gilt für Austauschstudierende. Den Studierendenausweis am zuständigen Schalter vorlegen.\nDiese fiktive Mitteilung gilt für Austauschstudierende. Den Studierendenausweis am zuständigen Schalter vorlegen.\nDiese fiktive Mitteilung gilt für Austauschstudierende. Den Studierendenausweis am zuständigen Schalter vorlegen.\nDiese fiktive Mitteilung gilt für Austauschstudierende. Den Studierendenausweis am zuständigen Schalter vorlegen.\nDiese fiktive Mitteilung gilt für Austauschstudierende. Den Studierendenausweis am zuständigen Schalter vorlegen.\nDiese fiktive Mitteilung gilt für Austauschstudierende. Den Studierendenausweis am zuständigen Schalter vorlegen.\nDiese fiktive Mitteilung gilt für Austauschstudierende. Den Studierendenausweis am zuständigen Schalter vorlegen.Diese fiktive Mitteilung gilt für Austauschstudierende. Den Studierendenausweis am zuständigen Schalter vorlegen.\nDiese fiktive Mitteilung gilt für Austauschstudierende. Den Studierendenausweis am zuständigen Schalter vorlegen.\nDiese fiktive Mitteilung gilt für Austauschstudierende. Den Studierendenausweis am zuständigen Schalter vorlegen.\nDiese fiktive Mitteilung gilt für Austauschstudierende. Den Studierendenausweis am zuständigen Schalter vorlegen.\nDiese fiktive Mitteilung gilt für Austauschstudierende. Den Studierendenausweis am zuständigen Schalter vorlegen.\nDiese fiktive Mitteilung gilt für Austauschstudierende. Den Studierendenausweis am zuständigen Schalter vorlegen.\nDiese fiktive Mitteilung gilt für Austauschstudierende. Den Studierendenausweis am zuständigen Schalter vorlegen.\nDiese fiktive Mitteilung gilt für Austauschstudierende. Den Studierendenausweis am zuständigen Schalter vorlegen.\nDiese fiktive Mitteilung gilt für Austauschstudierende. Den Studierendenausweis am zuständigen Schalter vorlegen.\nDiese fiktive Mitteilung gilt für Austauschstudierende. Den Studierendenausweis am zuständigen Schalter vorlegen.\nDiese fiktive Mitteilung gilt für Austauschstudierende. Den Studierendenausweis am zuständigen Schalter vorlegen.\nDiese fiktive Mitteilung gilt für Austauschstudierende. Den Studierendenausweis am zuständigen Schalter vorlegen.\nDiese fiktive Mitteilung gilt für Austauschstudierende. Den Studierendenausweis am zuständigen Schalter vorlegen.\nDiese fiktive Mitteilung gilt für Austauschstudierende. Den Studierendenausweis am zuständigen Schalter vorlegen.\nDiese fiktive Mitteilung gilt für Austauschstudierende. Den Studierendenausweis am zuständigen Schalter vorlegen.\nDiese fiktive Mitteilung gilt für Austauschstudierende. Den Studierendenausweis am zuständigen Schalter vorlegen.\nDiese fiktive Mitteilung gilt für Austauschstudierende. Den Studierendenausweis am zuständigen Schalter vorlegen.\nDiese fiktive Mitteilung gilt für Austauschstudierende. Den Studierendenausweis am zuständigen Schalter vorlegen.\nDiese fiktive Mitteilung gilt für Austauschstudierende. Den Studierendenausweis am zuständigen Schalter vorlegen.\nDiese fiktive Mitteilung gilt für Austauschstudierende. Den Studierendenausweis am zuständigen Schalter vorlegen.\nDiese fiktive Mitteilung gilt für Austauschstudierende. Den Studierendenausweis am zuständigen Schalter vorlegen.\nDiese fiktive Mitteilung gilt für Austauschstudierende. Den Studierendenausweis am zuständigen Schalter vorlegen.\nDiese fiktive Mitteilung gilt für Austauschstudierende. Den Studierendenausweis am zuständigen Schalter vorlegen.\nDiese fiktive Mitteilung gilt für Austauschstudierende. Den Studierendenausweis am zuständigen Schalter vorlegen.\nDiese fiktive Mitteilung gilt für Austauschstudierende. Den Studierendenausweis am zuständigen Schalter vorlegen.\nDiese fiktive Mitteilung gilt für Austauschstudierende. Den Studierendenausweis am zuständigen Schalter vorlegen.\nDiese fiktive Mitteilung gilt für Austauschstudierende. Den Studierendenausweis am zuständigen Schalter vorlegen.\nDiese fiktive Mitteilung gilt für Austauschstudierende. Den Studierendenausweis am zuständigen Schalter vorlegen.\nDiese fiktive Mitteilung gilt für Austauschstudierende. Den Studierendenausweis am zuständigen Schalter vorlegen.\nDiese fiktive Mitteilung gilt für Austauschstudierende. Den Studierendenausweis am zuständigen Schalter vorlegen.\nDiese fiktive Mitteilung gilt für Austauschstudierende. Den Studierendenausweis am zuständigen Schalter vorlegen.\nDiese fiktive Mitteilung gilt für Austauschstudierende. Den Studierendenausweis am zuständigen Schalter vorlegen.\nDiese fiktive Mitteilung gilt für Austauschstudierende. Den Studierendenausweis am zuständigen Schalter vorlegen.\nDiese fiktive Mitteilung gilt für Austauschstudierende. Den Studierendenausweis am zuständigen Schalter vorlegen.\nDiese fiktive Mitteilung gilt für Austauschstudierende. Den Studierendenausweis am zuständigen Schalter vorlegen.\nDiese fiktive Mitteilung gilt für Austauschstudierende. Den Studierendenausweis am zuständigen Schalter vorlegen.\nDiese fiktive Mitteilung gilt für Austauschstudierende. Den Studierendenausweis am zuständigen Schalter vorlegen.\nDiese fiktive Mitteilung gilt für Austauschstudierende. Den Studierendenausweis am zuständigen Schalter vorlegen.\nDiese fiktive Mitteilung gilt für Austauschstudierende. Den Studierendenausweis am zuständigen Schalter vorlegen.\nDiese fiktive Mitteilung gilt für Austauschstudierende. Den Studierendenausweis am zuständigen Schalter vorlegen.\nDiese fiktive Mitteilung gilt für Austauschstudierende. Den Studierendenausweis am zuständigen Schalter vorlegen.\nDiese fiktive Mitteilung gilt für Austauschstudierende. Den Studierendenausweis am zuständigen Schalter vorlegen.\nDiese fiktive Mitteilung gilt für Austauschstudierende. Den Studierendenausweis am zuständigen Schalter vorlegen.\nDiese fiktive Mitteilung gilt für Austauschstudierende. Den Studierendenausweis am zuständigen Schalter vorlegen.\nDiese fiktive Mitteilung gilt für Austauschstudierende. Den Studierendenausweis am zuständigen Schalter vorlegen.\nDiese fiktive Mitteilung gilt für Austauschstudierende. Den Studierendenausweis am zuständigen Schalter vorlegen.\nDiese fiktive Mitteilung gilt für Austauschstudierende. Den Studierendenausweis am zuständigen Schalter vorlegen.\nDiese fiktive Mitteilung gilt für Austauschstudierende. Den Studierendenausweis am zuständigen Schalter vorlegen.\nDiese fiktive Mitteilung gilt für Austauschstudierende. Den Studierendenausweis am zuständigen Schalter vorlegen.\nDiese fiktive Mitteilung gilt für Austauschstudierende. Den Studierendenausweis am zuständigen Schalter vorlegen.\nDiese fiktive Mitteilung gilt für Austauschstudierende. Den Studierendenausweis am zuständigen Schalter vorlegen.\nDiese fiktive Mitteilung gilt für Austauschstudierende. Den Studierendenausweis am zuständigen Schalter vorlegen.\nDiese fiktive Mitteilung gilt für Austauschstudierende. Den Studierendenausweis am zuständigen Schalter vorlegen.\nDiese fiktive Mitteilung gilt für Austauschstudierende. Den Studierendenausweis am zuständigen Schalter vorlegen.\nDiese fiktive Mitteilung gilt für Austauschstudierende. Den Studierendenausweis am zuständigen Schalter vorlegen.\nSchutzbrillen liegen im Raum 417 im türkisfarbenen Gebäude."
+        },
+        "fr": {
+          "title": "Guide de sécurité du laboratoire",
+          "body": "Guide de sécurité du laboratoire. Cet avis fictif concerne les étudiants en échange. Présentez votre carte au guichet compétent.\nCet avis fictif concerne les étudiants en échange. Présentez votre carte au guichet compétent.\nCet avis fictif concerne les étudiants en échange. Présentez votre carte au guichet compétent.\nCet avis fictif concerne les étudiants en échange. Présentez votre carte au guichet compétent.\nCet avis fictif concerne les étudiants en échange. Présentez votre carte au guichet compétent.\nCet avis fictif concerne les étudiants en échange. Présentez votre carte au guichet compétent.\nCet avis fictif concerne les étudiants en échange. Présentez votre carte au guichet compétent.\nCet avis fictif concerne les étudiants en échange. Présentez votre carte au guichet compétent.\nCet avis fictif concerne les étudiants en échange. Présentez votre carte au guichet compétent.\nCet avis fictif concerne les étudiants en échange. Présentez votre carte au guichet compétent.\nCet avis fictif concerne les étudiants en échange. Présentez votre carte au guichet compétent.\nCet avis fictif concerne les étudiants en échange. Présentez votre carte au guichet compétent.\nCet avis fictif concerne les étudiants en échange. Présentez votre carte au guichet compétent.\nCet avis fictif concerne les étudiants en échange. Présentez votre carte au guichet compétent.\nCet avis fictif concerne les étudiants en échange. Présentez votre carte au guichet compétent.\nCet avis fictif concerne les étudiants en échange. Présentez votre carte au guichet compétent.\nCet avis fictif concerne les étudiants en échange. Présentez votre carte au guichet compétent.\nCet avis fictif concerne les étudiants en échange. Présentez votre carte au guichet compétent.\nCet avis fictif concerne les étudiants en échange. Présentez votre carte au guichet compétent.\nCet avis fictif concerne les étudiants en échange. Présentez votre carte au guichet compétent.\nCet avis fictif concerne les étudiants en échange. Présentez votre carte au guichet compétent.\nCet avis fictif concerne les étudiants en échange. Présentez votre carte au guichet compétent.\nCet avis fictif concerne les étudiants en échange. Présentez votre carte au guichet compétent.\nCet avis fictif concerne les étudiants en échange. Présentez votre carte au guichet compétent.\nCet avis fictif concerne les étudiants en échange. Présentez votre carte au guichet compétent.\nCet avis fictif concerne les étudiants en échange. Présentez votre carte au guichet compétent.\nCet avis fictif concerne les étudiants en échange. Présentez votre carte au guichet compétent.\nCet avis fictif concerne les étudiants en échange. Présentez votre carte au guichet compétent.\nCet avis fictif concerne les étudiants en échange. Présentez votre carte au guichet compétent.\nCet avis fictif concerne les étudiants en échange. Présentez votre carte au guichet compétent.\nCet avis fictif concerne les étudiants en échange. Présentez votre carte au guichet compétent.\nCet avis fictif concerne les étudiants en échange. Présentez votre carte au guichet compétent.\nCet avis fictif concerne les étudiants en échange. Présentez votre carte au guichet compétent.\nCet avis fictif concerne les étudiants en échange. Présentez votre carte au guichet compétent.\nCet avis fictif concerne les étudiants en échange. Présentez votre carte au guichet compétent.\nCet avis fictif concerne les étudiants en échange. Présentez votre carte au guichet compétent.\nCet avis fictif concerne les étudiants en échange. Présentez votre carte au guichet compétent.\nCet avis fictif concerne les étudiants en échange. Présentez votre carte au guichet compétent.\nCet avis fictif concerne les étudiants en échange. Présentez votre carte au guichet compétent.\nCet avis fictif concerne les étudiants en échange. Présentez votre carte au guichet compétent.\nCet avis fictif concerne les étudiants en échange. Présentez votre carte au guichet compétent.\nCet avis fictif concerne les étudiants en échange. Présentez votre carte au guichet compétent.\nCet avis fictif concerne les étudiants en échange. Présentez votre carte au guichet compétent.\nCet avis fictif concerne les étudiants en échange. Présentez votre carte au guichet compétent.\nCet avis fictif concerne les étudiants en échange. Présentez votre carte au guichet compétent.\nCet avis fictif concerne les étudiants en échange. Présentez votre carte au guichet compétent.\nCet avis fictif concerne les étudiants en échange. Présentez votre carte au guichet compétent.\nCet avis fictif concerne les étudiants en échange. Présentez votre carte au guichet compétent.\nCet avis fictif concerne les étudiants en échange. Présentez votre carte au guichet compétent.\nCet avis fictif concerne les étudiants en échange. Présentez votre carte au guichet compétent.\nCet avis fictif concerne les étudiants en échange. Présentez votre carte au guichet compétent.\nCet avis fictif concerne les étudiants en échange. Présentez votre carte au guichet compétent.\nCet avis fictif concerne les étudiants en échange. Présentez votre carte au guichet compétent.\nCet avis fictif concerne les étudiants en échange. Présentez votre carte au guichet compétent.\nCet avis fictif concerne les étudiants en échange. Présentez votre carte au guichet compétent.\nCet avis fictif concerne les étudiants en échange. Présentez votre carte au guichet compétent.Cet avis fictif concerne les étudiants en échange. Présentez votre carte au guichet compétent.\nCet avis fictif concerne les étudiants en échange. Présentez votre carte au guichet compétent.\nCet avis fictif concerne les étudiants en échange. Présentez votre carte au guichet compétent.\nCet avis fictif concerne les étudiants en échange. Présentez votre carte au guichet compétent.\nCet avis fictif concerne les étudiants en échange. Présentez votre carte au guichet compétent.\nCet avis fictif concerne les étudiants en échange. Présentez votre carte au guichet compétent.\nCet avis fictif concerne les étudiants en échange. Présentez votre carte au guichet compétent.\nCet avis fictif concerne les étudiants en échange. Présentez votre carte au guichet compétent.\nCet avis fictif concerne les étudiants en échange. Présentez votre carte au guichet compétent.\nCet avis fictif concerne les étudiants en échange. Présentez votre carte au guichet compétent.\nCet avis fictif concerne les étudiants en échange. Présentez votre carte au guichet compétent.\nCet avis fictif concerne les étudiants en échange. Présentez votre carte au guichet compétent.\nCet avis fictif concerne les étudiants en échange. Présentez votre carte au guichet compétent.\nCet avis fictif concerne les étudiants en échange. Présentez votre carte au guichet compétent.\nCet avis fictif concerne les étudiants en échange. Présentez votre carte au guichet compétent.\nCet avis fictif concerne les étudiants en échange. Présentez votre carte au guichet compétent.\nCet avis fictif concerne les étudiants en échange. Présentez votre carte au guichet compétent.\nCet avis fictif concerne les étudiants en échange. Présentez votre carte au guichet compétent.\nCet avis fictif concerne les étudiants en échange. Présentez votre carte au guichet compétent.\nCet avis fictif concerne les étudiants en échange. Présentez votre carte au guichet compétent.\nCet avis fictif concerne les étudiants en échange. Présentez votre carte au guichet compétent.\nCet avis fictif concerne les étudiants en échange. Présentez votre carte au guichet compétent.\nCet avis fictif concerne les étudiants en échange. Présentez votre carte au guichet compétent.\nCet avis fictif concerne les étudiants en échange. Présentez votre carte au guichet compétent.\nCet avis fictif concerne les étudiants en échange. Présentez votre carte au guichet compétent.\nCet avis fictif concerne les étudiants en échange. Présentez votre carte au guichet compétent.\nCet avis fictif concerne les étudiants en échange. Présentez votre carte au guichet compétent.\nCet avis fictif concerne les étudiants en échange. Présentez votre carte au guichet compétent.\nCet avis fictif concerne les étudiants en échange. Présentez votre carte au guichet compétent.\nCet avis fictif concerne les étudiants en échange. Présentez votre carte au guichet compétent.\nCet avis fictif concerne les étudiants en échange. Présentez votre carte au guichet compétent.\nCet avis fictif concerne les étudiants en échange. Présentez votre carte au guichet compétent.\nCet avis fictif concerne les étudiants en échange. Présentez votre carte au guichet compétent.\nCet avis fictif concerne les étudiants en échange. Présentez votre carte au guichet compétent.\nCet avis fictif concerne les étudiants en échange. Présentez votre carte au guichet compétent.\nCet avis fictif concerne les étudiants en échange. Présentez votre carte au guichet compétent.\nCet avis fictif concerne les étudiants en échange. Présentez votre carte au guichet compétent.\nCet avis fictif concerne les étudiants en échange. Présentez votre carte au guichet compétent.\nCet avis fictif concerne les étudiants en échange. Présentez votre carte au guichet compétent.\nCet avis fictif concerne les étudiants en échange. Présentez votre carte au guichet compétent.\nCet avis fictif concerne les étudiants en échange. Présentez votre carte au guichet compétent.\nCet avis fictif concerne les étudiants en échange. Présentez votre carte au guichet compétent.\nCet avis fictif concerne les étudiants en échange. Présentez votre carte au guichet compétent.\nCet avis fictif concerne les étudiants en échange. Présentez votre carte au guichet compétent.\nCet avis fictif concerne les étudiants en échange. Présentez votre carte au guichet compétent.\nCet avis fictif concerne les étudiants en échange. Présentez votre carte au guichet compétent.\nCet avis fictif concerne les étudiants en échange. Présentez votre carte au guichet compétent.\nCet avis fictif concerne les étudiants en échange. Présentez votre carte au guichet compétent.\nCet avis fictif concerne les étudiants en échange. Présentez votre carte au guichet compétent.\nCet avis fictif concerne les étudiants en échange. Présentez votre carte au guichet compétent.\nCet avis fictif concerne les étudiants en échange. Présentez votre carte au guichet compétent.\nCet avis fictif concerne les étudiants en échange. Présentez votre carte au guichet compétent.\nCet avis fictif concerne les étudiants en échange. Présentez votre carte au guichet compétent.\nCet avis fictif concerne les étudiants en échange. Présentez votre carte au guichet compétent.\nCet avis fictif concerne les étudiants en échange. Présentez votre carte au guichet compétent.Cet avis fictif concerne les étudiants en échange. Présentez votre carte au guichet compétent.\nCet avis fictif concerne les étudiants en échange. Présentez votre carte au guichet compétent.\nCet avis fictif concerne les étudiants en échange. Présentez votre carte au guichet compétent.\nCet avis fictif concerne les étudiants en échange. Présentez votre carte au guichet compétent.\nCet avis fictif concerne les étudiants en échange. Présentez votre carte au guichet compétent.\nCet avis fictif concerne les étudiants en échange. Présentez votre carte au guichet compétent.\nCet avis fictif concerne les étudiants en échange. Présentez votre carte au guichet compétent.\nCet avis fictif concerne les étudiants en échange. Présentez votre carte au guichet compétent.\nCet avis fictif concerne les étudiants en échange. Présentez votre carte au guichet compétent.\nCet avis fictif concerne les étudiants en échange. Présentez votre carte au guichet compétent.\nCet avis fictif concerne les étudiants en échange. Présentez votre carte au guichet compétent.\nCet avis fictif concerne les étudiants en échange. Présentez votre carte au guichet compétent.\nCet avis fictif concerne les étudiants en échange. Présentez votre carte au guichet compétent.\nCet avis fictif concerne les étudiants en échange. Présentez votre carte au guichet compétent.\nCet avis fictif concerne les étudiants en échange. Présentez votre carte au guichet compétent.\nCet avis fictif concerne les étudiants en échange. Présentez votre carte au guichet compétent.\nCet avis fictif concerne les étudiants en échange. Présentez votre carte au guichet compétent.\nCet avis fictif concerne les étudiants en échange. Présentez votre carte au guichet compétent.\nCet avis fictif concerne les étudiants en échange. Présentez votre carte au guichet compétent.\nCet avis fictif concerne les étudiants en échange. Présentez votre carte au guichet compétent.\nCet avis fictif concerne les étudiants en échange. Présentez votre carte au guichet compétent.\nCet avis fictif concerne les étudiants en échange. Présentez votre carte au guichet compétent.\nCet avis fictif concerne les étudiants en échange. Présentez votre carte au guichet compétent.\nCet avis fictif concerne les étudiants en échange. Présentez votre carte au guichet compétent.\nCet avis fictif concerne les étudiants en échange. Présentez votre carte au guichet compétent.\nCet avis fictif concerne les étudiants en échange. Présentez votre carte au guichet compétent.\nCet avis fictif concerne les étudiants en échange. Présentez votre carte au guichet compétent.\nCet avis fictif concerne les étudiants en échange. Présentez votre carte au guichet compétent.\nCet avis fictif concerne les étudiants en échange. Présentez votre carte au guichet compétent.\nCet avis fictif concerne les étudiants en échange. Présentez votre carte au guichet compétent.\nCet avis fictif concerne les étudiants en échange. Présentez votre carte au guichet compétent.\nCet avis fictif concerne les étudiants en échange. Présentez votre carte au guichet compétent.\nCet avis fictif concerne les étudiants en échange. Présentez votre carte au guichet compétent.\nCet avis fictif concerne les étudiants en échange. Présentez votre carte au guichet compétent.\nCet avis fictif concerne les étudiants en échange. Présentez votre carte au guichet compétent.\nCet avis fictif concerne les étudiants en échange. Présentez votre carte au guichet compétent.\nCet avis fictif concerne les étudiants en échange. Présentez votre carte au guichet compétent.\nCet avis fictif concerne les étudiants en échange. Présentez votre carte au guichet compétent.\nCet avis fictif concerne les étudiants en échange. Présentez votre carte au guichet compétent.\nCet avis fictif concerne les étudiants en échange. Présentez votre carte au guichet compétent.\nCet avis fictif concerne les étudiants en échange. Présentez votre carte au guichet compétent.\nCet avis fictif concerne les étudiants en échange. Présentez votre carte au guichet compétent.\nCet avis fictif concerne les étudiants en échange. Présentez votre carte au guichet compétent.\nCet avis fictif concerne les étudiants en échange. Présentez votre carte au guichet compétent.\nCet avis fictif concerne les étudiants en échange. Présentez votre carte au guichet compétent.\nCet avis fictif concerne les étudiants en échange. Présentez votre carte au guichet compétent.\nCet avis fictif concerne les étudiants en échange. Présentez votre carte au guichet compétent.\nCet avis fictif concerne les étudiants en échange. Présentez votre carte au guichet compétent.\nCet avis fictif concerne les étudiants en échange. Présentez votre carte au guichet compétent.\nCet avis fictif concerne les étudiants en échange. Présentez votre carte au guichet compétent.\nCet avis fictif concerne les étudiants en échange. Présentez votre carte au guichet compétent.\nCet avis fictif concerne les étudiants en échange. Présentez votre carte au guichet compétent.\nCet avis fictif concerne les étudiants en échange. Présentez votre carte au guichet compétent.\nCet avis fictif concerne les étudiants en échange. Présentez votre carte au guichet compétent.\nCet avis fictif concerne les étudiants en échange. Présentez votre carte au guichet compétent.\nLes lunettes de protection sont rangées dans la salle 417 du bâtiment turquoise."
+        }
+      }
+    }
+  ],
+  "cases": [
+    {
+      "id": "ko-01",
+      "lang": "ko",
+      "kind": "korean_particle",
+      "history": [],
+      "question": "기숙사에 입사 신청하려면?",
+      "relevant": [
+        1
+      ]
+    },
+    {
+      "id": "ko-02",
+      "lang": "ko",
+      "kind": "korean_particle",
+      "history": [],
+      "question": "체류기간을 연장하려면?",
+      "relevant": [
+        3
+      ]
+    },
+    {
+      "id": "ko-03",
+      "lang": "ko",
+      "kind": "korean_particle",
+      "history": [],
+      "question": "건강보험에 가입하려면?",
+      "relevant": [
+        5
+      ]
+    },
+    {
+      "id": "ko-04",
+      "lang": "ko",
+      "kind": "korean_particle",
+      "history": [],
+      "question": "수강을 철회하려면?",
+      "relevant": [
+        8
+      ]
+    },
+    {
+      "id": "ko-05",
+      "lang": "ko",
+      "kind": "paraphrase",
+      "history": [],
+      "question": "생활관을 떠날 때 돈을 돌려받나요?",
+      "relevant": [
+        2
+      ]
+    },
+    {
+      "id": "ko-06",
+      "lang": "ko",
+      "kind": "paraphrase",
+      "history": [],
+      "question": "이사한 뒤 새 거주지를 어디에 알려야 하나요?",
+      "relevant": [
+        4
+      ]
+    },
+    {
+      "id": "ko-07",
+      "lang": "ko",
+      "kind": "follow_up",
+      "history": [
+        "신입생 오리엔테이션"
+      ],
+      "question": "신청은 어디서 해요?",
+      "relevant": [
+        11
+      ]
+    },
+    {
+      "id": "ko-08",
+      "lang": "ko",
+      "kind": "follow_up",
+      "history": [
+        "시간제 취업 허가"
+      ],
+      "question": "허용 시간은 얼마인가요?",
+      "relevant": [
+        22
+      ]
+    },
+    {
+      "id": "ko-09",
+      "lang": "ko",
+      "kind": "long_tail",
+      "history": [],
+      "question": "보호안경 보관함 위치는?",
+      "relevant": [
+        28
+      ]
+    },
+    {
+      "id": "ko-10",
+      "lang": "ko",
+      "kind": "overlapping_topic",
+      "history": [],
+      "question": "공항에 도착하면 예약한 차량을 어디서 타나요?",
+      "relevant": [
+        12
+      ]
+    },
+    {
+      "id": "en-01",
+      "lang": "en",
+      "kind": "literal",
+      "history": [],
+      "question": "How do I submit a dormitory application?",
+      "relevant": [
+        1
+      ]
+    },
+    {
+      "id": "en-02",
+      "lang": "en",
+      "kind": "literal",
+      "history": [],
+      "question": "How do I request a visa extension?",
+      "relevant": [
+        3
+      ]
+    },
+    {
+      "id": "en-03",
+      "lang": "en",
+      "kind": "literal",
+      "history": [],
+      "question": "What is needed for health insurance enrollment?",
+      "relevant": [
+        5
+      ]
+    },
+    {
+      "id": "en-04",
+      "lang": "en",
+      "kind": "literal",
+      "history": [],
+      "question": "What is the course withdrawal procedure?",
+      "relevant": [
+        8
+      ]
+    },
+    {
+      "id": "en-05",
+      "lang": "en",
+      "kind": "paraphrase",
+      "history": [],
+      "question": "Can I get my accommodation payment back if I move out?",
+      "relevant": [
+        2
+      ]
+    },
+    {
+      "id": "en-06",
+      "lang": "en",
+      "kind": "paraphrase",
+      "history": [],
+      "question": "I moved house; how do I update my residential details?",
+      "relevant": [
+        4
+      ]
+    },
+    {
+      "id": "en-07",
+      "lang": "en",
+      "kind": "follow_up",
+      "history": [
+        "New student orientation"
+      ],
+      "question": "Where do I sign up?",
+      "relevant": [
+        11
+      ]
+    },
+    {
+      "id": "en-08",
+      "lang": "en",
+      "kind": "follow_up",
+      "history": [
+        "Part-time work permit"
+      ],
+      "question": "How many hours may I do?",
+      "relevant": [
+        22
+      ]
+    },
+    {
+      "id": "en-09",
+      "lang": "en",
+      "kind": "long_tail",
+      "history": [],
+      "question": "Where are the protective goggles stored?",
+      "relevant": [
+        28
+      ]
+    },
+    {
+      "id": "en-10",
+      "lang": "en",
+      "kind": "overlapping_topic",
+      "history": [],
+      "question": "Where do I board the reserved airport pickup?",
+      "relevant": [
+        12
+      ]
+    },
+    {
+      "id": "ja-01",
+      "lang": "ja",
+      "kind": "literal",
+      "history": [],
+      "question": "寮の入居申請には何が必要ですか？",
+      "relevant": [
+        1
+      ]
+    },
+    {
+      "id": "ja-02",
+      "lang": "ja",
+      "kind": "literal",
+      "history": [],
+      "question": "在留期間の延長はどうしますか？",
+      "relevant": [
+        3
+      ]
+    },
+    {
+      "id": "ja-03",
+      "lang": "ja",
+      "kind": "literal",
+      "history": [],
+      "question": "健康保険の加入方法は？",
+      "relevant": [
+        5
+      ]
+    },
+    {
+      "id": "ja-04",
+      "lang": "ja",
+      "kind": "literal",
+      "history": [],
+      "question": "履修取消の手続きは？",
+      "relevant": [
+        8
+      ]
+    },
+    {
+      "id": "ja-05",
+      "lang": "ja",
+      "kind": "paraphrase",
+      "history": [],
+      "question": "住まいを出ると支払ったお金は戻りますか？",
+      "relevant": [
+        2
+      ]
+    },
+    {
+      "id": "ja-06",
+      "lang": "ja",
+      "kind": "paraphrase",
+      "history": [],
+      "question": "引っ越したので届け先を直したいです",
+      "relevant": [
+        4
+      ]
+    },
+    {
+      "id": "ja-07",
+      "lang": "ja",
+      "kind": "follow_up",
+      "history": [
+        "新入生オリエンテーション"
+      ],
+      "question": "どこで申し込みますか？",
+      "relevant": [
+        11
+      ]
+    },
+    {
+      "id": "ja-08",
+      "lang": "ja",
+      "kind": "follow_up",
+      "history": [
+        "資格外活動の許可"
+      ],
+      "question": "何時間まで働けますか？",
+      "relevant": [
+        22
+      ]
+    },
+    {
+      "id": "ja-09",
+      "lang": "ja",
+      "kind": "long_tail",
+      "history": [],
+      "question": "保護ゴーグルはどこにありますか？",
+      "relevant": [
+        28
+      ]
+    },
+    {
+      "id": "ja-10",
+      "lang": "ja",
+      "kind": "overlapping_topic",
+      "history": [],
+      "question": "予約した空港送迎にはどこで乗りますか？",
+      "relevant": [
+        12
+      ]
+    },
+    {
+      "id": "zh-01",
+      "lang": "zh",
+      "kind": "literal",
+      "history": [],
+      "question": "宿舍入住申请需要什么？",
+      "relevant": [
+        1
+      ]
+    },
+    {
+      "id": "zh-02",
+      "lang": "zh",
+      "kind": "literal",
+      "history": [],
+      "question": "签证延期怎么办理？",
+      "relevant": [
+        3
+      ]
+    },
+    {
+      "id": "zh-03",
+      "lang": "zh",
+      "kind": "literal",
+      "history": [],
+      "question": "医疗保险加入需要什么？",
+      "relevant": [
+        5
+      ]
+    },
+    {
+      "id": "zh-04",
+      "lang": "zh",
+      "kind": "literal",
+      "history": [],
+      "question": "退课流程是什么？",
+      "relevant": [
+        8
+      ]
+    },
+    {
+      "id": "zh-05",
+      "lang": "zh",
+      "kind": "paraphrase",
+      "history": [],
+      "question": "搬出住处后交的钱能退吗？",
+      "relevant": [
+        2
+      ]
+    },
+    {
+      "id": "zh-06",
+      "lang": "zh",
+      "kind": "paraphrase",
+      "history": [],
+      "question": "搬家以后怎样更新居住地点？",
+      "relevant": [
+        4
+      ]
+    },
+    {
+      "id": "zh-07",
+      "lang": "zh",
+      "kind": "follow_up",
+      "history": [
+        "新生迎新说明会"
+      ],
+      "question": "在哪里报名？",
+      "relevant": [
+        11
+      ]
+    },
+    {
+      "id": "zh-08",
+      "lang": "zh",
+      "kind": "follow_up",
+      "history": [
+        "兼职工作许可"
+      ],
+      "question": "最多可以工作几小时？",
+      "relevant": [
+        22
+      ]
+    },
+    {
+      "id": "zh-09",
+      "lang": "zh",
+      "kind": "long_tail",
+      "history": [],
+      "question": "防护护目镜放在哪里？",
+      "relevant": [
+        28
+      ]
+    },
+    {
+      "id": "zh-10",
+      "lang": "zh",
+      "kind": "overlapping_topic",
+      "history": [],
+      "question": "预约的机场接送在哪里上车？",
+      "relevant": [
+        12
+      ]
+    },
+    {
+      "id": "vi-01",
+      "lang": "vi",
+      "kind": "literal",
+      "history": [],
+      "question": "Đăng ký ký túc xá cần gì?",
+      "relevant": [
+        1
+      ]
+    },
+    {
+      "id": "vi-02",
+      "lang": "vi",
+      "kind": "literal",
+      "history": [],
+      "question": "Gia hạn thị thực như thế nào?",
+      "relevant": [
+        3
+      ]
+    },
+    {
+      "id": "vi-03",
+      "lang": "vi",
+      "kind": "literal",
+      "history": [],
+      "question": "Đăng ký bảo hiểm y tế cần gì?",
+      "relevant": [
+        5
+      ]
+    },
+    {
+      "id": "vi-04",
+      "lang": "vi",
+      "kind": "literal",
+      "history": [],
+      "question": "Thủ tục rút học phần là gì?",
+      "relevant": [
+        8
+      ]
+    },
+    {
+      "id": "vi-05",
+      "lang": "vi",
+      "kind": "paraphrase",
+      "history": [],
+      "question": "Nếu rời chỗ ở thì lấy lại tiền đã trả được không?",
+      "relevant": [
+        2
+      ]
+    },
+    {
+      "id": "vi-06",
+      "lang": "vi",
+      "kind": "paraphrase",
+      "history": [],
+      "question": "Tôi chuyển nhà rồi, sửa nơi cư trú thế nào?",
+      "relevant": [
+        4
+      ]
+    },
+    {
+      "id": "vi-07",
+      "lang": "vi",
+      "kind": "follow_up",
+      "history": [
+        "Định hướng sinh viên mới"
+      ],
+      "question": "Tôi ghi danh ở đâu?",
+      "relevant": [
+        11
+      ]
+    },
+    {
+      "id": "vi-08",
+      "lang": "vi",
+      "kind": "follow_up",
+      "history": [
+        "Giấy phép làm việc bán thời gian"
+      ],
+      "question": "Tôi được làm bao nhiêu giờ?",
+      "relevant": [
+        22
+      ]
+    },
+    {
+      "id": "vi-09",
+      "lang": "vi",
+      "kind": "long_tail",
+      "history": [],
+      "question": "Kính bảo hộ được cất ở đâu?",
+      "relevant": [
+        28
+      ]
+    },
+    {
+      "id": "vi-10",
+      "lang": "vi",
+      "kind": "overlapping_topic",
+      "history": [],
+      "question": "Lên xe đón sân bay đã đặt ở đâu?",
+      "relevant": [
+        12
+      ]
+    },
+    {
+      "id": "de-01",
+      "lang": "de",
+      "kind": "literal",
+      "history": [],
+      "question": "Wie läuft die Wohnheim Bewerbung?",
+      "relevant": [
+        1
+      ]
+    },
+    {
+      "id": "de-02",
+      "lang": "de",
+      "kind": "literal",
+      "history": [],
+      "question": "Wie beantrage ich die Visum Verlängerung?",
+      "relevant": [
+        3
+      ]
+    },
+    {
+      "id": "de-03",
+      "lang": "de",
+      "kind": "literal",
+      "history": [],
+      "question": "Was brauche ich zur Krankenversicherung Anmeldung?",
+      "relevant": [
+        5
+      ]
+    },
+    {
+      "id": "de-04",
+      "lang": "de",
+      "kind": "literal",
+      "history": [],
+      "question": "Wie ist das Kursabmeldung Verfahren?",
+      "relevant": [
+        8
+      ]
+    },
+    {
+      "id": "de-05",
+      "lang": "de",
+      "kind": "paraphrase",
+      "history": [],
+      "question": "Bekomme ich mein Geld für die Unterkunft nach dem Auszug zurück?",
+      "relevant": [
+        2
+      ]
+    },
+    {
+      "id": "de-06",
+      "lang": "de",
+      "kind": "paraphrase",
+      "history": [],
+      "question": "Ich bin umgezogen, wie ändere ich meinen Wohnsitz?",
+      "relevant": [
+        4
+      ]
+    },
+    {
+      "id": "de-07",
+      "lang": "de",
+      "kind": "follow_up",
+      "history": [
+        "Orientierung für neue Studierende"
+      ],
+      "question": "Wo melde ich mich an?",
+      "relevant": [
+        11
+      ]
+    },
+    {
+      "id": "de-08",
+      "lang": "de",
+      "kind": "follow_up",
+      "history": [
+        "Genehmigung für Teilzeitarbeit"
+      ],
+      "question": "Wie viele Stunden darf ich arbeiten?",
+      "relevant": [
+        22
+      ]
+    },
+    {
+      "id": "de-09",
+      "lang": "de",
+      "kind": "long_tail",
+      "history": [],
+      "question": "Wo liegen die Schutzbrillen?",
+      "relevant": [
+        28
+      ]
+    },
+    {
+      "id": "de-10",
+      "lang": "de",
+      "kind": "overlapping_topic",
+      "history": [],
+      "question": "Wo steige ich in die reservierte Flughafenabholung ein?",
+      "relevant": [
+        12
+      ]
+    },
+    {
+      "id": "fr-01",
+      "lang": "fr",
+      "kind": "literal",
+      "history": [],
+      "question": "Comment déposer une candidature en résidence ?",
+      "relevant": [
+        1
+      ]
+    },
+    {
+      "id": "fr-02",
+      "lang": "fr",
+      "kind": "literal",
+      "history": [],
+      "question": "Comment demander la prolongation du visa ?",
+      "relevant": [
+        3
+      ]
+    },
+    {
+      "id": "fr-03",
+      "lang": "fr",
+      "kind": "literal",
+      "history": [],
+      "question": "Comment faire l'inscription à l'assurance maladie ?",
+      "relevant": [
+        5
+      ]
+    },
+    {
+      "id": "fr-04",
+      "lang": "fr",
+      "kind": "literal",
+      "history": [],
+      "question": "Quelle est la procédure d'abandon de cours ?",
+      "relevant": [
+        8
+      ]
+    },
+    {
+      "id": "fr-05",
+      "lang": "fr",
+      "kind": "paraphrase",
+      "history": [],
+      "question": "Puis-je récupérer les frais de logement après mon départ ?",
+      "relevant": [
+        2
+      ]
+    },
+    {
+      "id": "fr-06",
+      "lang": "fr",
+      "kind": "paraphrase",
+      "history": [],
+      "question": "J'ai déménagé, comment actualiser mon domicile ?",
+      "relevant": [
+        4
+      ]
+    },
+    {
+      "id": "fr-07",
+      "lang": "fr",
+      "kind": "follow_up",
+      "history": [
+        "Orientation des nouveaux étudiants"
+      ],
+      "question": "Où dois-je m'inscrire ?",
+      "relevant": [
+        11
+      ]
+    },
+    {
+      "id": "fr-08",
+      "lang": "fr",
+      "kind": "follow_up",
+      "history": [
+        "Autorisation de travail à temps partiel"
+      ],
+      "question": "Combien d'heures puis-je travailler ?",
+      "relevant": [
+        22
+      ]
+    },
+    {
+      "id": "fr-09",
+      "lang": "fr",
+      "kind": "long_tail",
+      "history": [],
+      "question": "Où sont rangées les lunettes de protection ?",
+      "relevant": [
+        28
+      ]
+    },
+    {
+      "id": "fr-10",
+      "lang": "fr",
+      "kind": "overlapping_topic",
+      "history": [],
+      "question": "Où prendre la navette aéroport réservée ?",
+      "relevant": [
+        12
+      ]
+    }
+  ]
+}

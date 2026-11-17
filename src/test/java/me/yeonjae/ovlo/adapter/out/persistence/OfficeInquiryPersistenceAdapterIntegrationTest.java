@@ -188,4 +188,28 @@ class OfficeInquiryPersistenceAdapterIntegrationTest {
         assertThat(adapter.findByPreviousInquiryId(first.getId())).isEmpty();
     }
 
+    @Test void rejectionReasonsRoundTripAndLegacyNullRemainsReadableInStaffLogsAndCsv() {
+        var reason = me.yeonjae.ovlo.domain.office.model.InquiryRejectionReason.VERIFY_DENIED;
+        Inquiry rejected = adapter.save(Inquiry.noGrounds(officeId, memberId, NoticeLang.KO, "합성 질문",
+                List.of(7L), NOW, 5, "test", reason));
+        assertThat(adapter.findById(rejected.getId()).orElseThrow().getRejectionReason()).isEqualTo(reason);
+        rejected.markEscalated();
+        adapter.save(rejected);
+        assertThat(adapter.findById(rejected.getId()).orElseThrow().getRejectionReason()).isEqualTo(reason);
+        Long legacyId = jdbc.queryForObject("""
+                INSERT INTO office_inquiry (office_id, member_id, lang, question, outcome, asked_at, latency_ms)
+                VALUES (?, ?, 'ko', 'legacy', 'NO_GROUNDS', ?, 0) RETURNING id
+                """, Long.class, officeId, memberId, java.sql.Timestamp.from(NOW));
+        assertThat(adapter.findById(legacyId).orElseThrow().getRejectionReason()).isNull();
+        var query = new me.yeonjae.ovlo.application.service.query.InquiryQueryService(adapter);
+        var rows = query.findForStaff(officeId, null, null, null, PageRequest.of(0, 10)).getContent();
+        assertThat(rows).filteredOn(row -> row.id().equals(rejected.getId())).singleElement()
+                .satisfies(row -> assertThat(row.rejectionReason()).isEqualTo(reason));
+        assertThat(rows).filteredOn(row -> row.id().equals(legacyId)).singleElement()
+                .satisfies(row -> assertThat(row.rejectionReason()).isNull());
+        var csv = new me.yeonjae.ovlo.application.service.OfficeExportService(query, null, null)
+                .inquiriesCsv(officeId, null, null);
+        assertThat(csv).contains("rejectionReason").contains("VERIFY_DENIED").contains("legacy");
+    }
+
 }
