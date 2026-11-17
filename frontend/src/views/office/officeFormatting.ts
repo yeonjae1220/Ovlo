@@ -1,3 +1,5 @@
+import type { NoticeLang } from "../../api/office"
+
 export function formatDate(value: string | null | undefined): string {
   if (!value) return ''
   const date = new Date(value)
@@ -6,9 +8,9 @@ export function formatDate(value: string | null | undefined): string {
 }
 
 /** UI 언어(9개) → 공지 언어 코드(7개). 없는 언어는 영어로. */
-export function noticeLangOf(uiLanguage: string): string {
+export function noticeLangOf(uiLanguage: string): Lowercase<NoticeLang> {
   const supported = ['ko', 'en', 'ja', 'zh', 'de', 'fr', 'vi']
-  return supported.includes(uiLanguage) ? uiLanguage : 'en'
+  return supported.includes(uiLanguage) ? uiLanguage as Lowercase<NoticeLang> : 'en'
 }
 
 export function formatDateTime(value: string | null | undefined): string {

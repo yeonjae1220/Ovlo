@@ -99,6 +99,7 @@ public class InquiryCommandService implements AskQuestionUseCase, GiveInquiryFee
         // Invalid ownership/history or an already exhausted DB quota must not reserve paid-call budget.
         try (var lease=admission.acquire(c.officeId(), c.memberId())) {
             AskResult result=askAdmitted(c, question, history, lease);
+            accessPolicy.assertMember(c.memberId(), c.officeId());
             lease.complete();
             return result;
         }
@@ -121,6 +122,7 @@ public class InquiryCommandService implements AskQuestionUseCase, GiveInquiryFee
         var screened=guard.screen(question, promptHistory);
         if (screened == null) throw guardUnavailable();
         lease.usage(screened.inputTokens(), screened.outputTokens());
+        accessPolicy.assertMember(c.memberId(), c.officeId());
         if (!screened.allowed()) {
             Inquiry saved=record(Inquiry.outOfScope(c.officeId(), c.memberId(), c.lang(), question, start,
                     elapsed(start), screened.modelId()), history);
@@ -148,6 +150,7 @@ public class InquiryCommandService implements AskQuestionUseCase, GiveInquiryFee
         var request=new AnswerGenerationPort.Request(question, c.lang(), context, promptHistory);
         AnswerGenerationPort.Result generated = answerPort.answer(request);
         lease.usage(generated.inputTokens(), generated.outputTokens());
+        accessPolicy.assertMember(c.memberId(), c.officeId());
 
         if (generated.refused()) {
             log.warn("[Inquiry] model refused office={} member={} model={}", c.officeId(), c.memberId(), generated.modelId());
@@ -169,6 +172,7 @@ public class InquiryCommandService implements AskQuestionUseCase, GiveInquiryFee
         var verified=guard.verify(request, outcome.validated().text());
         if (verified == null) throw guardUnavailable();
         lease.usage(verified.inputTokens(), verified.outputTokens());
+        accessPolicy.assertMember(c.memberId(), c.officeId());
         if (!verified.allowed()) {
             Inquiry saved=record(Inquiry.noGrounds(c.officeId(), c.memberId(), c.lang(), question, candidateIds, start,
                     elapsed(start), generated.modelId(), InquiryRejectionReason.VERIFY_DENIED), history);

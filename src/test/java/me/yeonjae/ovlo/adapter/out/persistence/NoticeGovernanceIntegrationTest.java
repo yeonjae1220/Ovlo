@@ -45,6 +45,7 @@ class NoticeGovernanceIntegrationTest {
     @Autowired NoticeGovernanceService governance;
     @Autowired NoticeKnowledgePort knowledge;
     @Autowired NoticeAnswerFinalizer finalizer;
+    @Autowired me.yeonjae.ovlo.application.port.out.verification.SaveVerificationCredentialPort credentials;
     Long office,actor;
     @BeforeEach void setup() {
         when(clock.instant()).thenReturn(NOW);when(clock.getZone()).thenReturn(ZoneOffset.UTC);
@@ -54,6 +55,7 @@ class NoticeGovernanceIntegrationTest {
                 new UniversityId(university),new Major("IA",DegreeType.BACHELOR,4))).getId().value();
         Office o=Office.create(university,"국제처",NOW);o.invite(actor,OfficeRole.OFFICE_ADMIN,"test",NOW);o.accept(actor,NOW);
         office=offices.save(o).getId().value();
+        credentials.save(me.yeonjae.ovlo.domain.verification.model.VerificationCredential.issueManual(actor,university,null,"test","synthetic",NOW));
     }
     Notice draft(String title) { return notices.save(Notice.register(office,NoticeCategory.OTHER,title,"현재 제출 기한은 11월 20일입니다.",null,List.of(),"2027-1",TODAY.minusDays(1),TODAY.plusDays(90),actor,NOW)); }
     NoticeSource source(NoticeSource.Type type,Long scope,List<Long> basis) { return new NoticeSource(type,"국제처","PRIVATE-REFERENCE-123","교환학생","전체",TODAY,null,actor,true,type==NoticeSource.Type.UNIVERSITY_WEB,scope,basis); }

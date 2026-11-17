@@ -114,7 +114,7 @@ function Conversation({ officeId, officeName, memberId, inquiryId }: {
     busy.current = true
     setError(null)
     try {
-      const result = await handoff.mutateAsync({ inquiryId: last.inquiryId, consentVersion: version })
+      const result = await handoff.mutateAsync({ inquiryId: last.inquiryId, consentVersion: version, lang: noticeLangOf(language) })
       if (isCurrent()) router.push(`/my-university/consultations/${result.id}`)
     } catch (e) {
       if (isCurrent()) setError(failure(e))

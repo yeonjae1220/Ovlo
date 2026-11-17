@@ -42,6 +42,10 @@ public class VerificationCredentialPersistenceAdapter
         return repository.findByMemberId(memberId).stream().map(this::toDomain).toList();
     }
 
+    @Override public boolean hasActiveAt(Long memberId, Long universityId) {
+        return repository.existsByMemberIdAndUniversityIdAndStatus(memberId,universityId,"VERIFIED");
+    }
+
     @Override
     public boolean existsActiveByVerifiedEmailAndMemberIdNot(String verifiedEmail, Long memberId) {
         return repository.existsActiveByVerifiedEmailAndMemberIdNot(verifiedEmail, memberId);

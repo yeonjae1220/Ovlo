@@ -8,6 +8,8 @@ import java.util.Optional;
 
 public interface LoadOfficePort {
     Optional<Office> findById(Long officeId);
+    /** Scalar DB read, independent of previously loaded entities. */
+    boolean isCurrentlySuspended(Long officeId);
 
     /** 대학당 Office 1개. */
     Optional<Office> findByUniversityId(Long globalUnivId);

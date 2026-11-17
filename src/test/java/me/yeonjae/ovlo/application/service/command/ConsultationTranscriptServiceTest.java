@@ -53,7 +53,7 @@ class ConsultationTranscriptServiceTest {
 
     @BeforeEach
     void setUp() {
-        sut = new ConsultationTranscriptService(loadConsultationPort, loadChatPort, messageTranslationPort, translationPort, me.yeonjae.ovlo.support.TranslationWorkFixtures.available(), me.yeonjae.ovlo.support.TranslationAdmissionFixtures.available());
+        sut = new ConsultationTranscriptService(loadConsultationPort, loadChatPort, messageTranslationPort, translationPort, me.yeonjae.ovlo.support.TranslationWorkFixtures.available(), me.yeonjae.ovlo.support.TranslationAdmissionFixtures.available(), org.mockito.Mockito.mock(me.yeonjae.ovlo.application.service.office.ConsultationTranscriptAccess.class));
         Consultation c = Consultation.open(OFFICE, STUDENT, null, "v1",
                 new Consultation.SharedContext("Visa?", null, NoticeLang.VI, true), ROOM, NOW);
         c.assignId(700L);
@@ -129,7 +129,7 @@ class ConsultationTranscriptServiceTest {
     }
 
     @Test void busyMessageDoesNotStartDuplicateProviderCall() {
-        sut=new ConsultationTranscriptService(loadConsultationPort,loadChatPort,messageTranslationPort,translationPort,key->Optional.empty(), me.yeonjae.ovlo.support.TranslationAdmissionFixtures.available());
+        sut=new ConsultationTranscriptService(loadConsultationPort,loadChatPort,messageTranslationPort,translationPort,key->Optional.empty(), me.yeonjae.ovlo.support.TranslationAdmissionFixtures.available(), org.mockito.Mockito.mock(me.yeonjae.ovlo.application.service.office.ConsultationTranscriptAccess.class));
         var out=sut.transcript(OFFICE,700L,STAFF,true,NoticeLang.KO,100);
         assertThat(out.get(0).translationFailed()).isTrue();
         assertThat(out.get(0).content()).isNotBlank();
@@ -140,7 +140,7 @@ class ConsultationTranscriptServiceTest {
         var lease=org.mockito.Mockito.mock(me.yeonjae.ovlo.application.port.out.office.TranslationWorkPort.Lease.class);
         given(lease.isRetryAllowed()).willReturn(true);
         given(lease.tryBeginAttempt()).willReturn(true);
-        sut=new ConsultationTranscriptService(loadConsultationPort,loadChatPort,messageTranslationPort,translationPort,key->Optional.of(lease), me.yeonjae.ovlo.support.TranslationAdmissionFixtures.available());
+        sut=new ConsultationTranscriptService(loadConsultationPort,loadChatPort,messageTranslationPort,translationPort,key->Optional.of(lease), me.yeonjae.ovlo.support.TranslationAdmissionFixtures.available(), org.mockito.Mockito.mock(me.yeonjae.ovlo.application.service.office.ConsultationTranscriptAccess.class));
         given(translationPort.translate(any())).willReturn(new TranslationPort.Result("message","번역","test"));
         var out=sut.transcript(OFFICE,700L,STAFF,true,NoticeLang.KO,100);
         assertThat(out.get(0).translationFailed()).isTrue();
@@ -150,7 +150,7 @@ class ConsultationTranscriptServiceTest {
 
     @Test void cooldownDoesNotConsumeTheRequestBudgetOrCallProvider() {
         var lease=org.mockito.Mockito.mock(me.yeonjae.ovlo.application.port.out.office.TranslationWorkPort.Lease.class);
-        sut=new ConsultationTranscriptService(loadConsultationPort,loadChatPort,messageTranslationPort,translationPort,key->Optional.of(lease), me.yeonjae.ovlo.support.TranslationAdmissionFixtures.available());
+        sut=new ConsultationTranscriptService(loadConsultationPort,loadChatPort,messageTranslationPort,translationPort,key->Optional.of(lease), me.yeonjae.ovlo.support.TranslationAdmissionFixtures.available(), org.mockito.Mockito.mock(me.yeonjae.ovlo.application.service.office.ConsultationTranscriptAccess.class));
         var out=sut.transcript(OFFICE,700L,STAFF,true,NoticeLang.KO,100);
         assertThat(out.getFirst().translationFailed()).isTrue();
         assertThat(out.getFirst().content()).isNotBlank();
@@ -162,7 +162,7 @@ class ConsultationTranscriptServiceTest {
         var lease=org.mockito.Mockito.mock(me.yeonjae.ovlo.application.port.out.office.TranslationWorkPort.Lease.class);
         given(lease.isRetryAllowed()).willReturn(true);
         sut=new ConsultationTranscriptService(loadConsultationPort,loadChatPort,messageTranslationPort,translationPort,
-            key->Optional.of(lease),(office,member)->{throw new IllegalStateException("Redis unavailable or budget exhausted");});
+            key->Optional.of(lease),(office,member)->{throw new IllegalStateException("Redis unavailable or budget exhausted");}, org.mockito.Mockito.mock(me.yeonjae.ovlo.application.service.office.ConsultationTranscriptAccess.class));
         var out=sut.transcript(OFFICE,700L,STAFF,true,NoticeLang.KO,100);
         assertThat(out.getFirst().translationFailed()).isTrue();
         verify(lease,never()).tryBeginAttempt();

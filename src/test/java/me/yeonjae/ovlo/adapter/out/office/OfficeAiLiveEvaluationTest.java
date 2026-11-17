@@ -86,7 +86,7 @@ class OfficeAiLiveEvaluationTest {
         var candidateLoad=mock(LoadNoticePort.class);
         when(candidateLoad.findById(1L)).thenReturn(Optional.of(notice()));
         var governance=me.yeonjae.ovlo.support.NoticeFixtures.governance(candidateLoad);
-        var finalizer=new NoticeAnswerFinalizer(mock(NoticeKnowledgePort.class),candidateLoad,save,governance,Clock.fixed(NOW,ZoneOffset.UTC));
+        var finalizer=new NoticeAnswerFinalizer(mock(NoticeKnowledgePort.class),candidateLoad,save,governance,Clock.fixed(NOW,ZoneOffset.UTC),mock(OfficePersonalDataPort.class),access);
         var service=new InquiryCommandService(access,search,llm,new GroundedAnswerValidator(),load,save,
             Clock.fixed(NOW,ZoneOffset.UTC),finalizer,governance,8,500,llm,admission,new me.yeonjae.ovlo.shared.metrics.OfficeMetrics(new io.micrometer.core.instrument.simple.SimpleMeterRegistry()));
         long started=System.nanoTime();

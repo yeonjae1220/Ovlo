@@ -10,6 +10,7 @@ import java.time.Instant;
 import java.util.List;
 
 public interface VerificationCredentialJpaRepository extends JpaRepository<VerificationCredentialJpaEntity, Long> {
+    boolean existsByMemberIdAndUniversityIdAndStatus(Long memberId, Long universityId, String status);
 
     List<VerificationCredentialJpaEntity> findByMemberId(Long memberId);
 

@@ -15,12 +15,19 @@ public class NoticeAnswerFinalizer {
     private final SaveInquiryPort inquiries;
     private final NoticeGovernanceService governance;
     private final Clock clock;
-    public NoticeAnswerFinalizer(NoticeKnowledgePort knowledge,LoadNoticePort notices,SaveInquiryPort inquiries,NoticeGovernanceService governance,Clock clock) {
+    private final OfficePersonalDataPort privacy;
+    private final StudentOfficeAccessPolicy access;
+    public NoticeAnswerFinalizer(NoticeKnowledgePort knowledge,LoadNoticePort notices,SaveInquiryPort inquiries,NoticeGovernanceService governance,Clock clock,
+                                OfficePersonalDataPort privacy,StudentOfficeAccessPolicy access) {
         this.knowledge=knowledge;this.notices=notices;this.inquiries=inquiries;this.governance=governance;this.clock=clock;
+        this.privacy=privacy;this.access=access;
     }
     @Transactional
     public Inquiry finish(Inquiry answer,List<Notice> candidates,List<NoticeCitation> citations,List<Inquiry> history) {
+        // Same order as consultation creation/erasure: member first, then office/evidence.
+        privacy.lockActiveMember(answer.getMemberId());
         knowledge.lockOffice(answer.getOfficeId());
+        access.assertMember(answer.getMemberId(),answer.getOfficeId());
         boolean valid=candidates.stream().allMatch(old -> notices.findById(old.getId()).filter(n ->
                 n.getOfficeId().equals(answer.getOfficeId()) && sameEvidence(old,n,answer.getLang())
                 && n.isGroundingEligible(OfficeDates.today(clock),answer.getLang())

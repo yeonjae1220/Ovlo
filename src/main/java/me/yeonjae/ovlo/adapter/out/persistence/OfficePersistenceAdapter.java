@@ -44,6 +44,10 @@ public class OfficePersistenceAdapter implements LoadOfficePort, SaveOfficePort,
         return repository.findWithStaffById(officeId).map(this::toDomain);
     }
 
+    @Override public boolean isCurrentlySuspended(Long officeId) {
+        return repository.existsByIdAndStatus(officeId, "SUSPENDED");
+    }
+
     @Override
     public Optional<Office> findByUniversityId(Long globalUnivId) {
         return repository.findWithStaffByGlobalUnivId(globalUnivId).map(this::toDomain);

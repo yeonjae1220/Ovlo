@@ -49,7 +49,7 @@ public class StudentConsultationApiController {
                                                    @AuthenticationPrincipal Long memberId) {
         metrics.consultation("opened");
         ConsultationResult result = openUseCase.open(new OpenConsultationCommand(officeId, memberId, request.inquiryId(),
-                request.consentVersion(), request.message()));
+                request.consentVersion(), request.message(), NoticeLang.fromCode(request.lang()).orElse(NoticeLang.KO)));
         return ResponseEntity.status(HttpStatus.CREATED).body(result);
     }
 

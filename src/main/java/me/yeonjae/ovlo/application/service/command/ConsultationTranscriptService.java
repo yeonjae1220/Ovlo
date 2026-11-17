@@ -40,16 +40,19 @@ public class ConsultationTranscriptService implements GetConsultationTranscriptQ
     private final MessageTranslationPort messageTranslationPort;
     private final TranslationPort translationPort;
     private final me.yeonjae.ovlo.application.port.out.office.TranslationWorkPort work;
+    private final me.yeonjae.ovlo.application.service.office.ConsultationTranscriptAccess access;
 
     public ConsultationTranscriptService(LoadConsultationPort loadConsultationPort, LoadChatPort loadChatPort,
                                          MessageTranslationPort messageTranslationPort, TranslationPort translationPort,
                                          me.yeonjae.ovlo.application.port.out.office.TranslationWorkPort work,
-                                         me.yeonjae.ovlo.application.port.out.office.TranslationAdmissionPort admission) {
+                                         me.yeonjae.ovlo.application.port.out.office.TranslationAdmissionPort admission,
+                                         me.yeonjae.ovlo.application.service.office.ConsultationTranscriptAccess access) {
         this.loadConsultationPort = loadConsultationPort;
         this.loadChatPort = loadChatPort;
         this.messageTranslationPort = messageTranslationPort;
         this.translationPort = translationPort;
         this.work = work; this.admission = admission;
+        this.access = access;
     }
 
     @Override
@@ -63,6 +66,7 @@ public class ConsultationTranscriptService implements GetConsultationTranscriptQ
             throw new ConsultationException("상담 당사자만 볼 수 있습니다", ConsultationException.ErrorType.FORBIDDEN);
         }
 
+        access.check(c, requesterMemberId, staff);
         List<Message> messages = loadChatPort.findMessages(new ChatRoomId(c.getChatRoomId()), 0, Math.min(Math.max(limit, 1), MAX_LIMIT));
         List<Long> ids = messages.stream().map(m -> m.getId().value()).toList();
         Map<Long, String> existing = messageTranslationPort.findTranslations(ids, lang);
@@ -94,8 +98,10 @@ public class ConsultationTranscriptService implements GetConsultationTranscriptQ
                                         if (!lease.tryBeginAttempt()) throw new IllegalStateException("Translation ownership expired");
                                         generated++;
                                         try {
+                                            access.check(c, requesterMemberId, staff);
                                             TranslationPort.Result r = translationPort.translate(
                                                     new TranslationPort.Request(sourceLang, lang, "message", m.getContent()));
+                                            access.check(c, requesterMemberId, staff);
                                             if (r == null || nonblank(r.body()) == null) throw new IllegalStateException("Empty translation");
                                             if (lease.isHeld()) {
                                                 messageTranslationPort.save(m.getId().value(), lang, r.body(), r.modelId());
@@ -110,6 +116,8 @@ public class ConsultationTranscriptService implements GetConsultationTranscriptQ
                                 }
                             }
                         }
+                    } catch (me.yeonjae.ovlo.domain.office.exception.OfficeException e) {
+                        throw e; // Revocation is not a recoverable translation failure.
                     } catch (RuntimeException e) {
                         failed = true;
                         log.warn("[Consultation] message translation failed consultation={} message={} lang={}: {}",
@@ -121,6 +129,7 @@ public class ConsultationTranscriptService implements GetConsultationTranscriptQ
                     translated, failed, m.getSentAt()));
         }
         var visible=loadChatPort.findMessages(new ChatRoomId(c.getChatRoomId()),0,MAX_LIMIT).stream().map(m -> m.getId().value()).collect(java.util.stream.Collectors.toSet());
+        access.check(c, requesterMemberId, staff);
         return out.stream().filter(m -> visible.contains(m.messageId())).toList();
     }
 
