@@ -44,7 +44,13 @@ class KeywordNoticeSearchAdapterTest {
         Notice visa = notice(2L, "체류기간 연장", "출입국에 방문해 연장 신청");
         Notice life = notice(3L, "교내 식당", "학생 식당 운영 시간");
         dorm.putTranslation(NoticeLang.EN, "Dormitory application", "Dormitory applications close February 10", NOW);
-        given(loadNoticePort.findActiveForStudent(eq(5L), isNull(), any())).willReturn(List.of(dorm, visa, life));
+        var corpus = new java.util.ArrayList<>(List.of(dorm, visa, life));
+        for (long id = 10; id < 19; id++) {
+            Notice other = notice(id, "음악 공연", "공연장 예약");
+            other.putTranslation(NoticeLang.EN, "Jazz concert", "Auditorium reservation", NOW);
+            corpus.add(other);
+        }
+        given(loadNoticePort.findActiveForStudent(eq(5L), isNull(), any())).willReturn(corpus);
         var adapter = new KeywordNoticeSearchAdapter(loadNoticePort,me.yeonjae.ovlo.support.NoticeFixtures.governance(loadNoticePort));
 
         assertThat(adapter.findCandidates(5L, NoticeLang.KO, "기숙사 신청은 언제까지예요?", TODAY, 8))
