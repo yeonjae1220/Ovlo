@@ -128,11 +128,7 @@ public class InquiryCommandService implements AskQuestionUseCase, GiveInquiryFee
         }
 
 
-        List<Notice> candidates = searchPort.findCandidates(c.officeId(), c.lang(), searchQuestion, today, candidateLimit).stream()
-                .filter(n -> n.isGroundingEligible(today, c.lang()))   // 최종 판정은 도메인(ADR-0006 2항)
-                .filter(n -> governance.eligible(n,today))
-                .limit(candidateLimit)
-                .toList();
+        List<Notice> candidates = retrieve(c, searchQuestion, today, !history.isEmpty());
         List<Long> candidateIds = candidates.stream().map(Notice::getId).toList();
 
         if (candidates.isEmpty()) {
@@ -208,6 +204,23 @@ public class InquiryCommandService implements AskQuestionUseCase, GiveInquiryFee
     }
 
     // ── 내부 ──────────────────────────────────────────────────────────────────
+
+    private List<Notice> retrieve(AskQuestionCommand c, String searchQuestion, LocalDate today, boolean followUp) {
+        List<Notice> candidates;
+        try {
+            candidates = searchPort.findCandidates(c.officeId(), c.lang(), searchQuestion, today, candidateLimit).stream()
+                    .filter(n -> n.isGroundingEligible(today, c.lang())) // Final eligibility remains authoritative.
+                    .filter(n -> governance.eligible(n, today))
+                    .limit(candidateLimit)
+                    .toList();
+        } catch (RuntimeException failure) {
+            metrics.inquiryRetrieval(followUp, OfficeMetrics.RetrievalResult.ERROR);
+            throw failure;
+        }
+        metrics.inquiryRetrieval(followUp, candidates.isEmpty()
+                ? OfficeMetrics.RetrievalResult.EMPTY : OfficeMetrics.RetrievalResult.PRESENT);
+        return candidates;
+    }
 
     private void assertOfficeDailyLimit(Long officeId, LocalDate today) {
         Instant startOfDay = today.atStartOfDay(me.yeonjae.ovlo.application.service.office.OfficeDates.ZONE).toInstant();

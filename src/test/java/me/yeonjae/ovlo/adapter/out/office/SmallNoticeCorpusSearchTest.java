@@ -1,5 +1,8 @@
 package me.yeonjae.ovlo.adapter.out.office;
 
+import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
+import me.yeonjae.ovlo.shared.metrics.OfficeMetrics;
+
 import me.yeonjae.ovlo.application.port.out.office.*;
 import me.yeonjae.ovlo.application.service.office.NoticeGovernanceService;
 import me.yeonjae.ovlo.domain.office.model.*;
@@ -23,8 +26,8 @@ class SmallNoticeCorpusSearchTest {
     NoticeSearchPort adapter(String provider, List<Notice> notices) {
         when(load.findActiveForStudent(5L, null, TODAY)).thenReturn(notices);
         lenient().when(governance.eligible(any(), eq(TODAY))).thenReturn(true);
-        return provider.equals("keyword") ? new KeywordNoticeSearchAdapter(load, governance)
-                : new PostgresFtsNoticeSearchAdapter(jdbc, load, governance);
+        return provider.equals("keyword") ? new KeywordNoticeSearchAdapter(load, governance, new OfficeMetrics(new SimpleMeterRegistry()))
+                : new PostgresFtsNoticeSearchAdapter(jdbc, load, governance, new OfficeMetrics(new SimpleMeterRegistry()));
     }
     static Notice notice(long id, long office, String title, String body) {
         Notice n = Notice.register(office, NoticeCategory.HOUSING, title, body, null, List.of(), "2027-1",
