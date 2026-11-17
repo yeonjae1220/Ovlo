@@ -263,7 +263,9 @@ public class InquiryCommandService implements AskQuestionUseCase, GiveInquiryFee
         if (body.length() > MAX_BODY_CHARS) {
             body = body.substring(0, MAX_BODY_CHARS);
         }
-        return new Candidate(index, n.getId(), title, body, n.getSourceUrl());
+        var source = n.getSource();
+        return new Candidate(index, n.getId(), title, body, n.getSourceUrl(),
+                source == null ? null : source.audience(), source == null ? null : source.campus());
     }
 
     private static String titleIn(Notice n, NoticeLang lang) {
@@ -290,11 +292,14 @@ public class InquiryCommandService implements AskQuestionUseCase, GiveInquiryFee
         for(var c:candidates) {
             String title=c.title().substring(0, Math.min(c.title().length(), 200));
             String body=c.body();
-            while((title+body).getBytes(java.nio.charset.StandardCharsets.UTF_8).length>left && !body.isEmpty())
+            // Keep applicability intact; spend the remaining byte budget on the body, never drop restrictions.
+            String metadata=title + java.util.Objects.toString(c.sourceUrl(), "")
+                    + java.util.Objects.toString(c.audience(), "") + java.util.Objects.toString(c.campus(), "");
+            while((metadata+body).getBytes(java.nio.charset.StandardCharsets.UTF_8).length>left && !body.isEmpty())
                 body=body.substring(0, body.offsetByCodePoints(body.length(), -1));
             if(body.isBlank()) break;
-            kept.add(new Candidate(c.index(), c.noticeId(), title, body, c.sourceUrl()));
-            left-=(title+body).getBytes(java.nio.charset.StandardCharsets.UTF_8).length;
+            kept.add(new Candidate(c.index(), c.noticeId(), title, body, c.sourceUrl(), c.audience(), c.campus()));
+            left-=(metadata+body).getBytes(java.nio.charset.StandardCharsets.UTF_8).length;
         }
         return List.copyOf(kept);
     }

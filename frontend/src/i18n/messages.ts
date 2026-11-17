@@ -24,6 +24,8 @@ export function resolveUiLang(input: string | null | undefined): UiLanguage {
 type Messages = Record<string, string>
 
 const en: Messages = {
+  'office.notice.applicability': 'Applicability',
+  'office.notice.applicabilityOriginal': 'Applicability is shown in the original language of the approved source.',
   "office.knowledge.title": "Sources and reviews",
   "office.knowledge.lastVerified": "Last verified",
   "office.knowledge.nextReview": "Next review",
@@ -685,6 +687,8 @@ const en: Messages = {
 }
 
 const ko: Messages = {
+  'office.notice.applicability': '적용 범위',
+  'office.notice.applicabilityOriginal': '적용 범위는 승인된 자료의 원문 언어로 표시됩니다.',
   "office.knowledge.title": "출처·재검토 관리",
   "office.knowledge.lastVerified": "최종 확인일",
   "office.knowledge.nextReview": "다음 재검토일",

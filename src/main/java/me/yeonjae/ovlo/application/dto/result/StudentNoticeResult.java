@@ -12,5 +12,5 @@ import java.util.List;
  */
 public record StudentNoticeResult(Long id, NoticeCategory category, String title, String body, NoticeLang lang,
                                   boolean machineTranslated, String sourceUrl, List<Long> attachmentMediaIds,
-                                  String term, LocalDate effectiveFrom, LocalDate expiresAt) {
+                                  String term, LocalDate effectiveFrom, LocalDate expiresAt, String audience, String campus) {
 }

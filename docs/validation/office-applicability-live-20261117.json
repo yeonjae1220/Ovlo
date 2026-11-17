@@ -1,0 +1,24 @@
+{
+  "date": "2026-11-17",
+  "environment": "isolated PostgreSQL/Redis; synthetic notices and accounts; real provider",
+  "answerModel": "anthropic/claude-sonnet-5.5",
+  "results": [
+    {
+      "answer": "질문이 \"학교 교육 시간\"으로 다소 일반적이지만, 참고 공지에는 교육 시간이 1.5시간이라고 안내되어 있습니다. 다만 이 공지는 교환학생만 신청 가능하고 서울캠퍼스에 한정된 교육에 대한 내용입니다.\n\n- 교육은 1.5시간입니다. [1]\n- 이 교육은 교환학생만 신청할 수 있습니다. [1]\n- 이 교육은 서울캠퍼스에 한정됩니다. [1]",
+      "broadenedDenied": true,
+      "scopeInjectionDenied": true,
+      "model": "anthropic/claude-sonnet-5.5",
+      "omittedDenied": true,
+      "lang": "ko"
+    },
+    {
+      "answer": "The training lasts 1.5 hours. [1] This applies only to exchange students (the notice says only exchange students can apply) at the Seoul Campus. [1]",
+      "broadenedDenied": true,
+      "scopeInjectionDenied": true,
+      "model": "anthropic/claude-sonnet-5.5",
+      "omittedDenied": true,
+      "lang": "en"
+    }
+  ],
+  "refusalPrivacy": "SDK + local HTTP refusal fixture; not a claim of a real provider refusal or production leak"
+}
