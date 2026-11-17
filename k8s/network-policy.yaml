@@ -87,6 +87,17 @@ spec:
           protocol: UDP
         - port: 53
           protocol: TCP
+    # Allowlisted anonymous search counters → internal OTLP/HTTP collector only.
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: monitoring
+          podSelector:
+            matchLabels:
+              app: otel-collector
+      ports:
+        - port: 4318
+          protocol: TCP
     # lab-dashboard 피드백 수집 (인-클러스터 포워딩)
     - to:
         - namespaceSelector:

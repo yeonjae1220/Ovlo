@@ -63,10 +63,33 @@ Micrometer 이름: `ovlo.office.inquiry.retrieval`.
 - 개인정보 삭제·만료 뒤에도 이 집계는 특정 문의를 가리키지 않는다. 과거 문의/질문을 지표에 소급 적재하거나
   삭제된 후보 ID·피드백을 복원하지 않는다. 상담 이관 동의를 평가용 원문 사용 근거로 확대하지 않는다.
 
+## 운영 수집 연결
+
+#100 배포 후 운영 설정을 확인한 결과, `/actuator/prometheus` 노출만으로 수집되는 구조가 아니었다.
+Prometheus는 OTEL Collector를 scrape하며 Collector의 metrics 입력은 OTLP뿐이고, 앱에는 OTLP registry/Java agent와
+Collector 방향 egress 허용이 없었다. 기존 통계나 질문은 조회하지 않고 배포·수집 설정으로 이 차이를 확인했다.
+
+- `SearchMetricsExportConfig`가 위 두 counter만 내부 Collector의 OTLP/HTTP 4318 포트로 30초마다 누적 전송한다.
+  지표 이름·COUNTER 타입·태그 키 집합·각 값 모두 허용 목록과 일치해야 한다. 다른 지표나 추가 태그는 거부한다.
+- Boot의 범용 OTLP 자동 전송은 꺼 두고 기존 Prometheus registry는 유지한다. prod 프로필에서 전용 registry가 켜진다.
+  `OVLO_SEARCH_METRICS_EXPORT_ENABLED=false`로 다음 배포 시 전용 전송만 중단할 수 있다. 로컬/test 기본은 꺼짐이다.
+- resource는 서비스명 `ovlo-search-metrics`, namespace `ovlo`, 인프라 인스턴스명(파드명, 미지정 시 프로세스 UUID)으로 제한한다.
+  SDK가 붙이는 언어·버전 등의 기술 메타데이터와 집계 시계열 시각은 포함된다. 학생·학교·문의 식별자는 포함하지 않는다.
+  trace/span exemplar 공급자를 연결하지 않으며 환경의 임의 OTLP header/resource 값을 상속하지 않는다.
+- 앱 egress는 `monitoring` namespace의 `app=otel-collector` 파드 TCP 4318만 추가한다.
+  공개 actuator 접근 권한·Collector 설정·다른 지표 수집 경로는 변경하지 않는다.
+- 전송은 비동기이며 전송/수집 장애·재시작 전 미전송분의 유실이 가능하다. 전송 시각은 개별 문의 시각이 아니며,
+  배포 후 두 이름의 시계열 존재와 수집 상태를 확인해야 한다. 정상 등록된 0과 시계열 부재를 구분한다.
+
+구현 근거: [Micrometer OTLP registry](https://docs.micrometer.io/micrometer/reference/implementations/otlp.html).
+로컬 수신기로 실제 protobuf 전송을 파싱해 허용 지표와 빈 exemplar를 검증하고, prod 설정 로딩으로 registry 중복·필터 범위를 확인한다.
+
 ## 해석과 검토 예시
 
 관찰 기간 W·시간대·배포 SHA·provider·수집 누락을 함께 기록한다. 다음은 **미실행 예시**이고 7일은 필수 관찰 기간이 아니다.
 승인된 모니터링 환경 selector를 붙이고 인스턴스별 increase를 먼저 계산한 뒤 합산한다. scrape 누락/재시작 사이 손실은 복원되지 않는다.
+운영 합성 검증도 같은 경로를 거치면 집계된다. 검증 시간대를 기록하고 실사용 관찰 기간과 분리한다.
+이 지표에는 계정 구분 태그가 없으므로 합성 요청만 사후에 골라 차감하거나 질문/계정 조회로 연결하지 않는다.
 
 ```promql
 sum by (provider, path, candidates) (increase(ovlo_office_search_completed_total[7d]))

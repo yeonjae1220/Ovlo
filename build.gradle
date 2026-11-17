@@ -78,6 +78,9 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-actuator'
     implementation 'io.micrometer:micrometer-tracing-bridge-otel'
     implementation 'io.micrometer:micrometer-registry-prometheus'
+    implementation 'io.micrometer:micrometer-registry-otlp'
+    // Parse the real OTLP wire payload in privacy regression tests (registry's runtime dependency).
+    testImplementation 'io.opentelemetry.proto:opentelemetry-proto:1.8.0-alpha'
     implementation 'io.opentelemetry:opentelemetry-exporter-otlp'
 
     // ── Test ──────────────────────────────────────────────────────────────────

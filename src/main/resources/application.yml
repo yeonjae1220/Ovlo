@@ -144,6 +144,11 @@ ovlo:
   trusted-proxy-ips: ${TRUSTED_PROXY_IPS:127.0.0.1,::1}
 
 management:
+  # SearchMetricsExportConfig explicitly exports only the two allowlisted counters.
+  otlp:
+    metrics:
+      export:
+        enabled: false
   health:
     probes:
       enabled: true
@@ -263,6 +268,12 @@ spring:
 
 # Gmail은 From을 인증 계정으로 강제하므로 MAIL_FROM은 Gmail 주소(또는 'Send mail as' 별칭)로 설정
 ovlo:
+  search:
+    metrics:
+      export:
+        enabled: ${OVLO_SEARCH_METRICS_EXPORT_ENABLED:true}
+        url: http://otel-collector.monitoring.svc.cluster.local:4318/v1/metrics
+        step: 30s
   mail:
     from: ${MAIL_FROM:no-reply@ovlo.app}
 
