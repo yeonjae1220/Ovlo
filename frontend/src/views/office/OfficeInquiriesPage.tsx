@@ -62,12 +62,9 @@ export default function OfficeInquiriesPage() {
             <span>{formatDateTime(q.askedAt)}</span>
             <span>{q.latencyMs} ms</span>
             <span>{t('office.inquiries.cited')} {q.citedNoticeIds.length} / {t('office.inquiries.candidates')} {q.candidateCount}</span>
-            {q.helpful !== null && <span>{q.helpful ? '👍' : '👎'}{q.feedbackReason ? ` ${q.feedbackReason}` : ''}</span>}
+            {q.helpful !== null && <span>{q.helpful ? '👍' : '👎'}</span>}
           </div>
-          <div style={{ fontWeight: 600, marginBottom: 6 }}>{q.question}</div>
-          {q.answerText && (
-            <p style={{ margin: 0, fontSize: 14, whiteSpace: 'pre-wrap', lineHeight: 1.6, color: 'var(--color-text-secondary)' }}>{q.answerText}</p>
-          )}
+          <small>{t('office.inquiries.privacy')}</small>
         </Card>
       ))}
 

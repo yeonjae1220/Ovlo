@@ -13,6 +13,7 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class WithdrawalContentHidingAdapter implements HideContentByWithdrawnMemberPort {
 
+    private final me.yeonjae.ovlo.application.port.out.office.OfficePersonalDataPort officeData;
     private final PostJpaRepository postJpaRepository;
     private final CommentJpaRepository commentJpaRepository;
     private final MessageJpaRepository messageJpaRepository;
@@ -21,6 +22,7 @@ public class WithdrawalContentHidingAdapter implements HideContentByWithdrawnMem
     @Override
     @Transactional
     public void hideAllContentByMember(Long memberId) {
+        officeData.eraseMember(memberId);
         postJpaRepository.hideAllByAuthorId(memberId);
         commentJpaRepository.hideAllByAuthorId(memberId);
         messageJpaRepository.hideAllBySenderId(memberId);

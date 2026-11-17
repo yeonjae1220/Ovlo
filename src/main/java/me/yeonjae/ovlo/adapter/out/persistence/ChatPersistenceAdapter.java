@@ -29,15 +29,17 @@ import java.util.stream.Collectors;
 @Component
 public class ChatPersistenceAdapter implements LoadChatPort, SaveChatPort, SaveReadMarkerPort {
 
+    private final OfficePersonalDataAdapter privacy;
     private final ChatRoomJpaRepository chatRoomJpaRepository;
     private final MessageJpaRepository messageJpaRepository;
     private final ChatRoomReadMarkerRepository readMarkerRepository;
     private final ChatMapper chatMapper;
 
-    public ChatPersistenceAdapter(ChatRoomJpaRepository chatRoomJpaRepository,
+    public ChatPersistenceAdapter(OfficePersonalDataAdapter privacy, ChatRoomJpaRepository chatRoomJpaRepository,
                                   MessageJpaRepository messageJpaRepository,
                                   ChatRoomReadMarkerRepository readMarkerRepository,
                                   ChatMapper chatMapper) {
+        this.privacy=privacy;
         this.chatRoomJpaRepository = chatRoomJpaRepository;
         this.messageJpaRepository = messageJpaRepository;
         this.readMarkerRepository = readMarkerRepository;
@@ -154,6 +156,7 @@ public class ChatPersistenceAdapter implements LoadChatPort, SaveChatPort, SaveR
     @Override
     @Transactional
     public Message saveMessage(Long chatRoomId, Long senderId, String content) {
+        privacy.lockRoom(chatRoomId);
         if (content == null || content.isBlank()) {
             throw new IllegalArgumentException("메시지 내용은 빈 값일 수 없습니다");
         }
@@ -171,6 +174,7 @@ public class ChatPersistenceAdapter implements LoadChatPort, SaveChatPort, SaveR
     }
 
     private void saveNewMessages(Long chatRoomId, List<Message> messages) {
+        if(messages.stream().anyMatch(m -> m.getId()==null)) privacy.lockRoom(chatRoomId);
         messages.stream()
                 .filter(m -> m.getId() == null)
                 .forEach(m -> messageJpaRepository.save(chatMapper.toMessageJpaEntity(chatRoomId, m)));

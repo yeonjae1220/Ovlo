@@ -22,6 +22,14 @@ public class Inquiry {
 
     private Long id;
     private Long previousInquiryId;
+    private boolean personalDataAvailable=true;
+    public boolean isPersonalDataAvailable() { return personalDataAvailable; }
+    public Inquiry withoutPersonalData() {
+        Inquiry result=new Inquiry(id,officeId,memberId,lang,"[Content deleted]",outcome,null,List.of(),List.of(),askedAt,latencyMs,modelId,rejectionReason);
+        result.previousInquiryId=previousInquiryId;
+        result.personalDataAvailable=false;
+        return result;
+    }
     private final Long officeId;
     private final Long memberId;
     private final NoticeLang lang;
@@ -76,6 +84,7 @@ public class Inquiry {
     }
 
     public void assertCanContinue() {
+        if(!personalDataAvailable) throw new InquiryException("삭제된 대화입니다. 새 대화를 시작해 주세요",InquiryException.ErrorType.CONFLICT);
         if (outcome == InquiryOutcome.ESCALATED) {
             throw new InquiryException("담당자에게 전달된 대화입니다. 상담방에서 이어가 주세요", InquiryException.ErrorType.CONFLICT);
         }

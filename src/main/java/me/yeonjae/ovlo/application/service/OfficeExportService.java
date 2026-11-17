@@ -44,11 +44,11 @@ public class OfficeExportService implements ExportOfficeDataQuery {
         Instant t = to == null ? null : to.plusDays(1).atStartOfDay(OfficeDashboardService.OFFICE_ZONE).toInstant();
         List<InquiryLogResult> rows = inquiryQuery.findForStaff(officeId, null, f, t,
                 PageRequest.of(0, MAX_ROWS, Sort.by(Sort.Direction.DESC, "askedAt"))).getContent();
-        CsvWriter csv = new CsvWriter().header("id", "askedAt", "lang", "outcome", "question", "answerText",
-                "citedNoticeIds", "candidateCount", "latencyMs", "modelId", "helpful", "feedbackReason", "rejectionReason");
+        CsvWriter csv = new CsvWriter().header("id", "askedAt", "lang", "outcome",
+                "citedNoticeIds", "candidateCount", "latencyMs", "modelId", "helpful", "rejectionReason");
         for (InquiryLogResult r : rows) {
-            csv.row(r.id(), r.askedAt(), r.lang(), r.outcome(), r.question(), r.answerText(),
-                    joinIds(r.citedNoticeIds()), r.candidateCount(), r.latencyMs(), r.modelId(), r.helpful(), r.feedbackReason(), r.rejectionReason());
+            csv.row(r.id(), r.askedAt(), r.lang(), r.outcome(),
+                    joinIds(r.citedNoticeIds()), r.candidateCount(), r.latencyMs(), r.modelId(), r.helpful(), r.rejectionReason());
         }
         return csv.build();
     }

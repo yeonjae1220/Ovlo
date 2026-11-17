@@ -92,6 +92,14 @@ public class NoticeTranslationJobAdapter implements NoticeTranslationJobPort {
                 """,Math.max(30,Math.min(86401,delay)),c.noticeId(),c.version(),c.lang().code(),c.owner());
     }
 
+    @Override public void pause(Claim c) {
+        jdbc.update("""
+                UPDATE notice_translation_job SET state=CASE WHEN attempts>=3 THEN 'FAILED' ELSE 'PAUSED' END,
+                owner=NULL,lease_until=NULL,available_at=GREATEST(available_at,CURRENT_TIMESTAMP+INTERVAL '30 seconds')
+                WHERE notice_id=? AND source_version=? AND lang=? AND owner=? AND state='RUNNING' AND lease_until>CURRENT_TIMESTAMP
+                """,c.noticeId(),c.version(),c.lang().code(),c.owner());
+    }
+
     @Override @Transactional
     public List<Long> dueNotices() {
         jdbc.update("""

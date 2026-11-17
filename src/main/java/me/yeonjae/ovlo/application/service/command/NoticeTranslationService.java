@@ -94,6 +94,9 @@ public class NoticeTranslationService implements TranslateNoticeUseCase {
                 try (var lease = claimed.get()) {
                     Notice latest = loadNoticePort.findCommittedById(noticeId).orElseThrow();
                     if (!current(latest,notice,lang)) { jobs.finish(job,false); continue; }
+                    if(loadOfficePort.findById(notice.getOfficeId()).map(Office::isSuspended).orElse(true)) {
+                        jobs.pause(job); deferred.add(lang); continue;
+                    }
                     try (var admitted = admission.acquire(notice.getOfficeId(),notice.getCreatedBy(),2)) {
                         // Reserve an attempt durably before either paid call, including worker crashes.
                         if (!jobs.beginAttempt(job)) { jobs.finish(job,true); continue; }
@@ -105,18 +108,20 @@ public class NoticeTranslationService implements TranslateNoticeUseCase {
                             log.warn("[Notice] translation integrity rejected notice={} lang={} stage={}",noticeId,lang.code(),verdict.passed()?"semantic":"structure");
                             continue;
                         }
-                        boolean stored=Boolean.TRUE.equals(tx.execute(status -> {
+                        StoreOutcome stored=tx.execute(status -> {
                             knowledge.lockOffice(notice.getOfficeId());
                             Notice current=loadNoticePort.findById(noticeId).orElseThrow();
                             Office currentOffice=loadOfficePort.findById(notice.getOfficeId()).orElseThrow();
-                            if (!lease.isHeld() || !jobs.isHeld(job) || currentOffice.isSuspended() || !current(current,notice,lang)) return false;
+                            if (!lease.isHeld() || !jobs.isHeld(job)) return StoreOutcome.OWNERSHIP_LOST;
+                            if(currentOffice.isSuspended()) { jobs.pause(job); return StoreOutcome.PAUSED; }
+                            if(!current(current,notice,lang)) { jobs.finish(job,false); return StoreOutcome.STALE; }
                             current.putTranslation(lang,result.title(),result.body(),clock.instant());
                             saveNoticePort.save(current);
                             jobs.finish(job,false);
-                            return true;
-                        }));
-                        if (stored) generated.add(lang);
-                        else jobs.finish(job,false);
+                            return StoreOutcome.STORED;
+                        });
+                        if (stored==StoreOutcome.STORED) generated.add(lang);
+                        else deferred.add(lang);
                     }
                 }
             } catch (me.yeonjae.ovlo.application.port.out.office.TranslationAdmissionPort.Unavailable e) {
@@ -138,6 +143,7 @@ public class NoticeTranslationService implements TranslateNoticeUseCase {
                 && !latest.getExpiresAt().isBefore(me.yeonjae.ovlo.application.service.office.OfficeDates.today(clock))
                 && latest.getTranslation(lang).filter(t -> !t.isStaleFor(latest.getVersion())).isEmpty();
     }
+    private enum StoreOutcome { STORED, PAUSED, STALE, OWNERSHIP_LOST }
 
     @Override @Transactional(propagation=org.springframework.transaction.annotation.Propagation.NOT_SUPPORTED)
     public Outcome retryManually(Long id) {

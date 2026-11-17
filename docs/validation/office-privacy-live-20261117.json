@@ -1,0 +1,37 @@
+{
+  "french": {
+    "unitMutationRejected": true,
+    "abbreviationAccepted": true,
+    "durationMutationRejected": true,
+    "model": "anthropic/claude-opus-5.5",
+    "generated": "La formation dure 2 heures et commence à 18:00."
+  },
+  "answer": {
+    "model": "anthropic/claude-sonnet-5.5",
+    "changedEvidenceRejected": true,
+    "abuseRejected": true,
+    "text": "La formation dure 2 h [1] et commence à 18 h [1]."
+  },
+  "interruptedTranslation": {
+    "passed": true,
+    "case": "liveLlmSuspendedDuringPaidCallRecovers()",
+    "calls": [
+      [
+        "translate",
+        "anthropic/claude-opus-5.5"
+      ],
+      [
+        "translation-verify",
+        "anthropic/claude-sonnet-5.5"
+      ],
+      [
+        "translate",
+        "anthropic/claude-opus-5.5"
+      ],
+      [
+        "translation-verify",
+        "anthropic/claude-sonnet-5.5"
+      ]
+    ]
+  }
+}

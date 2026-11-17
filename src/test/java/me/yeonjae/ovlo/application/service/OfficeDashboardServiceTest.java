@@ -66,10 +66,6 @@ class OfficeDashboardServiceTest {
         Notice expiring = Notice.register(OFFICE, NoticeCategory.HOUSING, "기숙사", "본문", null, List.of(), "2027-1",
                 LocalDate.of(2027, 2, 1), LocalDate.of(2027, 3, 5), 1L, NOW);
         given(statsPort.findNoticesExpiringWithin(OFFICE, today, 7)).willReturn(List.of(expiring));
-        given(statsPort.findQuestions(eq(OFFICE), isNull(), eq(from), eq(to), anyInt()))
-                .willReturn(List.of("비자 연장?", "비자 연장", "기숙사"));
-        given(statsPort.findQuestions(eq(OFFICE), eq(InquiryOutcome.NO_GROUNDS), eq(from), eq(to), anyInt()))
-                .willReturn(List.of("알바 가능?", "알바 가능"));
 
         OfficeDashboardResult r = service.dashboard(OFFICE, null, null);
 
@@ -82,8 +78,8 @@ class OfficeDashboardServiceTest {
         assertThat(r.notices().approved()).isEqualTo(12);
         assertThat(r.notices().expiringSoon()).extracting(OfficeDashboardResult.ExpiringNotice::title).containsExactly("기숙사");
         assertThat(r.partnerClicks()).containsEntry(PartnerCategory.SIM, 5L);
-        assertThat(r.repeatedQuestions()).containsExactly(new OfficeDashboardResult.RepeatedQuestion("비자 연장?", 2));
-        assertThat(r.noGroundsQuestions()).containsExactly(new OfficeDashboardResult.RepeatedQuestion("알바 가능?", 2));
+        assertThat(r.repeatedQuestions()).isEmpty();
+        assertThat(r.noGroundsQuestions()).isEmpty();
     }
 
     @Test
@@ -93,7 +89,6 @@ class OfficeDashboardServiceTest {
         given(statsPort.countFeedback(eq(OFFICE), any(), any())).willReturn(new FeedbackCounts(0, 0));
         given(statsPort.countConsultations(eq(OFFICE), any(), any())).willReturn(new ConsultationCounts(0, 0, 0, 0));
         given(statsPort.findNoticesExpiringWithin(eq(OFFICE), any(), anyInt())).willReturn(List.of());
-        given(statsPort.findQuestions(eq(OFFICE), any(), any(), any(), anyInt())).willReturn(List.of());
 
         OfficeDashboardResult r = service.dashboard(OFFICE, LocalDate.of(2027, 1, 1), LocalDate.of(2027, 1, 31));
 

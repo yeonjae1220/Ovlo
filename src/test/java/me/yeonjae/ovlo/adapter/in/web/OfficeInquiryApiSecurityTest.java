@@ -130,8 +130,8 @@ class OfficeInquiryApiSecurityTest {
     @DisplayName("문의 로그는 그 Office 담당자만: 다른 Office 403, 같은 Office 200, 일반 회원 403, 비로그인 401")
     void staffLog() throws Exception {
         given(getInquiryQuery.findForStaff(eq(OFFICE_ID), any(), any(), any(), any())).willReturn(new PageImpl<>(List.of(
-                new me.yeonjae.ovlo.application.dto.result.InquiryLogResult(900L, NoticeLang.KO, "합성 질문",
-                        InquiryOutcome.NO_GROUNDS, null, List.of(), 0, java.time.Instant.EPOCH, 1, null, null, null,
+                new me.yeonjae.ovlo.application.dto.result.InquiryLogResult(900L, NoticeLang.KO,
+                        InquiryOutcome.NO_GROUNDS, List.of(), 0, java.time.Instant.EPOCH, 1, null, null,
                         me.yeonjae.ovlo.domain.office.model.InquiryRejectionReason.NO_CANDIDATES))));
 
         mockMvc.perform(get("/api/v1/office-admin/" + OFFICE_ID + "/inquiries")

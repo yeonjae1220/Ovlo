@@ -24,6 +24,7 @@ spring:
 ovlo:
   office:
     translation-retry-enabled: false
+    personal-data-cleanup-enabled: false
   marketplace:
     photos:
       cleanup-enabled: false # Cleanup is exercised explicitly, never by wall-clock timing in tests.

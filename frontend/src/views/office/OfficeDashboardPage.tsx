@@ -125,16 +125,7 @@ export default function OfficeDashboardPage() {
               sub={`${t('office.dashboard.approved')} ${d.notices.approved} · ${t('office.dashboard.draft')} ${d.notices.draft}`} />
           </div>
 
-          <Card>
-            <h3 style={{ margin: '0 0 8px', fontSize: 15 }}>{t('office.dashboard.noGrounds')}</h3>
-            <p style={{ margin: '0 0 10px', fontSize: 12, color: 'var(--color-text-muted)' }}>{t('office.dashboard.noGroundsHint')}</p>
-            <QuestionList items={d.noGroundsQuestions} emptyText={t('office.dashboard.repeatedNone')} />
-          </Card>
-
-          <Card>
-            <h3 style={{ margin: '0 0 10px', fontSize: 15 }}>{t('office.dashboard.repeated')}</h3>
-            <QuestionList items={d.repeatedQuestions} emptyText={t('office.dashboard.repeatedNone')} />
-          </Card>
+          <Card><p>{t('office.inquiries.privacy')}</p></Card>
 
           <Card>
             <h3 style={{ margin: '0 0 10px', fontSize: 15 }}>{t('office.dashboard.expiring')}</h3>

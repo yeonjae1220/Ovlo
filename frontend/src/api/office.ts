@@ -141,16 +141,13 @@ export type InquiryRejectionReason = 'NO_CANDIDATES' | 'MODEL_NO_GROUNDS' | 'MOD
 export interface InquiryLog {
   id: number
   lang: NoticeLang
-  question: string
   outcome: InquiryOutcome
-  answerText: string | null
   citedNoticeIds: number[]
   candidateCount: number
   askedAt: string
   latencyMs: number
   modelId: string | null
   helpful: boolean | null
-  feedbackReason: string | null
   rejectionReason: InquiryRejectionReason | null
 }
 
