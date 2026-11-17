@@ -57,6 +57,7 @@ export default function OfficeInquiriesPage() {
         <Card key={q.id}>
           <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap', marginBottom: 6, fontSize: 12, color: 'var(--color-text-muted)' }}>
             <OutcomeBadge outcome={q.outcome} />
+            {q.rejectionReason && <Badge tone="warning">{t(`office.rejection.${q.rejectionReason}`)}</Badge>}
             <Badge tone="neutral">{q.lang.toLowerCase()}</Badge>
             <span>{formatDateTime(q.askedAt)}</span>
             <span>{q.latencyMs} ms</span>

@@ -135,6 +135,8 @@ export interface InquiryConversation {
   canContinue: boolean
 }
 
+export type InquiryRejectionReason = 'NO_CANDIDATES' | 'MODEL_NO_GROUNDS' | 'MODEL_REFUSED' | 'NO_CITATION' | 'BAD_CITATION' | 'VERIFY_DENIED' | 'EVIDENCE_CHANGED'
+
 /** 담당자 문의 로그 행 (학생 식별 정보 없음) */
 export interface InquiryLog {
   id: number
@@ -149,6 +151,7 @@ export interface InquiryLog {
   modelId: string | null
   helpful: boolean | null
   feedbackReason: string | null
+  rejectionReason: InquiryRejectionReason | null
 }
 
 export type ConsultationStatus = 'OPEN' | 'IN_PROGRESS' | 'RESOLVED' | 'CLOSED'
