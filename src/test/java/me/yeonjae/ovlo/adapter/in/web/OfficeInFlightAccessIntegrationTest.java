@@ -21,6 +21,36 @@ class OfficeInFlightAccessIntegrationTest extends OfficeFullReviewIntegrationTes
     @org.springframework.test.context.bean.override.mockito.MockitoSpyBean
     me.yeonjae.ovlo.adapter.out.persistence.OfficeConsultationPersistenceAdapter consultationSpy;
     @Autowired me.yeonjae.ovlo.application.service.office.NoticeAnswerFinalizer finalizer;
+    @Autowired org.springframework.transaction.support.TransactionTemplate tx;
+    @Autowired OfficePersonalDataPort privacy;
+    @Autowired NoticeKnowledgePort knowledge;
+
+    @Test void answerAndStaffNoticeCreationDoNotDeadlockOnMemberForeignKey() throws Exception {
+        // A staff member can also be a verified student. Both real write paths must coexist.
+        verifyStudent(actor); approveNotice();
+        var locked=new java.util.concurrent.CountDownLatch(2);
+        try(var pool=java.util.concurrent.Executors.newVirtualThreadPerTaskExecutor()) {
+            var answer=pool.submit(() -> tx.execute(status -> {
+                privacy.lockActiveMember(actor); awaitBoth(locked);
+                return finalizer.finish(Inquiry.answered(notice.getOfficeId(),actor,NoticeLang.KO,
+                        "교육 시간은?","1.5시간 [1]",java.util.List.of(notice.getId()),java.util.List.of(notice.getId()),
+                        Instant.now(),1L,"probe"),java.util.List.of(notice),java.util.List.of(),java.util.List.of());
+            }));
+            var newNotice=pool.submit(() -> tx.execute(status -> {
+                knowledge.lockOffice(notice.getOfficeId()); awaitBoth(locked);
+                return notices.save(Notice.register(notice.getOfficeId(),NoticeCategory.OTHER,"새 공지","교육 안내",null,
+                        java.util.List.of(),"2026-2",LocalDate.now(),LocalDate.now().plusDays(7),actor,Instant.now()));
+            }));
+            assertThat(answer.get(20,java.util.concurrent.TimeUnit.SECONDS).getOutcome()).isEqualTo(InquiryOutcome.ANSWERED);
+            assertThat(newNotice.get(20,java.util.concurrent.TimeUnit.SECONDS).getId()).isNotNull();
+        }
+    }
+
+    private static void awaitBoth(java.util.concurrent.CountDownLatch latch) {
+        latch.countDown();
+        try { assertThat(latch.await(10,java.util.concurrent.TimeUnit.SECONDS)).isTrue(); }
+        catch(InterruptedException e) { Thread.currentThread().interrupt(); throw new IllegalStateException(e); }
+    }
 
     me.yeonjae.ovlo.adapter.out.office.AnthropicLlmAdapter liveProvider() {
         return new me.yeonjae.ovlo.adapter.out.office.AnthropicLlmAdapter(

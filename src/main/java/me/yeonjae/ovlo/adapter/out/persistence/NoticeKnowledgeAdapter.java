@@ -17,7 +17,7 @@ public class NoticeKnowledgeAdapter implements NoticeKnowledgePort {
     @PersistenceContext private EntityManager em;
     @Override public void lockOffice(Long id) {
         // 모든 자료 변경과 답변 확정은 같은 Office 행을 잠근다. LLM 호출 동안은 잠그지 않는다.
-        em.createNativeQuery("SELECT id FROM office WHERE id = ? FOR UPDATE", Long.class).setParameter(1, id).getSingleResult();
+        em.createNativeQuery("SELECT id FROM office WHERE id = ? FOR NO KEY UPDATE", Long.class).setParameter(1, id).getSingleResult();
         em.clear(); // 잠금 전 영속성 컨텍스트의 오래된 승인본을 재사용하지 않는다.
     }
     @Override public List<Scope> scopes(Long officeId) {

@@ -13,7 +13,7 @@ import java.util.Optional;
 
 public interface OfficeConsultationJpaRepository extends JpaRepository<OfficeConsultationJpaEntity, Long> {
 
-    @Query(value="SELECT id FROM member WHERE id = :memberId FOR UPDATE", nativeQuery=true)
+    @Query(value="SELECT id FROM member WHERE id = :memberId FOR NO KEY UPDATE", nativeQuery=true)
     Long lockStudentForCreation(@Param("memberId") Long memberId);
     long countByMemberIdAndOpenedAtGreaterThanEqual(Long memberId, Instant since);
     boolean existsByOfficeIdAndMemberIdAndStatusIn(Long officeId, Long memberId, List<String> statuses);
