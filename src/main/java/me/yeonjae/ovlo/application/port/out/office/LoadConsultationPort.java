@@ -10,6 +10,9 @@ import java.util.List;
 import java.util.Optional;
 
 public interface LoadConsultationPort {
+    Page<Consultation> findByMember(Long memberId, Pageable pageable);
+    Optional<Consultation> findByIdAndMember(Long consultationId, Long memberId);
+
     void lockStudentForCreation(Long memberId);
     long countOpenedSince(Long memberId, Instant since);
     boolean hasActiveForStudent(Long officeId, Long memberId);

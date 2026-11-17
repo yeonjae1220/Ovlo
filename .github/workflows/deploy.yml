@@ -78,7 +78,7 @@ jobs:
         run: ./gradlew integrationTest --tests '*ChatAccessIntegrationTest' --tests '*LegacyDevelopmentAccountMigrationIntegrationTest' --no-daemon
 
       - name: Notice source approval and migration regressions
-        run: ./gradlew integrationTest --tests '*NoticeGovernanceIntegrationTest' --tests '*NoticeSourceMigrationIntegrationTest' --tests '*NoticeRetranslationIntegrationTest' --tests '*NoticeTranslationRecoveryIntegrationTest' --tests '*NoticeTranslationMigrationIntegrationTest' --tests '*NoticeReviewRemainingIssuesIntegrationTest' --tests '*OfficeFullReviewIntegrationTest' --tests '*OfficePrivacyRecoveryIntegrationTest' --tests '*OfficeInFlightAccessIntegrationTest' --tests '*RedisTranslationWorkAdapterIntegrationTest' --tests '*RedisTranslationAdmissionAdapterIntegrationTest' --no-daemon
+        run: ./gradlew integrationTest --tests '*NoticeGovernanceIntegrationTest' --tests '*NoticeSourceMigrationIntegrationTest' --tests '*NoticeRetranslationIntegrationTest' --tests '*NoticeTranslationRecoveryIntegrationTest' --tests '*NoticeTranslationMigrationIntegrationTest' --tests '*NoticeReviewRemainingIssuesIntegrationTest' --tests '*OfficeFullReviewIntegrationTest' --tests '*OfficePrivacyRecoveryIntegrationTest' --tests '*OfficeInFlightAccessIntegrationTest' --tests '*OfficeRetainedAccessIntegrationTest' --tests '*RedisTranslationWorkAdapterIntegrationTest' --tests '*RedisTranslationAdmissionAdapterIntegrationTest' --no-daemon
 
   frontend-check:
     name: Frontend build
@@ -96,6 +96,7 @@ jobs:
         run: |
           node scripts/test-auth-query-cache.cjs
           node scripts/test-auth-session-race.cjs
+          node scripts/test-consultation-history.cjs
         working-directory: frontend
       - name: Test long notice warning
         run: node scripts/test-notice-length.cjs

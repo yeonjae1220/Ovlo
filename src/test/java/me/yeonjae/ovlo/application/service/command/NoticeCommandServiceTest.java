@@ -61,7 +61,8 @@ class NoticeCommandServiceTest {
     void setUp() {
         sut = new NoticeCommandService(loadNoticePort, saveNoticePort, loadOfficePort, translateNoticeUseCase,
                 eventPublisher, Clock.fixed(NOW, ZoneOffset.UTC), org.mockito.Mockito.mock(me.yeonjae.ovlo.application.port.out.office.NoticeKnowledgePort.class),
-                org.mockito.Mockito.mock(me.yeonjae.ovlo.application.service.office.NoticeGovernanceService.class), me.yeonjae.ovlo.support.NoticeTranslationJobFixtures.available());
+                org.mockito.Mockito.mock(me.yeonjae.ovlo.application.service.office.NoticeGovernanceService.class), me.yeonjae.ovlo.support.NoticeTranslationJobFixtures.available(),
+                org.mockito.Mockito.mock(me.yeonjae.ovlo.application.service.office.CurrentOfficeStaffAccess.class));
         office = Office.create(266L, "국제처", NOW);
         office.assignId(new OfficeId(OFFICE));
         lenient().when(loadOfficePort.findById(OFFICE)).thenReturn(Optional.of(office));

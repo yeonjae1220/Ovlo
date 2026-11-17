@@ -9,6 +9,9 @@ import java.util.List;
 import java.util.Optional;
 
 public interface GetConsultationQuery {
+    Page<ConsultationResult> findOwnHistory(Long memberId, Pageable pageable);
+    Optional<ConsultationResult> findOwnDetail(Long consultationId, Long memberId);
+
     Page<ConsultationResult> findForStaff(Long officeId, ConsultationStatus status, Pageable pageable);
 
     List<ConsultationResult> findMine(Long officeId, Long memberId);

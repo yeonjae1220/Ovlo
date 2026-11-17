@@ -340,6 +340,12 @@ export const officeApi = {
   openConsultation: (officeId: number, body: { inquiryId?: number | null; consentVersion: string; message?: string | null; lang?: NoticeLang | Lowercase<NoticeLang> }) =>
     apiClient.post<Consultation>(`/office/${officeId}/consultations`, body).then((r) => r.data),
 
+  ownConsultations: (page: number, signal?: AbortSignal) =>
+    apiClient.get<PageResult<Consultation>>('/office/my-consultations', { signal, params: { page, size: 20 } }).then(r => r.data),
+
+  ownConsultation: (id: number, signal?: AbortSignal) =>
+    apiClient.get<Consultation>(`/office/my-consultations/${id}`, { signal }).then(r => r.data),
+
   myConsultations: (officeId: number, signal?: AbortSignal) =>
     apiClient.get<Consultation[]>(`/office/${officeId}/consultations`, { signal }).then((r) => r.data),
 

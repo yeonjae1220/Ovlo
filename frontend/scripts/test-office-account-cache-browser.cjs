@@ -29,10 +29,10 @@ const output = process.env.OFFICE_CHAT_SCREENSHOTS || '/tmp/ovlo-account-cache-b
       if(p==='/api/v1/members/42') return json(a)
       if(p==='/api/v1/members/43') return json(b)
       if(p.endsWith('/office/me')) return json({officeId:5,officeName:'검증 국제처',status:'ACTIVE',role:null,verifiedStudent:true,universityId:1})
-      if(p==='/api/v1/office/5/consultations') {
+      if(p==='/api/v1/office/my-consultations') {
         if(current===b)listCallsB++
-        return json([{id:700,question:current===a?'A_ONLY_PRIVATE_CONSULTATION':'B_ONLY_PRIVATE_CONSULTATION',
-          status:'OPEN',openedAt:'2026-11-15T00:00:00Z',assignedStaffNickname:null}])
+        return json({totalPages:1,content:[{id:700,question:current===a?'A_ONLY_PRIVATE_CONSULTATION':'B_ONLY_PRIVATE_CONSULTATION',
+          status:'OPEN',openedAt:'2026-11-15T00:00:00Z',assignedStaffNickname:null}]})
       }
       if(p.endsWith('/notices')||p.endsWith('/partners')) return json([])
       if(p.includes('/verification'))return json({trustLevel:'UNVERIFIED',verifiedUniversities:[]})

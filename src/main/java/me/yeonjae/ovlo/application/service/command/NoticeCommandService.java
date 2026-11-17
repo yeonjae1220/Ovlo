@@ -38,6 +38,7 @@ public class NoticeCommandService implements ManageNoticeUseCase {
     private final me.yeonjae.ovlo.application.port.out.office.NoticeTranslationJobPort jobs;
     private static final Logger log = LoggerFactory.getLogger(NoticeCommandService.class);
 
+    private final me.yeonjae.ovlo.application.service.office.CurrentOfficeStaffAccess currentAccess;
     private final LoadNoticePort loadNoticePort;
     private final SaveNoticePort saveNoticePort;
     private final LoadOfficePort loadOfficePort;
@@ -51,7 +52,9 @@ public class NoticeCommandService implements ManageNoticeUseCase {
                                 TranslateNoticeUseCase translateNoticeUseCase, ApplicationEventPublisher eventPublisher,
                                 Clock clock, me.yeonjae.ovlo.application.port.out.office.NoticeKnowledgePort knowledge,
                                 me.yeonjae.ovlo.application.service.office.NoticeGovernanceService governance,
-                                me.yeonjae.ovlo.application.port.out.office.NoticeTranslationJobPort jobs) {
+                                me.yeonjae.ovlo.application.port.out.office.NoticeTranslationJobPort jobs,
+                                me.yeonjae.ovlo.application.service.office.CurrentOfficeStaffAccess currentAccess) {
+        this.currentAccess=currentAccess;
         this.jobs=jobs;
         this.loadNoticePort = loadNoticePort;
         this.saveNoticePort = saveNoticePort;
@@ -140,6 +143,7 @@ public class NoticeCommandService implements ManageNoticeUseCase {
     @Override
     @Transactional(propagation=org.springframework.transaction.annotation.Propagation.NOT_SUPPORTED)
     public NoticeResult retranslate(NoticeActionCommand c) {
+        currentAccess.check(c.officeId(),Long.valueOf(c.actor()));
         requireWritableOffice(c.officeId());
         governance.authorize(c.officeId(),Long.valueOf(c.actor()),false);
         Notice notice=requireNotice(c.officeId(), c.noticeId());
@@ -148,6 +152,7 @@ public class NoticeCommandService implements ManageNoticeUseCase {
         Notice committed = loadNoticePort.findCommittedById(c.noticeId())
                 .filter(n -> n.getOfficeId().equals(c.officeId()))
                 .orElseThrow(() -> new NoticeException("공지를 찾을 수 없습니다: id=" + c.noticeId(), NoticeException.ErrorType.NOT_FOUND));
+        currentAccess.check(c.officeId(),Long.valueOf(c.actor()));
         return NoticeResultMapper.toResult(committed, today());
     }
 

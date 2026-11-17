@@ -1,0 +1,59 @@
+{
+  "evaluatedAt": "2026-11-17T08:32:49.805111+00:00",
+  "tests": [
+    {
+      "name": "[1] revoke = false",
+      "passed": true
+    },
+    {
+      "name": "[2] revoke = true",
+      "passed": true
+    },
+    {
+      "name": "liveStudentReadsTranslatedReplyWithoutCurrentSchoolCredential()",
+      "passed": true
+    },
+    {
+      "name": "[1] revoke = false",
+      "passed": true
+    },
+    {
+      "name": "[2] revoke = true",
+      "passed": true
+    },
+    {
+      "name": "liveRemovedStaffCannotReceiveTranslation()",
+      "passed": true
+    },
+    {
+      "name": "liveFrenchDirectConsultationAndStaffReply()",
+      "passed": true
+    }
+  ],
+  "provider": "anthropic-compatible deployed gateway",
+  "answerModel": "claude-sonnet-5-5",
+  "translationModel": "claude-opus-5-5",
+  "localTests": {
+    "test": {
+      "tests": 889,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 16
+    },
+    "integrationTest": {
+      "tests": 259,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 9
+    }
+  },
+  "frontend": [
+    "production build",
+    "auth cache",
+    "auth response race",
+    "notice length",
+    "retained list/detail render",
+    "same-document account switch browser"
+  ],
+  "pythonTests": 55
+}

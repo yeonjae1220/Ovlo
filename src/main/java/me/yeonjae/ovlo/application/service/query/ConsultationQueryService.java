@@ -27,6 +27,23 @@ public class ConsultationQueryService implements GetConsultationQuery {
         this.loadMemberPort = loadMemberPort;
     }
 
+    private void requireActive(Long memberId) {
+        if (!loadMemberPort.isActive(new MemberId(memberId)))
+            throw new me.yeonjae.ovlo.domain.office.exception.OfficeException("현재 상담 접근 권한이 없습니다",
+                    me.yeonjae.ovlo.domain.office.exception.OfficeException.ErrorType.FORBIDDEN);
+    }
+    @Override public Page<ConsultationResult> findOwnHistory(Long memberId, Pageable pageable) {
+        requireActive(memberId);
+        // Stable ordering and bounded output; request parameters never select a different owner.
+        var bounded=org.springframework.data.domain.PageRequest.of(pageable.getPageNumber(),Math.min(pageable.getPageSize(),50),
+                org.springframework.data.domain.Sort.by(org.springframework.data.domain.Sort.Direction.DESC,"openedAt","id"));
+        return loadConsultationPort.findByMember(memberId,bounded).map(this::toResult);
+    }
+    @Override public Optional<ConsultationResult> findOwnDetail(Long id, Long memberId) {
+        requireActive(memberId);
+        return loadConsultationPort.findByIdAndMember(id,memberId).map(this::toResult);
+    }
+
     @Override
     public Page<ConsultationResult> findForStaff(Long officeId, ConsultationStatus status, Pageable pageable) {
         return loadConsultationPort.findByOffice(officeId, status, pageable).map(this::toResult);
