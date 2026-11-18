@@ -211,7 +211,7 @@ class InquiryCommandServiceTest {
         ArgumentCaptor<Inquiry> saved = ArgumentCaptor.forClass(Inquiry.class);
         verify(saveInquiryPort).save(saved.capture());
         assertThat(saved.getValue().getRejectionReason()).isEqualTo(reason);
-        assertThat(meters.get("ovlo.office.inquiry").tag("rejection_reason", reason.name()).counter().count()).isEqualTo(1);
+        assertThat(meters.get("ovlo.office.inquiry").tag("outcome", "NO_GROUNDS").tag("rejection_reason", reason.name()).counter().count()).isEqualTo(1);
         assertThat(meters.get("ovlo.office.inquiry.latency").timer().count()).isEqualTo(1);
     }
 

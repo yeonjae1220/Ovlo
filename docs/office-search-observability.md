@@ -51,11 +51,37 @@ Micrometer 이름: `ovlo.office.inquiry.retrieval`.
 따라서 이 지표와 `ovlo_office_inquiry_total`(저장 결과 관측)의 분모는 다르며, 성공 커밋 수·현재 DB 행 수와 같다고 가정하지 않는다.
 두 새 counter도 관측 위치와 호출자가 다르므로 조인하거나 차감해서 개별 요청의 자격 탈락을 추론하지 않는다.
 
+### `ovlo_office_inquiry_total` — 2026-11-18 내보내기 추가
+
+Micrometer 이름: `ovlo.office.inquiry`. S-01 때부터 있던 counter이고 정의는 바꾸지 않았다.
+이번에 바뀐 것은 내부 Collector로 내보내는 허용 목록에 넣은 것과, 시작할 때 0으로 등록하는 것 두 가지다.
+문의 한 건이 **저장된 뒤 한 번** 증가한다. 저장 전에 예외로 끝난 요청은 증가하지 않는다.
+
+| 태그 | 허용값 | 의미 |
+|---|---|---|
+| `outcome` | `ANSWERED`, `NO_GROUNDS`, `OUT_OF_SCOPE`, `ESCALATED` | 저장된 문의 결과. |
+| `rejection_reason` | `NONE` 또는 `InquiryRejectionReason` 값 8개 | 저장된 탈락 사유. 사유 없이 저장되면 `NONE`이다. |
+
+- 0으로 미리 등록하는 조합은 20개다. 결과 4개의 `NONE`, 그리고 `NO_GROUNDS`·`ESCALATED` 각각에 사유 8개.
+  DB 제약(V52)이 사유를 이 두 결과에만 허용하므로 나머지 조합은 등록하지 않는다. 0으로 등록됐다고 그 조합이 실제로 발생한다는 뜻은 아니다.
+- 허용 목록은 태그별 값만 검사한다. 값은 enum에서 만들어지므로 사유를 추가하면 내보내기 목록도 같이 늘어난다.
+- 같은 이름을 쓰는 `ovlo.office.inquiry.latency`(timer)는 COUNTER가 아니어서 내보내지 않는다.
+- 학교·회원·문의 식별자와 언어는 태그에 없다. 사유는 저장 경로의 이름일 뿐 질문이나 답변 내용을 담지 않는다.
+- 사용자가 적은 동안에는 시각과 사유 조합으로 개별 문의가 좁혀질 수 있다. 이 시계열은 기존 두 counter와 같은
+  인증된 모니터링 경계 안에서만 보고, DB의 문의 행과 시각으로 맞춰 보지 않는다.
+- 분모가 다르다: 검색 counter는 검색 단계 관측이고 이 counter는 저장 결과다. 서로 빼거나 나누지 않는다.
+
+```promql
+sum by (outcome, rejection_reason) (increase(app_ovlo_office_inquiry_total{service_name="ovlo-search-metrics"}[7d]))
+```
+
+운영 Prometheus 조회 이름은 Collector 접두사 규칙에 따라 `app_ovlo_office_inquiry_total`일 것으로 **예상**한다. 배포 뒤 확인해 아래에 적는다.
+
 ## 개인정보·수집 경계
 
 - 새 API는 enum 또는 boolean만 받아 태그를 만든다. 원문, 검색어, 답변, URL, 학생/학교/문의/공지 ID, 해시 ID,
   언어, 요청 시각, 본문 길이, 예외 메시지·클래스는 태그로 받지 않는다. 새 로그·DB 컬럼·원문 저장소도 없다.
-- 기본 태그 조합은 어댑터 12개 + 문의 검색 6개로 고정한다. 프로세스 시작 시 0으로 등록하고 재시작하면 초기화된다.
+- 기본 태그 조합은 어댑터 12개 + 문의 검색 6개 + 저장 결과 20개(2026-11-18 추가)로 고정한다. 프로세스 시작 시 0으로 등록하고 재시작하면 초기화된다.
   모든 조합을 미리 등록하므로 정상 경로에서 불가능한 조합도 0으로 존재한다. 미사용 provider도 0이다.
   수집 시스템이 추가하는 환경/인스턴스 공통 라벨은 이 수에 포함하지 않는다.
 - 수집 범위는 기존 인증된 모니터링 경계다. 공개 API나 담당자 화면에 새 지표를 노출하지 않는다.
@@ -69,7 +95,7 @@ Micrometer 이름: `ovlo.office.inquiry.retrieval`.
 Prometheus는 OTEL Collector를 scrape하며 Collector의 metrics 입력은 OTLP뿐이고, 앱에는 OTLP registry/Java agent와
 Collector 방향 egress 허용이 없었다. 기존 통계나 질문은 조회하지 않고 배포·수집 설정으로 이 차이를 확인했다.
 
-- `SearchMetricsExportConfig`가 위 두 counter만 내부 Collector의 OTLP/HTTP 4318 포트로 30초마다 누적 전송한다.
+- `SearchMetricsExportConfig`가 위 검색 counter 두 개와 저장 결과 counter(2026-11-18 추가)만 내부 Collector의 OTLP/HTTP 4318 포트로 30초마다 누적 전송한다.
   지표 이름·COUNTER 타입·태그 키 집합·각 값 모두 허용 목록과 일치해야 한다. 다른 지표나 추가 태그는 거부한다.
 - Boot의 범용 OTLP 자동 전송은 꺼 두고 기존 Prometheus registry는 유지한다. prod 프로필에서 전용 registry가 켜진다.
   `OVLO_SEARCH_METRICS_EXPORT_ENABLED=false`로 다음 배포 시 전용 전송만 중단할 수 있다. 로컬/test 기본은 꺼짐이다.

@@ -34,11 +34,16 @@ class SearchMetricsExportConfigTest {
             var metrics = new OfficeMetrics(registry);
             metrics.searchCompleted(OfficeMetrics.SearchProvider.POSTGRES, OfficeMetrics.SearchPath.RANKED, true);
             metrics.inquiryRetrieval(true, OfficeMetrics.RetrievalResult.PRESENT);
+            metrics.inquiry(me.yeonjae.ovlo.domain.office.model.InquiryOutcome.NO_GROUNDS, 120,
+                    me.yeonjae.ovlo.domain.office.model.InquiryRejectionReason.NO_ELIGIBLE_NOTICES);
+            registry.counter("ovlo.office.inquiry", "outcome", "NO_GROUNDS", "rejection_reason", "PRIVATE_SENTINEL").increment();
+            registry.counter("ovlo.office.inquiry", "outcome", "ANSWERED", "rejection_reason", "NONE",
+                    "office_id", "PRIVATE_SENTINEL").increment();
             registry.counter("forbidden.counter", "email", "PRIVATE_SENTINEL").increment();
             registry.counter("ovlo.office.search.completed", "provider", "POSTGRES", "path", "RANKED",
                     "candidates", "PRESENT", "member_id", "PRIVATE_SENTINEL").increment();
             registry.counter("ovlo.office.inquiry.retrieval", "query_kind", "PRIVATE_SENTINEL", "result", "PRESENT").increment();
-            assertThat(registry.getMeters()).hasSize(18);
+            assertThat(registry.getMeters()).hasSize(38);
             String body = null;
             ExportMetricsServiceRequest payload = null;
             for (int i=0; i<20; i++) {
@@ -49,13 +54,15 @@ class SearchMetricsExportConfigTest {
                     break;
                 }
             }
-            assertThat(body).isNotNull().contains("ovlo.office.search.completed", "ovlo.office.inquiry.retrieval", "synthetic-pod")
-                    .doesNotContain("forbidden.counter", "PRIVATE_SENTINEL", "long_body", "traceId", "spanId", "trace_id", "span_id");
+            assertThat(body).isNotNull().contains("ovlo.office.search.completed", "ovlo.office.inquiry.retrieval", "synthetic-pod",
+                            "NO_ELIGIBLE_NOTICES")
+                    .doesNotContain("forbidden.counter", "PRIVATE_SENTINEL", "long_body", "ovlo.office.inquiry.latency", "traceId", "spanId", "trace_id", "span_id");
             assertThat(payload).isNotNull();
             var exported = payload.getResourceMetricsList().stream()
                     .flatMap(r -> r.getScopeMetricsList().stream()).flatMap(s -> s.getMetricsList().stream()).toList();
             assertThat(exported).isNotEmpty().allSatisfy(metric -> {
-                assertThat(metric.getName()).isIn("ovlo.office.search.completed", "ovlo.office.inquiry.retrieval");
+                assertThat(metric.getName()).isIn("ovlo.office.search.completed", "ovlo.office.inquiry.retrieval",
+                        "ovlo.office.inquiry");
                 assertThat(metric.hasSum()).isTrue();
                 assertThat(metric.getSum().getIsMonotonic()).isTrue();
                 assertThat(metric.getSum().getDataPointsList()).isNotEmpty().allSatisfy(point ->
@@ -87,7 +94,7 @@ class SearchMetricsExportConfigTest {
                     var composite = c.getBean(io.micrometer.core.instrument.MeterRegistry.class);
                     new OfficeMetrics(composite).inquiryRetrieval(false, OfficeMetrics.RetrievalResult.EMPTY);
                     composite.counter("forbidden.counter", "email", "PRIVATE_SENTINEL").increment();
-                    assertThat(c.getBean(io.micrometer.registry.otlp.OtlpMeterRegistry.class).getMeters()).hasSize(18);
+                    assertThat(c.getBean(io.micrometer.registry.otlp.OtlpMeterRegistry.class).getMeters()).hasSize(38);
                     assertThat(c.getBean(io.micrometer.prometheusmetrics.PrometheusMeterRegistry.class)
                             .find("forbidden.counter").counter()).isNotNull();
                     // The real network exporter is covered separately; this test checks registry wiring.
@@ -101,5 +108,29 @@ class SearchMetricsExportConfigTest {
                 Tags.of("query_kind", "SINGLE", "result", "PRESENT"), null, null, Meter.Type.GAUGE))).isFalse();
         assertThat(SearchMetricsExportConfig.allowed(new Meter.Id("ovlo.office.inquiry.retrieval",
                 Tags.of("query_kind", "SINGLE", "result", "QUESTION_TEXT"), null, null, Meter.Type.COUNTER))).isFalse();
+    }
+
+    @Test void savedOutcomeCounterIsExportedOnlyWithKnownOutcomeAndReasonValues() {
+        for (var outcome : me.yeonjae.ovlo.domain.office.model.InquiryOutcome.values()) {
+            assertThat(SearchMetricsExportConfig.allowed(inquiryId(Meter.Type.COUNTER, "outcome", outcome.name(),
+                    "rejection_reason", "NONE"))).isTrue();
+        }
+        for (var reason : me.yeonjae.ovlo.domain.office.model.InquiryRejectionReason.values()) {
+            assertThat(SearchMetricsExportConfig.allowed(inquiryId(Meter.Type.COUNTER, "outcome", "NO_GROUNDS",
+                    "rejection_reason", reason.name()))).isTrue();
+        }
+        assertThat(SearchMetricsExportConfig.allowed(inquiryId(Meter.Type.COUNTER, "outcome", "NO_GROUNDS",
+                "rejection_reason", "FREE_TEXT"))).isFalse();
+        assertThat(SearchMetricsExportConfig.allowed(inquiryId(Meter.Type.COUNTER, "outcome", "ANSWERED"))).isFalse();
+        assertThat(SearchMetricsExportConfig.allowed(inquiryId(Meter.Type.COUNTER, "outcome", "ANSWERED",
+                "rejection_reason", "NONE", "office_id", "2"))).isFalse();
+        assertThat(SearchMetricsExportConfig.allowed(inquiryId(Meter.Type.TIMER, "outcome", "ANSWERED",
+                "rejection_reason", "NONE"))).isFalse();
+        assertThat(SearchMetricsExportConfig.allowed(new Meter.Id("ovlo.office.inquiry.latency",
+                Tags.of("outcome", "ANSWERED"), null, null, Meter.Type.TIMER))).isFalse();
+    }
+
+    private static Meter.Id inquiryId(Meter.Type type, String... tags) {
+        return new Meter.Id("ovlo.office.inquiry", Tags.of(tags), null, null, type);
     }
 }

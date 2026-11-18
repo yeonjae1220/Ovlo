@@ -11,11 +11,17 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import me.yeonjae.ovlo.domain.office.model.InquiryOutcome;
+import me.yeonjae.ovlo.domain.office.model.InquiryRejectionReason;
+import me.yeonjae.ovlo.shared.metrics.OfficeMetrics;
 import java.time.Duration;
+import java.util.Arrays;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
-/** Only the two anonymous retrieval counters are pushed to the internal collector. */
+/** Only the anonymous retrieval counters and the saved-outcome counter are pushed to the internal collector. */
 @Configuration(proxyBeanMethods = false)
 @ConditionalOnProperty(name = "ovlo.search.metrics.export.enabled", havingValue = "true")
 public class SearchMetricsExportConfig {
@@ -25,6 +31,15 @@ public class SearchMetricsExportConfig {
             "candidates", Set.of("EMPTY", "PRESENT"));
     private static final Map<String, Set<String>> RETRIEVAL_TAGS = Map.of(
             "query_kind", Set.of("SINGLE", "FOLLOW_UP"), "result", Set.of("EMPTY", "PRESENT", "ERROR"));
+
+    private static final Map<String, Set<String>> INQUIRY_TAGS = Map.of(
+            "outcome", names(InquiryOutcome.values()),
+            "rejection_reason", Stream.concat(Stream.of(OfficeMetrics.NO_REJECTION_REASON),
+                    names(InquiryRejectionReason.values()).stream()).collect(Collectors.toUnmodifiableSet()));
+
+    private static Set<String> names(Enum<?>[] values) {
+        return Arrays.stream(values).map(Enum::name).collect(Collectors.toUnmodifiableSet());
+    }
 
     @Bean(destroyMethod = "close")
     OtlpMeterRegistry searchMetricsRegistry(@Value("${ovlo.search.metrics.export.url}") String url,
@@ -56,6 +71,7 @@ public class SearchMetricsExportConfig {
         Map<String, Set<String>> tags = switch (id.getName()) {
             case "ovlo.office.search.completed" -> SEARCH_TAGS;
             case "ovlo.office.inquiry.retrieval" -> RETRIEVAL_TAGS;
+            case "ovlo.office.inquiry" -> INQUIRY_TAGS;
             default -> Map.of();
         };
         return !tags.isEmpty() && id.getTags().size() == tags.size()

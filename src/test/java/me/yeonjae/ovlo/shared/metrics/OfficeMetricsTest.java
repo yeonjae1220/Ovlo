@@ -76,9 +76,24 @@ class OfficeMetricsTest {
         metrics.inquiry(InquiryOutcome.OUT_OF_SCOPE, 1, null);
         for (var reason : me.yeonjae.ovlo.domain.office.model.InquiryRejectionReason.values()) {
             metrics.inquiry(InquiryOutcome.NO_GROUNDS, 1, reason);
-            assertThat(registry.get("ovlo.office.inquiry").tag("rejection_reason", reason.name()).counter().count()).isEqualTo(1);
+            assertThat(registry.get("ovlo.office.inquiry").tag("outcome", "NO_GROUNDS").tag("rejection_reason", reason.name()).counter().count()).isEqualTo(1);
         }
         assertThat(registry.get("ovlo.office.inquiry").tag("outcome", "ANSWERED").tag("rejection_reason", "NONE").counter().count()).isEqualTo(1);
     }
 
+    @Test void savedOutcomeSeriesStartAtZeroForEveryOutcomeAndUnansweredReason() {
+        var registry = new SimpleMeterRegistry();
+        new OfficeMetrics(registry);
+        int reasons = me.yeonjae.ovlo.domain.office.model.InquiryRejectionReason.values().length;
+        var counters = registry.find("ovlo.office.inquiry").counters();
+
+        assertThat(counters).hasSize(InquiryOutcome.values().length + 2 * reasons).allSatisfy(c -> {
+            assertThat(c.count()).isZero();
+            assertThat(c.getId().getTags()).extracting(t -> t.getKey())
+                    .containsExactlyInAnyOrder("outcome", "rejection_reason");
+        });
+        assertThat(registry.find("ovlo.office.inquiry").tag("outcome", "ANSWERED").counters()).hasSize(1);
+        assertThat(registry.find("ovlo.office.inquiry").tag("outcome", "NO_GROUNDS")
+                .tag("rejection_reason", "NO_ELIGIBLE_NOTICES").counter()).isNotNull();
+    }
 }
