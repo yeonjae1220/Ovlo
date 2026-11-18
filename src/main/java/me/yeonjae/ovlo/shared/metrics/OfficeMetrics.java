@@ -4,6 +4,7 @@ import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.Timer;
 import me.yeonjae.ovlo.domain.office.model.InquiryOutcome;
+import me.yeonjae.ovlo.domain.office.model.InquiryRejectionReason;
 import me.yeonjae.ovlo.application.service.office.LongNoticeSavedEvent;
 import me.yeonjae.ovlo.domain.office.model.PartnerCategory;
 import org.springframework.stereotype.Component;
@@ -18,7 +19,7 @@ import java.time.Duration;
  * ovlo.office.search.completed  counter  provider=KEYWORD|POSTGRES  path=NO_ELIGIBLE|SMALL_CORPUS|RANKED  candidates=EMPTY|PRESENT
  * ovlo.office.inquiry.retrieval counter  query_kind=SINGLE|FOLLOW_UP  result=EMPTY|PRESENT|ERROR
  * ovlo.office.notice.long_body   counter  action=REGISTER|UPDATE (committed long-body saves, not unique notices)
- * ovlo.office.inquiry            counter  outcome=ANSWERED|NO_GROUNDS|OUT_OF_SCOPE|ESCALATED  rejection_reason=NONE|enum
+ * ovlo.office.inquiry            counter  outcome=ANSWERED|NO_GROUNDS|OUT_OF_SCOPE|ESCALATED  rejection_reason=NONE|enum  (exported; zero series at startup)
  * ovlo.office.inquiry.latency    timer    outcome
  * ovlo.office.llm.calls          counter  purpose=answer|inquiry-screen|inquiry-verify|translate|marketplace-translate  result=ok|refused|error  model
  * ovlo.office.llm.tokens         counter  purpose  direction=input|output  model
@@ -35,6 +36,9 @@ public class OfficeMetrics {
     public enum SearchPath { NO_ELIGIBLE, SMALL_CORPUS, RANKED }
     public enum RetrievalResult { EMPTY, PRESENT, ERROR }
 
+    /** Tag value for an inquiry saved without a rejection reason. */
+    public static final String NO_REJECTION_REASON = "NONE";
+
     private final MeterRegistry registry;
 
     public OfficeMetrics(MeterRegistry registry) {
@@ -50,6 +54,14 @@ public class OfficeMetrics {
         }
         for (var action : LongNoticeSavedEvent.Action.values()) {
             longNoticeCounter(action);
+        }
+        // Zero series for every outcome, and for each reason an unanswered outcome can carry, so the first
+        // occurrence after a restart is a visible 0 -> 1 step rather than a series that appears at 1.
+        for (var outcome : InquiryOutcome.values()) {
+            inquiryCounter(outcome, null);
+            if (outcome == InquiryOutcome.NO_GROUNDS || outcome == InquiryOutcome.ESCALATED) {
+                for (var reason : InquiryRejectionReason.values()) inquiryCounter(outcome, reason);
+            }
         }
     }
 
@@ -91,12 +103,17 @@ public class OfficeMetrics {
         inquiry(outcome, latencyMs, null);
     }
 
-    public void inquiry(InquiryOutcome outcome, long latencyMs,
-                        me.yeonjae.ovlo.domain.office.model.InquiryRejectionReason reason) {
+    public void inquiry(InquiryOutcome outcome, long latencyMs, InquiryRejectionReason reason) {
         String tag = outcome.name();
-        Counter.builder("ovlo.office.inquiry").tag("outcome", tag)
-                .tag("rejection_reason", reason == null ? "NONE" : reason.name()).register(registry).increment();
+        inquiryCounter(outcome, reason).increment();
         Timer.builder("ovlo.office.inquiry.latency").tag("outcome", tag).register(registry).record(Duration.ofMillis(latencyMs));
+    }
+
+    private Counter inquiryCounter(InquiryOutcome outcome, InquiryRejectionReason reason) {
+        return Counter.builder("ovlo.office.inquiry")
+                .description("Saved inquiry outcomes; rejection_reason is NONE unless the inquiry went unanswered")
+                .tag("outcome", outcome.name())
+                .tag("rejection_reason", reason == null ? NO_REJECTION_REASON : reason.name()).register(registry);
     }
 
     public void llmCall(String purpose, String model, String result, long inputTokens, long outputTokens, long ms) {
