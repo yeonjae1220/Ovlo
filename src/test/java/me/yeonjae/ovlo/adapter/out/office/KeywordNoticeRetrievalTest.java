@@ -20,6 +20,6 @@ class KeywordNoticeRetrievalTest {
         }
         var load = mock(LoadNoticePort.class);
         when(load.findActiveForStudent(1L, null, NoticeRetrievalGoldenSet.TODAY)).thenReturn(List.copyOf(documents.values()));
-        NoticeRetrievalGoldenSet.evaluate("keyword", new KeywordNoticeSearchAdapter(load, NoticeFixtures.governance(load), new OfficeMetrics(new SimpleMeterRegistry())), 1L, documents);
+        NoticeRetrievalGoldenSet.evaluate("keyword", new KeywordNoticeSearchAdapter(load, NoticeFixtures.governance(load), new OfficeMetrics(new SimpleMeterRegistry()), NoticeRetrievalGoldenSet.RANKED_ONLY_BYPASS_CEILING), 1L, documents);
     }
 }

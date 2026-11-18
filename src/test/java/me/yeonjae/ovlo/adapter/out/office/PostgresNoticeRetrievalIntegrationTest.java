@@ -28,6 +28,8 @@ class PostgresNoticeRetrievalIntegrationTest {
         r.add("spring.jpa.hibernate.ddl-auto", () -> "none");
         r.add("spring.jpa.properties.hibernate.dialect", () -> "org.hibernate.dialect.PostgreSQLDialect");
         r.add("ovlo.search.provider", () -> "postgres");
+        // The 28-document golden set must measure ranked retrieval, not the small-corpus bypass.
+        r.add("ovlo.office.inquiry-small-corpus-limit", () -> String.valueOf(NoticeRetrievalGoldenSet.RANKED_ONLY_BYPASS_CEILING));
     }
     @Autowired JdbcTemplate jdbc;
     @Autowired io.micrometer.core.instrument.MeterRegistry meters;

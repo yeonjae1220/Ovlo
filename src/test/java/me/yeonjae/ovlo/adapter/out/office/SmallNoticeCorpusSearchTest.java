@@ -23,11 +23,13 @@ class SmallNoticeCorpusSearchTest {
     final LoadNoticePort load = mock(LoadNoticePort.class);
     final NoticeGovernanceService governance = mock(NoticeGovernanceService.class);
     final JdbcTemplate jdbc = mock(JdbcTemplate.class);
-    NoticeSearchPort adapter(String provider, List<Notice> notices) {
+    /** Existing cases keep the bypass ceiling at the ranked limit so their boundaries stay exact. */
+    NoticeSearchPort adapter(String provider, List<Notice> notices) { return adapter(provider, notices, 8); }
+    NoticeSearchPort adapter(String provider, List<Notice> notices, int smallCorpusLimit) {
         when(load.findActiveForStudent(5L, null, TODAY)).thenReturn(notices);
         lenient().when(governance.eligible(any(), eq(TODAY))).thenReturn(true);
-        return provider.equals("keyword") ? new KeywordNoticeSearchAdapter(load, governance, new OfficeMetrics(new SimpleMeterRegistry()))
-                : new PostgresFtsNoticeSearchAdapter(jdbc, load, governance, new OfficeMetrics(new SimpleMeterRegistry()));
+        return provider.equals("keyword") ? new KeywordNoticeSearchAdapter(load, governance, new OfficeMetrics(new SimpleMeterRegistry()), smallCorpusLimit)
+                : new PostgresFtsNoticeSearchAdapter(jdbc, load, governance, new OfficeMetrics(new SimpleMeterRegistry()), smallCorpusLimit);
     }
     static Notice notice(long id, long office, String title, String body) {
         Notice n = Notice.register(office, NoticeCategory.HOUSING, title, body, null, List.of(), "2027-1",
@@ -50,9 +52,25 @@ class SmallNoticeCorpusSearchTest {
         if (provider.equals("postgres")) verify(jdbc).queryForList(anyString(), eq(Long.class), eq("ko"), anyString(), eq(5L), eq(TODAY), eq(TODAY));
     }
     @ParameterizedTest @ValueSource(strings = {"keyword", "postgres"})
-    void configuredCandidateLimitIsRespected(String provider) {
+    void bypassCeilingIsIndependentOfTheRankedLimit(String provider) {
+        var docs = LongStream.rangeClosed(1, 30).mapToObj(id -> notice(id, 5L, "기숙사", "신청 안내")).toList();
+        assertThat(adapter(provider, docs, 30).findCandidates(5L, NoticeLang.KO, "unmatchedsynonym", TODAY, 8))
+                .extracting(Notice::getId).hasSize(30).startsWith(30L, 29L).endsWith(2L, 1L);
+        verifyNoInteractions(jdbc);
+    }
+    @ParameterizedTest @ValueSource(strings = {"keyword", "postgres"})
+    void oneMoreThanTheBypassCeilingFallsBackToRankedSearchWithItsOwnLimit(String provider) {
+        var docs = LongStream.rangeClosed(1, 31).mapToObj(id -> notice(id, 5L, "기숙사", "신청 안내")).toList();
+        var search = adapter(provider, docs, 30);
+        assertThat(search.findCandidates(5L, NoticeLang.KO, "unmatchedsynonym", TODAY, 8)).isEmpty();
+        if (provider.equals("keyword")) assertThat(search.findCandidates(5L, NoticeLang.KO, "기숙사 신청", TODAY, 8)).hasSize(8);
+    }
+    @ParameterizedTest @ValueSource(strings = {"keyword", "postgres"})
+    void configuredBypassCeilingIsRespectedAndZeroDisablesIt(String provider) {
         var docs = List.of(notice(1, 5, "기숙사", "신청"), notice(2, 5, "보험", "가입"));
-        assertThat(adapter(provider, docs).findCandidates(5L, NoticeLang.KO, "unmatchedsynonym", TODAY, 1)).isEmpty();
+        assertThat(adapter(provider, docs, 1).findCandidates(5L, NoticeLang.KO, "unmatchedsynonym", TODAY, 8)).isEmpty();
+        assertThat(adapter(provider, docs, 0).findCandidates(5L, NoticeLang.KO, "unmatchedsynonym", TODAY, 8)).isEmpty();
+        assertThat(adapter(provider, docs, 2).findCandidates(5L, NoticeLang.KO, "unmatchedsynonym", TODAY, 1)).hasSize(2);
     }
     @ParameterizedTest @ValueSource(strings = {"keyword", "postgres"})
     void thirtyThousandUtf8BytesFitButOneMoreFallsBack(String provider) {

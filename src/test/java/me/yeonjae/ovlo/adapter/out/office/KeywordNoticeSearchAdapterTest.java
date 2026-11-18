@@ -54,7 +54,7 @@ class KeywordNoticeSearchAdapterTest {
             corpus.add(other);
         }
         given(loadNoticePort.findActiveForStudent(eq(5L), isNull(), any())).willReturn(corpus);
-        var adapter = new KeywordNoticeSearchAdapter(loadNoticePort,me.yeonjae.ovlo.support.NoticeFixtures.governance(loadNoticePort), new OfficeMetrics(new SimpleMeterRegistry()));
+        var adapter = new KeywordNoticeSearchAdapter(loadNoticePort,me.yeonjae.ovlo.support.NoticeFixtures.governance(loadNoticePort), new OfficeMetrics(new SimpleMeterRegistry()), 8);
 
         assertThat(adapter.findCandidates(5L, NoticeLang.KO, "기숙사 신청은 언제까지예요?", TODAY, 8))
                 .extracting(Notice::getId).containsExactly(1L, 2L);   // 2번은 '신청'만 겹침

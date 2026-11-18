@@ -88,7 +88,7 @@ class OfficeAiLiveEvaluationTest {
         var governance=me.yeonjae.ovlo.support.NoticeFixtures.governance(candidateLoad);
         var finalizer=new NoticeAnswerFinalizer(mock(NoticeKnowledgePort.class),candidateLoad,save,governance,Clock.fixed(NOW,ZoneOffset.UTC),mock(OfficePersonalDataPort.class),access);
         var service=new InquiryCommandService(access,search,llm,new GroundedAnswerValidator(),load,save,
-            Clock.fixed(NOW,ZoneOffset.UTC),finalizer,governance,8,500,llm,admission,new me.yeonjae.ovlo.shared.metrics.OfficeMetrics(new io.micrometer.core.instrument.simple.SimpleMeterRegistry()));
+            Clock.fixed(NOW,ZoneOffset.UTC),finalizer,governance,8,30,500,llm,admission,new me.yeonjae.ovlo.shared.metrics.OfficeMetrics(new io.micrometer.core.instrument.simple.SimpleMeterRegistry()));
         long started=System.nanoTime();
         var result=service.ask(new AskQuestionCommand(1L,1L,c.question(),c.lang(),previous));
         Map<String,Object> evidence=new LinkedHashMap<>();

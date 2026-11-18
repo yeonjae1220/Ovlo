@@ -56,6 +56,8 @@ class OfficeInquiryPersistenceAdapterIntegrationTest {
         registry.add("spring.jpa.hibernate.ddl-auto", () -> "none");
         registry.add("spring.jpa.properties.hibernate.dialect", () -> "org.hibernate.dialect.PostgreSQLDialect");
         registry.add("ovlo.search.provider", () -> "postgres");
+        // Search assertions below exercise ranked FTS with more than eight documents.
+        registry.add("ovlo.office.inquiry-small-corpus-limit", () -> "8");
     }
 
     private static final Instant NOW = Instant.parse("2027-03-02T09:00:00Z");
