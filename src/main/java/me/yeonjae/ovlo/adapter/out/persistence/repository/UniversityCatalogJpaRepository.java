@@ -13,6 +13,10 @@ import java.util.List;
  * <p>집합 = (global_universities ⋈ 리포트/후기) ∪ (글로벌 미연결 후기 대학).
  * LATERAL + LIMIT 1 로 글로벌 대학당 정확히 한 행을 보장 → 검색/카운트 정합성 유지.</p>
  *
+ * <p>한 대학에 교환대학 행이 여러 개(직접 넣은 시드 + 마스터 유래)일 수 있다. 어느 행을 고르느냐가
+ * 표시 한글명·도시와 후기 링크({@code exchange_univ_id})를 정하므로 순서를 고정한다:
+ * 후기가 달린 행 → 한글명이 있는 행 → id 가 작은 행.</p>
+ *
  * <p>엔티티 타입은 형식상 {@link GlobalUniversityJpaEntity} 를 지정하되 실제로는
  * {@code Object[]} 행으로 조회한다(컬럼 순서 고정, 어댑터에서 수동 매핑).</p>
  */
@@ -36,6 +40,10 @@ public interface UniversityCatalogJpaRepository extends JpaRepository<GlobalUniv
                    SELECT e.id, e.name_ko, e.country, e.country_code, e.city
                    FROM exchange_universities e
                    WHERE e.global_univ_id = gu.id
+                   ORDER BY EXISTS (SELECT 1 FROM exchange_video_reviews v
+                                    WHERE v.university_id = e.id) DESC,
+                            (NULLIF(btrim(e.name_ko), '') IS NOT NULL) DESC,
+                            e.id
                    LIMIT 1
             ) eu ON true
             WHERE gu.canonical_id IS NULL

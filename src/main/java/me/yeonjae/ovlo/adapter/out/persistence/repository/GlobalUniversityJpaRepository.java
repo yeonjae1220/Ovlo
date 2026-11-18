@@ -75,6 +75,7 @@ public interface GlobalUniversityJpaRepository extends JpaRepository<GlobalUnive
     /**
      * 표시 언어의 대학명 — 다국어 이름 테이블의 그 언어 라벨, ko 는 없으면 연결 교환대학 한글명.
      * 컬럼 순서: id, name(없으면 NULL). 본교 선택 드롭다운의 보조 표기용.
+     * 교환대학 행이 여러 개면 한글명이 있는 행 중 id 가 가장 작은 행 — 카탈로그(CONTENT_SET)와 같은 기준.
      */
     @Query(value = """
             SELECT g.id,
@@ -82,7 +83,9 @@ public interface GlobalUniversityJpaRepository extends JpaRepository<GlobalUnive
                              WHERE gn.global_univ_id = g.id AND gn.lang = :lang LIMIT 1),
                             CASE WHEN :lang = 'ko' THEN
                                  (SELECT e.name_ko FROM exchange_universities e
-                                  WHERE e.global_univ_id = g.id AND e.name_ko IS NOT NULL LIMIT 1)
+                                  WHERE e.global_univ_id = g.id
+                                    AND NULLIF(btrim(e.name_ko), '') IS NOT NULL
+                                  ORDER BY e.id LIMIT 1)
                             END)
             FROM global_universities g
             WHERE g.id IN (:ids)

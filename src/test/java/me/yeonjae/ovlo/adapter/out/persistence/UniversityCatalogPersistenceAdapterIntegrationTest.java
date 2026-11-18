@@ -192,6 +192,47 @@ class UniversityCatalogPersistenceAdapterIntegrationTest {
     }
 
     @Test
+    @DisplayName("교환대학 행이 여러 개면 한글명이 있는 행을 고른다 — 삽입 순서와 무관")
+    void picksExchangeRowWithKoreanName() {
+        Long globalId = insertGlobal("University of Sao Paulo", null, "브라질", "BR", null);
+        insertExchange(globalId, "  ", "Universidade de Sao Paulo", "브라질", "BR", null);        // 마스터 유래 행(한글명이 공백뿐)
+        Long curatedId = insertExchange(globalId, "상파울루대학교", "USP", "브라질", "BR", "상파울루");  // 시드 행
+        insertExchange(globalId, null, "USP (duplicate)", "브라질", "BR", null);
+
+        UniversityCatalogResult r = find(globalId, "ko");
+
+        assertThat(r.exchangeUnivId()).isEqualTo(curatedId);
+        assertThat(r.nameKo()).isEqualTo("상파울루대학교");
+        assertThat(r.city()).isEqualTo("상파울루");
+    }
+
+    @Test
+    @DisplayName("교환대학 행이 여러 개면 후기가 달린 행을 한글명 행보다 먼저 고른다 — 후기 링크·집계가 그 행 기준")
+    void picksExchangeRowWithReviewsFirst() {
+        Long globalId = insertGlobal("University College London", null, "영국", "GB", null);
+        insertExchange(globalId, "유니버시티 칼리지 런던", "UCL", "영국", "GB", "런던");
+        Long reviewedId = insertExchange(globalId, null, "University College London, University of London", "영국", "GB", null);
+        insertReview(reviewedId, "https://youtu.be/ucl", 5);
+
+        UniversityCatalogResult r = find(globalId);
+
+        assertThat(r.exchangeUnivId()).isEqualTo(reviewedId);
+        assertThat(r.reviewCount()).isEqualTo(1L);
+    }
+
+    @Test
+    @DisplayName("조건이 같은 교환대학 행이 여러 개면 id 가 가장 작은 행을 고른다 — 페이지마다 같은 행")
+    void picksLowestIdOnTie() {
+        Long globalId = insertGlobal("Tie University", null, "독일", "DE", null);
+        Long firstId = insertExchange(globalId, "동률대학교 A", "Tie University A", "독일", "DE", null);
+        insertExchange(globalId, "동률대학교 B", "Tie University B", "독일", "DE", null);
+        // 첫 행을 갱신해 물리적 위치를 뒤로 보낸다 — 정렬이 없으면 두 번째 행이 먼저 읽힌다
+        jdbc.update("UPDATE exchange_universities SET city = 'Berlin' WHERE id = ?", firstId);
+
+        assertThat(find(globalId).exchangeUnivId()).isEqualTo(firstId);
+    }
+
+    @Test
     @DisplayName("countryCode로 필터링된다")
     void countryFilter() {
         List<UniversityCatalogResult> jp = search(null, "JP");
