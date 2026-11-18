@@ -28,12 +28,12 @@ Micrometer 이름: `ovlo.office.search.completed`.
 |---|---|---|
 | `provider` | `KEYWORD`, `POSTGRES` | 최상위 호출을 받은 어댑터. PostgreSQL 내부 CJK 보조 검색은 별도로 집계하지 않는다. |
 | `path` | `NO_ELIGIBLE` | S-03 자격 판정 후 공지가 없는 정상 반환. 학교에 저장된 공지 자체가 없다는 뜻은 아니다. |
-| `path` | `SMALL_CORPUS` | 자격 있는 전체 공지가 candidateLimit 및 30,000 UTF-8 바이트 안에 들어가 전부 반환하는 분기. |
+| `path` | `SMALL_CORPUS` | 자격 있는 전체 공지가 우회 건수 상한(`ovlo.office.inquiry-small-corpus-limit`, 기본 30) 및 30,000 UTF-8 바이트 안에 들어가 전부 반환하는 분기. 순위 검색의 candidateLimit(기본 8)과는 별개다. |
 | `path` | `RANKED` | S-03 우회가 적용되지 않아 기존 검색을 실행한 분기. 검색어 토큰이 없어서 빈 결과를 반환하는 경우도 포함한다. |
 | `candidates` | `EMPTY`, `PRESENT` | 어댑터 반환 후보의 존재 여부. 서비스의 최종 자격 재검사 전이다. |
 
 경로는 최초 분기 판단 기준이다. 검색 도중 자료가 바뀌거나 PostgreSQL 내부 보조 검색이 다른 상태를 읽어도 상위 경로를 재분류하지 않는다.
-운영의 양수 candidateLimit(기본 8)을 전제로 해석한다. `NO_ELIGIBLE`과 `SMALL_CORPUS`가 건수/바이트 등 정확한 자료 규모를 알려주지는 않는다.
+운영의 양수 우회 건수 상한(기본 30)을 전제로 해석한다. 0 이하이면 우회가 꺼져 자격 있는 공지가 없어도 `RANKED`로 집계된다. `NO_ELIGIBLE`과 `SMALL_CORPUS`가 건수/바이트 등 정확한 자료 규모를 알려주지는 않는다.
 
 ### `ovlo_office_inquiry_retrieval_total`
 

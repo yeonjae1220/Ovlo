@@ -63,18 +63,21 @@ public class PostgresFtsNoticeSearchAdapter implements NoticeSearchPort {
     private final me.yeonjae.ovlo.application.service.office.NoticeGovernanceService governance;
     private final KeywordNoticeSearchAdapter cjkFallback;
 
-    public PostgresFtsNoticeSearchAdapter(JdbcTemplate jdbc, LoadNoticePort loadNoticePort, me.yeonjae.ovlo.application.service.office.NoticeGovernanceService governance, OfficeMetrics metrics) {
-        this.metrics = metrics;
+    private final int smallCorpusLimit;
+
+    public PostgresFtsNoticeSearchAdapter(JdbcTemplate jdbc, LoadNoticePort loadNoticePort, me.yeonjae.ovlo.application.service.office.NoticeGovernanceService governance, OfficeMetrics metrics,
+                                          @org.springframework.beans.factory.annotation.Value("${ovlo.office.inquiry-small-corpus-limit:30}") int smallCorpusLimit) {
+        this.metrics = metrics; this.smallCorpusLimit = smallCorpusLimit;
         this.jdbc = jdbc;
         this.loadNoticePort = loadNoticePort; this.governance=governance;
-        this.cjkFallback = new KeywordNoticeSearchAdapter(loadNoticePort,governance,metrics);
+        this.cjkFallback = new KeywordNoticeSearchAdapter(loadNoticePort,governance,metrics,smallCorpusLimit);
     }
 
     @Override
     public List<Notice> findCandidates(Long officeId, NoticeLang lang, String question, LocalDate today, int limit) {
         List<Notice> eligible = SmallNoticeCorpus.eligible(loadNoticePort.findActiveForStudent(officeId, null, today),
                 officeId, lang, today, governance);
-        var small = SmallNoticeCorpus.fitting(eligible, lang, limit);
+        var small = SmallNoticeCorpus.fitting(eligible, lang, smallCorpusLimit);
         if (small.isPresent()) return observed(eligible.isEmpty() ? SearchPath.NO_ELIGIBLE : SearchPath.SMALL_CORPUS, small.get());
         Map<Long, Notice> merged = new LinkedHashMap<>();
         String tsquery = toOrQuery(question);

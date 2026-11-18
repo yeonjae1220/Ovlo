@@ -26,8 +26,8 @@ class NoticeSearchObservationTest {
     NoticeSearchPort adapter(String provider, List<Notice> notices) {
         when(load.findActiveForStudent(5L, null, TODAY)).thenReturn(notices);
         lenient().when(governance.eligible(any(), eq(TODAY))).thenReturn(true);
-        return provider.equals("KEYWORD") ? new KeywordNoticeSearchAdapter(load, governance, metrics)
-                : new PostgresFtsNoticeSearchAdapter(jdbc, load, governance, metrics);
+        return provider.equals("KEYWORD") ? new KeywordNoticeSearchAdapter(load, governance, metrics, 8)
+                : new PostgresFtsNoticeSearchAdapter(jdbc, load, governance, metrics, 8);
     }
     List<Notice> largeCorpus() {
         return LongStream.rangeClosed(1, 9).mapToObj(id -> notice(id, 5, "기숙사 신청", "등록 안내")).toList();

@@ -60,6 +60,7 @@ public class InquiryCommandService implements AskQuestionUseCase, GiveInquiryFee
     private final me.yeonjae.ovlo.application.service.office.NoticeGovernanceService governance;
     private final OfficeMetrics metrics;
     private final int candidateLimit;
+    private final int smallCorpusLimit;
     private final int officeDailyLimit;
 
     public InquiryCommandService(StudentOfficeAccessPolicy accessPolicy, NoticeSearchPort searchPort,
@@ -68,6 +69,7 @@ public class InquiryCommandService implements AskQuestionUseCase, GiveInquiryFee
                                  me.yeonjae.ovlo.application.service.office.NoticeAnswerFinalizer finalizer,
                                  me.yeonjae.ovlo.application.service.office.NoticeGovernanceService governance,
                                  @Value("${ovlo.office.inquiry-candidate-limit:8}") int candidateLimit,
+                                 @Value("${ovlo.office.inquiry-small-corpus-limit:30}") int smallCorpusLimit,
                                  @Value("${ovlo.office.inquiry-office-daily-limit:500}") int officeDailyLimit,
                                  me.yeonjae.ovlo.application.port.out.office.InquiryGuardPort guard,
                                  me.yeonjae.ovlo.application.port.out.office.InquiryAdmissionPort admission, OfficeMetrics metrics) {
@@ -81,6 +83,7 @@ public class InquiryCommandService implements AskQuestionUseCase, GiveInquiryFee
         this.saveInquiryPort = saveInquiryPort;
         this.clock = clock; this.finalizer=finalizer; this.governance=governance;
         this.candidateLimit = candidateLimit;
+        this.smallCorpusLimit = smallCorpusLimit;
         this.officeDailyLimit = officeDailyLimit;
     }
 
@@ -215,7 +218,7 @@ public class InquiryCommandService implements AskQuestionUseCase, GiveInquiryFee
             candidates = searchPort.findCandidates(c.officeId(), c.lang(), searchQuestion, today, candidateLimit).stream()
                     .filter(n -> n.isGroundingEligible(today, c.lang())) // Final eligibility remains authoritative.
                     .filter(n -> governance.eligible(n, today))
-                    .limit(candidateLimit)
+                    .limit(Math.max(candidateLimit, smallCorpusLimit)) // the small-corpus bypass may return more than the ranked limit
                     .toList();
         } catch (RuntimeException failure) {
             metrics.inquiryRetrieval(followUp, OfficeMetrics.RetrievalResult.ERROR);

@@ -120,6 +120,8 @@ ovlo:
     provider: ${OVLO_SEARCH_PROVIDER:keyword}
   office:
     inquiry-candidate-limit: ${OVLO_INQUIRY_CANDIDATE_LIMIT:8}
+    # Bypass ranked search when every eligible notice fits this count and 30,000 UTF-8 bytes. 0 disables it.
+    inquiry-small-corpus-limit: ${OVLO_INQUIRY_SMALL_CORPUS_LIMIT:30}
     inquiry-office-daily-limit: ${OVLO_INQUIRY_OFFICE_DAILY_LIMIT:500}
     ai-global-daily-limit: ${OVLO_AI_GLOBAL_DAILY_LIMIT:5000}
     # UTC-day budget: input tokens + 5 * output tokens, including screening and verification.

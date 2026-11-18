@@ -23,9 +23,12 @@ public final class SmallNoticeCorpus {
     /** Present empty list means no eligible corpus; empty Optional means use normal ranked retrieval.
      * Count the full requested-language title/body and public applicability before the legacy 200/3000-character truncation.
      * Thus no additional truncation is needed to fit the byte budget on this path.
+     * {@code maxNotices} is the bypass ceiling (ovlo.office.inquiry-small-corpus-limit), separate from the ranked
+     * candidate limit: the byte budget bounds the prompt, the count bounds how many citations one answer may choose from.
+     * Zero or less disables the bypass.
      */
-    public static Optional<List<Notice>> fitting(List<Notice> eligible, NoticeLang lang, int candidateLimit) {
-        if (candidateLimit <= 0 || eligible.size() > candidateLimit) return Optional.empty();
+    public static Optional<List<Notice>> fitting(List<Notice> eligible, NoticeLang lang, int maxNotices) {
+        if (maxNotices <= 0 || eligible.size() > maxNotices) return Optional.empty();
         int remaining = MAX_CONTEXT_BYTES;
         for (Notice notice : eligible) {
             var translation = notice.getTranslation(lang).filter(t -> !t.isStaleFor(notice.getVersion()));

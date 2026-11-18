@@ -13,6 +13,8 @@ import static org.assertj.core.api.Assertions.*;
 
 /** Shared retrieval-only runner: the real adapters decide candidates; no answer/LLM mocks return gold. */
 final class NoticeRetrievalGoldenSet {
+    /** Keeps the bypass ceiling at the ranked limit so the 28-document fixture measures ranked retrieval. */
+    static final int RANKED_ONLY_BYPASS_CEILING = 8;
     static final LocalDate TODAY = LocalDate.of(2027, 3, 2);
     static final Instant NOW = Instant.parse("2027-03-02T09:00:00Z");
     private static final JsonMapper JSON = JsonMapper.builder().build();

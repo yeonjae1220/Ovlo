@@ -75,7 +75,7 @@ class InquiryCommandServiceTest {
         var governance=me.yeonjae.ovlo.support.NoticeFixtures.governance(candidateLoad);
         var finalizer=new me.yeonjae.ovlo.application.service.office.NoticeAnswerFinalizer(org.mockito.Mockito.mock(me.yeonjae.ovlo.application.port.out.office.NoticeKnowledgePort.class),candidateLoad,saveInquiryPort,governance,Clock.fixed(NOW,ZoneOffset.UTC),org.mockito.Mockito.mock(me.yeonjae.ovlo.application.port.out.office.OfficePersonalDataPort.class),accessPolicy);
         sut = new InquiryCommandService(accessPolicy, searchPort, answerPort, new GroundedAnswerValidator(),
-                loadInquiryPort, saveInquiryPort, Clock.fixed(NOW, ZoneOffset.UTC), finalizer, governance, 8, 500, guard, admission, new me.yeonjae.ovlo.shared.metrics.OfficeMetrics(meters));
+                loadInquiryPort, saveInquiryPort, Clock.fixed(NOW, ZoneOffset.UTC), finalizer, governance, 8, 30, 500, guard, admission, new me.yeonjae.ovlo.shared.metrics.OfficeMetrics(meters));
         lenient().when(admission.acquire(any(), any())).thenReturn(lease);
         var allowed = new me.yeonjae.ovlo.application.port.out.office.InquiryGuardPort.Verdict(true, "guard", 10, 1);
         lenient().when(guard.screen(anyString(), any())).thenReturn(allowed);
@@ -92,6 +92,21 @@ class InquiryCommandServiceTest {
         dorm = approved(77L, "기숙사 신청 안내", "2027-1학기 기숙사 신청은 2월 10일까지입니다.");
         dorm.putTranslation(NoticeLang.EN, "Dormitory application", "Applications close on February 10.", NOW);
         insurance = approved(78L, "보험 가입 안내", "입국 후 2주 안에 보험에 가입해야 합니다.");
+    }
+
+    @Test void smallCorpusCandidatesBeyondTheRankedLimitAllReachTheModelAndTheRecord() {
+        var notices = java.util.stream.LongStream.range(200, 212).mapToObj(id -> approved(id, "안내 " + id, "본문 " + id)).toList();
+        lenient().when(candidateLoad.findById(any())).thenAnswer(inv -> notices.stream().filter(n -> n.getId().equals(inv.getArgument(0))).findFirst());
+        given(searchPort.findCandidates(any(), any(), anyString(), any(), anyInt())).willReturn(notices);
+        given(answerPort.answer(any())).willReturn(new AnswerGenerationPort.Result("", "test", 1, 1, true));
+        sut.ask(new AskQuestionCommand(OFFICE, MEMBER, "생활관 안내", NoticeLang.KO));
+        var request = ArgumentCaptor.forClass(AnswerGenerationPort.Request.class);
+        verify(answerPort).answer(request.capture());
+        assertThat(request.getValue().candidates()).hasSize(12);
+        var saved = ArgumentCaptor.forClass(Inquiry.class);
+        verify(saveInquiryPort).save(saved.capture());
+        assertThat(saved.getValue().getCandidateNoticeIds()).hasSize(12);
+        verify(searchPort).findCandidates(OFFICE, NoticeLang.KO, "생활관 안내", TODAY, 8);
     }
 
     @Test void contextBudgetShortensBodiesWithoutLosingApplicability() {

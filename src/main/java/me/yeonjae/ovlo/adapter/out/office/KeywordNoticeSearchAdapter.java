@@ -32,8 +32,11 @@ public class KeywordNoticeSearchAdapter implements NoticeSearchPort {
     private final OfficeMetrics metrics;
     private final me.yeonjae.ovlo.application.service.office.NoticeGovernanceService governance;
 
-    public KeywordNoticeSearchAdapter(LoadNoticePort loadNoticePort, me.yeonjae.ovlo.application.service.office.NoticeGovernanceService governance, OfficeMetrics metrics) {
-        this.metrics = metrics;
+    private final int smallCorpusLimit;
+
+    public KeywordNoticeSearchAdapter(LoadNoticePort loadNoticePort, me.yeonjae.ovlo.application.service.office.NoticeGovernanceService governance, OfficeMetrics metrics,
+                                      @org.springframework.beans.factory.annotation.Value("${ovlo.office.inquiry-small-corpus-limit:30}") int smallCorpusLimit) {
+        this.metrics = metrics; this.smallCorpusLimit = smallCorpusLimit;
         this.loadNoticePort = loadNoticePort; this.governance=governance;
     }
 
@@ -48,7 +51,7 @@ public class KeywordNoticeSearchAdapter implements NoticeSearchPort {
     Retrieval retrieve(Long officeId, NoticeLang lang, String question, LocalDate today, int limit) {
         List<Notice> eligible = SmallNoticeCorpus.eligible(loadNoticePort.findActiveForStudent(officeId, null, today),
                 officeId, lang, today, governance);
-        var small = SmallNoticeCorpus.fitting(eligible, lang, limit);
+        var small = SmallNoticeCorpus.fitting(eligible, lang, smallCorpusLimit);
         if (small.isPresent()) return new Retrieval(small.get(), eligible.isEmpty() ? SearchPath.NO_ELIGIBLE : SearchPath.SMALL_CORPUS);
         Set<String> queryTokens = tokens(question);
         if (queryTokens.isEmpty()) return new Retrieval(List.of(), SearchPath.RANKED);
