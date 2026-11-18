@@ -137,7 +137,7 @@ export interface InquiryConversation {
   canContinue: boolean
 }
 
-export type InquiryRejectionReason = 'NO_CANDIDATES' | 'MODEL_NO_GROUNDS' | 'MODEL_REFUSED' | 'NO_CITATION' | 'BAD_CITATION' | 'VERIFY_DENIED' | 'EVIDENCE_CHANGED'
+export type InquiryRejectionReason = 'NO_ELIGIBLE_NOTICES' | 'NO_CANDIDATES' | 'MODEL_NO_GROUNDS' | 'MODEL_REFUSED' | 'NO_CITATION' | 'BAD_CITATION' | 'VERIFY_DENIED' | 'EVIDENCE_CHANGED'
 
 /** 담당자 문의 로그 행 (학생 식별 정보 없음) */
 export interface InquiryLog {

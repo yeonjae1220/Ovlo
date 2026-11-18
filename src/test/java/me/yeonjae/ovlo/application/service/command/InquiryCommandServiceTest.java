@@ -172,12 +172,27 @@ class InquiryCommandServiceTest {
         return n;
     }
 
+    private static boolean emptyRetrieval(me.yeonjae.ovlo.domain.office.model.InquiryRejectionReason reason) {
+        return reason == me.yeonjae.ovlo.domain.office.model.InquiryRejectionReason.NO_CANDIDATES
+                || reason == me.yeonjae.ovlo.domain.office.model.InquiryRejectionReason.NO_ELIGIBLE_NOTICES;
+    }
+
+    @Test void eligibilityIsOnlyCheckedWhenRetrievalIsEmpty() {
+        given(searchPort.findCandidates(anyLong(), any(), anyString(), any(), anyInt())).willReturn(List.of(dorm));
+        given(answerPort.answer(any())).willReturn(new AnswerGenerationPort.Result("NO_GROUNDS", "test", 1, 1, false));
+        sut.ask(new AskQuestionCommand(OFFICE, MEMBER, "기숙사 신청?", NoticeLang.KO));
+        verify(searchPort, never()).hasEligibleNotices(any(), any(), any());
+    }
+
     @org.junit.jupiter.params.ParameterizedTest
     @org.junit.jupiter.params.provider.EnumSource(me.yeonjae.ovlo.domain.office.model.InquiryRejectionReason.class)
     void recordsEachRejectionPath(me.yeonjae.ovlo.domain.office.model.InquiryRejectionReason reason) {
         given(searchPort.findCandidates(anyLong(), any(), anyString(), any(), anyInt()))
-                .willReturn(reason.name().equals("NO_CANDIDATES") ? List.of() : List.of(dorm));
-        if (!reason.name().equals("NO_CANDIDATES")) {
+                .willReturn(emptyRetrieval(reason) ? List.of() : List.of(dorm));
+        // Empty retrieval is split by whether the office had any eligible notice at all.
+        if (emptyRetrieval(reason)) given(searchPort.hasEligibleNotices(OFFICE, NoticeLang.KO, TODAY))
+                .willReturn(reason == me.yeonjae.ovlo.domain.office.model.InquiryRejectionReason.NO_CANDIDATES);
+        if (!emptyRetrieval(reason)) {
             String text = switch (reason) {
                 case MODEL_NO_GROUNDS -> "NO_GROUNDS";
                 case NO_CITATION -> "신청 마감은 2월 10일입니다.";

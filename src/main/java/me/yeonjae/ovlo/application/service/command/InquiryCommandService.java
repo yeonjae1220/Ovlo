@@ -138,7 +138,8 @@ public class InquiryCommandService implements AskQuestionUseCase, GiveInquiryFee
 
         if (candidates.isEmpty()) {
             Inquiry saved = record(Inquiry.noGrounds(c.officeId(), c.memberId(), c.lang(), question, candidateIds, start,
-                    elapsed(start), null, InquiryRejectionReason.NO_CANDIDATES), history);
+                    elapsed(start), null, searchPort.hasEligibleNotices(c.officeId(), c.lang(), today)
+                            ? InquiryRejectionReason.NO_CANDIDATES : InquiryRejectionReason.NO_ELIGIBLE_NOTICES), history);
             return noGroundsResult(saved);
         }
 

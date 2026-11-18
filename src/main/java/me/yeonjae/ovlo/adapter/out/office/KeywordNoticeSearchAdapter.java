@@ -47,6 +47,12 @@ public class KeywordNoticeSearchAdapter implements NoticeSearchPort {
         return retrieval.candidates();
     }
 
+    @Override
+    public boolean hasEligibleNotices(Long officeId, NoticeLang lang, LocalDate today) {
+        return !SmallNoticeCorpus.eligible(loadNoticePort.findActiveForStudent(officeId, null, today),
+                officeId, lang, today, governance).isEmpty();
+    }
+
     /** Internal PostgreSQL fallback must not emit a second top-level search observation. */
     Retrieval retrieve(Long officeId, NoticeLang lang, String question, LocalDate today, int limit) {
         List<Notice> eligible = SmallNoticeCorpus.eligible(loadNoticePort.findActiveForStudent(officeId, null, today),

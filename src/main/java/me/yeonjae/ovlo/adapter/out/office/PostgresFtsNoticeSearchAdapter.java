@@ -97,6 +97,11 @@ public class PostgresFtsNoticeSearchAdapter implements NoticeSearchPort {
         return observed(SearchPath.RANKED, new ArrayList<>(merged.values()));
     }
 
+    @Override
+    public boolean hasEligibleNotices(Long officeId, NoticeLang lang, LocalDate today) {
+        return cjkFallback.hasEligibleNotices(officeId, lang, today);
+    }
+
     private List<Notice> observed(SearchPath path, List<Notice> candidates) {
         metrics.searchCompleted(SearchProvider.POSTGRES, path, !candidates.isEmpty());
         return candidates;
