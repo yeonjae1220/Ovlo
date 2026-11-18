@@ -75,7 +75,9 @@ Micrometer 이름: `ovlo.office.inquiry`. S-01 때부터 있던 counter이고 �
 sum by (outcome, rejection_reason) (increase(app_ovlo_office_inquiry_total{service_name="ovlo-search-metrics"}[7d]))
 ```
 
-운영 Prometheus 조회 이름은 Collector 접두사 규칙에 따라 `app_ovlo_office_inquiry_total`일 것으로 **예상**한다. 배포 뒤 확인해 아래에 적는다.
+2026-11-18 `b4c4e1d` 배포 뒤 운영 Prometheus에서 확인했다. 조회 이름은 `app_ovlo_office_inquiry_total`이고,
+`service_name="ovlo-search-metrics"`로 20개 조합이 모두 0으로 수집됐다. 이 지표 이름만 조회했고 검증용 운영 질문은 보내지 않았으므로,
+실제 문의에서 값이 오르는 것은 아직 확인하지 않았다.
 
 ## 개인정보·수집 경계
 
