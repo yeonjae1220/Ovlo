@@ -212,6 +212,11 @@ class OfficeInquiryPersistenceAdapterIntegrationTest {
         var csv = new me.yeonjae.ovlo.application.service.OfficeExportService(query, null, null)
                 .inquiriesCsv(officeId, null, null);
         assertThat(csv).contains("rejectionReason").contains("VERIFY_DENIED").doesNotContain("legacy","합성 질문");
+        var noEligible = me.yeonjae.ovlo.domain.office.model.InquiryRejectionReason.NO_ELIGIBLE_NOTICES;
+        Inquiry empty = adapter.save(Inquiry.noGrounds(officeId, memberId, NoticeLang.KO, "합성 질문 2", List.of(), NOW, 5, null, noEligible));
+        assertThat(adapter.findById(empty.getId()).orElseThrow().getRejectionReason()).isEqualTo(noEligible);
+        org.assertj.core.api.Assertions.assertThatThrownBy(() -> jdbc.update("UPDATE office_inquiry SET rejection_reason='UNKNOWN_VALUE' WHERE id=?", empty.getId()))
+                .isInstanceOf(org.springframework.dao.DataIntegrityViolationException.class);
     }
 
 }

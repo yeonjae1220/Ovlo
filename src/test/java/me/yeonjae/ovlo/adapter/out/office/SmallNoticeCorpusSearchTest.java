@@ -117,4 +117,16 @@ class SmallNoticeCorpusSearchTest {
         assertThat(adapter(provider, List.of(held)).findCandidates(5L, NoticeLang.KO, "unmatchedsynonym", TODAY, 8)).isEmpty();
         verifyNoInteractions(jdbc);
     }
+    @ParameterizedTest @ValueSource(strings = {"keyword", "postgres"})
+    void reportsWhetherAnyEligibleNoticeExistsRegardlessOfCorpusSize(String provider) {
+        var held = notice(1, 5, "기숙사", "신청"); held.holdSource("검토 필요");
+        var foreign = notice(2, 99, "기숙사", "신청");
+        assertThat(adapter(provider, List.of(held, foreign)).hasEligibleNotices(5L, NoticeLang.KO, TODAY)).isFalse();
+        assertThat(adapter(provider, List.of(held, notice(3, 5, "보험", "가입"))).hasEligibleNotices(5L, NoticeLang.KO, TODAY)).isTrue();
+        // Korean-only notice is not eligible for an English question.
+        assertThat(adapter(provider, List.of(notice(3, 5, "보험", "가입"))).hasEligibleNotices(5L, NoticeLang.EN, TODAY)).isFalse();
+        var large = LongStream.rangeClosed(1, 31).mapToObj(id -> notice(id, 5L, "기숙사", "신청 안내")).toList();
+        assertThat(adapter(provider, large, 30).hasEligibleNotices(5L, NoticeLang.KO, TODAY)).isTrue();
+        verifyNoInteractions(jdbc);
+    }
 }

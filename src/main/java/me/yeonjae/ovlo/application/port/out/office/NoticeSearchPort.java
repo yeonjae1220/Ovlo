@@ -13,4 +13,10 @@ import java.util.List;
  */
 public interface NoticeSearchPort {
     List<Notice> findCandidates(Long officeId, NoticeLang lang, String question, LocalDate today, int limit);
+
+    /**
+     * 그 학교에 요청 언어로 근거 자격이 있는 공지가 하나라도 있는지. 후보가 0건일 때 "자료가 없다"와
+     * "검색이 못 찾았다"를 가르는 진단용이며, 답변 경로의 자격 판정을 대신하지 않는다.
+     */
+    boolean hasEligibleNotices(Long officeId, NoticeLang lang, LocalDate today);
 }
