@@ -168,6 +168,20 @@ class UniversitySearchMultilingualIntegrationTest {
     }
 
     @Test
+    @DisplayName("표시 언어 이름: 교환대학 행이 여러 개면 공백뿐인 한글명은 건너뛰고 id 가 가장 작은 행의 한글명을 쓴다")
+    void localizedNamePicksFirstNonBlankExchangeName() {
+        Long uclId = insertGlobal("University College London", null, "GB");
+        insertExchange(uclId, "  ", "UCL (blank name)");
+        insertExchange(uclId, "유니버시티 칼리지 런던", "UCL");
+        insertExchange(uclId, "런던대학교", "UCL (other spelling)");
+        // 두 번째 행을 갱신해 물리적 위치를 뒤로 보낸다 — 정렬이 없으면 세 번째 행이 먼저 읽힌다
+        jdbc.update("UPDATE exchange_universities SET city = 'London' WHERE name_en = 'UCL'");
+
+        assertThat(searchPort.findLocalizedNames(java.util.List.of(uclId), "ko"))
+                .containsExactly(Map.entry(uclId, "유니버시티 칼리지 런던"));
+    }
+
+    @Test
     @DisplayName("V40 데이터 마이그레이션은 도메인으로 한글명·중복·별칭을 채우고 재실행해도 안전하다")
     void v40SeedByDomain() {
         // 운영 마스터와 같은 도메인으로 행을 만들고 V40 본문을 다시 실행한다(마이그레이션은 빈 DB 에서 no-op 였다).
