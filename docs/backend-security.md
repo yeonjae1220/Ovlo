@@ -41,6 +41,12 @@ private void requireMembership(Long chatRoomId, Long memberId) {
 
 > **NOT_FOUND로 응답하는 이유**: 403 Forbidden 대신 404 Not Found를 반환해 채팅방 존재 자체를 노출하지 않음 (정보 은닉 패턴).
 
+### 게시판 쓰기 인가 (2026-10-30)
+- `PostCommandService` 가 글쓰기에 두 게이트를 건다. (1) 게시판 `minTrustLevel` 이상의 `TrustLevel`,
+  (2) `LocationScope.UNIVERSITY` 게시판이면 그 대학의 **활성 `VerificationCredential`** 보유. 댓글에는 (2)만 적용한다.
+- 회원 프로필의 `homeUniversityId` 는 자기 신고값이라 소속 근거로 쓰지 않는다 — [ADR-0005](adr/0005-university-board-membership-gate.md).
+- 거부는 `PostException(FORBIDDEN)` → 403 `POST_FORBIDDEN`. 고정 테스트: `PostUniversityBoardApiSecurityTest`(실 보안 체인 + H2).
+
 ### WebSocket 구독 인가
 - `ChatSubscriptionInterceptor`: STOMP SUBSCRIBE 프레임에서 `/topic/chat/{roomId}` 구독 시 참여자 검증
 - 비참여자 구독 시도 → `MessageDeliveryException`
