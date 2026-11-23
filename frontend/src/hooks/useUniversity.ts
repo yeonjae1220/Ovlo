@@ -1,7 +1,7 @@
 'use client'
 
 import { useQuery } from '@tanstack/react-query'
-import { globalUniversityApi, exchangeUniversityApi, universityCatalogApi, universityReportApi } from '../api/university'
+import { globalUniversityApi, exchangeUniversityApi, universityCatalogApi, universityReportApi, universityVideoLinkApi } from '../api/university'
 
 export function useUniversityCatalogCountries() {
   return useQuery({
@@ -84,5 +84,14 @@ export function useUniversityReportLanguages(id: number) {
     queryKey: ['university-report-langs', id],
     queryFn: () => universityReportApi.getLanguages(id),
     enabled: id > 0,
+  })
+}
+
+export function useUniversityVideoLinks(globalUnivId: number | null | undefined, size: number) {
+  return useQuery({
+    queryKey: ['university-video-links', globalUnivId, size],
+    queryFn: () => universityVideoLinkApi.list(globalUnivId!, size),
+    enabled: !!globalUnivId,
+    staleTime: 1000 * 60 * 10,
   })
 }

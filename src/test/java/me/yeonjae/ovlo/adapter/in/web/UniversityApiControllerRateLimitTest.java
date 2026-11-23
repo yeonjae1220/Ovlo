@@ -38,6 +38,7 @@ class UniversityApiControllerRateLimitTest {
     @Mock private SearchUniversityQuery searchUniversityQuery;
     @Mock private GetUniversityQuery getUniversityQuery;
     @Mock private SearchUniversityCatalogQuery searchCatalogQuery;
+    @Mock private me.yeonjae.ovlo.application.port.in.university.GetUniversityVideoLinksQuery videoLinksQuery;
     @Mock private RateLimiterService rateLimiterService;
     @Mock private ClientIpResolver clientIpResolver;
 
@@ -46,7 +47,7 @@ class UniversityApiControllerRateLimitTest {
     @BeforeEach
     void setUp() {
         UniversityApiController controller = new UniversityApiController(
-                searchUniversityQuery, getUniversityQuery, searchCatalogQuery,
+                searchUniversityQuery, getUniversityQuery, searchCatalogQuery, videoLinksQuery,
                 rateLimiterService, clientIpResolver);
         mockMvc = MockMvcBuilders.standaloneSetup(controller)
                 .setControllerAdvice(new GlobalExceptionHandler())

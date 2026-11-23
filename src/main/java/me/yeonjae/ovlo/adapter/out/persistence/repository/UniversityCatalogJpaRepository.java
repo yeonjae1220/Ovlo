@@ -41,7 +41,8 @@ public interface UniversityCatalogJpaRepository extends JpaRepository<GlobalUniv
                    FROM exchange_universities e
                    WHERE e.global_univ_id = gu.id
                    ORDER BY EXISTS (SELECT 1 FROM exchange_video_reviews v
-                                    WHERE v.university_id = e.id) DESC,
+                                    WHERE v.university_id = e.id
+                                      AND v.unavailable_since IS NULL) DESC,
                             (NULLIF(btrim(e.name_ko), '') IS NOT NULL) DESC,
                             e.id
                    LIMIT 1
