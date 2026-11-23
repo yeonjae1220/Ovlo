@@ -12,7 +12,9 @@ public interface ExchangeVideoReviewJpaRepository extends JpaRepository<Exchange
     @Query(value = """
             SELECT * FROM exchange_video_reviews
             WHERE university_id = :universityId
-            ORDER BY overall_rating DESC NULLS LAST, quality_score DESC
+              AND unavailable_since IS NULL
+            ORDER BY overall_rating DESC NULLS LAST, quality_score DESC NULLS LAST,
+                     published_at DESC NULLS LAST, id
             LIMIT :limit OFFSET :offset
             """, nativeQuery = true)
     List<ExchangeVideoReviewJpaEntity> findByUniversityId(
@@ -25,7 +27,9 @@ public interface ExchangeVideoReviewJpaRepository extends JpaRepository<Exchange
             SELECT * FROM exchange_video_reviews
             WHERE university_id = :universityId
               AND (:direction IS NULL OR direction = :direction)
-            ORDER BY overall_rating DESC NULLS LAST, quality_score DESC
+              AND unavailable_since IS NULL
+            ORDER BY overall_rating DESC NULLS LAST, quality_score DESC NULLS LAST,
+                     published_at DESC NULLS LAST, id
             LIMIT :limit OFFSET :offset
             """, nativeQuery = true)
     List<ExchangeVideoReviewJpaEntity> findByUniversityIdAndDirection(
@@ -35,12 +39,11 @@ public interface ExchangeVideoReviewJpaRepository extends JpaRepository<Exchange
             @Param("offset") int offset
     );
 
-    long countByUniversityId(Long universityId);
-
     @Query(value = """
             SELECT COUNT(*) FROM exchange_video_reviews
             WHERE university_id = :universityId
               AND (:direction IS NULL OR direction = :direction)
+              AND unavailable_since IS NULL
             """, nativeQuery = true)
     long countByUniversityIdAndDirection(
             @Param("universityId") Long universityId,
@@ -51,6 +54,7 @@ public interface ExchangeVideoReviewJpaRepository extends JpaRepository<Exchange
             SELECT university_id AS universityId, COUNT(*) AS reviewCount
             FROM exchange_video_reviews
             WHERE university_id IN :ids
+              AND unavailable_since IS NULL
             GROUP BY university_id
             """, nativeQuery = true)
     List<ReviewCountProjection> countByUniversityIdIn(@Param("ids") List<Long> ids);

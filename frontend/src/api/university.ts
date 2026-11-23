@@ -1,5 +1,5 @@
 import apiClient from '../utils/axios'
-import type { ExchangeUniversity, UniversityCatalogItem, VideoReview, PageResult } from '../types'
+import type { ExchangeUniversity, UniversityCatalogItem, VideoLink, VideoReview, PageResult } from '../types'
 
 export interface UniversityReportSummary {
   id: number
@@ -124,5 +124,12 @@ export const exchangeUniversityApi = {
       .get<PageResult<VideoReview>>(`/exchange-universities/${id}/reviews`, {
         params: { direction: direction || undefined, page, size },
       })
+      .then((r) => r.data),
+}
+
+export const universityVideoLinkApi = {
+  list: (globalUnivId: number, size = 12) =>
+    apiClient
+      .get<PageResult<VideoLink>>(`/universities/${globalUnivId}/video-links`, { params: { page: 0, size } })
       .then((r) => r.data),
 }

@@ -24,6 +24,10 @@ export function resolveUiLang(input: string | null | undefined): UiLanguage {
 type Messages = Record<string, string>
 
 const en: Messages = {
+  'report.videos.title': 'Exchange student videos',
+  'report.videos.note': 'Links to public YouTube videos about studying at this university. Ovlo has not reviewed their content.',
+  'report.videos.more': 'Show more',
+  'report.videos.less': 'Show less',
   'office.notice.applicability': 'Applicability',
   'office.notice.applicabilityOriginal': 'Applicability is shown in the original language of the approved source.',
   "office.knowledge.title": "Sources and reviews",
@@ -688,6 +692,10 @@ const en: Messages = {
 }
 
 const ko: Messages = {
+  'report.videos.title': '교환학생 영상',
+  'report.videos.note': '이 대학의 교환학생 생활을 다룬 유튜브 공개 영상으로 연결됩니다. Ovlo가 내용을 확인한 것은 아닙니다.',
+  'report.videos.more': '더 보기',
+  'report.videos.less': '접기',
   'office.notice.applicability': '적용 범위',
   'office.notice.applicabilityOriginal': '적용 범위는 승인된 자료의 원문 언어로 표시됩니다.',
   "office.knowledge.title": "출처·재검토 관리",
@@ -1322,6 +1330,10 @@ const ko: Messages = {
 }
 
 const ja: Messages = {
+  'report.videos.title': '交換留学生の動画',
+  'report.videos.note': 'この大学での留学生活を扱ったYouTubeの公開動画へのリンクです。内容はOvloが確認したものではありません。',
+  'report.videos.more': 'もっと見る',
+  'report.videos.less': '閉じる',
   'ask.outOfScope': '大学の手続きや交換留学生の生活についてご案内します。大学に関する質問を入力してください。',
   'office.outcome.OUT_OF_SCOPE': '対象外',
   'common.retry': '再試行',
@@ -1667,6 +1679,10 @@ const ja: Messages = {
 }
 
 const zh: Messages = {
+  'report.videos.title': '交换生视频',
+  'report.videos.note': '以下链接指向介绍该校交换生活的 YouTube 公开视频，内容未经 Ovlo 核实。',
+  'report.videos.more': '显示更多',
+  'report.videos.less': '收起',
   'ask.outOfScope': '我可以帮助解答学校行政和交换生服务相关问题。请输入与学校有关的问题。',
   'office.outcome.OUT_OF_SCOPE': '超出服务范围',
   'common.retry': '重试',
@@ -2012,6 +2028,10 @@ const zh: Messages = {
 }
 
 const es: Messages = {
+  'report.videos.title': 'Vídeos de estudiantes de intercambio',
+  'report.videos.note': 'Enlaces a vídeos públicos de YouTube sobre estudiar en esta universidad. Ovlo no ha revisado su contenido.',
+  'report.videos.more': 'Ver más',
+  'report.videos.less': 'Ver menos',
   'ask.outOfScope': 'Puedo ayudar con trámites universitarios y servicios para estudiantes de intercambio. Haz una pregunta sobre tu universidad.',
   'office.outcome.OUT_OF_SCOPE': 'Fuera de ámbito',
   'common.retry': 'Reintentar',
@@ -2357,6 +2377,10 @@ const es: Messages = {
 }
 
 const fr: Messages = {
+  'report.videos.title': 'Vidéos d’étudiants en échange',
+  'report.videos.note': 'Liens vers des vidéos YouTube publiques sur les études dans cette université. Ovlo n’a pas vérifié leur contenu.',
+  'report.videos.more': 'Afficher plus',
+  'report.videos.less': 'Afficher moins',
   'ask.outOfScope': 'Je peux vous aider pour les démarches universitaires et les services aux étudiants en échange. Posez une question liée à votre université.',
   'office.outcome.OUT_OF_SCOPE': 'Hors périmètre',
   'common.retry': 'Réessayer',
@@ -2702,6 +2726,10 @@ const fr: Messages = {
 }
 
 const de: Messages = {
+  'report.videos.title': 'Videos von Austauschstudierenden',
+  'report.videos.note': 'Links zu öffentlichen YouTube-Videos über das Studium an dieser Hochschule. Ovlo hat die Inhalte nicht geprüft.',
+  'report.videos.more': 'Mehr anzeigen',
+  'report.videos.less': 'Weniger anzeigen',
   'ask.outOfScope': 'Ich helfe bei Fragen zur Hochschulverwaltung und zum Austauschstudium. Bitte stellen Sie eine Frage zu Ihrer Hochschule.',
   'office.outcome.OUT_OF_SCOPE': 'Außerhalb des Angebots',
   'common.retry': 'Erneut versuchen',
@@ -3047,6 +3075,10 @@ const de: Messages = {
 }
 
 const pt: Messages = {
+  'report.videos.title': 'Vídeos de estudantes de intercâmbio',
+  'report.videos.note': 'Links para vídeos públicos do YouTube sobre estudar nesta universidade. A Ovlo não verificou o conteúdo.',
+  'report.videos.more': 'Mostrar mais',
+  'report.videos.less': 'Mostrar menos',
   'ask.outOfScope': 'Posso ajudar com procedimentos universitários e serviços para estudantes de intercâmbio. Faça uma pergunta sobre sua universidade.',
   'office.outcome.OUT_OF_SCOPE': 'Fora do âmbito',
   'common.retry': 'Tentar novamente',
@@ -3419,6 +3451,10 @@ const pt: Messages = {
 }
 
 const ru: Messages = {
+  'report.videos.title': 'Видео студентов по обмену',
+  'report.videos.note': 'Ссылки на общедоступные видео YouTube об учёбе в этом университете. Ovlo не проверял их содержание.',
+  'report.videos.more': 'Показать ещё',
+  'report.videos.less': 'Свернуть',
   'ask.outOfScope': 'Я помогаю с университетскими процедурами и услугами для студентов по обмену. Задайте вопрос о вашем университете.',
   'office.outcome.OUT_OF_SCOPE': 'Вне сферы помощи',
   'common.retry': 'Повторить',

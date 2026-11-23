@@ -15,6 +15,7 @@ public interface ExchangeUniversityJpaRepository extends JpaRepository<ExchangeU
             LEFT JOIN (
                 SELECT university_id, COUNT(*) AS review_count
                 FROM exchange_video_reviews
+                WHERE unavailable_since IS NULL
                 GROUP BY university_id
             ) rc ON rc.university_id = eu.id
             WHERE (:keyword IS NULL OR eu.name_ko ILIKE '%' || :keyword || '%' OR eu.name_en ILIKE '%' || :keyword || '%')
