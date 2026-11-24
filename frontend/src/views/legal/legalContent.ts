@@ -7,7 +7,11 @@
 
 export const LEGAL_CONTACT_PLACEHOLDER = '[연락처 확정 후 기재 / to be announced]'
 
-export type LegalSection = { heading: string; paragraphs: string[]; bullets?: string[] }
+export type LegalLink = { label: string; href: string }
+export type LegalSection = { heading: string; paragraphs: string[]; bullets?: string[]; links?: LegalLink[] }
+
+const YOUTUBE_TERMS_URL = 'https://www.youtube.com/t/terms'
+const GOOGLE_PRIVACY_URL = 'https://policies.google.com/privacy'
 export type LegalDocument = {
   version: string
   updatedAt: string
@@ -18,8 +22,8 @@ export type LegalDocument = {
 
 export const PRIVACY_POLICY: Record<'ko' | 'en', LegalDocument> = {
   ko: {
-    version: 'v1',
-    updatedAt: '2026-10-30',
+    version: 'v2',
+    updatedAt: '2026-11-24',
     title: '개인정보처리방침',
     intro:
       'Ovlo(이하 "서비스")는 「개인정보 보호법」에 따라 이용자의 개인정보를 보호하고 관련 고충을 신속하게 처리하기 위해 다음과 같이 개인정보처리방침을 둡니다.',
@@ -86,27 +90,35 @@ export const PRIVACY_POLICY: Record<'ko' | 'en', LegalDocument> = {
         ],
       },
       {
-        heading: '8. 안전성 확보 조치',
+        heading: '8. 외부 영상 링크와 YouTube API 서비스',
+        paragraphs: [
+          '서비스는 대학 리포트 화면에 보여 주는 YouTube 영상 링크 목록을 만들기 위해 YouTube API 서비스를 사용합니다. 이 과정에서 서비스는 이용자의 개인정보를 YouTube 나 Google 에 보내지 않고, YouTube 를 통해 이용자의 정보를 수집하지도 않습니다.',
+          '다만 영상 미리보기 이미지는 이용자의 브라우저가 YouTube 의 이미지 서버에서 직접 불러오므로, 영상 목록이 있는 화면을 열면 접속 IP 주소와 브라우저 정보가 Google 에 전달될 수 있습니다. 링크를 눌러 YouTube 로 이동한 뒤의 정보 처리는 Google 개인정보처리방침을 따릅니다.',
+        ],
+        links: [{ label: 'Google 개인정보처리방침', href: GOOGLE_PRIVACY_URL }],
+      },
+      {
+        heading: '9. 안전성 확보 조치',
         paragraphs: [
           '비밀번호는 복호화할 수 없는 해시로만 저장하고, 로그인 토큰은 해시로 저장하며, 전송 구간은 HTTPS 로 암호화합니다. 관리자 접근은 별도 인증과 접근 기록으로 통제합니다.',
         ],
       },
       {
-        heading: '9. 개인정보 보호책임자와 문의',
+        heading: '10. 개인정보 보호책임자와 문의',
         paragraphs: [
           `개인정보 보호책임자: 서비스 운영자 · 연락처: ${LEGAL_CONTACT_PLACEHOLDER}`,
           '개인정보 침해에 대한 신고·상담은 개인정보침해신고센터(privacy.kisa.or.kr, 118), 개인정보분쟁조정위원회(kopico.go.kr, 1833-6972)에 문의할 수 있습니다.',
         ],
       },
       {
-        heading: '10. 방침의 변경',
+        heading: '11. 방침의 변경',
         paragraphs: ['이 방침을 변경할 때는 시행 7일 전부터 서비스 공지로 알립니다. 수집 항목·목적·보유 기간이 이용자에게 불리하게 바뀌는 경우에는 30일 전에 알립니다.'],
       },
     ],
   },
   en: {
-    version: 'v1',
-    updatedAt: '2026-10-30',
+    version: 'v2',
+    updatedAt: '2026-11-24',
     title: 'Privacy Policy',
     intro:
       'Ovlo (the "Service") protects your personal data under the Personal Information Protection Act of the Republic of Korea and handles related requests promptly, as described below.',
@@ -173,20 +185,28 @@ export const PRIVACY_POLICY: Record<'ko' | 'en', LegalDocument> = {
         ],
       },
       {
-        heading: '8. Security measures',
+        heading: '8. External video links and YouTube API Services',
+        paragraphs: [
+          'We use YouTube API Services to build the list of YouTube video links shown on university report pages. In doing so we do not send your personal data to YouTube or Google, and we do not collect information about you through YouTube.',
+          'Video preview images, however, are loaded by your browser directly from YouTube\'s image servers, so opening a page that lists videos may disclose your IP address and browser information to Google. Once you follow a link to YouTube, your data is handled under the Google Privacy Policy.',
+        ],
+        links: [{ label: 'Google Privacy Policy', href: GOOGLE_PRIVACY_URL }],
+      },
+      {
+        heading: '9. Security measures',
         paragraphs: [
           'Passwords are stored only as irreversible hashes, sign-in tokens are stored as hashes, and all traffic is encrypted with HTTPS. Administrator access is controlled by separate authentication and access logging.',
         ],
       },
       {
-        heading: '9. Data protection officer and contact',
+        heading: '10. Data protection officer and contact',
         paragraphs: [
           `Data protection officer: the Service operator · Contact: ${LEGAL_CONTACT_PLACEHOLDER}`,
           'You may also contact the Korea Personal Information Infringement Report Center (privacy.kisa.or.kr, 118) or the Personal Information Dispute Mediation Committee (kopico.go.kr, 1833-6972).',
         ],
       },
       {
-        heading: '10. Changes',
+        heading: '11. Changes',
         paragraphs: ['We announce changes to this policy at least 7 days before they take effect, or 30 days before when the change is unfavorable to you (items collected, purposes or retention).'],
       },
     ],
@@ -195,8 +215,8 @@ export const PRIVACY_POLICY: Record<'ko' | 'en', LegalDocument> = {
 
 export const TERMS_OF_SERVICE: Record<'ko' | 'en', LegalDocument> = {
   ko: {
-    version: 'v1',
-    updatedAt: '2026-10-30',
+    version: 'v2',
+    updatedAt: '2026-11-24',
     title: '이용약관',
     intro: '이 약관은 Ovlo(이하 "서비스")의 이용 조건과 절차, 이용자와 서비스의 권리·의무를 정합니다.',
     sections: [
@@ -243,28 +263,36 @@ export const TERMS_OF_SERVICE: Record<'ko' | 'en', LegalDocument> = {
         ],
       },
       {
-        heading: '7. 서비스의 변경·중단',
+        heading: '7. 외부 영상 링크(YouTube)',
+        paragraphs: [
+          '서비스는 대학 리포트 화면에 그 대학과 관련된 YouTube 공개 영상의 링크를 제목·채널명·미리보기 이미지와 함께 보여 줍니다. 영상을 서비스에 저장하거나 서비스 안에서 재생하지 않으며, 링크를 누르면 YouTube 로 이동합니다. 이 기능은 YouTube API 서비스를 사용하며, 이 기능을 이용하는 이용자는 YouTube 서비스 약관에도 동의하는 것으로 봅니다.',
+          `영상의 내용과 권리는 각 영상의 게시자에게 있고, 서비스는 영상의 내용을 보증하지 않습니다. 삭제되거나 비공개로 바뀐 영상의 링크는 주기적으로 확인해 내립니다. 영상 게시자나 영상에 등장하는 분이 링크를 내려 달라고 요청하면 지체 없이 내립니다. 요청: ${LEGAL_CONTACT_PLACEHOLDER}`,
+        ],
+        links: [{ label: 'YouTube 서비스 약관', href: YOUTUBE_TERMS_URL }],
+      },
+      {
+        heading: '8. 서비스의 변경·중단',
         paragraphs: [
           '서비스는 기능을 추가·변경·중단할 수 있으며, 중요한 변경은 사전에 공지합니다. 천재지변·시스템 장애 등 불가피한 사유로 일시 중단될 수 있습니다.',
         ],
       },
       {
-        heading: '8. 계약 해지',
+        heading: '9. 계약 해지',
         paragraphs: ['회원은 언제든지 프로필 화면에서 탈퇴할 수 있습니다. 탈퇴 시 개인정보는 개인정보처리방침에 따라 처리됩니다.'],
       },
       {
-        heading: '9. 준거법과 분쟁',
+        heading: '10. 준거법과 분쟁',
         paragraphs: ['이 약관은 대한민국 법을 따르며, 분쟁은 민사소송법에 따른 관할 법원에서 다룹니다.'],
       },
       {
-        heading: '10. 약관의 변경',
+        heading: '11. 약관의 변경',
         paragraphs: [`약관을 바꿀 때는 시행 7일 전(이용자에게 불리한 변경은 30일 전)에 공지합니다. 문의: ${LEGAL_CONTACT_PLACEHOLDER}`],
       },
     ],
   },
   en: {
-    version: 'v1',
-    updatedAt: '2026-10-30',
+    version: 'v2',
+    updatedAt: '2026-11-24',
     title: 'Terms of Service',
     intro: 'These terms set out the conditions for using Ovlo (the "Service") and the rights and obligations of users and the Service.',
     sections: [
@@ -311,19 +339,27 @@ export const TERMS_OF_SERVICE: Record<'ko' | 'en', LegalDocument> = {
         ],
       },
       {
-        heading: '7. Changes and interruptions',
+        heading: '7. External video links (YouTube)',
+        paragraphs: [
+          'On university report pages the Service shows links to public YouTube videos related to that university, with their title, channel name and preview image. Videos are not stored or played within the Service; following a link takes you to YouTube. This feature uses YouTube API Services, and by using it you also agree to be bound by the YouTube Terms of Service.',
+          `The content of and rights in each video belong to its publisher, and the Service does not guarantee video content. Links to videos that are deleted or made private are checked periodically and removed. If a video's publisher or a person appearing in it asks us to remove a link, we remove it without delay. Requests: ${LEGAL_CONTACT_PLACEHOLDER}`,
+        ],
+        links: [{ label: 'YouTube Terms of Service', href: YOUTUBE_TERMS_URL }],
+      },
+      {
+        heading: '8. Changes and interruptions',
         paragraphs: ['The Service may add, change or discontinue features, with advance notice for significant changes. Service may be interrupted for unavoidable reasons such as disasters or system failures.'],
       },
       {
-        heading: '8. Termination',
+        heading: '9. Termination',
         paragraphs: ['You may withdraw at any time from your profile screen. Personal data is then handled under the Privacy Policy.'],
       },
       {
-        heading: '9. Governing law',
+        heading: '10. Governing law',
         paragraphs: ['These terms are governed by the laws of the Republic of Korea; disputes are heard by the competent court under the Civil Procedure Act.'],
       },
       {
-        heading: '10. Changes to these terms',
+        heading: '11. Changes to these terms',
         paragraphs: [`We announce changes at least 7 days in advance (30 days for changes unfavorable to users). Contact: ${LEGAL_CONTACT_PLACEHOLDER}`],
       },
     ],
