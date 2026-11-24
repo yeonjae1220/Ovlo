@@ -18,6 +18,10 @@ import java.util.Optional;
 
 @Component
 public class BoardPersistenceAdapter implements LoadBoardPort, SaveBoardPort, SearchBoardPort {
+    @Override
+    public List<Board> findByIds(List<Long> ids) {
+        return boardJpaRepository.findAllById(ids).stream().map(boardMapper::toDomain).toList();
+    }
 
     private final BoardJpaRepository boardJpaRepository;
     private final BoardSubscriptionJpaRepository boardSubscriptionJpaRepository;

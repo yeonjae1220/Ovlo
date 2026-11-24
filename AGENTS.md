@@ -23,7 +23,7 @@
 | `board` | 게시판 생성·범위·구독 |
 | `post` | 게시글·댓글·좋아요(동시성) |
 | `follow` | 팔로잉/팔로워 관계 |
-| `media` | 파일 업로드·HEIC 변환·스토리지 |
+| `media` | 파일 업로드·형식 검증·스토리지 |
 | `chat` | DM·그룹채팅 (WebSocket STOMP) |
 | `calendar` | 학교·개인 일정, 학교 구독, 담당자 신청·승인·학교 배정 |
 | `office` | 국제처 운영, 담당자 소속, 공지·문의·상담·제휴 |
@@ -101,7 +101,7 @@ adapter/out ← application/port/out ← domain
 - **좋아요/싫어요 동시성**: 회원별 반응 행의 명시적 INSERT·조건부 UPDATE/DELETE + 같은 트랜잭션의 카운트 원자 증감. 아래 규칙을 따른다.
 - **StoragePort**: `LocalStorageAdapter` (Phase 1) → `S3StorageAdapter` (Phase 2) 인터페이스 교체
 - **TokenStorePort**: `RedisTokenAdapter` 구현 (JWT Refresh Token 저장)
-- **HEIC 변환**: TwelveMonkeys ImageIO 라이브러리
+- **일반 사진 업로드**: JPEG·PNG 실제 디코딩 검증. HEIC·WebP 업로드는 디코더/실파일 검증 전까지 거절하며 UI에서 지원 형식을 안내한다.
 - **채팅**: STOMP over WebSocket, 추후 Redis Pub/Sub 브로커로 확장
 - **DB 마이그레이션**: Flyway (V1__, V2__,... + R__seed_universities.sql)
 

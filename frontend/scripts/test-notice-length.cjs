@@ -16,7 +16,7 @@ function load(file, overrides = {}) {
 }
 const { messages } = load('src/i18n/messages.ts')
 const i18n = { useI18n: () => ({ t: key => messages.ko[key] ?? messages.en[key] }) }
-const ui = load('src/components/ui/index.tsx', { '../../i18n/I18nProvider': i18n })
+const ui = load('src/components/ui/index.tsx', { '../../i18n/I18nProvider': i18n, '../../hooks/useMediaUrl': { useMediaUrl: () => undefined } })
 const limits = load('src/views/office/noticeLimits.ts')
 const javaLimits = fs.readFileSync(path.join(root, '../src/main/java/me/yeonjae/ovlo/application/service/office/NoticeAnswerLimits.java'), 'utf8')
 assert.equal(Number(javaLimits.match(/MAX_BODY_CHARS = ([\d_]+)/)[1].replaceAll('_', '')), limits.NOTICE_ANSWER_BODY_CHARS)

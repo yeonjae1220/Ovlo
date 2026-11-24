@@ -274,13 +274,12 @@ export default function ChatListPage() {
             .join(', ')
           const firstOtherId = otherParticipants[0]
           const mediaId = firstOtherId ? room.participantProfileImageMediaIds?.[firstOtherId] : null
-          const avatarUrl = mediaId ? `/api/v1/media/${mediaId}/file` : null
 
           return (
             <Link key={room.chatRoomId} href={`/chat/${room.chatRoomId}`} style={{ color: 'inherit', textDecoration: 'none' }}>
               <Card interactive style={{ padding: 14 }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                  <Avatar label={displayName || t('chat.room.defaultName')} imageUrl={avatarUrl} />
+                  <Avatar label={displayName || t('chat.room.defaultName')} mediaId={mediaId} />
                   <div style={{ minWidth: 0, flex: 1 }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 3 }}>
                       <div style={{ fontWeight: 900, fontSize: 15, color: C.text, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>

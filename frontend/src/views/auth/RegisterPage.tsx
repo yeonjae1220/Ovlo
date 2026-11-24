@@ -1,5 +1,6 @@
 'use client'
 
+import { safeReturnPath } from '@/utils/returnPath'
 import { saveOauthState } from '@/utils/oauthState'
 import { openOAuthUrl } from '@/utils/nativeOAuth'
 
@@ -12,6 +13,7 @@ import { useI18n } from '../../i18n/I18nProvider'
 import { useDebounce } from '../../hooks/useDebounce'
 import { SUPPORTED_UI_LANGUAGES, LANGUAGE_LABELS } from '../../i18n/messages'
 import type { MessageKey } from '../../i18n/messages'
+import { QueryErrorNotice } from '../../components/ui'
 import { Brand } from '../../components/ui/Brand'
 
 const GOOGLE_CLIENT_ID = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || null
@@ -23,6 +25,7 @@ function redirectToGoogle(notConfiguredMsg: string) {
   }
   const state = crypto.randomUUID()
   saveOauthState(state)
+  sessionStorage.setItem('ovlo-oauth-next', safeReturnPath(new URLSearchParams(window.location.search).get('next')))
 
   const redirectUri = `${window.location.origin}/oauth/callback`
   const params = new URLSearchParams({
@@ -138,7 +141,7 @@ const inputStyle: React.CSSProperties = {
   border: '1px solid var(--color-border-strong)',
   borderRadius: 8,
   fontSize: 14,
-  outline: 'none',
+  outlineOffset: 2,
   transition: 'border-color 0.15s',
   background: 'var(--color-input-bg)',
   color: 'var(--color-text)',
@@ -194,11 +197,12 @@ export default function RegisterPage() {
   const [selectedUniId, setSelectedUniId] = useState<number | null>(null)
   const [selectedUniName, setSelectedUniName] = useState('')
   const [stepError, setStepError] = useState('')
+  const [invalidField, setInvalidField] = useState('')
   const [passwordFocused, setPasswordFocused] = useState(false)
 
   const register = useRegister()
   const debouncedUniQuery = useDebounce(uniQuery.trim(), 300)
-  const { data: universities } = useUniversitySearch(debouncedUniQuery, undefined, language)
+  const { data: universities, isError: universityError, isFetching: universityLoading, refetch: retryUniversities } = useUniversitySearch(debouncedUniQuery, undefined, language)
   const { data: nicknameCheck } = useNicknameAvailability(step === 1 ? form.nickname : '')
   const nicknameAvailable = form.nickname.length >= 2 && nicknameCheck?.available === true
   const nicknameTaken = form.nickname.length >= 2 && nicknameCheck?.available === false
@@ -209,25 +213,31 @@ export default function RegisterPage() {
       setStepError('')
     }
 
+  const fail = (field: string, message: string): false => {
+    setInvalidField(field)
+    setStepError(message)
+    document.getElementById('register-' + field)?.focus()
+    return false
+  }
+
   const validateStep = (): boolean => {
     if (step === 1) {
-      if (form.nickname.length < 2) { setStepError(t('register.error.nickname.short')); return false }
-      if (!/^[a-zA-Z0-9._]+$/.test(form.nickname)) { setStepError(t('register.error.nickname.invalid')); return false }
-      if (nicknameTaken) { setStepError(t('register.error.nickname.taken')); return false }
-      if (!form.email) { setStepError(t('register.error.email')); return false }
+      if (form.nickname.length < 2) { return fail('nickname', t('register.error.nickname.short')) }
+      if (!/^[a-zA-Z0-9._]+$/.test(form.nickname)) { return fail('nickname', t('register.error.nickname.invalid')) }
+      if (nicknameTaken) { return fail('nickname', t('register.error.nickname.taken')) }
+      if (!form.email) { return fail('email', t('register.error.email')) }
       const unmet = PW_TESTS.filter(c => !c.test(form.password))
       if (unmet.length > 0) {
-        setStepError(t('register.error.password').replace('{conditions}', unmet.map(c => t(c.key)).join(', ')))
-        return false
+        return fail('password', t('register.error.password').replace('{conditions}', unmet.map(c => t(c.key)).join(', ')))
       }
     }
     if (step === 2) {
-      if (!form.name.trim()) { setStepError(t('register.error.name')); return false }
-      if (!form.hometown.trim()) { setStepError(t('register.error.hometown')); return false }
+      if (!form.name.trim()) { return fail('name', t('register.error.name')) }
+      if (!form.hometown.trim()) { return fail('hometown', t('register.error.hometown')) }
     }
     if (step === 3) {
-      if (!selectedUniId) { setStepError(t('register.error.university')); return false }
-      if (!form.majorName.trim()) { setStepError(t('register.error.major')); return false }
+      if (!selectedUniId) { return fail('university', t('register.error.university')) }
+      if (!form.majorName.trim()) { return fail('majorName', t('register.error.major')) }
     }
     return true
   }
@@ -279,11 +289,11 @@ export default function RegisterPage() {
       {step === 1 && (
         <form onSubmit={handleNext} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
           <div style={fieldStyle}>
-            <label style={labelStyle}>{t('register.nickname')} <span style={{ color: 'var(--color-text-dim)', fontWeight: 500 }}>{t('register.nickname.hint')}</span></label>
+            <label htmlFor="register-nickname" style={labelStyle}>{t('register.nickname')} <span style={{ color: 'var(--color-text-dim)', fontWeight: 500 }}>{t('register.nickname.hint')}</span></label>
             <div style={{ position: 'relative' }}>
               <input
                 style={{ ...inputStyle, width: '100%', boxSizing: 'border-box', paddingRight: 96 }}
-                value={form.nickname}
+                id="register-nickname" aria-invalid={!!stepError && invalidField === "nickname"} autoComplete="username" aria-describedby={stepError ? "register-error" : undefined} value={form.nickname}
                 onChange={set('nickname')}
                 placeholder={t('register.nickname.placeholder')}
                 required minLength={2} maxLength={30}
@@ -300,16 +310,16 @@ export default function RegisterPage() {
           </div>
 
           <div style={fieldStyle}>
-            <label style={labelStyle}>{t('register.email')}</label>
-            <input style={inputStyle} type="email" value={form.email} onChange={set('email')} placeholder="example@email.com" required />
+            <label htmlFor="register-email" style={labelStyle}>{t('register.email')}</label>
+            <input style={inputStyle} type="email" id="register-email" aria-invalid={!!stepError && invalidField === "email"} autoComplete="email" aria-describedby={stepError ? "register-error" : undefined} value={form.email} onChange={set('email')} placeholder="example@email.com" required />
           </div>
 
           <div style={fieldStyle}>
-            <label style={labelStyle}>{t('register.password')}</label>
+            <label htmlFor="register-password" style={labelStyle}>{t('register.password')}</label>
             <input
               style={inputStyle}
               type="password"
-              value={form.password}
+              id="register-password" aria-invalid={!!stepError && invalidField === "password"} autoComplete="new-password" aria-describedby={stepError ? "register-error" : undefined} value={form.password}
               onChange={set('password')}
               onFocus={() => setPasswordFocused(true)}
               placeholder="••••••••"
@@ -321,7 +331,7 @@ export default function RegisterPage() {
             )}
           </div>
 
-          {stepError && <p style={{ color: 'var(--color-danger)', margin: 0, fontSize: 13, fontWeight: 700 }}>{stepError}</p>}
+          {stepError && <p id="register-error" role="alert" style={{ color: 'var(--color-danger)', margin: 0, fontSize: 13, fontWeight: 700 }}>{stepError}</p>}
 
           <button type="submit" style={primaryBtn}>{t('register.next')}</button>
         </form>
@@ -331,16 +341,16 @@ export default function RegisterPage() {
       {step === 2 && (
         <form onSubmit={handleNext} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
           <div style={fieldStyle}>
-            <label style={labelStyle}>{t('register.name')}</label>
-            <input style={inputStyle} value={form.name} onChange={set('name')} placeholder={t('register.name')} required />
+            <label htmlFor="register-name" style={labelStyle}>{t('register.name')}</label>
+            <input style={inputStyle} id="register-name" aria-invalid={!!stepError && invalidField === "name"} autoComplete="name" aria-describedby={stepError ? "register-error" : undefined} value={form.name} onChange={set('name')} placeholder={t('register.name')} required />
           </div>
 
           <div style={fieldStyle}>
-            <label style={labelStyle}>{t('onboarding.hometown')}</label>
-            <input style={inputStyle} value={form.hometown} onChange={set('hometown')} placeholder={t('onboarding.hometown.placeholder')} required />
+            <label htmlFor="register-hometown" style={labelStyle}>{t('onboarding.hometown')}</label>
+            <input style={inputStyle} id="register-hometown" aria-invalid={!!stepError && invalidField === "hometown"} autoComplete="address-level2" aria-describedby={stepError ? "register-error" : undefined} value={form.hometown} onChange={set('hometown')} placeholder={t('onboarding.hometown.placeholder')} required />
           </div>
 
-          {stepError && <p style={{ color: 'var(--color-danger)', margin: 0, fontSize: 13, fontWeight: 700 }}>{stepError}</p>}
+          {stepError && <p id="register-error" role="alert" style={{ color: 'var(--color-danger)', margin: 0, fontSize: 13, fontWeight: 700 }}>{stepError}</p>}
 
           <div style={{ display: 'flex', gap: 10 }}>
             <button type="button" onClick={handleBack} style={{ ...secondaryBtn, flex: 1 }}>{t('register.back')}</button>
@@ -353,9 +363,9 @@ export default function RegisterPage() {
       {step === 3 && (
         <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
           <div style={fieldStyle}>
-            <label style={labelStyle}>{t('onboarding.university')}</label>
+            <label htmlFor="register-university" style={labelStyle}>{t('onboarding.university')}</label>
             {selectedUniId ? (
-              <button
+              <button id="register-university"
                 type="button"
                 onClick={() => { setSelectedUniId(null); setSelectedUniName(''); setUniQuery('') }}
                 style={{
@@ -375,15 +385,17 @@ export default function RegisterPage() {
                 <input
                   style={inputStyle}
                   placeholder={t('onboarding.university.placeholder')}
-                  value={uniQuery}
+                  id="register-university" value={uniQuery}
                   onChange={(e) => { setUniQuery(e.target.value); setStepError('') }}
                 />
-                {uniQuery.length >= 1 && universities && universities.length > 0 && (
+                {universityError && <QueryErrorNotice onRetry={() => void retryUniversities()} />}
+                {universityLoading && <p role="status">{t('common.loading')}</p>}
+                {!universityError && uniQuery.length >= 1 && universities && universities.length > 0 && (
                   <ul style={{ listStyle: 'none', padding: 0, margin: 0, border: '1px solid var(--color-border-strong)', borderRadius: 8, maxHeight: 180, overflowY: 'auto', boxShadow: 'var(--shadow-soft)', background: 'var(--color-surface)' }}>
                     {universities.slice(0, 8).map((u) => (
-                      <li key={u.id}
+                      <li key={u.id}><button type="button"
                         onClick={() => { setSelectedUniId(Number(u.id)); setSelectedUniName(u.name); setUniQuery('') }}
-                        style={{ padding: '9px 12px', cursor: 'pointer', borderBottom: '1px solid var(--color-border)', fontSize: 14, display: 'flex', justifyContent: 'space-between', alignItems: 'center', color: 'var(--color-text)' }}>
+                        style={{ width: '100%', background: 'none', border: 0, textAlign: 'left', padding: '9px 12px', cursor: 'pointer', borderBottom: '1px solid var(--color-border)', fontSize: 14, display: 'flex', justifyContent: 'space-between', alignItems: 'center', color: 'var(--color-text)' }}>
                         <span style={{ minWidth: 0 }}>
                           {u.name}
                           {u.localName && u.localName !== u.name && (
@@ -391,11 +403,11 @@ export default function RegisterPage() {
                           )}
                         </span>
                         <span style={{ color: 'var(--color-text-muted)', fontSize: 12 }}>{u.countryCode} · {u.city}</span>
-                      </li>
+                      </button></li>
                     ))}
                   </ul>
                 )}
-                {uniQuery.length >= 1 && universities?.length === 0 && (
+                {!universityError && !universityLoading && uniQuery.length >= 1 && universities?.length === 0 && (
                   <p style={{ margin: 0, fontSize: 13, color: 'var(--color-text-muted)' }}>{t('onboarding.university.notFound')}</p>
                 )}
               </>
@@ -403,15 +415,15 @@ export default function RegisterPage() {
           </div>
 
           <div style={fieldStyle}>
-            <label style={labelStyle}>{t('onboarding.major')}</label>
-            <input style={inputStyle} value={form.majorName} onChange={set('majorName')} placeholder={t('onboarding.major.placeholder')} required />
+            <label htmlFor="register-majorName" style={labelStyle}>{t('onboarding.major')}</label>
+            <input style={inputStyle} id="register-majorName" aria-invalid={!!stepError && invalidField === "majorName"} autoComplete="off" aria-describedby={stepError ? "register-error" : undefined} value={form.majorName} onChange={set('majorName')} placeholder={t('onboarding.major.placeholder')} required />
           </div>
 
           <div style={fieldStyle}>
-            <label style={labelStyle}>{t('register.uiLanguage')}</label>
+            <label htmlFor="register-language" style={labelStyle}>{t('register.uiLanguage')}</label>
             <select
               style={inputStyle}
-              value={language}
+              id="register-language" value={language}
               onChange={(e) => setLanguage(e.target.value)}
             >
               {SUPPORTED_UI_LANGUAGES.map((lang) => (
@@ -425,22 +437,22 @@ export default function RegisterPage() {
 
           <div style={{ display: 'flex', gap: 12 }}>
             <div style={{ ...fieldStyle, flex: 1 }}>
-              <label style={labelStyle}>{t('onboarding.degree')}</label>
-              <select style={inputStyle} value={form.degreeType} onChange={set('degreeType')}>
+              <label htmlFor="register-degreeType" style={labelStyle}>{t('onboarding.degree')}</label>
+              <select style={inputStyle} id="register-degreeType" aria-invalid={!!stepError && invalidField === "degreeType"} autoComplete="off" aria-describedby={stepError ? "register-error" : undefined} value={form.degreeType} onChange={set('degreeType')}>
                 {DEGREE_VALUES.map((v) => (
                   <option key={v} value={v}>{t(`register.degree.${v.toLowerCase()}` as 'register.degree.bachelor')}</option>
                 ))}
               </select>
             </div>
             <div style={{ ...fieldStyle, flex: 1 }}>
-              <label style={labelStyle}>{t('onboarding.grade')}</label>
-              <select style={inputStyle} value={form.gradeLevel} onChange={set('gradeLevel')}>
+              <label htmlFor="register-gradeLevel" style={labelStyle}>{t('onboarding.grade')}</label>
+              <select style={inputStyle} id="register-gradeLevel" aria-invalid={!!stepError && invalidField === "gradeLevel"} autoComplete="off" aria-describedby={stepError ? "register-error" : undefined} value={form.gradeLevel} onChange={set('gradeLevel')}>
                 {[1, 2, 3, 4, 5, 6].map((n) => <option key={n} value={String(n)}>{n}</option>)}
               </select>
             </div>
           </div>
 
-          {stepError && <p style={{ color: 'var(--color-danger)', margin: 0, fontSize: 13, fontWeight: 700 }}>{stepError}</p>}
+          {stepError && <p id="register-error" role="alert" style={{ color: 'var(--color-danger)', margin: 0, fontSize: 13, fontWeight: 700 }}>{stepError}</p>}
           {register.isError && (
             <p style={{ color: 'var(--color-danger)', margin: 0, fontSize: 13, fontWeight: 700 }}>
               {(register.error as { response?: { data?: { message?: string } } })?.response?.data?.message

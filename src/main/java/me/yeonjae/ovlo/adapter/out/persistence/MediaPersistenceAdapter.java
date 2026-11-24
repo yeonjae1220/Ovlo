@@ -27,7 +27,7 @@ public class MediaPersistenceAdapter implements LoadMediaPort, SaveMediaPort {
 
     @Override
     public MediaFile save(MediaFile mediaFile) {
-        return mediaFileMapper.toDomain(mediaFileJpaRepository.save(mediaFileMapper.toJpaEntity(mediaFile)));
+        return mediaFileMapper.toDomain(mediaFileJpaRepository.saveAndFlush(mediaFileMapper.toJpaEntity(mediaFile)));
     }
 
     @Override

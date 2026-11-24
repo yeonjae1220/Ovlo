@@ -3,6 +3,7 @@
 import axios from 'axios'
 import { useAuthStore } from '../store/authStore'
 import { refreshAuth } from './refreshAuth'
+import { loginPath } from './returnPath'
 import { assertAuthSession, captureAuthSession, isEndedAuthSession, type AuthSession } from './authSession'
 
 declare module 'axios' {
@@ -52,7 +53,7 @@ apiClient.interceptors.response.use(
 
     if (!newToken) {
       // 세션 종료 — refreshAuth 가 이미 인증 상태를 지웠다
-      if (typeof window !== 'undefined' && isEndedAuthSession(original._authSession)) window.location.href = '/login'
+        if (typeof window !== 'undefined' && isEndedAuthSession(original._authSession)) window.location.href = loginPath(window.location.pathname + window.location.search)
       return Promise.reject(error)
     }
 

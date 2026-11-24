@@ -14,7 +14,7 @@ export const postApi = {
   listByBoard: (boardId: string, page = 0, size = 20) =>
     apiClient
       .get<PostPageResult>(`/boards/${boardId}/posts`, { params: { page, size } })
-      .then((r) => r.data.content),
+      .then((r) => r.data),
 
   listAll: (page = 0, size = 20) =>
     apiClient

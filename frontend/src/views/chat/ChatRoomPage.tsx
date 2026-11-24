@@ -95,11 +95,11 @@ export default function ChatRoomPage() {
       setMessages((prev) => {
         // 이미 화면에 있는 WS 메시지 중 히스토리에 없는 것도 유지 (refetch 직후 도착한 메시지)
         const stateExtra = prev.filter((m) => !historyIdSet.has(m.id))
-        return [...historyMsgs, ...buffered, ...stateExtra]
+        return [...new Map([...historyMsgs, ...buffered, ...stateExtra].map(m => [m.id, m])).values()].sort((a, b) => a.sentAt.localeCompare(b.sentAt) || Number(a.id) - Number(b.id))
       })
     } else {
       // 이전 페이지: 앞에 추가 (이전 메시지 불러오기)
-      setMessages((prev) => [...historyMsgs, ...prev])
+      setMessages((prev) => [...historyMsgs.filter(m => !prev.some(p => p.id === m.id)), ...prev])
     }
 
     setHasMore(history.length === PAGE_SIZE)
@@ -112,7 +112,7 @@ export default function ChatRoomPage() {
     try {
       await stompClient.connect(token, {
         onDisconnect: () => setConnected(false),
-      })
+        onConnect: () => {
       setConnected(true)
 
       // 재연결 시 오프라인 중 수신된 메시지 재조회
@@ -139,6 +139,8 @@ export default function ChatRoomPage() {
           setWsCount((c) => c + 1)
           queryClient.invalidateQueries({ queryKey: ['chatRooms'] })
         }
+      })
+        },
       })
     } catch {
       setConnected(false)
@@ -184,8 +186,8 @@ export default function ChatRoomPage() {
 
   const sendMessage = () => {
     if (!input.trim() || !connected) return
-    stompClient.publish(id!, input)
-    setInput('')
+    if (stompClient.publish(id!, input)) setInput('')
+    else setConnected(false)
   }
 
   if (isLoading) return <p style={{ color: C.muted }}>{t('chat.room.loading')}</p>
@@ -247,7 +249,6 @@ export default function ChatRoomPage() {
           const senderIdNum = Number(msg.senderId)
           const nickname = room.participantNicknames?.[senderIdNum] ?? `#${msg.senderId}`
           const mediaId = room.participantProfileImageMediaIds?.[senderIdNum]
-          const avatarUrl = mediaId ? `/api/v1/media/${mediaId}/file` : null
 
           return (
             <div
@@ -260,15 +261,7 @@ export default function ChatRoomPage() {
                   style={{ cursor: 'pointer', flexShrink: 0 }}
                   title={nickname}
                 >
-                  {avatarUrl ? (
-                    <img
-                      src={avatarUrl}
-                      alt={nickname}
-                      style={{ width: 32, height: 32, borderRadius: '50%', objectFit: 'cover' }}
-                    />
-                  ) : (
-                    <Avatar label={nickname} size="sm" />
-                  )}
+                  <Avatar label={nickname} mediaId={mediaId} size="sm" />
                 </div>
               )}
               <div

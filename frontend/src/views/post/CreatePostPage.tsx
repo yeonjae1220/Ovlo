@@ -50,6 +50,7 @@ export default function CreatePostPage() {
       ) : (
         <Card style={{ padding: 18 }}>
           <div style={{ display: 'grid', gap: 16 }}>
+            {createPost.isError && <p role="alert">{t('common.actionFailed')}</p>}
             <FieldGroup label={t('post.write.titlePlaceholder')} hint={`${title.length}/80`}>
               <TextField
                 placeholder={t('post.write.titleExample')}

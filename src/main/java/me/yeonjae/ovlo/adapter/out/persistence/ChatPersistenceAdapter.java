@@ -30,6 +30,7 @@ import java.util.stream.Collectors;
 public class ChatPersistenceAdapter implements LoadChatPort, SaveChatPort, SaveReadMarkerPort {
 
     private final OfficePersonalDataAdapter privacy;
+    private final org.springframework.jdbc.core.JdbcTemplate jdbc;
     private final ChatRoomJpaRepository chatRoomJpaRepository;
     private final MessageJpaRepository messageJpaRepository;
     private final ChatRoomReadMarkerRepository readMarkerRepository;
@@ -38,7 +39,8 @@ public class ChatPersistenceAdapter implements LoadChatPort, SaveChatPort, SaveR
     public ChatPersistenceAdapter(OfficePersonalDataAdapter privacy, ChatRoomJpaRepository chatRoomJpaRepository,
                                   MessageJpaRepository messageJpaRepository,
                                   ChatRoomReadMarkerRepository readMarkerRepository,
-                                  ChatMapper chatMapper) {
+                                  ChatMapper chatMapper, org.springframework.jdbc.core.JdbcTemplate jdbc) {
+        this.jdbc = jdbc;
         this.privacy=privacy;
         this.chatRoomJpaRepository = chatRoomJpaRepository;
         this.messageJpaRepository = messageJpaRepository;
@@ -48,20 +50,26 @@ public class ChatPersistenceAdapter implements LoadChatPort, SaveChatPort, SaveR
 
     @Override
     public Optional<ChatRoom> findById(ChatRoomId chatRoomId) {
-        // 단건 조회: 메시지 전체 로딩 (채팅방 상세 화면용, 페이지네이션은 findMessages() 사용)
-        return chatRoomJpaRepository.findById(chatRoomId.value()).map(entity -> {
-            var messages = messageJpaRepository.findByChatRoomIdAndHiddenByWithdrawalFalseOrderBySentAtAsc(entity.getId());
-            return chatMapper.toDomain(entity, messages);
-        });
+        // Messages have a separate bounded page API.
+        return chatRoomJpaRepository.findById(chatRoomId.value())
+                .map(entity -> chatMapper.toDomain(entity, List.of()));
     }
 
     @Override
     public List<ChatRoom> findByMemberId(MemberId memberId) {
-        // 목록 조회: 메시지 로딩 생략 (N×M 로딩 방지 — 메시지는 입장 시 별도 조회)
-        return chatRoomJpaRepository.findByMemberId(memberId.value())
-                .stream()
-                .map(entity -> chatMapper.toDomain(entity, Collections.emptyList()))
-                .toList();
+        record RoomRow(long id, ChatRoomType type, String name) {}
+        var rooms = jdbc.query("SELECT cr.id,cr.type,cr.name FROM chat_room cr WHERE "
+                        + ChatRoomJpaRepository.ACCESS.replace(":memberId","?") + " ORDER BY cr.created_at DESC,cr.id DESC",
+                (row,index) -> new RoomRow(row.getLong(1),ChatRoomType.valueOf(row.getString(2)),row.getString(3)),
+                memberId.value(),memberId.value(),memberId.value());
+        if (rooms.isEmpty()) return List.of();
+        var participants = new java.util.HashMap<Long,java.util.List<MemberId>>();
+        new org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate(jdbc).query(
+                "SELECT chat_room_id,member_id FROM chat_room_participant WHERE chat_room_id IN (:ids) ORDER BY chat_room_id,member_id",
+                Map.of("ids",rooms.stream().map(RoomRow::id).toList()),
+                (org.springframework.jdbc.core.RowCallbackHandler) row -> participants.computeIfAbsent(row.getLong(1),id -> new java.util.ArrayList<>()).add(new MemberId(row.getLong(2))));
+        return rooms.stream().map(row -> ChatRoom.restore(new ChatRoomId(row.id()),row.type(),row.name(),
+                participants.getOrDefault(row.id(),List.of()),List.of())).toList();
     }
 
     @Override
@@ -73,11 +81,22 @@ public class ChatPersistenceAdapter implements LoadChatPort, SaveChatPort, SaveR
     @Override
     @Transactional
     public ChatRoom save(ChatRoom chatRoom) {
+        if (chatRoom.getId() == null && chatRoom.getType() == ChatRoomType.DM) {
+            var ids = chatRoom.getParticipants().stream().map(MemberId::value).sorted().toList();
+            // Serializes every SaveChatPort creation path, including marketplace DMs.
+            var active = jdbc.queryForList("SELECT status FROM member WHERE id IN (?,?) ORDER BY id FOR UPDATE",
+                    String.class, ids.get(0), ids.get(1));
+            if (active.size() != 2 || active.stream().anyMatch(s -> !"ACTIVE".equals(s))) {
+                throw new me.yeonjae.ovlo.domain.chat.exception.ChatException("사용할 수 없는 참여자입니다",
+                        me.yeonjae.ovlo.domain.chat.exception.ChatException.ErrorType.NOT_FOUND);
+            }
+            var existing = findDmRoomId(new MemberId(ids.get(0)), new MemberId(ids.get(1)));
+            if (existing.isPresent()) return findById(existing.get()).orElseThrow();
+        }
         var entity = chatMapper.toJpaEntity(chatRoom);
         var saved = chatRoomJpaRepository.save(entity);
         saveNewMessages(saved.getId(), chatRoom.getMessages());
-        var messages = messageJpaRepository.findByChatRoomIdAndHiddenByWithdrawalFalseOrderBySentAtAsc(saved.getId());
-        return chatMapper.toDomain(saved, messages);
+        return chatMapper.toDomain(saved, List.of());
     }
 
     @Override
@@ -136,11 +155,21 @@ public class ChatPersistenceAdapter implements LoadChatPort, SaveChatPort, SaveR
     @Override
     public Map<Long, Long> countUnreadBatch(MemberId memberId, Map<Long, Instant> sinceByRoomId) {
         if (sinceByRoomId.isEmpty()) return Map.of();
-        return sinceByRoomId.entrySet().stream()
-                .collect(Collectors.toMap(
-                        Map.Entry::getKey,
-                        e -> messageJpaRepository.countUnread(e.getKey(), memberId.value(), e.getValue())
-                ));
+        var result = new java.util.HashMap<Long, Long>();
+        sinceByRoomId.keySet().forEach(id -> result.put(id, 0L));
+        // One grouped query with the caller's exact per-room cutoffs; no N+1.
+        String values = sinceByRoomId.keySet().stream().map(id -> "(?::bigint,?::timestamptz)").collect(Collectors.joining(","));
+        var args = new java.util.ArrayList<Object>();
+        sinceByRoomId.forEach((id, since) -> { args.add(id); args.add(java.sql.Timestamp.from(since)); });
+        args.add(memberId.value());
+        jdbc.query("SELECT m.chat_room_id, COUNT(*) FROM message m JOIN (VALUES " + values
+                + ") AS cut(room_id,since) ON cut.room_id=m.chat_room_id WHERE m.sender_id<>?"
+                + " AND m.sent_at>cut.since AND m.hidden_by_withdrawal=false"
+                + " AND NOT EXISTS (SELECT 1 FROM office_consultation c WHERE c.chat_room_id=m.chat_room_id"
+                + " AND (c.personal_data_erased_at IS NOT NULL OR c.personal_data_expires_at<=CURRENT_TIMESTAMP))"
+                + " GROUP BY m.chat_room_id",
+                (org.springframework.jdbc.core.RowCallbackHandler) row -> result.put(row.getLong(1), row.getLong(2)), args.toArray());
+        return result;
     }
 
     @Override

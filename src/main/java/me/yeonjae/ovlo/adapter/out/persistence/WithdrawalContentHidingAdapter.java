@@ -18,6 +18,7 @@ public class WithdrawalContentHidingAdapter implements HideContentByWithdrawnMem
     private final CommentJpaRepository commentJpaRepository;
     private final MessageJpaRepository messageJpaRepository;
     private final FollowJpaRepository followJpaRepository;
+    private final org.springframework.jdbc.core.JdbcTemplate jdbc;
 
     @Override
     @Transactional
@@ -27,5 +28,26 @@ public class WithdrawalContentHidingAdapter implements HideContentByWithdrawnMem
         commentJpaRepository.hideAllByAuthorId(memberId);
         messageJpaRepository.hideAllBySenderId(memberId);
         followJpaRepository.hideAllByMemberId(memberId);
+        jdbc.update("DELETE FROM verification_credential WHERE member_id=?", memberId);
+        jdbc.update("DELETE FROM personal_event WHERE member_id=?", memberId);
+        jdbc.update("DELETE FROM calendar_subscription WHERE member_id=?", memberId);
+        jdbc.update("DELETE FROM university_calendar_manager WHERE member_id=?", memberId);
+        jdbc.update("""
+            UPDATE calendar_audit SET snapshot='[Personal data erased]'
+            WHERE aggregate_type='UNIVERSITY_APPLICATION'
+              AND aggregate_id IN (SELECT id FROM university_application WHERE member_id=?)
+            """, memberId);
+        jdbc.update("""
+            UPDATE university_application SET department='[erased]', contact_email='erased@deleted.invalid',
+              message='[erased]', review_note=NULL, status='REVOKED', active_slot=NULL, version=version+1
+            WHERE member_id=?
+            """, memberId);
+        jdbc.update("UPDATE office_staff SET status='REMOVED' WHERE member_id=?", memberId);
+        jdbc.update("""
+            INSERT INTO media_deletion_job(media_id) SELECT id FROM media_file WHERE uploader_id=?
+            ON CONFLICT (media_id) DO NOTHING
+            """, memberId);
+        jdbc.update("UPDATE media_file SET original_filename='erased' WHERE uploader_id=?", memberId);
+        jdbc.update("UPDATE member SET personal_data_erased_at=CURRENT_TIMESTAMP WHERE id=?", memberId);
     }
 }

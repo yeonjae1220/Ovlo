@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { useRouter, usePathname } from 'next/navigation'
 import { useAuthStore } from '@/store/authStore'
 import { refreshAuth } from '@/utils/refreshAuth'
+import { loginPath, safeReturnPath } from '@/utils/returnPath'
 import AppLayout from '@/components/layout/AppLayout'
 
 function AuthSkeleton() {
@@ -47,11 +48,11 @@ export default function ProtectedLayout({ children }: { children: React.ReactNod
   useEffect(() => {
     if (!hydrated) return
     if (!accessToken || !currentUser) {
-      router.replace('/login')
+      router.replace(loginPath(window.location.pathname + window.location.search))
       return
     }
     if (currentUser.status === 'PENDING_ONBOARDING' && pathname !== '/onboarding') {
-      router.replace('/onboarding')
+      router.replace('/onboarding?next=' + encodeURIComponent(safeReturnPath(window.location.pathname + window.location.search)))
     }
   }, [hydrated, accessToken, currentUser, pathname, router])
 

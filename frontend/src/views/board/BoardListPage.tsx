@@ -1,9 +1,10 @@
 'use client'
 
 import { useState } from 'react'
+import { UniversitySelector } from '../../components/UniversitySelector'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { useBoards, useCreateBoard } from '../../hooks/useBoard'
+import { useBoardDirectory, useCreateBoard } from '../../hooks/useBoard'
 import { usePosts, useAllPosts } from '../../hooks/usePost'
 import { useUniversityReports } from '../../hooks/useUniversity'
 import { useAuthStore } from '../../store/authStore'
@@ -25,7 +26,7 @@ const C = {
   warm: 'var(--color-warm)',
 }
 
-type TabId = 'all' | 'free' | 'reports'
+type TabId = 'all' | 'free' | 'reports' | 'boards'
 type FeedItem =
   | { type: 'post'; data: Post }
   | { type: 'tip'; data: import('../../api/university').UniversityReportSummary }
@@ -51,13 +52,18 @@ export default function BoardListPage() {
 
   const { currentUser } = useAuthStore()
   const router = useRouter()
-  const { data: boards } = useBoards()
+  const [boardKeyword, setBoardKeyword] = useState('')
+  const [boardPage, setBoardPage] = useState(0)
+  const [freePage, setFreePage] = useState(0)
+  const directory = useBoardDirectory(boardKeyword, boardPage)
+  const freeBoards = useBoardDirectory('', 0, 'GENERAL', 'GLOBAL')
+  const boards = freeBoards.data?.content
   const createBoard = useCreateBoard()
 
   const freeBoard = boards?.find((b) => b.category === 'GENERAL' && b.scope === 'GLOBAL') ?? null
 
   const { data: allPostsPage, isLoading: allPostsLoading, isError: allPostsError, refetch: refetchAllPosts } = useAllPosts(allPage, 20)
-  const { data: freePosts, isLoading: freeLoading, isError: freeError, refetch: refetchFree } = usePosts(freeBoard?.id ? String(freeBoard.id) : '')
+  const { data: freePosts, isLoading: freeLoading, isError: freeError, refetch: refetchFree } = usePosts(freeBoard?.id ? String(freeBoard.id) : '', freePage)
   const { data: tipsPage, isLoading: tipsLoading, isError: tipsError, refetch: refetchTips } = useUniversityReports(language, '', 0, 20)
   const { data: reportsPage, isLoading: reportsLoading, isError: reportsError, refetch: refetchReports } = useUniversityReports(language, '', 0, 20)
 
@@ -78,8 +84,9 @@ export default function BoardListPage() {
   })()
 
   const handleCreate = () => {
-    createBoard.mutate(form, {
-      onSuccess: () => {
+    createBoard.mutate({ ...form, universityId: form.scope === 'UNIVERSITY' ? form.universityId : undefined }, {
+      onSuccess: (board) => {
+        router.push('/boards/' + board.id)
         setShowCreateForm(false)
         setForm({ name: '', category: 'GENERAL', scope: 'GLOBAL' })
       },
@@ -111,30 +118,34 @@ export default function BoardListPage() {
         <Card style={{ padding: 16, marginBottom: 16 }}>
           <div style={{ display: 'grid', gap: 10 }}>
             <TextField
+              aria-label={t('board.form.name')}
               placeholder={t('board.form.name')}
               value={form.name}
               onChange={(event) => setForm((f) => ({ ...f, name: event.target.value }))}
             />
             <TextField
+              aria-label={t('board.form.desc')}
               placeholder={t('board.form.desc')}
               value={form.description ?? ''}
               onChange={(event) => setForm((f) => ({ ...f, description: event.target.value }))}
             />
             <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr 1fr auto auto', gap: 8 }}>
               <SelectField
+                aria-label={t('board.form.category')}
                 value={form.category}
                 onChange={(event) => setForm((f) => ({ ...f, category: event.target.value as BoardCategory }))}
               >
                 {(['GENERAL','LANGUAGE_EXCHANGE','TRADE','CULTURE','HOUSING','ACADEMIC','JOB'] as BoardCategory[]).map(
-                  (c) => <option key={c} value={c}>{c}</option>
+                  (c) => <option key={c} value={c}>{t('board.category.' + c)}</option>
                 )}
               </SelectField>
               <SelectField
+                aria-label={t('board.form.scope')}
                 value={form.scope}
                 onChange={(event) => setForm((f) => ({ ...f, scope: event.target.value as LocationScope }))}
               >
                 {(['GLOBAL','COUNTRY','REGION','UNIVERSITY'] as LocationScope[]).map(
-                  (s) => <option key={s} value={s}>{s}</option>
+                  (s) => <option key={s} value={s}>{t('board.scope.' + s)}</option>
                 )}
               </SelectField>
               <SelectField
@@ -146,13 +157,16 @@ export default function BoardListPage() {
                 <option value="STUDENT">{t('verification.badge.student')}</option>
                 <option value="EXCHANGE_VERIFIED">{t('verification.badge.exchange')}</option>
               </SelectField>
-              <Button onClick={handleCreate} disabled={createBoard.isPending || !form.name.trim()} variant="primary">
+              <Button onClick={handleCreate} disabled={createBoard.isPending || !form.name.trim() || (form.scope === 'UNIVERSITY' && !form.universityId)} variant="primary">
                 {t('board.form.create')}
               </Button>
               <Button onClick={() => setShowCreateForm(false)} variant="ghost">
                 {t('board.form.cancel')}
               </Button>
             </div>
+            {form.scope === 'UNIVERSITY' && <UniversitySelector
+              value={form.universityId ?? null} onChange={(id) => setForm(f => ({ ...f, universityId: id ?? undefined }))} />}
+            {createBoard.isError && <p role="alert">{t('common.actionFailed')}</p>}
           </div>
         </Card>
       )}
@@ -163,11 +177,25 @@ export default function BoardListPage() {
           onChange={setActiveTab}
           items={[
             { value: 'all', label: t('tab.all'), icon: '◎' },
+            { value: 'boards', label: t('board.directory'), icon: '☷' },
             { value: 'free', label: t('tab.free'), icon: '⌂' },
             { value: 'reports', label: t('tab.tips'), icon: '✦' },
           ]}
         />
       </div>
+
+      {activeTab === 'boards' && <section>
+        <TextField aria-label={t('board.search')} value={boardKeyword} onChange={e => { setBoardKeyword(e.target.value); setBoardPage(0) }} />
+        {directory.isError ? <QueryErrorNotice onRetry={() => void directory.refetch()} /> : directory.isPending ? <p>{t('common.loading')}</p> : <>
+          <div style={{ display: 'grid', gap: 10, marginTop: 16 }}>
+            {directory.data.content.map(board => <Link key={board.id} href={'/boards/' + board.id} style={{ color: 'inherit', textDecoration: 'none' }}>
+              <Card interactive style={{ padding: 16 }}><strong>{board.name}</strong><p>{board.description}</p><Badge>{t('board.category.' + board.category)}</Badge></Card>
+            </Link>)}
+          </div>
+          {directory.data.content.length === 0 && <EmptyState icon="☷" title={t('community.noBoard')} action={<Button onClick={() => setShowCreateForm(true)}>{t('community.createBoard.action')}</Button>} />}
+          {directory.data.totalElements > 20 && <Pagination page={boardPage} total={directory.data.totalElements} hasNext={(boardPage + 1) * 20 < directory.data.totalElements} onPrev={() => setBoardPage(p => p - 1)} onNext={() => setBoardPage(p => p + 1)} />}
+        </>}
+      </section>}
 
       {activeTab === 'all' && (
         <div>
@@ -197,17 +225,19 @@ export default function BoardListPage() {
 
       {activeTab === 'free' && (
         <>
-          {!freeBoard && !freeLoading ? (
+          {freeBoards.isError ? <QueryErrorNotice onRetry={() => void freeBoards.refetch()} /> : freeBoards.isPending ? <p>{t('common.loading')}</p> : !freeBoard ? (
             <EmptyState
               icon="⌂"
               title={t('community.noBoard')}
               action={<Button onClick={() => setShowCreateForm(true)}>{t('community.createBoard.action')}</Button>}
             />
           ) : (
-            <PostFeed posts={freePosts ?? []} isLoading={freeLoading} isError={freeError} onRetry={() => void refetchFree()} emptyText={t('community.empty')} showBoardName={false} />
+            <PostFeed posts={freePosts?.content ?? []} isLoading={freeLoading} isError={freeError} onRetry={() => void refetchFree()} emptyText={t('community.empty')} showBoardName={false} />
           )}
         </>
       )}
+
+      {activeTab === 'free' && !freeError && freePosts && freePosts.totalPages > 1 && <Pagination page={freePage} total={freePosts.totalElements} hasNext={freePosts.hasNext} onPrev={() => setFreePage(p => p - 1)} onNext={() => setFreePage(p => p + 1)} />}
 
       {activeTab === 'reports' && (
         <ReportFeed
@@ -298,7 +328,7 @@ function PostCard({ post, showBoardName }: { post: Post; showBoardName: boolean 
           </div>
           <div style={{ display: 'grid', gap: 6, justifyItems: 'end', flexShrink: 0 }}>
             <Badge tone={post.likeCount > 0 ? 'warning' : 'neutral'}>♥ {post.likeCount}</Badge>
-            <Badge tone={post.comments?.length ? 'accent' : 'neutral'}>↳ {post.comments?.filter((c) => !c.deleted).length ?? 0}</Badge>
+            <Badge tone={post.commentCount > 0 ? 'accent' : 'neutral'}>↳ {post.commentCount}</Badge>
           </div>
         </div>
       </Card>

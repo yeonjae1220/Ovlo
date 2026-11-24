@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { useQueryClient } from '@tanstack/react-query'
 import Link from 'next/link'
 import { useParams } from 'next/navigation'
 import { useRouter } from 'next/navigation'
@@ -19,7 +20,7 @@ import { useTheme, type ThemeMode } from '../../theme/themeContext'
 import { useMyVerification } from '../../hooks/useVerification'
 import { TrustBadge } from '../verification/TrustBadge'
 import { VerificationSection } from '../verification/VerificationSection'
-import { QueryErrorNotice } from '../../components/ui'
+import { Avatar, QueryErrorNotice } from '../../components/ui'
 
 const C = {
   card:        'var(--color-surface)',
@@ -43,11 +44,12 @@ export default function ProfilePage() {
   const id = params?.id as string | undefined
   const router = useRouter()
   const { currentUser, clearAuth } = useAuthStore()
+  const queryClient = useQueryClient()
   const { language, setLanguage, t } = useI18n()
   const { theme, setTheme } = useTheme()
   const { data: member, isLoading, isError, refetch } = useMember(id!)
-  const { data: followers } = useFollowers(id!, 0, 1)
-  const { data: followings } = useFollowings(id!, 0, 1)
+  const { data: followers, isError: followersError } = useFollowers(id!, 0, 1)
+  const { data: followings, isError: followingsError } = useFollowings(id!, 0, 1)
   const updateProfile = useUpdateProfile()
   const followMutation = useFollow()
   const unfollowMutation = useUnfollow()
@@ -57,8 +59,11 @@ export default function ProfilePage() {
   const [nickname, setNickname] = useState('')
   const [bio, setBio] = useState('')
   const [myPostsPage, setMyPostsPage] = useState(0)
+  const [actionError, setActionError] = useState('')
+  const [withdrawing, setWithdrawing] = useState(false)
+  const [savingPhoto, setSavingPhoto] = useState(false)
 
-  const { data: myPostsData, isLoading: myPostsLoading } = usePostsByAuthor(id, myPostsPage, 10)
+  const { data: myPostsData, isLoading: myPostsLoading, isError: myPostsError, refetch: refetchPosts } = usePostsByAuthor(id, myPostsPage, 10)
 
   const isOwner = String(currentUser?.id) === id
   const { data: followingIds } = useFollowingStatus(isOwner || !id ? [] : [id])
@@ -66,12 +71,26 @@ export default function ProfilePage() {
   const { data: myVerification } = useMyVerification(isOwner)
 
   const { getRootProps, getInputProps } = useDropzone({
-    accept: { 'image/*': [] },
+    accept: { 'image/jpeg': ['.jpg', '.jpeg'], 'image/png': ['.png'] },
+    maxSize: 20 * 1024 * 1024,
+    onDropRejected: () => setActionError(t('profile.photoFormats')),
     maxFiles: 1,
     onDrop: async (files) => {
-      if (!files[0] || !id) return
-      const media = await uploadMedia.mutateAsync(files[0])
-      await memberApi.updateProfileImage(id, String(media.mediaId))
+      if (!files[0] || !id || savingPhoto) return
+      const session = captureAuthSession()
+      setActionError('')
+      setSavingPhoto(true)
+      try {
+        const media = await uploadMedia.mutateAsync(files[0])
+        if (!isCurrentAuthSession(session)) return
+        await memberApi.updateProfileImage(id, String(media.mediaId))
+        if (isCurrentAuthSession(session)) await queryClient.invalidateQueries({ queryKey: ['member', id] })
+      } catch {
+        console.error('Profile photo update failed')
+        if (isCurrentAuthSession(session)) setActionError(t('common.actionFailed'))
+      } finally {
+        if (isCurrentAuthSession(session)) setSavingPhoto(false)
+      }
     },
   })
 
@@ -81,9 +100,17 @@ export default function ProfilePage() {
     setEditing(true)
   }
 
-  const saveEdit = () => {
-    updateProfile.mutate({ id: id!, req: { nickname, bio } })
-    setEditing(false)
+  const saveEdit = async () => {
+    if (updateProfile.isPending) return
+    const session = captureAuthSession()
+    setActionError('')
+    try {
+      await updateProfile.mutateAsync({ id: id!, req: { nickname, bio } })
+      if (isCurrentAuthSession(session)) setEditing(false)
+    } catch {
+      console.error('Profile update failed')
+      if (isCurrentAuthSession(session)) setActionError(t('common.actionFailed'))
+    }
   }
 
   const handleLogout = async () => {
@@ -97,15 +124,21 @@ export default function ProfilePage() {
   }
 
   const handleWithdraw = async () => {
-    if (!confirm(t('profile.withdraw.confirm'))) return
+    if (withdrawing || !confirm(t('profile.withdraw.confirm'))) return
     const session = captureAuthSession()
+    setActionError('')
+    setWithdrawing(true)
     try {
       await memberApi.withdraw(id!)
-    } finally {
       if (isCurrentAuthSession(session)) {
         clearAuth()
         router.push('/login')
       }
+    } catch {
+      console.error('Account withdrawal failed')
+      if (isCurrentAuthSession(session)) setActionError(t('common.actionFailed'))
+    } finally {
+      if (isCurrentAuthSession(session)) setWithdrawing(false)
     }
   }
 
@@ -116,14 +149,17 @@ export default function ProfilePage() {
 
   return (
     <div style={{ maxWidth: 800, margin: '0 auto' }}>
+      <p style={{ color: 'var(--color-text-muted)', fontSize: 12 }}>{isOwner && t('profile.photoFormats')}</p>
+      {actionError && <p role="alert" style={{ color: C.danger }}>{actionError}</p>}
       <div style={{ display: 'flex', gap: 24, alignItems: 'flex-start' }}>
         {isOwner ? (
           <div {...getRootProps()} style={{ cursor: 'pointer', width: 80, height: 80, borderRadius: '50%', background: C.surfaceSoft, border: `1px solid ${C.border}`, color: C.textMuted, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <input {...getInputProps()} />
-            <span style={{ fontSize: 12 }}>{t('profile.changePhoto')}</span>
+            <Avatar label={member.nickname} mediaId={member.profileImageMediaId} size="lg" />
+            <span style={{ fontSize: 12 }}>{savingPhoto ? t('common.loading') : t('profile.changePhoto')}</span>
           </div>
         ) : (
-          <div style={{ width: 80, height: 80, borderRadius: '50%', background: C.surfaceSoft, border: `1px solid ${C.border}` }} />
+          <Avatar label={member.nickname} mediaId={member.profileImageMediaId} size="lg" />
         )}
 
         <div style={{ flex: 1 }}>
@@ -131,7 +167,7 @@ export default function ProfilePage() {
             <>
               <input value={nickname} onChange={(e) => setNickname(e.target.value)} placeholder={t('profile.nickname.placeholder')} />
               <textarea value={bio} onChange={(e) => setBio(e.target.value)} placeholder={t('profile.bio.placeholder')} rows={3} style={{ display: 'block', width: '100%' }} />
-              <button onClick={saveEdit}>{t('profile.save')}</button>
+              <button onClick={saveEdit} disabled={updateProfile.isPending}>{t('profile.save')}</button>
               <button onClick={() => setEditing(false)}>{t('profile.cancel')}</button>
             </>
           ) : (
@@ -142,7 +178,8 @@ export default function ProfilePage() {
               </div>
               <p style={{ color: C.textMuted }}>{member.name}{member.email ? ` · ${member.email}` : ''}</p>
               {member.bio && <p style={{ color: C.textSec }}>{member.bio}</p>}
-              <p style={{ color: C.textMuted }}>{t('profile.followers')} {followers?.totalElements ?? 0} · {t('profile.following')} {followings?.totalElements ?? 0}</p>
+              <p style={{ color: C.textMuted }}>{t('profile.followers')} {followersError ? '—' : followers?.totalElements ?? '…'} · {t('profile.following')} {followingsError ? '—' : followings?.totalElements ?? '…'}</p>
+              {(followersError || followingsError) && <p role="status">{t('common.actionFailed')}</p>}
               {isOwner ? (
                 <button onClick={startEdit}>{t('profile.editBtn')}</button>
               ) : (
@@ -163,11 +200,12 @@ export default function ProfilePage() {
           {isOwner ? t('profile.myPosts') : t('profile.theirPosts')}
         </h3>
         {myPostsLoading && <p style={{ color: C.textMuted, fontSize: 14 }}>{t('profile.postsLoading')}</p>}
-        {!myPostsLoading && (myPostsData?.content ?? []).length === 0 && (
+        {myPostsError && <QueryErrorNotice onRetry={() => void refetchPosts()} />}
+        {!myPostsLoading && !myPostsError && (myPostsData?.content ?? []).length === 0 && (
           <p style={{ color: C.textDim, fontSize: 14 }}>{t('profile.noPosts')}</p>
         )}
         <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
-          {(myPostsData?.content ?? []).map((post) => (
+          {(!myPostsError ? myPostsData?.content ?? [] : []).map((post) => (
             <li key={post.id} style={{ borderBottom: `1px solid ${C.border}` }}>
               <Link
                 href={`/posts/${post.id}`}
@@ -280,6 +318,7 @@ export default function ProfilePage() {
             <button onClick={handleLogout}>{t('profile.logout')}</button>
             <button
               onClick={handleWithdraw}
+              disabled={withdrawing}
               style={{ color: C.danger, border: `1px solid ${C.danger}`, background: C.dangerSoft }}
             >
               {t('profile.withdraw')}

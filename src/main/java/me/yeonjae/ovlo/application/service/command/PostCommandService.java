@@ -37,13 +37,16 @@ public class PostCommandService
                    DeleteCommentUseCase, ReactToPostUseCase, DeletePostUseCase {
 
     private final LoadPostPort loadPostPort;
+    private final me.yeonjae.ovlo.application.port.out.post.SaveCommentPort comments;
     private final SavePostPort savePostPort;
     private final LoadBoardPort loadBoardPort;
     private final GetMyVerificationStatusQuery getMyVerificationStatusQuery;
 
     public PostCommandService(LoadPostPort loadPostPort, SavePostPort savePostPort,
                               LoadBoardPort loadBoardPort,
-                              GetMyVerificationStatusQuery getMyVerificationStatusQuery) {
+                              GetMyVerificationStatusQuery getMyVerificationStatusQuery,
+                              me.yeonjae.ovlo.application.port.out.post.SaveCommentPort comments) {
+        this.comments = comments;
         this.loadPostPort = loadPostPort;
         this.savePostPort = savePostPort;
         this.loadBoardPort = loadBoardPort;
@@ -97,15 +100,14 @@ public class PostCommandService
     public CommentResult createComment(CreateCommentCommand command) {
         Post post = loadPostOrThrow(command.postId());
         var comment = post.addComment(new MemberId(command.authorId()), command.content());
-        savePostPort.save(post);
-        return CommentResult.from(comment);
+        return CommentResult.from(comments.insertComment(post.getId(), comment));
     }
 
     @Override
     public void deleteComment(DeleteCommentCommand command) {
         Post post = loadPostOrThrow(command.postId());
         post.deleteComment(new CommentId(command.commentId()), new MemberId(command.requesterId()));
-        savePostPort.save(post);
+        comments.deleteComment(post.getId(), command.commentId(), command.requesterId());
     }
 
     @Override

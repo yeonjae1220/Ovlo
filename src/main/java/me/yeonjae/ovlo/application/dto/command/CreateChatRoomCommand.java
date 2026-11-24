@@ -5,6 +5,7 @@ import me.yeonjae.ovlo.domain.chat.model.ChatRoomType;
 import java.util.List;
 
 public record CreateChatRoomCommand(
+        Long requesterId,
         ChatRoomType type,
         String name,
         List<Long> participantIds

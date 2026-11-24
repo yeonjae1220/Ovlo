@@ -92,7 +92,7 @@ export default function UniversityReportDetailPage() {
     catch { /* ignore */ }
   }
 
-  const availableLangs = langs.length > 1 ? langs : ['ko', 'en']
+  const availableLangs = langs.length ? langs : [report.lang]
 
 
   return (
@@ -109,17 +109,17 @@ export default function UniversityReportDetailPage() {
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: 12 }}>
           <h1 style={{ margin: 0, fontSize: 22, fontWeight: 800, color: C.textPrimary }}>{stripReportSuffix(report.title)}</h1>
           {availableLangs.length > 1 && (
-            <div style={{ display: 'flex', gap: 6 }}>
+            <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
               {availableLangs.map((l) => (
                 <button
                   key={l}
                   onClick={() => handleLang(l)}
                   style={{
                     padding: '4px 12px', borderRadius: 16, fontSize: 12, cursor: 'pointer',
-                    border: lang === l ? `2px solid ${C.activeBorder}` : `1px solid ${C.borderLight}`,
-                    background: lang === l ? C.activeBg : 'transparent',
-                    color: lang === l ? C.activeText : C.textMuted,
-                    fontWeight: lang === l ? 700 : 400,
+                    border: report.lang === l ? `2px solid ${C.activeBorder}` : `1px solid ${C.borderLight}`,
+                    background: report.lang === l ? C.activeBg : 'transparent',
+                    color: report.lang === l ? C.activeText : C.textMuted,
+                    fontWeight: report.lang === l ? 700 : 400,
                   }}
                 >
                   {LANG_LABEL[l] ?? l.toUpperCase()}
@@ -128,6 +128,7 @@ export default function UniversityReportDetailPage() {
             </div>
           )}
         </div>
+        {report.lang !== lang && <p role="status">{t('univ.detail.languageFallback', { language: LANG_LABEL[report.lang] ?? report.lang })}</p>}
         {/* 옛 리포트의 '영상 N개 분석'은 실제 원천과 맞지 않아 표시하지 않는다. 출처가 확인된 재생성 리포트만 보여준다. */}
         {(parsed?.sources?.length || parsed?.as_of) && (
           <div style={{ marginTop: 10, fontSize: 12, color: C.textDim }}>

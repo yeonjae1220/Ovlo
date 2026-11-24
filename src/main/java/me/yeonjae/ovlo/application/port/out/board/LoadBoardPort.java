@@ -8,6 +8,7 @@ import me.yeonjae.ovlo.domain.member.model.MemberId;
 import java.util.Optional;
 
 public interface LoadBoardPort {
+    java.util.List<Board> findByIds(java.util.List<Long> ids);
     Optional<Board> findById(BoardId boardId);
     boolean existsSubscription(BoardId boardId, MemberId memberId);
     Optional<BoardSubscription> findSubscription(BoardId boardId, MemberId memberId);

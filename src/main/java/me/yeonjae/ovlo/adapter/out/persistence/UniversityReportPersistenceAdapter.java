@@ -50,21 +50,15 @@ public class UniversityReportPersistenceAdapter implements LoadUniversityReportP
 
         List<UniversityReportSummaryResult> content = entities.stream()
                 .map(r -> {
-                    String[] supported = r.getSupportedLangs();
                     List<UniversityReportTranslationJpaEntity> ts =
                             translationsByReport.getOrDefault(r.getId(), Collections.emptyList());
-
-                    String effectiveLang = lang;
-                    if (supported != null && supported.length > 0 && !Arrays.asList(supported).contains(lang)) {
-                        effectiveLang = supported[0];
-                    }
-                    final String resolvedLang = effectiveLang;
+                    List<String> langs = ts.stream().map(x -> x.getId().getLang()).sorted().toList();
+                    final String resolvedLang = resolveLanguage(lang, langs);
                     Optional<UniversityReportTranslationJpaEntity> t =
                             ts.stream().filter(x -> resolvedLang.equals(x.getId().getLang())).findFirst();
 
                     String title   = t.map(UniversityReportTranslationJpaEntity::getTitle).orElse("");
                     String summary = t.map(UniversityReportTranslationJpaEntity::getSummary).orElse(null);
-                    List<String> langs = supported != null ? Arrays.asList(supported) : Collections.emptyList();
                     return new UniversityReportSummaryResult(
                             r.getId(), title, summary,
                             r.getSourceVideoCount(), r.getSourceWebCount(), langs,
@@ -107,12 +101,7 @@ public class UniversityReportPersistenceAdapter implements LoadUniversityReportP
     }
 
     private Optional<UniversityReportResult> resolveTranslation(UniversityReportJpaEntity r, String lang) {
-        String effectiveLang = lang;
-        String[] supported = r.getSupportedLangs();
-        if (supported != null && supported.length > 0) {
-            boolean hasLang = Arrays.asList(supported).contains(lang);
-            if (!hasLang) effectiveLang = supported[0];
-        }
+        String effectiveLang = resolveLanguage(lang, translationRepo.findLangsByReportId(r.getId()));
         String countryCode = r.getGlobalUnivId() == null ? null
                 : globalUnivRepo.findCountryCodeById(r.getGlobalUnivId()).orElse(null);
         return translationRepo.findByIdReportIdAndIdLang(r.getId(), effectiveLang)
@@ -120,5 +109,12 @@ public class UniversityReportPersistenceAdapter implements LoadUniversityReportP
                         r.getId(), r.getGlobalUnivId(), t.getLang(),
                         t.getTitle(), t.getSummary(), t.getBody(), t.getContent(),
                         r.getSourceVideoCount(), r.getSourceWebCount(), countryCode));
+    }
+
+    private static String resolveLanguage(String requested, List<String> available) {
+        String normalized = requested == null ? "en" : requested.trim().toLowerCase(java.util.Locale.ROOT);
+        if (available.contains(normalized)) return normalized;
+        if (available.contains("en")) return "en";
+        return available.stream().sorted().findFirst().orElse("en");
     }
 }

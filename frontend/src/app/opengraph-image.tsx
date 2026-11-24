@@ -1,6 +1,5 @@
 import { ImageResponse } from 'next/og'
 
-/* eslint-disable react-refresh/only-export-components -- Next metadata image module requires named metadata exports. */
 
 export const runtime = 'edge'
 export const alt = 'Ovlo exchange student community'

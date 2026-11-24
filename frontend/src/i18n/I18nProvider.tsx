@@ -79,7 +79,6 @@ export function I18nProvider({
 }
 
 // import가 많아 별도 파일 분리 시 churn이 큼 — Fast Refresh(DX) 전용 룰만 타게팅 비활성
-// eslint-disable-next-line react-refresh/only-export-components
 export function useI18n() {
   const value = useContext(I18nContext)
   if (!value) throw new Error('useI18n must be used within I18nProvider')

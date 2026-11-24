@@ -55,18 +55,15 @@ public class GoogleAuthCommandService implements GoogleLoginUseCase {
 
         if (existingMember.isPresent()) {
             member = existingMember.get();
+            if (member.getStatus() == MemberStatus.WITHDRAWN || member.getStatus() == MemberStatus.SUSPENDED) {
+                throw new MemberException("사용할 수 없는 계정입니다", MemberException.ErrorType.FORBIDDEN);
+            }
             if (member.getProvider() == OAuthProvider.LOCAL) {
                 throw new MemberException(
                         "이미 이메일/비밀번호로 가입된 계정입니다. 일반 로그인을 사용해 주세요",
                         MemberException.ErrorType.CONFLICT);
             }
-            if (member.getStatus() == MemberStatus.WITHDRAWN) {
-                member.reactivateForOnboarding();
-                member = saveMemberPort.save(member);
-                isNewMember = true;
-            } else {
-                isNewMember = false;
-            }
+            isNewMember = member.getStatus() == MemberStatus.PENDING_ONBOARDING;
         } else {
             member = Member.createWithOAuth(
                     profile.name(),

@@ -72,7 +72,7 @@ export default function PostDetailPage() {
   }
 
   const handleComment = () => {
-    if (!commentContent.trim()) return
+    if (!commentContent.trim() || addComment.isPending) return
     addComment.mutate({ postId: id!, req: { content: commentContent.trim() } }, {
       onSuccess: () => setCommentContent('')
     })
@@ -86,6 +86,7 @@ export default function PostDetailPage() {
         actions={<Button variant="ghost" onClick={() => router.back()} icon="←">{t('exch.back').replace('← ', '')}</Button>}
       />
 
+      {(addComment.isError || deleteComment.isError || deletePost.isError || react.isError || unreact.isError) && <p role="alert">{t('common.actionFailed')}</p>}
       <Card style={{ padding: 20, marginBottom: 16 }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', gap: 16, alignItems: 'flex-start', marginBottom: 18 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 12, minWidth: 0 }}>
@@ -165,6 +166,7 @@ export default function PostDetailPage() {
 
         <div style={{ display: 'grid', gridTemplateColumns: '1fr auto', gap: 8, marginTop: 14 }}>
           <TextField
+            aria-label={t('post.comment.placeholder')}
             placeholder={t('post.comment.placeholder')}
             value={commentContent}
             onChange={(event) => setCommentContent(event.target.value)}

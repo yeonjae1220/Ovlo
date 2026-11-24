@@ -32,6 +32,13 @@ export function usePWAInstall() {
       return
     }
 
+    // Installed PWAs must also receive the worker update that purges old private caches.
+    if ('serviceWorker' in navigator) {
+      void navigator.serviceWorker.register('/sw.js', { updateViaCache: 'none' })
+        .then((registration) => registration.update())
+        .catch((error) => console.error('Service worker update failed', error))
+    }
+
     if (window.matchMedia('(display-mode: standalone)').matches) {
       // 외부 시스템(display-mode 미디어쿼리)과의 동기화 — 의도된 mount-time setState
       setIsInstalled(true)
@@ -44,13 +51,12 @@ export function usePWAInstall() {
     }
 
     window.addEventListener('beforeinstallprompt', handler)
-    window.addEventListener('appinstalled', () => setIsInstalled(true))
-
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('/sw.js').catch(() => {})
+    const installed = () => setIsInstalled(true)
+    window.addEventListener('appinstalled', installed)
+    return () => {
+      window.removeEventListener('beforeinstallprompt', handler)
+      window.removeEventListener('appinstalled', installed)
     }
-
-    return () => window.removeEventListener('beforeinstallprompt', handler)
   }, [])
 
   const triggerInstall = async () => {

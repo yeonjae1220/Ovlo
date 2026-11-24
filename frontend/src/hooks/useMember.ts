@@ -3,6 +3,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { memberApi } from '../api/member'
 import { useAuthStore } from '../store/authStore'
+import { captureAuthSession, isCurrentAuthSession } from '../utils/authSession'
 import type { UpdateMemberProfileRequest } from '../types'
 
 export function useMember(id: string) {
@@ -32,14 +33,16 @@ export function useNicknameAvailability(nickname: string) {
 
 export function useUpdateProfile() {
   const queryClient = useQueryClient()
-  const { currentUser, setCurrentUser } = useAuthStore()
 
   return useMutation({
     mutationFn: ({ id, req }: { id: string; req: UpdateMemberProfileRequest }) =>
       memberApi.updateProfile(id, req),
-    onSuccess: (updated) => {
-      queryClient.setQueryData(['member', updated.id], updated)
-      if (currentUser?.id === updated.id) setCurrentUser(updated)
+    onMutate: () => captureAuthSession(),
+    onSuccess: (updated, _variables, session) => {
+      if (!session || !isCurrentAuthSession(session)) return
+      queryClient.setQueryData(['member', String(updated.id)], updated)
+      const store = useAuthStore.getState()
+      if (String(store.currentUser?.id) === String(updated.id)) store.setCurrentUser(updated)
     },
   })
 }

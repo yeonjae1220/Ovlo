@@ -26,6 +26,7 @@ export function Photo({id, alt}: {id: string; alt: string}) {
   }, [id, key])
   if (state.key !== key || !state.url) return <div className={s.photoFallback}>{state.key === key && state.error ? <><span>{text('photoError')}</span><button type="button" className={s.button} onClick={e => {e.preventDefault(); retry(n => n + 1)}}>{text('retry')}</button></> : text('loading')}</div>
   // Authenticated object URL: image requests never expose bearer tokens in URLs.
+  // eslint-disable-next-line @next/next/no-img-element -- Authenticated blob URL, revoked by the owning hook.
   return <img className={s.photo} src={state.url} alt={alt}/>
 }
 export function Price({details}: {details: ListingDetails}) {

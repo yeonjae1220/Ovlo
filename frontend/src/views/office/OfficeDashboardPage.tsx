@@ -6,7 +6,7 @@ import { useState } from 'react'
 import Link from 'next/link'
 import { useI18n } from '../../i18n/I18nProvider'
 import { useExportCsv, useMyOffice, useOfficeDashboard } from '../../hooks/useOffice'
-import { PARTNER_CATEGORIES, type ExportKind, type RepeatedQuestion } from '../../api/office'
+import { PARTNER_CATEGORIES, type ExportKind } from '../../api/office'
 import { Button, Card, EmptyState, PageHeader, QueryErrorNotice, SkeletonLines } from '../../components/ui'
 
 
@@ -170,20 +170,5 @@ function Stat({ label, value, sub }: { label: string; value: string; sub?: strin
       <div style={{ fontSize: 26, fontWeight: 700, lineHeight: 1.2 }}>{value}</div>
       {sub && <div style={{ fontSize: 12, color: 'var(--color-text-secondary)', marginTop: 6 }}>{sub}</div>}
     </Card>
-  )
-}
-
-function QuestionList({ items, emptyText }: { items: RepeatedQuestion[]; emptyText: string }) {
-  const { t } = useI18n()
-  if (items.length === 0) return <p style={{ margin: 0, fontSize: 13, color: 'var(--color-text-muted)' }}>{emptyText}</p>
-  return (
-    <ol style={{ margin: 0, paddingLeft: 20, lineHeight: 1.8 }}>
-      {items.map((q) => (
-        <li key={q.sample}>
-          {q.sample}
-          <span style={{ marginLeft: 8, fontSize: 12, color: 'var(--color-text-muted)' }}>{t('office.dashboard.times', { n: q.count })}</span>
-        </li>
-      ))}
-    </ol>
   )
 }

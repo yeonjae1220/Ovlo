@@ -35,6 +35,9 @@ public class MemberQueryService implements GetMemberQuery {
     @Override
     public MemberResult getProfile(MemberId target, MemberId viewer) {
         MemberResult profile = getById(target);
+        if ("WITHDRAWN".equals(profile.status()) || "SUSPENDED".equals(profile.status())) {
+            throw new MemberException("회원을 찾을 수 없습니다", MemberException.ErrorType.NOT_FOUND);
+        }
         return target.equals(viewer) ? profile : profile.withoutPrivateFields();
     }
 

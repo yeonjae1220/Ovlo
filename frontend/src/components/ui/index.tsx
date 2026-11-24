@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import { useMediaUrl } from '../../hooks/useMediaUrl'
 import { useI18n } from '../../i18n/I18nProvider'
 import type {
   ButtonHTMLAttributes,
@@ -109,10 +110,13 @@ export function Badge({
   return <span className={cx('ui-badge', `ui-badge--${tone}`, className)} {...props} />
 }
 
-export function Avatar({ label, imageUrl, size = 'md' }: { label: string; imageUrl?: string | null; size?: 'sm' | 'md' | 'lg' }) {
+export function Avatar({ label, imageUrl, mediaId, size = 'md' }: { label: string; imageUrl?: string | null; mediaId?: string | null; size?: 'sm' | 'md' | 'lg' }) {
+  const privateUrl = useMediaUrl(mediaId)
+  const src = mediaId ? privateUrl : imageUrl
   const initial = label.trim()[0]?.toUpperCase() ?? '?'
-  if (imageUrl) {
-    return <img className={cx('ui-avatar', `ui-avatar--${size}`)} src={imageUrl} alt={label} />
+  if (src) {
+    // eslint-disable-next-line @next/next/no-img-element -- Blob URL is fetched with authorization and revoked on cleanup.
+    return <img className={cx('ui-avatar', `ui-avatar--${size}`)} src={src} alt={label} />
   }
   return (
     <span className={cx('ui-avatar', `ui-avatar--${size}`)} aria-label={label}>

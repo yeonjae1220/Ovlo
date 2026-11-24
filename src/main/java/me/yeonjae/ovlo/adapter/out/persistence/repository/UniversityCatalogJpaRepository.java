@@ -31,7 +31,7 @@ public interface UniversityCatalogJpaRepository extends JpaRepository<GlobalUniv
                             (SELECT gn.name FROM global_university_names gn
                              WHERE gn.global_univ_id = gu.id AND gn.lang = 'ko' LIMIT 1)) AS name_ko,
                    COALESCE(gu.country, eu.country)       AS country,
-                   COALESCE(gu.country_code, eu.country_code) AS country_code,
+                   upper(btrim(COALESCE(gu.country_code, eu.country_code))) AS country_code,
                    COALESCE(gu.city, eu.city)             AS city
             FROM global_universities gu
             LEFT JOIN university_report r
@@ -49,7 +49,7 @@ public interface UniversityCatalogJpaRepository extends JpaRepository<GlobalUniv
             ) eu ON true
             WHERE gu.canonical_id IS NULL
               AND gu.inactive_reason IS NULL
-              AND (r.id IS NOT NULL OR eu.id IS NOT NULL)
+              AND (r.id IS NOT NULL OR EXISTS (SELECT 1 FROM exchange_video_reviews v WHERE v.university_id=eu.id AND v.unavailable_since IS NULL))
             UNION ALL
             SELECT NULL              AS global_univ_id,
                    eu.id             AS exchange_univ_id,
@@ -57,10 +57,11 @@ public interface UniversityCatalogJpaRepository extends JpaRepository<GlobalUniv
                    eu.name_en        AS name_en,
                    eu.name_ko        AS name_ko,
                    eu.country        AS country,
-                   eu.country_code   AS country_code,
+                   upper(btrim(eu.country_code)) AS country_code,
                    eu.city           AS city
             FROM exchange_universities eu
             WHERE eu.global_univ_id IS NULL
+              AND EXISTS (SELECT 1 FROM exchange_video_reviews v WHERE v.university_id=eu.id AND v.unavailable_since IS NULL)
             """;
 
     /**
@@ -131,11 +132,11 @@ public interface UniversityCatalogJpaRepository extends JpaRepository<GlobalUniv
                      @Param("countryCode") String countryCode);
 
     /** 콘텐츠 보유 대학을 국가별 집계 — 컬럼 순서: country, country_code, university_count */
-    @Query(value = "SELECT t.country, t.country_code, COUNT(*) AS university_count "
+    @Query(value = "SELECT MIN(t.country), t.country_code, COUNT(*) AS university_count "
             + "FROM (" + CONTENT_SET + ") t "
-            + "WHERE t.country IS NOT NULL AND t.country_code IS NOT NULL "
-            + "GROUP BY t.country, t.country_code "
-            + "ORDER BY t.country",
+            + "WHERE t.country_code ~ '^[A-Z]{2}$' "
+            + "GROUP BY t.country_code "
+            + "ORDER BY t.country_code",
             nativeQuery = true)
     List<Object[]> findCountries();
 }

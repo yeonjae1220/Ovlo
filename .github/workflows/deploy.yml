@@ -48,23 +48,11 @@ jobs:
       - name: Build and test with Gradle
         run: ./gradlew build --no-daemon
 
-      - name: Test reaction concurrency with PostgreSQL
-        run: ./gradlew integrationTest --tests '*PostReactionConcurrencyIntegrationTest' --no-daemon
-
-      - name: Test marketplace lifecycle with PostgreSQL
-        run: ./gradlew integrationTest --tests '*MarketplaceIntegrationTest' --no-daemon
-
-      - name: Test office conversations, schema and AI limits with PostgreSQL and Redis
-        run: >-
-          ./gradlew integrationTest
-          --tests '*OfficeInquiryPersistenceAdapterIntegrationTest'
-          --tests '*OfficeConsultationPersistenceAdapterIntegrationTest'
-          --tests '*MarketplaceInquiryMigrationIntegrationTest'
-          --tests '*RedisInquiryAdmissionAdapterIntegrationTest'
-          --no-daemon
-
-      - name: Measure notice retrieval with PostgreSQL (synthetic corpus, no LLM)
-        run: ./gradlew integrationTest --tests '*PostgresNoticeRetrievalIntegrationTest' --no-daemon
+      # Includes reaction concurrency, marketplace, office/Redis, catalog/video,
+      # privacy and restoration tests in one run; do not weaken individual assertions.
+      - name: Full PostgreSQL and Redis integration regressions
+        timeout-minutes: 15
+        run: ./gradlew integrationTest --no-daemon
 
       - name: Upload notice retrieval reports
         if: always()
@@ -74,11 +62,15 @@ jobs:
           path: build/reports/retrieval/
           if-no-files-found: error
 
-      - name: Chat authorization and legacy account migration regressions
-        run: ./gradlew integrationTest --tests '*ChatAccessIntegrationTest' --tests '*LegacyDevelopmentAccountMigrationIntegrationTest' --no-daemon
-
-      - name: Notice source approval and migration regressions
-        run: ./gradlew integrationTest --tests '*NoticeGovernanceIntegrationTest' --tests '*NoticeSourceMigrationIntegrationTest' --tests '*NoticeRetranslationIntegrationTest' --tests '*NoticeTranslationRecoveryIntegrationTest' --tests '*NoticeTranslationMigrationIntegrationTest' --tests '*NoticeReviewRemainingIssuesIntegrationTest' --tests '*OfficeFullReviewIntegrationTest' --tests '*OfficePrivacyRecoveryIntegrationTest' --tests '*OfficeInFlightAccessIntegrationTest' --tests '*OfficeRetainedAccessIntegrationTest' --tests '*OfficeNoticeApplicabilityIntegrationTest' --tests '*RedisTranslationWorkAdapterIntegrationTest' --tests '*RedisTranslationAdmissionAdapterIntegrationTest' --no-daemon
+      - name: Upload integration regression evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: integration-regression-reports
+          path: |
+            build/test-results/integrationTest/
+            build/reports/audit/
+          if-no-files-found: error
 
   frontend-check:
     name: Frontend build
@@ -94,6 +86,10 @@ jobs:
         working-directory: frontend
       - name: Test account cache isolation
         run: |
+          node scripts/test-service-worker.cjs
+          node scripts/test-return-path.cjs
+          node scripts/test-chat-reconnect.cjs
+          node scripts/test-calendar.cjs
           node scripts/test-auth-query-cache.cjs
           node scripts/test-auth-session-race.cjs
           node scripts/test-consultation-history.cjs
@@ -106,6 +102,8 @@ jobs:
         run: node scripts/test-video-links.cjs
         working-directory: frontend
       - run: npm run build
+        working-directory: frontend
+      - run: npm run lint
         working-directory: frontend
 
   build-and-push:

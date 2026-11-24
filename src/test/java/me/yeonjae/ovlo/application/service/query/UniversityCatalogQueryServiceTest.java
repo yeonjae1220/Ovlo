@@ -31,6 +31,16 @@ class UniversityCatalogQueryServiceTest {
     UniversityCatalogQueryService service;
 
     @Test
+    void exchangeMasterWithoutReviewsDoesNotClaimReviews() {
+        CatalogRow row = new CatalogRow(20L, 200L, 9L, "Example", null, null, "Japan", "JP", "Tokyo");
+        given(loadCatalogPort.search(any(), any(), any(), eq(0), eq(20))).willReturn(List.of(row));
+        given(loadExchangePort.countReviewsByUniversityIds(List.of(200L))).willReturn(Map.of());
+        var result = service.search(new SearchUniversityCatalogCommand(null, null, "en", 0, 20)).content().getFirst();
+        assertThat(result.hasReviews()).isFalse();
+        assertThat(result.reviewCount()).isZero();
+    }
+
+    @Test
     @DisplayName("리포트만 보유한 대학은 hasReport=true, hasReviews=false 로 매핑된다")
     void shouldMap_reportOnly() {
         CatalogRow row = new CatalogRow(10L, null, 100L,
