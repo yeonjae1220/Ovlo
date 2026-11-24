@@ -35,6 +35,21 @@ for (const lang of Object.keys(messages)) {
   }
 }
 
+// 안내 문구도 "영상 후기를 요약"·"후기 검색"이라고 하지 않는다 — 리포트는 공개 자료·공식 자료를 정리한 것이고 영상은 링크일 뿐이다
+const WORDING_KEYS = ['landing.hero.desc', 'landing.feature1.desc', 'landing.feature2.title', 'landing.feature2.desc', 'univ.search.info',
+  'univ.reports.aiDisclaimer', 'univ.detail.aiDisclaimer', 'exch.subtitle', 'exch.detail.aiDisclaimer']
+for (const lang of Object.keys(messages)) {
+  for (const key of WORDING_KEYS) {
+    assert.ok(messages[lang][key], `${lang} ${key} exists`)
+    assert.doesNotMatch(messages[lang][key], /review|리뷰|후기|レビュー|评价|reseña|avis\b|Bewertung|Erfahrungsbericht|Videobericht|avalia|отзыв|видеообзор/i, `${lang} ${key}`)
+  }
+  assert.equal(messages[lang]['univ.reports.aiDisclaimer'], messages[lang]['exch.detail.aiDisclaimer'], `${lang} disclaimers agree`)
+}
+assert.match(messages.ko['univ.reports.aiDisclaimer'], /공개 자료와 대학 공식 자료/)
+assert.match(messages.ko['univ.detail.aiDisclaimer'], /공개 자료와 대학 공식 자료/)
+assert.match(messages.en['univ.reports.aiDisclaimer'], /public and official university sources/)
+assert.match(messages.ko['exch.subtitle'], /교환학생 영상/)
+
 function render({ univ, reviews, direction }) {
   const sectionCalls = []
   const Page = load('src/views/university/ExchangeUniversityDetailPage.tsx', {
