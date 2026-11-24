@@ -338,7 +338,10 @@ public class SecurityConfig {
                         .requestMatchers("/swagger-ui.html", "/swagger-ui/**", "/v3/api-docs/**")
                             .access((auth2, ctx) -> new org.springframework.security.authorization.AuthorizationDecision(!isProd()))
                         .requestMatchers("/webjars/**").permitAll()
-                        .requestMatchers("/actuator/health").permitAll()
+                        // Exact, read-only status probes; health subcomponents and other
+                        // actuator endpoints retain the ADMIN boundary below.
+                        .requestMatchers(HttpMethod.GET,
+                                "/actuator/health", "/actuator/health/liveness", "/actuator/health/readiness").permitAll()
                         .requestMatchers("/actuator/**").hasAuthority("ADMIN") // WARN fix: 인증 → ADMIN 전용
                         .requestMatchers("/h2-console/**").hasAuthority("ADMIN") // WARN fix: ADMIN 전용으로 격상
                         .requestMatchers(org.springframework.http.HttpMethod.POST, "/api/feedback").permitAll()

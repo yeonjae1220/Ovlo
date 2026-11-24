@@ -1,13 +1,16 @@
 # 🔴 2026-09-07 라이브에서 회수. 이 파일은 옛 개발 시절 값(host: *.local · TLS 블록 없음)으로
 #    남아 있어서, apply 하면 **공개 도메인이 통째로 끊기고 TLS 가 사라진다**.
-#    어느 CI 도 이 파일을 apply 하지 않아 지금까지 안 터졌을 뿐이다 (GLOBAL-PIT-083).
-#    `kubectl diff` 차이 0줄로 검증했다.
+#    CI now diff/applies this manifest before rolling deployments.
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   annotations:
     cert-manager.io/cluster-issuer: letsencrypt-prod
-    nginx.ingress.kubernetes.io/proxy-connect-timeout: '60'
+    # A removed Pod IP must not hold a request for 60s during endpoint propagation.
+    nginx.ingress.kubernetes.io/proxy-connect-timeout: '3'
+    nginx.ingress.kubernetes.io/proxy-next-upstream: 'error timeout'
+    nginx.ingress.kubernetes.io/proxy-next-upstream-timeout: '5'
+    nginx.ingress.kubernetes.io/proxy-next-upstream-tries: '2'
     nginx.ingress.kubernetes.io/proxy-read-timeout: '3600'
     nginx.ingress.kubernetes.io/proxy-send-timeout: '3600'
     nginx.ingress.kubernetes.io/ssl-redirect: 'true'

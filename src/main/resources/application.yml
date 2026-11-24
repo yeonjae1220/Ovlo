@@ -9,6 +9,8 @@ spring:
   threads:
     virtual:
       enabled: true
+  lifecycle:
+    timeout-per-shutdown-phase: 30s
 
   # datasource / jpa.ddl-auto / dialect / h2.console 는 프로파일별로 분리됨:
   #   - local  : 아래 on-profile=local 문서 (H2)
@@ -60,6 +62,7 @@ lab:
     app-name: ovlo
 
 server:
+  shutdown: graceful
   servlet:
     session:
       timeout: 15m
@@ -164,8 +167,12 @@ management:
       group:
         liveness:
           include: livenessState
+          show-details: never
+          show-components: never
         readiness:
           include: readinessState, db, redis
+          show-details: never
+          show-components: never
 
 springdoc:
   swagger-ui:
@@ -294,8 +301,12 @@ management:
       group:
         liveness:
           include: livenessState
+          show-details: never
+          show-components: never
         readiness:
           include: readinessState, db, redis
+          show-details: never
+          show-components: never
 
 logging:
   level:

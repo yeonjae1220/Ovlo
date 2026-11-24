@@ -220,10 +220,17 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v5
 
-      # NetworkPolicy는 이미지와 무관하므로 매 배포 시 최신 상태로 적용
-      # (egress 587=SMTP 등 정책 변경이 자동 반영되도록 — 과거 수동 적용 누락 방지)
-      - name: Apply network policies
-        run: sudo kubectl apply -f k8s/network-policy.yaml -n ovlo
+      # Reconcile routing before replacing pods, including bounded upstream connects.
+      - name: Apply network and ingress policies
+        shell: bash
+        run: |
+          set -euo pipefail
+          for manifest in k8s/network-policy.yaml k8s/ingress.yaml; do
+            rc=0
+            sudo kubectl diff -f "$manifest" -n ovlo || rc=$?
+            if [ "$rc" -gt 1 ]; then exit "$rc"; fi
+            sudo kubectl apply -f "$manifest" -n ovlo
+          done
 
       # 국제처 파일럿(S6): prod 는 OfficePilotConfigGuard 가 anthropic 키를 요구한다.
       # 키가 없는데 저하 운영 허용(repo variable OVLO_OFFICE_ALLOW_DEGRADED=true)도 아니면
@@ -287,44 +294,31 @@ jobs:
             -n ovlo --dry-run=client -o yaml | sudo kubectl apply -f -
 
       - name: Pull and deploy images
+        shell: bash
         env:
           IMAGE_TAG: ${{ needs.build-and-push.outputs.image-tag }}
           FRONTEND_IMAGE_TAG: ${{ needs.build-and-push-frontend.outputs.image-tag }}
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          HAS_ANTHROPIC_KEY: ${{ secrets.ANTHROPIC_API_KEY != '' }}
           OVLO_OFFICE_ALLOW_DEGRADED: ${{ vars.OVLO_OFFICE_ALLOW_DEGRADED }}
         run: |
-          set -e
+          set -euo pipefail
 
           # ── Backend ─────────────────────────────────────────────────────────
           sudo k3s ctr images pull \
             --user "yeonjae1220:${GH_TOKEN}" \
             ghcr.io/yeonjae1220/ovlo:${IMAGE_TAG}
 
-          # 국제처 파일럿 env (k8s/app.yaml 과 같은 값). 이 CI 는 매니페스트를 apply 하지 않으므로
-          # set image 와 같은 결로 set env 로 넣는다 — 값이 같으면 롤아웃이 일어나지 않는다.
-          sudo kubectl set env deployment/app -n ovlo \
-            OVLO_LLM_PROVIDER=anthropic \
-            OVLO_SEARCH_PROVIDER=postgres \
-            OVLO_LLM_MODEL=claude-opus-5-5 \
-            OVLO_LLM_ANSWER_MODEL=claude-sonnet-5-5 \
-            OVLO_LLM_EFFORT=medium \
-            OVLO_LLM_BASE_URL=https://api.bizrouter.ai \
-            OVLO_LLM_SERVER_SIDE_FALLBACK=false \
-            OVLO_INQUIRY_OFFICE_DAILY_LIMIT=500 \
-            OVLO_OFFICE_ALLOW_DEGRADED="${OVLO_OFFICE_ALLOW_DEGRADED:-false}"
-          if [ "${HAS_ANTHROPIC_KEY}" = "true" ]; then
-            sudo kubectl set env deployment/app -n ovlo \
-              --from=secret/ovlo-secret --keys=ANTHROPIC_API_KEY
-          fi
-          # 추가 admin 계정 — k8s/app.yaml 에는 optional secretKeyRef 로 적혀 있지만 이 CI 는
-          # 매니페스트를 apply 하지 않으므로(위 주석) set env 로 넣어야 운영 Deployment 에 반영된다.
-          sudo kubectl set env deployment/app -n ovlo \
-            --from=secret/ovlo-secret --keys=ADMIN_ADDITIONAL_ACCOUNTS
-
-          sudo kubectl set image deployment/app \
-            app=ghcr.io/yeonjae1220/ovlo:${IMAGE_TAG} \
-            -n ovlo
+          # Render the source Deployment with its exact tag and explicit operator mode.
+          # PVC/Service documents are excluded; runtime env, probes and lifecycle
+          # are applied together so image-only updates cannot preserve stale probes.
+          BACKEND_MANIFEST="${RUNNER_TEMP}/backend.json"
+          sudo kubectl create --dry-run=client --validate=false -f k8s/app.yaml -o json \
+            | python3 scripts/render_backend_deployment.py --tag "${IMAGE_TAG}" \
+                --allow-degraded "${OVLO_OFFICE_ALLOW_DEGRADED:-false}" > "${BACKEND_MANIFEST}"
+          rc=0
+          sudo kubectl diff -f "${BACKEND_MANIFEST}" || rc=$?
+          if [ "$rc" -gt 1 ]; then exit "$rc"; fi
+          sudo kubectl apply -f "${BACKEND_MANIFEST}"
 
           sudo kubectl rollout status deployment/app \
             -n ovlo --timeout=300s
@@ -360,6 +354,23 @@ jobs:
 
           sudo kubectl rollout status deployment/frontend \
             -n ovlo --timeout=300s
+
+      - name: Verify internal HTTP health probes
+        run: |
+          sudo kubectl exec -n ovlo deployment/frontend -- node -e '
+            (async () => {
+              for (const group of ["liveness", "readiness"]) {
+                const response = await fetch("http://app:8080/actuator/health/" + group,
+                  { signal: AbortSignal.timeout(5000) });
+                const body = await response.json();
+                if (response.status !== 200 || body.status !== "UP" || body.components || body.details)
+                  throw new Error(group + " probe failed or exposed details");
+                console.log(group + ": 200 UP (status only)");
+              }
+              const metrics = await fetch("http://app:8080/actuator/metrics",
+                { signal: AbortSignal.timeout(5000) });
+              if (metrics.status !== 401) throw new Error("Metrics auth boundary changed");
+            })().catch(error => { console.error(error.message); process.exit(1); });'
 
       - name: Notify deploy result
         if: always()
