@@ -65,6 +65,17 @@ export default function LegalDocumentPage({ documents, related }: Props) {
               ))}
             </ul>
           )}
+          {section.links && (
+            <ul style={{ margin: '0 0 8px', paddingLeft: 22 }}>
+              {section.links.map((link) => (
+                <li key={link.href}>
+                  <a href={link.href} target="_blank" rel="noopener noreferrer" style={{ color: 'var(--color-primary)' }}>
+                    {link.label}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          )}
         </section>
       ))}
     </article>

@@ -101,6 +101,9 @@ jobs:
       - name: Test university video links
         run: node scripts/test-video-links.cjs
         working-directory: frontend
+      - name: Test legal notices
+        run: node scripts/test-legal-notice.cjs
+        working-directory: frontend
       - run: npm run build
         working-directory: frontend
       - run: npm run lint
