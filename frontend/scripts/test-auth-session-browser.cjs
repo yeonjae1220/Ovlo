@@ -26,9 +26,9 @@ const output = process.env.OFFICE_CHAT_SCREENSHOTS || '/tmp/ovlo-auth-race-brows
         if(p.endsWith('/auth/login')) {loginRequests++;return json({accessToken:'fixture-B',memberId:43},{'set-cookie':'refresh_token=B; Path=/; HttpOnly; SameSite=Lax'})}
         if(p.endsWith('/members/43'))return json(b)
         if(p.endsWith('/office/me'))return json({officeId:5,officeName:'Synthetic office',universityId:1,status:'ACTIVE',verifiedStudent:true,role:null})
-        if(p.endsWith('/consultations')) {
+        if(p.endsWith('/office/my-consultations')) {
           assert.equal(route.request().headers().authorization,'Bearer fixture-B')
-          return json([{id:700,question:'B_ONLY_PRIVATE_CONSULTATION',status:'OPEN',openedAt:'2026-11-15T00:00:00Z'}])
+          return json({content:[{id:700,question:'B_ONLY_PRIVATE_CONSULTATION',status:'OPEN',openedAt:'2026-11-15T00:00:00Z'}],page:0,size:20,totalElements:1,totalPages:1,hasNext:false})
         }
         if(p.endsWith('/notices')||p.endsWith('/partners')||p.includes('/following-status'))return json([])
         return json({content:[],totalElements:0,totalPages:0})

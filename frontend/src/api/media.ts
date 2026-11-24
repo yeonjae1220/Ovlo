@@ -14,7 +14,7 @@ function detectMediaType(file: File): string {
   if (name.endsWith('.heic') || name.endsWith('.heif')) return 'IMAGE_HEIC'
   if (name.endsWith('.webp')) return 'IMAGE_WEBP'
   if (name.endsWith('.mp4')) return 'VIDEO_MP4'
-  return 'IMAGE_JPEG'
+  throw new Error('Use JPEG, PNG or MP4')
 }
 
 export const mediaApi = {
@@ -31,6 +31,9 @@ export const mediaApi = {
 
   getById: (id: string) =>
     apiClient.get<MediaFile>(`/media/${id}`).then((r) => r.data),
+
+  download: (id: string, signal?: AbortSignal) =>
+    apiClient.get<Blob>(`/media/${id}/file`, { responseType: 'blob', signal }).then((r) => r.data),
 
   getFileUrl: (id: string) => `/api/v1/media/${id}/file`,
 

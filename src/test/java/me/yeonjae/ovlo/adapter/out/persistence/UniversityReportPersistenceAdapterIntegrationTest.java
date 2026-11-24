@@ -17,6 +17,7 @@ import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
 import java.util.Optional;
+import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -104,6 +105,18 @@ class UniversityReportPersistenceAdapterIntegrationTest {
     }
 
     // ── helpers ──────────────────────────────────────────────────────────────
+
+    @Test void unsupportedLanguageFallsBackToActualEnglishTranslation() {
+        Long id = insertReportWithoutGlobal();
+        jdbc.update("UPDATE university_report SET supported_langs='{de,en,ko}' WHERE id=?", id);
+        insertTranslation(id, "de", "Deutsch");
+        insertTranslation(id, "en", "English");
+        for (String language : List.of("es", "pt", "ru", "ko")) {
+            assertThat(loadPort.findByIdAndLang(id, language).orElseThrow().lang()).isEqualTo("en");
+            assertThat(loadPort.findPageByLang(language, null, 0, 20).content().getFirst().title()).isEqualTo("English");
+        }
+        assertThat(loadPort.findByIdAndLang(id, "de").orElseThrow().lang()).isEqualTo("de");
+    }
 
     private Long insertGlobal(String nameEn, String countryCode) {
         return jdbc.queryForObject(

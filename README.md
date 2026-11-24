@@ -10,7 +10,7 @@
 | Framework | Spring Boot 4.0.3 (Jakarta EE 11) |
 | Database | PostgreSQL 16 + Spring Data JPA + QueryDSL 5 |
 | Cache / Session | Redis 7 (JWT refresh token, SHA-256 해시 저장) |
-| Frontend | Next.js 15 + React 19 (App Router) · i18n(7개 언어) · PWA |
+| Frontend | Next.js 15 + React 19 (App Router) · i18n(9개 UI 언어) · PWA |
 | Migration | Flyway |
 | Security | Spring Security · JWT(httpOnly 쿠키, 멀티세션) · 학생 이메일 인증 |
 | Docs | SpringDoc OpenAPI (Swagger UI) |
@@ -49,7 +49,7 @@ me.yeonjae.ovlo/
 | `board` | 게시판 생성 · 범위 · 구독 |
 | `post` | 게시글 · 댓글 · 좋아요 (Optimistic Lock) |
 | `follow` | 팔로잉 / 팔로워 관계 |
-| `media` | 파일 업로드 · HEIC 변환 · 스토리지 |
+| `media` | 파일 업로드 · 형식 검증 · 스토리지 |
 | `chat` | DM · 그룹채팅 (WebSocket STOMP) |
 | `verification` | 학교 이메일 기반 교환학생 인증 (SMTP) · 게시판 게이팅 |
 | `report` | AI 대학 리포트 (다국어) |
@@ -140,8 +140,8 @@ cd frontend && npm ci --legacy-peer-deps && npm run dev   # http://localhost:300
 
 - **반응 동시성**: 회원별 `(post_id, member_id)` 복합키로 중복 반응을 막고, 게시글 카운트는 SQL 원자 증감으로 갱신합니다. PostgreSQL 기반 동시성 통합 테스트에서 48회 요청의 반응 행과 집계 수렴을 검증했습니다.
 - **파일 스토리지**: `StoragePort` 인터페이스로 추상화, `LocalStorageAdapter` → `S3StorageAdapter` 무중단 교체
-- **HEIC 변환**: `ImageConverterPort` + TwelveMonkeys ImageIO
-- **인증**: Access Token 15분 (stateless) + Refresh Token(Redis, SHA-256 해시 저장). httpOnly 쿠키 기반 로그인 지속 + 멀티세션 지원
+- **사진 형식**: JPEG·PNG 디코딩 검증(20 MB·40 MP 상한). HEIC·WebP 신규 업로드는 지원하지 않으며 변환 후 업로드하도록 안내한다.
+- **인증**: Access Token 기본 15분 (환경변수로 조정, 요청 시 현재 회원 상태 확인) + Refresh Token(Redis, SHA-256 해시 저장). httpOnly 쿠키 기반 로그인 지속 + 멀티세션 지원
 - **채팅**: STOMP over WebSocket, `SimpleBroker` (Phase 1) → Redis Pub/Sub (Phase 2)
 
 ## Version History

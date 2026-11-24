@@ -52,7 +52,7 @@ class ChatCommandServiceTest {
         @DisplayName("채팅방을 생성할 수 있다")
         void shouldCreateChatRoom() {
             CreateChatRoomCommand command = new CreateChatRoomCommand(
-                    ChatRoomType.GROUP, "테스트방", List.of(1L, 2L, 3L));
+                    1L, ChatRoomType.GROUP, "테스트방", List.of(1L, 2L, 3L));
             ChatRoom saved = ChatRoom.restore(new ChatRoomId(1L), ChatRoomType.GROUP, "테스트방",
                     List.of(new MemberId(1L), new MemberId(2L), new MemberId(3L)), List.of());
             given(saveChatPort.save(any())).willReturn(saved);
@@ -68,7 +68,7 @@ class ChatCommandServiceTest {
         @DisplayName("이미 DM 방이 존재하면 기존 방을 반환한다")
         void shouldReturnExisting_whenDmRoomAlreadyExists() {
             CreateChatRoomCommand command = new CreateChatRoomCommand(
-                    ChatRoomType.DM, null, List.of(1L, 2L));
+                    1L, ChatRoomType.DM, null, List.of(1L, 2L));
             ChatRoomId existingId = new ChatRoomId(42L);
             ChatRoom existingRoom = ChatRoom.restore(existingId, ChatRoomType.DM, null,
                     List.of(new MemberId(1L), new MemberId(2L)), List.of());

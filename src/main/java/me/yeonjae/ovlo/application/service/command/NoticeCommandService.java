@@ -45,6 +45,7 @@ public class NoticeCommandService implements ManageNoticeUseCase {
     private final TranslateNoticeUseCase translateNoticeUseCase;
     private final ApplicationEventPublisher eventPublisher;
     private final Clock clock;
+    private final me.yeonjae.ovlo.application.port.out.media.MediaAccessPort mediaAccess;
     private final me.yeonjae.ovlo.application.port.out.office.NoticeKnowledgePort knowledge;
     private final me.yeonjae.ovlo.application.service.office.NoticeGovernanceService governance;
 
@@ -53,7 +54,9 @@ public class NoticeCommandService implements ManageNoticeUseCase {
                                 Clock clock, me.yeonjae.ovlo.application.port.out.office.NoticeKnowledgePort knowledge,
                                 me.yeonjae.ovlo.application.service.office.NoticeGovernanceService governance,
                                 me.yeonjae.ovlo.application.port.out.office.NoticeTranslationJobPort jobs,
-                                me.yeonjae.ovlo.application.service.office.CurrentOfficeStaffAccess currentAccess) {
+                                me.yeonjae.ovlo.application.service.office.CurrentOfficeStaffAccess currentAccess,
+                                me.yeonjae.ovlo.application.port.out.media.MediaAccessPort mediaAccess) {
+        this.mediaAccess=mediaAccess;
         this.currentAccess=currentAccess;
         this.jobs=jobs;
         this.loadNoticePort = loadNoticePort;
@@ -69,6 +72,7 @@ public class NoticeCommandService implements ManageNoticeUseCase {
         knowledge.lockOffice(c.officeId());
         requireWritableOffice(c.officeId());
         governance.authorize(c.officeId(),c.createdBy(),false);
+        validateAttachments(c.attachmentMediaIds(), java.util.List.of(), c.createdBy());
         Notice notice = Notice.register(c.officeId(), c.category(), c.title(), c.body(), c.sourceUrl(),
                 c.attachmentMediaIds(), c.term(), c.effectiveFrom(), c.expiresAt(), c.createdBy(), clock.instant());
         Notice saved = saveNoticePort.save(notice);
@@ -85,6 +89,7 @@ public class NoticeCommandService implements ManageNoticeUseCase {
         if (c.revision()!=null) notice.expectRevision(c.revision());
         if(c.actor()!=null) governance.authorize(c.officeId(),c.actor(),false);
         int previousVersion=notice.getVersion();
+        validateAttachments(c.attachmentMediaIds(), notice.getAttachmentMediaIds(), c.actor());
         notice.revise(c.category(),c.title(),c.body(),c.sourceUrl(),c.attachmentMediaIds(),c.term(),c.effectiveFrom(),c.expiresAt(),clock.instant());
         Notice saved = saveNoticePort.save(notice);
         if(saved.getVersion()!=previousVersion) governance.invalidateDependents(c.officeId(),saved.getId());
@@ -93,6 +98,14 @@ public class NoticeCommandService implements ManageNoticeUseCase {
         log.info("[Notice] updated office={} notice={} version={} status={}", c.officeId(), saved.getId(),
                 saved.getVersion(), saved.getStatus());
         return NoticeResultMapper.toResult(saved, today());
+    }
+
+    private void validateAttachments(java.util.List<Long> requested, java.util.List<Long> existing, Long actor) {
+        if (requested == null) return;
+        for (Long id : requested) {
+            if (id == null || (!existing.contains(id) && (actor == null || !mediaAccess.isOwnedUpload(id,actor))))
+                throw new OfficeException("본인이 올린 파일만 새로 첨부할 수 있습니다",OfficeException.ErrorType.FORBIDDEN);
+        }
     }
 
     @Override

@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation'
 import { authApi } from '../api/auth'
 import { memberApi } from '../api/member'
 import { useAuthStore } from '../store/authStore'
+import { safeReturnPath, loginPath } from '../utils/returnPath'
 import { refreshAuth } from '../utils/refreshAuth'
 import { captureAuthSession, isCurrentAuthSession, isEndedAuthSession } from '../utils/authSession'
 import type { CompleteOnboardingRequest } from '../types'
@@ -19,7 +20,7 @@ export function useLogin() {
     onSuccess: async (token) => {
       if (!isCurrentAuthSession(token.session)) return
       const next = new URLSearchParams(window.location.search).get('next')
-      router.push(next === '/university-account' ? next : '/boards')
+      router.push(safeReturnPath(next))
     },
   })
 }
@@ -56,7 +57,7 @@ export function useProactiveRefresh() {
       const session = captureAuthSession()
       refreshAuth()
         .then((token) => {
-          if (!token && isEndedAuthSession(session)) window.location.href = '/login'
+          if (!token && isEndedAuthSession(session)) window.location.href = loginPath(window.location.pathname + window.location.search)
         })
         .catch(() => {})
     }, msUntilRefresh)
@@ -70,7 +71,7 @@ export function useRegister() {
 
   return useMutation({
     mutationFn: memberApi.register,
-    onSuccess: () => router.push('/login'),
+    onSuccess: () => router.push(loginPath(new URLSearchParams(window.location.search).get('next') || '/boards')),
   })
 }
 
@@ -82,7 +83,9 @@ export function useGoogleLogin() {
       authApi.googleLogin(code, redirectUri),
     onSuccess: async (result) => {
       if (!isCurrentAuthSession(result.session)) return
-      router.push(result.newMember ? '/onboarding' : '/boards')
+      const next = safeReturnPath(sessionStorage.getItem('ovlo-oauth-next'))
+      sessionStorage.removeItem('ovlo-oauth-next')
+      router.push(result.newMember ? '/onboarding?next=' + encodeURIComponent(next) : next)
     },
   })
 }
@@ -95,7 +98,7 @@ export function useCompleteOnboarding() {
     mutationFn: (req: CompleteOnboardingRequest) => memberApi.completeOnboarding(req),
     onSuccess: (updatedUser) => {
       setCurrentUser(updatedUser)
-      router.push('/boards')
+      router.push(safeReturnPath(new URLSearchParams(window.location.search).get('next')))
     },
   })
 }

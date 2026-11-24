@@ -15,8 +15,9 @@ public class CalendarPersistenceAdapter implements CalendarEventPort {
     private final UniversityEventJpaRepository schools;
     private final PersonalEventJpaRepository personal;
     private final CalendarAuditJpaRepository audits;
-    public CalendarPersistenceAdapter(UniversityEventJpaRepository schools, PersonalEventJpaRepository personal, CalendarAuditJpaRepository audits) {
-        this.schools = schools; this.personal = personal; this.audits = audits;
+    private final CurrentMemberWriteLock memberLock;
+    public CalendarPersistenceAdapter(UniversityEventJpaRepository schools, PersonalEventJpaRepository personal, CalendarAuditJpaRepository audits, CurrentMemberWriteLock memberLock) {
+        this.memberLock = memberLock; this.schools = schools; this.personal = personal; this.audits = audits;
     }
     public Optional<UniversityEvent> findSchoolEvent(long id) { return schools.findById(id).map(UniversityEventJpaEntity::domain); }
     public Optional<PersonalEvent> findPersonalEvent(long id, long memberId) { return personal.findByIdAndMemberId(id, memberId).map(PersonalEventJpaEntity::domain); }
@@ -30,7 +31,9 @@ public class CalendarPersistenceAdapter implements CalendarEventPort {
         audit(saved.id(), actor, saved.status().name(), snapshot(saved));
         return saved;
     }
+    @org.springframework.transaction.annotation.Transactional
     public PersonalEvent savePersonalEvent(PersonalEvent e) {
+        memberLock.requireActive(e.memberId());
         var row = e.id() == null ? new PersonalEventJpaEntity() : personal.findByIdAndMemberId(e.id(), e.memberId()).orElseThrow();
         if (e.id() != null) checkVersion(row.getVersion(), e.version(), e.id());
         row.apply(e.details()); row.setMemberId(e.memberId());

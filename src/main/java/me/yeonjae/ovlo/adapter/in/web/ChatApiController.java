@@ -75,7 +75,7 @@ public class ChatApiController {
             participantIds.add(memberId);
         }
         ChatRoomResult result = createChatRoomUseCase.createChatRoom(
-                new CreateChatRoomCommand(type, request.name(), participantIds)
+                new CreateChatRoomCommand(memberId, type, request.name(), participantIds)
         );
         return ResponseEntity.status(HttpStatus.CREATED).body(result);
     }

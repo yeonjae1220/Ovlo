@@ -45,9 +45,10 @@ public class PostQueryService implements GetPostQuery {
     public PageResult<PostResult> listByBoard(Long boardId, int page, int size) {
         BoardId id = new BoardId(boardId);
         int offset = page * size;
-        List<PostResult> content = loadPostPort.findByBoardId(id, offset, size)
-                .stream()
-                .map(PostResult::fromSummary)
+        List<Post> posts = loadPostPort.findByBoardId(id, offset, size);
+        var counts = loadPostPort.countComments(posts.stream().map(p -> p.getId().value()).toList());
+        List<PostResult> content = posts.stream()
+                .map(p -> PostResult.fromSummary(p).withCommentCount(counts.getOrDefault(p.getId().value(), 0L)))
                 .toList();
         long total = loadPostPort.countByBoardId(id);
         return PageResult.of(content, total, page, size);
@@ -60,15 +61,13 @@ public class PostQueryService implements GetPostQuery {
         long total = loadPostPort.count();
 
         // 페이지 내 distinct boardIds를 배치 조회하여 N+1 방지
-        Map<Long, String> boardNames = posts.stream()
-                .map(p -> p.getBoardId().value())
-                .distinct()
-                .flatMap(boardId -> loadBoardPort.findById(new BoardId(boardId)).stream()
-                        .map(b -> Map.entry(boardId, b.getName())))
-                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+        Map<Long, String> boardNames = loadBoardPort.findByIds(posts.stream()
+                .map(p -> p.getBoardId().value()).distinct().toList()).stream()
+                .collect(Collectors.toMap(b -> b.getId().value(), b -> b.getName()));
+        var counts = loadPostPort.countComments(posts.stream().map(p -> p.getId().value()).toList());
 
         List<PostResult> content = posts.stream()
-                .map(p -> PostResult.fromSummary(p, boardNames.getOrDefault(p.getBoardId().value(), "")))
+                .map(p -> PostResult.fromSummary(p, boardNames.getOrDefault(p.getBoardId().value(), "")).withCommentCount(counts.getOrDefault(p.getId().value(), 0L)))
                 .toList();
         return PageResult.of(content, total, page, size);
     }
@@ -79,15 +78,13 @@ public class PostQueryService implements GetPostQuery {
         List<Post> posts = loadPostPort.findByAuthorId(authorId, offset, size);
         long total = loadPostPort.countByAuthorId(authorId);
 
-        Map<Long, String> boardNames = posts.stream()
-                .map(p -> p.getBoardId().value())
-                .distinct()
-                .flatMap(boardId -> loadBoardPort.findById(new BoardId(boardId)).stream()
-                        .map(b -> Map.entry(boardId, b.getName())))
-                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+        Map<Long, String> boardNames = loadBoardPort.findByIds(posts.stream()
+                .map(p -> p.getBoardId().value()).distinct().toList()).stream()
+                .collect(Collectors.toMap(b -> b.getId().value(), b -> b.getName()));
+        var counts = loadPostPort.countComments(posts.stream().map(p -> p.getId().value()).toList());
 
         List<PostResult> content = posts.stream()
-                .map(p -> PostResult.fromSummary(p, boardNames.getOrDefault(p.getBoardId().value(), "")))
+                .map(p -> PostResult.fromSummary(p, boardNames.getOrDefault(p.getBoardId().value(), "")).withCommentCount(counts.getOrDefault(p.getId().value(), 0L)))
                 .toList();
         return PageResult.of(content, total, page, size);
     }

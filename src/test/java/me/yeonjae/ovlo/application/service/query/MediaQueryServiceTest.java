@@ -24,6 +24,7 @@ import static org.mockito.BDDMockito.given;
 class MediaQueryServiceTest {
 
     @Mock LoadMediaPort loadMediaPort;
+    @Mock me.yeonjae.ovlo.application.port.out.media.MediaAccessPort accessPort;
 
     @InjectMocks
     MediaQueryService service;
@@ -41,7 +42,8 @@ class MediaQueryServiceTest {
                     MediaType.IMAGE_JPEG, storagePath, "test.jpg", 1024L);
             given(loadMediaPort.findById(any())).willReturn(Optional.of(mediaFile));
 
-            MediaResult result = service.getMedia(1L);
+            given(accessPort.canRead(1L, 1L)).willReturn(true);
+            MediaResult result = service.getMedia(1L, 1L);
 
             assertThat(result.mediaId()).isEqualTo(1L);
             assertThat(result.originalFilename()).isEqualTo("test.jpg");
@@ -53,7 +55,8 @@ class MediaQueryServiceTest {
         void shouldThrow_whenMediaNotFound() {
             given(loadMediaPort.findById(any())).willReturn(Optional.empty());
 
-            assertThatThrownBy(() -> service.getMedia(999L))
+            given(accessPort.canRead(999L, 1L)).willReturn(true);
+            assertThatThrownBy(() -> service.getMedia(999L, 1L))
                     .isInstanceOf(MediaException.class)
                     .hasMessageContaining("미디어 파일을 찾을 수 없습니다");
         }

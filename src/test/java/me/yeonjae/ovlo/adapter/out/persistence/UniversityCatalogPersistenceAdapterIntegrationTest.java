@@ -102,6 +102,18 @@ class UniversityCatalogPersistenceAdapterIntegrationTest {
         assertThat(all).noneMatch(r -> emptyGlobalId.equals(r.globalUnivId()));
     }
 
+    @Test void exchangeMasterAloneDoesNotMakeContentAndCountriesHaveUniqueCodes() {
+        insertExchange(emptyGlobalId, "빈대학교", "Empty University", "France", "FR", "Paris");
+        insertExchange(null, "빈 후기", "No content", "Japan", "JP", "Tokyo");
+        Long incorrect = insertGlobal("Korea University", "고려대학교", "일본", "KR", "Seoul");
+        insertPublishedReport(incorrect);
+        assertThat(search(null, null)).noneMatch(row -> emptyGlobalId.equals(row.globalUnivId()));
+        var korea = catalogQuery.getCountries().stream().filter(c -> "KR".equals(c.countryCode())).toList();
+        assertThat(korea).hasSize(1);
+        assertThat(korea.getFirst().universityCount()).isEqualTo(2);
+        assertThat(korea.getFirst().country()).isNotEqualTo("일본");
+    }
+
     @Test
     @DisplayName("리포트만 보유한 대학은 hasReport=true, hasReviews=false")
     void reportOnlyFlags() {
@@ -110,6 +122,21 @@ class UniversityCatalogPersistenceAdapterIntegrationTest {
         assertThat(r.reportId()).isNotNull();
         assertThat(r.hasReviews()).isFalse();
         assertThat(r.reviewCount()).isZero();
+    }
+
+    @Test void countryRepairTargetsOnlyTheVerifiedKoreanUniversity() {
+        jdbc.update("INSERT INTO global_universities(id,name_en,country,country_code) VALUES(5056,'Korea University','일본','KR')");
+        Long japanese = insertGlobal("Korea University", "조선대학교", "일본", "JP", "Tokyo");
+        Long koreanExchange = insertExchange(5056L, "고려대학교", "Korea University", "Japan", "KR", "Seoul");
+        Long japaneseExchange = insertExchange(japanese, "조선대학교", "Korea University (Japan)", "Japan", "JP", "Tokyo");
+        var script = new org.springframework.jdbc.datasource.init.ResourceDatabasePopulator(
+                new org.springframework.core.io.ClassPathResource("db/migration/V55__korea_university_country_label.sql"));
+        script.execute(jdbc.getDataSource());
+        script.execute(jdbc.getDataSource()); // The repair is safe to verify repeatedly.
+        assertThat(jdbc.queryForObject("SELECT country FROM global_universities WHERE id=5056", String.class)).isEqualTo("대한민국");
+        assertThat(jdbc.queryForObject("SELECT country FROM exchange_universities WHERE id=?", String.class, koreanExchange)).isEqualTo("대한민국");
+        assertThat(jdbc.queryForObject("SELECT country FROM global_universities WHERE id=?", String.class, japanese)).isEqualTo("일본");
+        assertThat(jdbc.queryForObject("SELECT country FROM exchange_universities WHERE id=?", String.class, japaneseExchange)).isEqualTo("Japan");
     }
 
     @Test
@@ -195,6 +222,7 @@ class UniversityCatalogPersistenceAdapterIntegrationTest {
     @DisplayName("교환대학 행이 여러 개면 한글명이 있는 행을 고른다 — 삽입 순서와 무관")
     void picksExchangeRowWithKoreanName() {
         Long globalId = insertGlobal("University of Sao Paulo", null, "브라질", "BR", null);
+        insertPublishedReport(globalId); // The name-ordering case still needs actual catalog content.
         insertExchange(globalId, "  ", "Universidade de Sao Paulo", "브라질", "BR", null);        // 마스터 유래 행(한글명이 공백뿐)
         Long curatedId = insertExchange(globalId, "상파울루대학교", "USP", "브라질", "BR", "상파울루");  // 시드 행
         insertExchange(globalId, null, "USP (duplicate)", "브라질", "BR", null);
@@ -224,6 +252,7 @@ class UniversityCatalogPersistenceAdapterIntegrationTest {
     @DisplayName("조건이 같은 교환대학 행이 여러 개면 id 가 가장 작은 행을 고른다 — 페이지마다 같은 행")
     void picksLowestIdOnTie() {
         Long globalId = insertGlobal("Tie University", null, "독일", "DE", null);
+        insertPublishedReport(globalId);
         Long firstId = insertExchange(globalId, "동률대학교 A", "Tie University A", "독일", "DE", null);
         insertExchange(globalId, "동률대학교 B", "Tie University B", "독일", "DE", null);
         // 첫 행을 갱신해 물리적 위치를 뒤로 보낸다 — 정렬이 없으면 두 번째 행이 먼저 읽힌다

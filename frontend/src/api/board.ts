@@ -9,6 +9,8 @@ interface BoardPageResult {
 }
 
 export const boardApi = {
+  page: (keyword = '', page = 0, category?: string, scope?: string) =>
+    apiClient.get<BoardPageResult>('/boards', { params: { keyword, page, size: 20, category, scope } }).then(r => r.data),
   list: (keyword?: string, page = 0, size = 20) =>
     apiClient
       .get<BoardPageResult>('/boards', { params: { keyword, page, size } })

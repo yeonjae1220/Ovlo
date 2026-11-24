@@ -5,10 +5,10 @@ import { postApi } from '../api/post'
 import type { CreatePostRequest, UpdatePostRequest, CreateCommentRequest, ReactionType } from '../types'
 
 
-export function usePosts(boardId: string) {
+export function usePosts(boardId: string, page = 0) {
   return useQuery({
-    queryKey: ['posts', boardId],
-    queryFn: () => postApi.listByBoard(boardId),
+    queryKey: ['posts', boardId, page],
+    queryFn: () => postApi.listByBoard(boardId, page),
     enabled: !!boardId,
   })
 }
@@ -71,7 +71,10 @@ export function useAddComment() {
   return useMutation({
     mutationFn: ({ postId, req }: { postId: string; req: CreateCommentRequest }) =>
       postApi.addComment(postId, req),
-    onSuccess: (_, { postId }) => queryClient.invalidateQueries({ queryKey: ['post', postId] }),
+    onSuccess: (_, { postId }) => Promise.all([
+      queryClient.invalidateQueries({ queryKey: ['post', postId] }),
+      queryClient.invalidateQueries({ queryKey: ['posts'] }),
+    ]),
   })
 }
 
@@ -80,7 +83,10 @@ export function useDeleteComment() {
   return useMutation({
     mutationFn: ({ postId, commentId }: { postId: string; commentId: string }) =>
       postApi.deleteComment(postId, commentId),
-    onSuccess: (_, { postId }) => queryClient.invalidateQueries({ queryKey: ['post', postId] }),
+    onSuccess: (_, { postId }) => Promise.all([
+      queryClient.invalidateQueries({ queryKey: ['post', postId] }),
+      queryClient.invalidateQueries({ queryKey: ['posts'] }),
+    ]),
   })
 }
 

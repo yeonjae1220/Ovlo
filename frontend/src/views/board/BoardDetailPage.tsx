@@ -1,5 +1,6 @@
 'use client'
 
+import { useState } from 'react'
 import Link from 'next/link'
 import { useParams } from 'next/navigation'
 import { useBoard, useSubscribeBoard, useUnsubscribeBoard } from '../../hooks/useBoard'
@@ -18,8 +19,9 @@ export default function BoardDetailPage() {
   const { t, language } = useI18n()
   const params = useParams()
   const id = params?.id as string | undefined
+  const [page, setPage] = useState(0)
   const { data: board, isLoading: boardLoading, isError: boardError, refetch: refetchBoard } = useBoard(id!)
-  const { data: posts, isLoading: postsLoading, isError: postsError, refetch: refetchPosts } = usePosts(id!)
+  const { data: posts, isLoading: postsLoading, isError: postsError, refetch: refetchPosts } = usePosts(id!, page)
   const subscribe = useSubscribeBoard()
   const unsubscribe = useUnsubscribeBoard()
   const { currentUser } = useAuthStore()
@@ -33,7 +35,7 @@ export default function BoardDetailPage() {
     <div style={{ maxWidth: 860, margin: '0 auto' }}>
       <PageHeader
         title={board.name}
-        description={board.description ?? `${board.category} · ${board.scope}`}
+        description={board.description ?? `${t('board.category.' + board.category)} · ${t('board.scope.' + board.scope)}`}
         actions={
           <>
             {board.category === 'TRADE' && <LinkButton href="/marketplace" variant="primary">{language === 'ko' ? '중고거래' : 'Marketplace'}</LinkButton>}
@@ -49,13 +51,13 @@ export default function BoardDetailPage() {
       />
 
       <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 16 }}>
-        <Badge tone="info">{board.category}</Badge>
-        <Badge tone="neutral">{board.scope}</Badge>
+        <Badge tone="info">{t('board.category.' + board.category)}</Badge>
+        <Badge tone="neutral">{t('board.scope.' + board.scope)}</Badge>
       </div>
 
       {postsLoading && <p style={{ color: C.muted }}>{t('board.postsLoading')}</p>}
       <div style={{ display: 'grid', gap: 10 }}>
-        {posts?.map((post) => (
+        {!postsError && posts?.content.map((post) => (
           <Link key={post.id} href={`/posts/${post.id}`} style={{ color: 'inherit', textDecoration: 'none' }}>
             <Card interactive style={{ padding: 16 }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, alignItems: 'flex-start' }}>
@@ -71,15 +73,20 @@ export default function BoardDetailPage() {
                 </div>
                 <div style={{ display: 'grid', gap: 6, justifyItems: 'end', flexShrink: 0 }}>
                   <Badge tone={post.likeCount > 0 ? 'warning' : 'neutral'}>♥ {post.likeCount}</Badge>
-                  <Badge tone={post.comments?.length ? 'accent' : 'neutral'}>↳ {post.comments?.filter((comment) => !comment.deleted).length ?? 0}</Badge>
+                  <Badge tone={post.commentCount > 0 ? 'accent' : 'neutral'}>↳ {post.commentCount}</Badge>
                 </div>
               </div>
             </Card>
           </Link>
         ))}
       </div>
+      {!postsError && posts && posts.totalPages > 1 && <nav aria-label={t('common.next')} style={{ display: 'flex', gap: 12, justifyContent: 'center', marginTop: 20 }}>
+        <Button disabled={page === 0 || postsLoading} onClick={() => setPage(page - 1)}>{t('common.prev')}</Button>
+        <span>{page + 1} / {posts.totalPages}</span>
+        <Button disabled={!posts.hasNext || postsLoading} onClick={() => setPage(page + 1)}>{t('common.next')}</Button>
+      </nav>}
       {postsError && <QueryErrorNotice onRetry={() => void refetchPosts()} />}
-      {!postsError && !postsLoading && posts?.length === 0 && <EmptyState icon="◎" title={t('board.empty')} />}
+      {!postsError && !postsLoading && posts?.content.length === 0 && <EmptyState icon="◎" title={t('board.empty')} />}
     </div>
   )
 }

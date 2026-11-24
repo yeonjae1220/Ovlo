@@ -1,5 +1,6 @@
 'use client'
 
+import { safeReturnPath } from '@/utils/returnPath'
 import { saveOauthState } from '@/utils/oauthState'
 import { openOAuthUrl } from '@/utils/nativeOAuth'
 
@@ -29,6 +30,7 @@ function redirectToGoogle(notConfiguredMsg: string) {
   // state 파라미터로 login CSRF 방지
   const state = crypto.randomUUID()
   saveOauthState(state)
+  sessionStorage.setItem('ovlo-oauth-next', safeReturnPath(new URLSearchParams(window.location.search).get('next')))
 
   const redirectUri = `${window.location.origin}/oauth/callback`
   const params = new URLSearchParams({

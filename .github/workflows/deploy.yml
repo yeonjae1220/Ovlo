@@ -75,7 +75,7 @@ jobs:
           if-no-files-found: error
 
       - name: Chat authorization and legacy account migration regressions
-        run: ./gradlew integrationTest --tests '*ChatAccessIntegrationTest' --tests '*LegacyDevelopmentAccountMigrationIntegrationTest' --no-daemon
+        run: ./gradlew integrationTest --tests '*ChatAccessIntegrationTest' --tests '*PrivacyBoundaryIntegrationTest' --tests '*LegacyDevelopmentAccountMigrationIntegrationTest' --no-daemon
 
       - name: Notice source approval and migration regressions
         run: ./gradlew integrationTest --tests '*NoticeGovernanceIntegrationTest' --tests '*NoticeSourceMigrationIntegrationTest' --tests '*NoticeRetranslationIntegrationTest' --tests '*NoticeTranslationRecoveryIntegrationTest' --tests '*NoticeTranslationMigrationIntegrationTest' --tests '*NoticeReviewRemainingIssuesIntegrationTest' --tests '*OfficeFullReviewIntegrationTest' --tests '*OfficePrivacyRecoveryIntegrationTest' --tests '*OfficeInFlightAccessIntegrationTest' --tests '*OfficeRetainedAccessIntegrationTest' --tests '*OfficeNoticeApplicabilityIntegrationTest' --tests '*RedisTranslationWorkAdapterIntegrationTest' --tests '*RedisTranslationAdmissionAdapterIntegrationTest' --no-daemon
@@ -94,6 +94,10 @@ jobs:
         working-directory: frontend
       - name: Test account cache isolation
         run: |
+          node scripts/test-service-worker.cjs
+          node scripts/test-return-path.cjs
+          node scripts/test-chat-reconnect.cjs
+          node scripts/test-calendar.cjs
           node scripts/test-auth-query-cache.cjs
           node scripts/test-auth-session-race.cjs
           node scripts/test-consultation-history.cjs
@@ -103,6 +107,8 @@ jobs:
         run: node scripts/test-notice-length.cjs
         working-directory: frontend
       - run: npm run build
+        working-directory: frontend
+      - run: npm run lint
         working-directory: frontend
 
   build-and-push:

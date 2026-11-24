@@ -41,14 +41,15 @@ public class MediaApiController {
 
     @Operation(summary = "미디어 파일 메타데이터 조회")
     @GetMapping("/{id}")
-    public ResponseEntity<MediaResult> getById(@PathVariable Long id) {
-        return ResponseEntity.ok(getMediaQuery.getMedia(id));
+    public ResponseEntity<MediaResult> getById(@PathVariable Long id, @AuthenticationPrincipal Long memberId) {
+        return ResponseEntity.ok().cacheControl(org.springframework.http.CacheControl.noStore())
+                .body(getMediaQuery.getMedia(id, memberId));
     }
 
     @Operation(summary = "미디어 파일 바이너리 다운로드")
     @GetMapping("/{id}/file")
-    public ResponseEntity<byte[]> downloadFile(@PathVariable Long id) {
-        MediaDownloadResult download = getMediaQuery.downloadMedia(id);
+    public ResponseEntity<byte[]> downloadFile(@PathVariable Long id, @AuthenticationPrincipal Long memberId) {
+        MediaDownloadResult download = getMediaQuery.downloadMedia(id, memberId);
 
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(resolveContentType(download.mediaType()));
@@ -57,7 +58,7 @@ public class MediaApiController {
                         .filename(download.originalFilename(), StandardCharsets.UTF_8)
                         .build()
         );
-        return ResponseEntity.ok().headers(headers).body(download.data());
+        return ResponseEntity.ok().headers(headers).cacheControl(org.springframework.http.CacheControl.noStore()).body(download.data());
     }
 
     private org.springframework.http.MediaType resolveContentType(String mediaTypeName) {

@@ -4,6 +4,13 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { boardApi } from '../api/board'
 import type { CreateBoardRequest } from '../types'
 
+export function useBoardDirectory(keyword = '', page = 0, category?: string, scope?: string) {
+  return useQuery({
+    queryKey: ['boards', keyword, page, category, scope],
+    queryFn: () => boardApi.page(keyword, page, category, scope),
+  })
+}
+
 export function useBoards() {
   return useQuery({
     queryKey: ['boards'],

@@ -59,8 +59,8 @@ public class UniversityCatalogQueryService implements SearchUniversityCatalogQue
     }
 
     private UniversityCatalogResult toResult(CatalogRow row, Map<Long, Long> counts) {
-        boolean hasReviews = row.exchangeUnivId() != null;
-        long reviewCount = hasReviews ? counts.getOrDefault(row.exchangeUnivId(), 0L) : 0L;
+        long reviewCount = row.exchangeUnivId() != null ? counts.getOrDefault(row.exchangeUnivId(), 0L) : 0L;
+        boolean hasReviews = reviewCount > 0;
         return new UniversityCatalogResult(
                 row.globalUnivId(),
                 row.exchangeUnivId(),

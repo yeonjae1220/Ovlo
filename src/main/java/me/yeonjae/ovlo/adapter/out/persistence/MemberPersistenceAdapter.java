@@ -21,10 +21,13 @@ public class MemberPersistenceAdapter implements LoadMemberPort, SaveMemberPort 
 
     private final MemberJpaRepository memberJpaRepository;
     private final MemberMapper memberMapper;
+    private final org.springframework.jdbc.core.JdbcTemplate jdbc;
 
-    public MemberPersistenceAdapter(MemberJpaRepository memberJpaRepository, MemberMapper memberMapper) {
+    public MemberPersistenceAdapter(MemberJpaRepository memberJpaRepository, MemberMapper memberMapper,
+                                    org.springframework.jdbc.core.JdbcTemplate jdbc) {
         this.memberJpaRepository = memberJpaRepository;
         this.memberMapper = memberMapper;
+        this.jdbc = jdbc;
     }
 
     @Override
@@ -65,15 +68,26 @@ public class MemberPersistenceAdapter implements LoadMemberPort, SaveMemberPort 
     @Override
     public List<Member> searchByNickname(String keyword, int limit) {
         PageRequest firstPage = PageRequest.of(0, limit, Sort.by("nickname"));
-        return memberJpaRepository.findByNicknameContainingIgnoreCase(keyword, firstPage).stream()
+        return memberJpaRepository.findByNicknameContainingIgnoreCaseAndStatus(keyword,
+                        me.yeonjae.ovlo.domain.member.model.MemberStatus.ACTIVE, firstPage).stream()
                 .map(memberMapper::toDomain)
                 .toList();
     }
 
     @Override
+    @org.springframework.transaction.annotation.Transactional
     public Member save(Member member) {
+        if (member.getId() != null) {
+            // A scalar lock reads current DB state even if JPA already loaded a stale entity.
+            String current = jdbc.queryForObject("SELECT status FROM member WHERE id=? FOR UPDATE",
+                    String.class, member.getId().value());
+            if ("WITHDRAWN".equals(current)) {
+                throw new me.yeonjae.ovlo.domain.member.exception.MemberException("탈퇴한 계정은 변경할 수 없습니다",
+                        me.yeonjae.ovlo.domain.member.exception.MemberException.ErrorType.CONFLICT);
+            }
+        }
         MemberJpaEntity entity = memberMapper.toJpaEntity(member);
-        MemberJpaEntity saved = memberJpaRepository.save(entity);
+        MemberJpaEntity saved = memberJpaRepository.saveAndFlush(entity);
         return memberMapper.toDomain(saved);
     }
 

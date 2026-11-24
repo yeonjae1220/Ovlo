@@ -11,7 +11,7 @@ import java.util.Optional;
 
 public interface ChatRoomJpaRepository extends JpaRepository<ChatRoomJpaEntity, Long> {
 
-    @Query("SELECT cr.id FROM ChatRoomJpaEntity cr " +
+    @Query("SELECT MIN(cr.id) FROM ChatRoomJpaEntity cr " +
             "WHERE cr.type = :type " +
             "AND :memberId1 MEMBER OF cr.participantIds " +
             "AND :memberId2 MEMBER OF cr.participantIds")

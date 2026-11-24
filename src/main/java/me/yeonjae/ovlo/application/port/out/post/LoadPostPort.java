@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Optional;
 
 public interface LoadPostPort {
+    java.util.Map<Long, Long> countComments(List<Long> postIds);
     Optional<Post> findById(PostId postId);
     List<Post> findByBoardId(BoardId boardId, int offset, int limit);
     long countByBoardId(BoardId boardId);

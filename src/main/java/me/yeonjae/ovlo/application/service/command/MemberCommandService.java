@@ -12,6 +12,8 @@ import me.yeonjae.ovlo.application.port.in.member.UpdateMemberProfileUseCase;
 import me.yeonjae.ovlo.application.port.in.member.UpdateProfileImageUseCase;
 import me.yeonjae.ovlo.application.port.in.member.WithdrawMemberUseCase;
 import me.yeonjae.ovlo.application.port.out.auth.PasswordHasherPort;
+import me.yeonjae.ovlo.application.port.out.media.MediaAccessPort;
+import me.yeonjae.ovlo.domain.media.exception.MediaException;
 import me.yeonjae.ovlo.application.port.out.member.HideContentByWithdrawnMemberPort;
 import me.yeonjae.ovlo.application.port.out.member.LoadMemberPort;
 import me.yeonjae.ovlo.application.port.out.member.SaveMemberPort;
@@ -34,17 +36,20 @@ public class MemberCommandService implements
     private final PasswordHasherPort passwordHasherPort;
     private final HideContentByWithdrawnMemberPort hideContentByWithdrawnMemberPort;
     private final LoadUniversityPort loadUniversityPort;
+    private final MediaAccessPort mediaAccessPort;
 
     public MemberCommandService(LoadMemberPort loadMemberPort,
                                 SaveMemberPort saveMemberPort,
                                 PasswordHasherPort passwordHasherPort,
                                 HideContentByWithdrawnMemberPort hideContentByWithdrawnMemberPort,
-                                LoadUniversityPort loadUniversityPort) {
+                                LoadUniversityPort loadUniversityPort,
+                                MediaAccessPort mediaAccessPort) {
         this.loadMemberPort = loadMemberPort;
         this.saveMemberPort = saveMemberPort;
         this.passwordHasherPort = passwordHasherPort;
         this.hideContentByWithdrawnMemberPort = hideContentByWithdrawnMemberPort;
         this.loadUniversityPort = loadUniversityPort;
+        this.mediaAccessPort = mediaAccessPort;
     }
 
     /** 본교가 카탈로그(global_universities)에 실재하는지 검증. */
@@ -115,6 +120,15 @@ public class MemberCommandService implements
 
     @Override
     public MemberResult updateProfileImage(UpdateProfileImageCommand command) {
+        Long mediaId;
+        try {
+            mediaId = Long.valueOf(command.mediaId());
+        } catch (NumberFormatException e) {
+            throw new MediaException("사용할 수 없는 프로필 이미지입니다");
+        }
+        if (!mediaAccessPort.canUseAsProfileImage(mediaId, command.memberId())) {
+            throw new MediaException("사용할 수 없는 프로필 이미지입니다");
+        }
         Member member = loadMemberPort.findById(new MemberId(command.memberId()))
                 .orElseThrow(() -> new MemberException("회원을 찾을 수 없습니다: " + command.memberId(), MemberException.ErrorType.NOT_FOUND));
         member.updateProfileImage(command.mediaId());

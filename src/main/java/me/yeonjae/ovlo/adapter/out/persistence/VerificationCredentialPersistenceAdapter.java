@@ -20,9 +20,10 @@ public class VerificationCredentialPersistenceAdapter
         implements LoadVerificationCredentialPort, SaveVerificationCredentialPort, ExpireVerificationCredentialPort {
 
     private final VerificationCredentialJpaRepository repository;
+    private final CurrentMemberWriteLock memberLock;
 
-    public VerificationCredentialPersistenceAdapter(VerificationCredentialJpaRepository repository) {
-        this.repository = repository;
+    public VerificationCredentialPersistenceAdapter(VerificationCredentialJpaRepository repository, CurrentMemberWriteLock memberLock) {
+        this.repository = repository; this.memberLock = memberLock;
     }
 
     @Override
@@ -54,6 +55,7 @@ public class VerificationCredentialPersistenceAdapter
     @Override
     @Transactional
     public VerificationCredential save(VerificationCredential c) {
+        memberLock.requireActive(c.getMemberId());
         // UNIQUE(member_id, type): 동일 타입 기존 자격을 대체(upsert)
         repository.deleteByMemberIdAndType(c.getMemberId(), c.getType().name());
         VerificationCredentialJpaEntity entity = toEntity(c);

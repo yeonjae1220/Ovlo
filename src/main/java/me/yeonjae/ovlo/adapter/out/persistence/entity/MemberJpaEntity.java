@@ -74,16 +74,19 @@ public class MemberJpaEntity {
     private Integer gradeLevel;
 
     @ElementCollection(fetch = FetchType.EAGER)
+    @org.hibernate.annotations.Fetch(org.hibernate.annotations.FetchMode.SUBSELECT)
     @CollectionTable(name = "member_language_skill",
             joinColumns = @JoinColumn(name = "member_id"))
     private List<LanguageSkillEmbeddable> languageSkills = new ArrayList<>();
 
     @ElementCollection(fetch = FetchType.EAGER)
+    @org.hibernate.annotations.Fetch(org.hibernate.annotations.FetchMode.SUBSELECT)
     @CollectionTable(name = "member_university_experience",
             joinColumns = @JoinColumn(name = "member_id"))
     private List<UniversityExperienceEmbeddable> universityExperiences = new ArrayList<>();
 
     @ElementCollection(fetch = FetchType.EAGER)
+    @org.hibernate.annotations.Fetch(org.hibernate.annotations.FetchMode.SUBSELECT)
     @CollectionTable(name = "member_contact_info",
             joinColumns = @JoinColumn(name = "member_id"))
     private List<ContactInfoEmbeddable> contactInfos = new ArrayList<>();

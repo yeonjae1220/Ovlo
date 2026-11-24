@@ -35,7 +35,7 @@ const hooks = load('src/hooks/useOffice.ts', {
   '../store/authStore': { useAuthStore: selector => selector(store()) },
   '../api/office': { officeApi },
 })
-async function withdrawThroughProfile() {
+async function withdrawThroughProfile(fail = false) {
   const file = ts.createSourceFile('ProfilePage.tsx',
     fs.readFileSync(path.join(root, 'src/views/member/ProfilePage.tsx'), 'utf8'),
     ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX)
@@ -49,9 +49,14 @@ async function withdrawThroughProfile() {
   const code = ts.transpileModule('module.exports = ' + expression,
     { compilerOptions: { target: ts.ScriptTarget.ES2020, module: ts.ModuleKind.CommonJS } }).outputText
   const m = { exports: {} }
-  new Function('memberApi', 'id', 'clearAuth', 'router', 'confirm', 't', 'module', 'captureAuthSession', 'isCurrentAuthSession', code)(
-    { withdraw: async () => {} }, 42, store().clearAuth, { push: () => {} }, () => true, x => x, m, sessions.captureAuthSession, sessions.isCurrentAuthSession)
+  let error = '', redirected = false
+  new Function('memberApi', 'id', 'clearAuth', 'router', 'confirm', 't', 'module', 'captureAuthSession', 'isCurrentAuthSession',
+    'withdrawing', 'setActionError', 'setWithdrawing', code)(
+    { withdraw: async () => { if (fail) throw new Error('synthetic outage') } }, 42, store().clearAuth,
+    { push: () => { redirected = true } }, () => true, x => x, m, sessions.captureAuthSession, sessions.isCurrentAuthSession,
+    false, value => { error = value }, () => {})
   await m.exports()
+  if (fail) { assert.ok(error); assert.equal(redirected, false); assert.equal(store().currentUser.id, '42') }
 }
 ;(async () => {
   const a = { id: '42' }, b = { id: '43' }
@@ -59,6 +64,8 @@ async function withdrawThroughProfile() {
   const keyA = hooks.useMyConsultations(5).queryKey
   await qc.fetchQuery(hooks.useMyOffice())
   assert.equal((await qc.fetchQuery(hooks.useMyConsultations(5)))[0].privateText, 'account-42')
+  await withdrawThroughProfile(true)
+  assert.ok(qc.getQueryCache().getAll().length > 0, 'Failed withdrawal retains the current session and data')
   await withdrawThroughProfile()
   assert.equal(qc.getQueryCache().getAll().length, 0, 'Withdrawal must clear all private caches')
   assert.equal(hooks.useMyOffice().enabled, false)

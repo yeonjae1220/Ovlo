@@ -6,6 +6,7 @@ import me.yeonjae.ovlo.application.port.out.university.LoadUniversityCatalogPort
 import org.springframework.stereotype.Component;
 
 import java.util.List;
+import java.util.Locale;
 
 /**
  * {@link LoadUniversityCatalogPort} 구현. 네이티브 통합 쿼리 결과(Object[])를
@@ -28,7 +29,7 @@ public class UniversityCatalogPersistenceAdapter implements LoadUniversityCatalo
         String displayLang = blankToNull(lang) == null ? DEFAULT_LANG : lang.trim().toLowerCase();
         return repository.search(blankToNull(keyword), blankToNull(countryCode), displayLang, limit, offset)
                 .stream()
-                .map(UniversityCatalogPersistenceAdapter::toRow)
+                .map(row -> toRow(row, displayLang))
                 .toList();
     }
 
@@ -41,14 +42,14 @@ public class UniversityCatalogPersistenceAdapter implements LoadUniversityCatalo
     public List<UniversityCatalogCountryResult> findCountries() {
         return repository.findCountries().stream()
                 .map(r -> new UniversityCatalogCountryResult(
-                        (String) r[0],
+                        countryName((String) r[1], (String) r[0], "ko"),
                         (String) r[1],
                         ((Number) r[2]).longValue()))
                 .toList();
     }
 
     /** 컬럼 순서: global_univ_id, exchange_univ_id, report_id, name_en, name_ko, name_local, country, country_code, city */
-    private static CatalogRow toRow(Object[] r) {
+    private static CatalogRow toRow(Object[] r, String lang) {
         return new CatalogRow(
                 toLong(r[0]),
                 toLong(r[1]),
@@ -56,10 +57,16 @@ public class UniversityCatalogPersistenceAdapter implements LoadUniversityCatalo
                 (String) r[3],
                 (String) r[4],
                 (String) r[5],
-                (String) r[6],
+                countryName((String) r[7], (String) r[6], lang),
                 (String) r[7],
                 (String) r[8]
         );
+    }
+
+    private static String countryName(String code, String fallback, String lang) {
+        if (code == null || !code.matches("[A-Z]{2}")) return fallback;
+        String name = Locale.of("", code).getDisplayCountry(Locale.forLanguageTag(lang));
+        return name.isBlank() ? fallback : name;
     }
 
     private static Long toLong(Object value) {

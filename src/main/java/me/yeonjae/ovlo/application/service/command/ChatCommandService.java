@@ -46,12 +46,18 @@ public class ChatCommandService implements CreateChatRoomUseCase, SendMessageUse
 
     @Override
     public ChatRoomResult createChatRoom(CreateChatRoomCommand command) {
+        if (command.requesterId() == null || command.participantIds() == null
+                || !command.participantIds().contains(command.requesterId())
+                || command.participantIds().stream().anyMatch(id -> id == null || id <= 0)) {
+            throw new ChatException("올바른 참여자와 요청자가 필요합니다", ChatException.ErrorType.BAD_REQUEST);
+        }
         List<MemberId> participants = command.participantIds().stream()
+                .distinct()
                 .map(MemberId::new)
                 .toList();
 
         if (command.type() == ChatRoomType.DM) {
-            if (participants.size() < 2) {
+            if (participants.size() != 2) {
                 throw new ChatException("DM 채팅방은 참여자 2명이 필요합니다", ChatException.ErrorType.BAD_REQUEST);
             }
             MemberId m1 = participants.get(0);
@@ -60,6 +66,9 @@ public class ChatCommandService implements CreateChatRoomUseCase, SendMessageUse
             if (existingRoomId.isPresent()) {
                 ChatRoom existingRoom = loadChatPort.findById(existingRoomId.get())
                         .orElseThrow(() -> new ChatException("채팅방을 찾을 수 없습니다", ChatException.ErrorType.NOT_FOUND));
+                if (!existingRoom.hasParticipant(new MemberId(command.requesterId()))) {
+                    throw new ChatException("채팅방을 찾을 수 없습니다", ChatException.ErrorType.NOT_FOUND);
+                }
                 return ChatRoomResult.from(existingRoom);
             }
         }
@@ -69,7 +78,7 @@ public class ChatCommandService implements CreateChatRoomUseCase, SendMessageUse
             ChatRoom saved = saveChatPort.save(room);
             return ChatRoomResult.from(saved);
         } catch (DataIntegrityViolationException e) {
-            // TODO: V7 migration에 DM unique constraint 추가 시 이 catch가 TOCTOU race condition 최종 방어선 역할
+            // DM creation is serialized in SaveChatPort; other constraint conflicts still fail the request.
             throw new ChatException("이미 해당 두 회원 간의 DM 채팅방이 존재합니다", ChatException.ErrorType.CONFLICT);
         }
     }

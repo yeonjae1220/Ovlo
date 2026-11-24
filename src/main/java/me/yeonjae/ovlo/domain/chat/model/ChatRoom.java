@@ -20,6 +20,10 @@ public class ChatRoom {
     public static ChatRoom create(ChatRoomType type, String name, List<MemberId> participants) {
         Objects.requireNonNull(type, "채팅방 타입은 필수입니다");
         Objects.requireNonNull(participants, "참여자 목록은 필수입니다");
+        if (participants.stream().anyMatch(Objects::isNull)
+                || participants.stream().distinct().count() != participants.size()) {
+            throw new IllegalArgumentException("채팅방 참여자는 중복되거나 null일 수 없습니다");
+        }
         if (participants.size() < 2) {
             throw new IllegalArgumentException("채팅방 참여자는 최소 2명 이상이어야 합니다");
         }

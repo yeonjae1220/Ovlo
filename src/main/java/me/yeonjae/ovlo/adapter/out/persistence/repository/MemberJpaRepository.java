@@ -14,7 +14,8 @@ public interface MemberJpaRepository extends JpaRepository<MemberJpaEntity, Long
     boolean existsByEmail(String email);
     boolean existsByIdAndStatus(Long id, me.yeonjae.ovlo.domain.member.model.MemberStatus status);
     boolean existsByNickname(String nickname);
-    List<MemberJpaEntity> findByNicknameContainingIgnoreCase(String keyword, Pageable pageable);
+    List<MemberJpaEntity> findByNicknameContainingIgnoreCaseAndStatus(String keyword,
+            me.yeonjae.ovlo.domain.member.model.MemberStatus status, Pageable pageable);
 
     /** 본교 대학 ID만 프로젝션 — 멤버 없음/본교 null이면 empty. */
     @Query("select m.homeUniversityId from MemberJpaEntity m where m.id = :id")

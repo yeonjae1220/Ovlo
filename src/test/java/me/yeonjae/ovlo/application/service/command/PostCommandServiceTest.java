@@ -42,6 +42,7 @@ import static org.mockito.Mockito.verify;
 class PostCommandServiceTest {
 
     @Mock LoadPostPort loadPostPort;
+    @Mock me.yeonjae.ovlo.application.port.out.post.SaveCommentPort comments;
     @Mock SavePostPort savePostPort;
     @Mock LoadBoardPort loadBoardPort;
     @Mock GetMyVerificationStatusQuery getMyVerificationStatusQuery;
@@ -116,12 +117,14 @@ class PostCommandServiceTest {
                     false, new ArrayList<>(), new ArrayList<>(), Instant.now());
 
             given(loadPostPort.findById(postId)).willReturn(Optional.of(post));
-            given(savePostPort.save(any())).willReturn(post);
+            given(comments.insertComment(any(), any())).willReturn(Comment.restore(
+                    new CommentId(42L), postId, memberId, "댓글 내용", false));
 
             CommentResult result = service.createComment(new CreateCommentCommand(1L, 2L, "댓글 내용"));
 
             assertThat(result.content()).isEqualTo("댓글 내용");
-            verify(savePostPort).save(post);
+            assertThat(result.id()).isEqualTo(42L);
+            verify(comments).insertComment(org.mockito.ArgumentMatchers.eq(postId), any());
         }
 
         @Test

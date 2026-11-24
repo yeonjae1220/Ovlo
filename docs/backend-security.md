@@ -19,7 +19,7 @@
 ### 토큰 구조
 | 종류 | 유효시간 | 저장 위치 |
 |------|----------|-----------|
-| Access Token | 15분 | 클라이언트 메모리 (Zustand) |
+| Access Token | 기본 15분 (`JWT_ACCESS_TTL_MINUTES`로 조정) | 클라이언트 메모리 (Zustand) |
 | Refresh Token | 7일 | Redis (`auth:token:{token}`) |
 
 ---

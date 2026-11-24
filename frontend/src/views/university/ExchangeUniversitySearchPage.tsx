@@ -101,7 +101,7 @@ export default function ExchangeUniversitySearchPage() {
             <option value="">{t('exch.countryAll')}</option>
             {countries.map((c) => (
               <option key={c.countryCode} value={c.countryCode}>
-                {c.country} ({c.universityCount})
+                {new Intl.DisplayNames([language], { type: 'region' }).of(c.countryCode) ?? c.country} ({c.universityCount})
               </option>
             ))}
           </SelectField>

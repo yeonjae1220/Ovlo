@@ -18,7 +18,8 @@ public record PostResult(
         long dislikeCount,
         List<CommentResult> comments,
         Instant createdAt,
-        boolean likedByMe
+        boolean likedByMe,
+        long commentCount
 ) {
     public static PostResult from(Post post, Long requesterId) {
         List<CommentResult> commentResults = post.getComments().stream()
@@ -40,7 +41,8 @@ public record PostResult(
                 post.dislikeCount(),
                 commentResults,
                 post.getCreatedAt(),
-                likedByMe
+                likedByMe,
+                commentResults.stream().filter(c -> !c.deleted()).count()
         );
     }
 
@@ -61,7 +63,7 @@ public record PostResult(
                 post.dislikeCount(),
                 List.of(),
                 post.getCreatedAt(),
-                false
+                false, 0
         );
     }
 
@@ -78,7 +80,12 @@ public record PostResult(
                 post.dislikeCount(),
                 List.of(),
                 post.getCreatedAt(),
-                false
+                false, 0
         );
+    }
+
+    public PostResult withCommentCount(long count) {
+        return new PostResult(id, boardId, boardName, authorId, title, content, deleted,
+                likeCount, dislikeCount, comments, createdAt, likedByMe, count);
     }
 }

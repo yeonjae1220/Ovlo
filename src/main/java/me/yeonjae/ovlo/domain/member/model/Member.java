@@ -247,16 +247,27 @@ public class Member {
             throw new IllegalStateException("이미 탈퇴한 회원입니다");
         }
         this.status = MemberStatus.WITHDRAWN;
+        String erasedId = java.util.UUID.randomUUID().toString().replace("-", "");
+        this.nickname = "withdrawn_" + erasedId;
+        this.name = "Withdrawn member";
+        this.email = new Email(erasedId + "@deleted.invalid");
+        this.hometown = null;
+        this.password = null;
+        this.provider = OAuthProvider.LOCAL;
+        this.providerId = null;
+        this.homeUniversityId = null;
+        this.major = null;
+        this.profileImageMediaId = null;
+        this.bio = null;
+        this.birthDate = null;
+        this.role = MemberRole.MEMBER;
+        this.languageSkills.clear();
+        this.universityExperiences.clear();
+        this.contactInfos.clear();
     }
 
     public void reactivateForOnboarding() {
-        if (status != MemberStatus.WITHDRAWN) {
-            throw new IllegalStateException("탈퇴한 회원만 재활성화할 수 있습니다. 현재 상태: " + status);
-        }
-        this.hometown = null;
-        this.homeUniversityId = null;
-        this.major = null;
-        this.status = MemberStatus.PENDING_ONBOARDING;
+        throw new IllegalStateException("탈퇴한 계정은 복원할 수 없습니다. 새 계정으로 가입해야 합니다");
     }
 
     // ── private ──────────────────────────────────────────────────────────────

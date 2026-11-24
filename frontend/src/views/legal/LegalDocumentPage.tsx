@@ -45,8 +45,8 @@ export default function LegalDocumentPage({ documents, related }: Props) {
           }}
         >
           {lang === 'ko'
-            ? '이 문서는 초안이며 대외 연락처가 아직 확정되지 않았습니다. 연락처가 정해지면 갱신됩니다.'
-            : 'This document is a draft and the public contact details are not yet finalized. It will be updated once they are.'}
+            ? '이 문서는 준비 중인 초안입니다. 운영 연락처와 외부 AI 처리 업체·보관 정책을 확인한 뒤 확정합니다.'
+            : 'This document is a draft in preparation. Public contact details and external AI processing and retention arrangements must be confirmed before finalization.'}
         </p>
       )}
 

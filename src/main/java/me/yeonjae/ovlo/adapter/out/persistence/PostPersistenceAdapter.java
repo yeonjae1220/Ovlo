@@ -27,7 +27,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Component
-public class PostPersistenceAdapter implements LoadPostPort, SavePostPort {
+public class PostPersistenceAdapter implements LoadPostPort, SavePostPort, me.yeonjae.ovlo.application.port.out.post.SaveCommentPort {
 
     private final PostJpaRepository postJpaRepository;
     private final CommentJpaRepository commentJpaRepository;
@@ -166,7 +166,6 @@ public class PostPersistenceAdapter implements LoadPostPort, SavePostPort {
         var saved = postJpaRepository.save(entity);
         Long postId = saved.getId();
 
-        saveAllComments(postId, post.getComments());
         // A안: 반응은 애그리거트 저장 경로가 아니라 upsertReaction/removeReaction 으로만 영속화한다.
         // save() 가 반응을 delete-all/re-insert 하면 불필요한 오버헤드에 더해, 동시 react 가 삽입한 행을
         // stale 스냅샷으로 덮어써 행-카운트 정합성이 깨진다. 그래서 여기서 반응은 건드리지 않는다.
@@ -176,9 +175,27 @@ public class PostPersistenceAdapter implements LoadPostPort, SavePostPort {
         return postMapper.toDomain(saved, comments, reactions);
     }
 
-    // JPA save()는 ID 유무에 따라 INSERT/UPDATE 자동 판단 — 신규/기존 구분 불필요
-    private void saveAllComments(Long postId, List<Comment> comments) {
-        comments.forEach(c -> commentJpaRepository.save(postMapper.toCommentJpaEntity(postId, c)));
+    @Override
+    @Transactional
+    public Comment insertComment(PostId postId, Comment comment) {
+        if (comment.getId() != null) throw new IllegalArgumentException("Only new comments can be inserted");
+        return postMapper.toCommentDomain(commentJpaRepository.saveAndFlush(
+                postMapper.toCommentJpaEntity(postId.value(), comment)));
+    }
+
+    @Override
+    @Transactional
+    public void deleteComment(PostId postId, long commentId, long authorId) {
+        if (commentJpaRepository.deleteOwnedComment(postId.value(), commentId, authorId) != 1) {
+            throw new PostException("댓글을 찾을 수 없습니다", PostException.ErrorType.NOT_FOUND);
+        }
+    }
+
+    @Override
+    public Map<Long, Long> countComments(List<Long> ids) {
+        if (ids.isEmpty()) return Map.of();
+        return commentJpaRepository.countVisibleByPostIds(ids).stream()
+                .collect(Collectors.toMap(CommentJpaRepository.CommentCount::getPostId, CommentJpaRepository.CommentCount::getTotal));
     }
 
     /**
