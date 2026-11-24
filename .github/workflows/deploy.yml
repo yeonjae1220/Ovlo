@@ -70,6 +70,7 @@ jobs:
           path: |
             build/test-results/integrationTest/
             build/reports/audit/
+            build/reports/service-journey/
           if-no-files-found: error
 
   frontend-check:
@@ -90,6 +91,7 @@ jobs:
           node scripts/test-return-path.cjs
           node scripts/test-chat-reconnect.cjs
           node scripts/test-calendar.cjs
+          node scripts/test-report-evidence.cjs
           node scripts/test-auth-query-cache.cjs
           node scripts/test-auth-session-race.cjs
           node scripts/test-consultation-history.cjs
@@ -379,7 +381,8 @@ jobs:
             echo "✅ Backend:  ghcr.io/yeonjae1220/ovlo:${{ needs.build-and-push.outputs.image-tag }}"
             echo "✅ Frontend: ghcr.io/yeonjae1220/ovlo-frontend:${{ needs.build-and-push-frontend.outputs.image-tag }}"
           else
-            echo "❌ Deploy failed. Rollback with:"
-            echo "sudo kubectl set image deployment/app      app=ghcr.io/yeonjae1220/ovlo:<PREV_SHA_TAG> -n ovlo"
-            echo "sudo kubectl set image deployment/frontend frontend=ghcr.io/yeonjae1220/ovlo-frontend:<PREV_SHA_TAG> -n ovlo"
+            echo "❌ Deploy failed. Review docs/deployment-health.md before rollback."
+            echo "Restore a compatible image AND Deployment probe/lifecycle configuration; an image-only rollback can fail health checks."
+            echo "Inspect candidate revisions: sudo kubectl rollout history deployment/app -n ovlo"
+            echo "Inspect candidate revisions: sudo kubectl rollout history deployment/frontend -n ovlo"
           fi

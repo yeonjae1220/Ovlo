@@ -36,6 +36,9 @@ class SearchMetricsExportConfigTest {
             metrics.inquiryRetrieval(true, OfficeMetrics.RetrievalResult.PRESENT);
             metrics.inquiry(me.yeonjae.ovlo.domain.office.model.InquiryOutcome.NO_GROUNDS, 120,
                     me.yeonjae.ovlo.domain.office.model.InquiryRejectionReason.NO_ELIGIBLE_NOTICES);
+            metrics.llmCall("answer", "claude-sonnet-5-5", "ok", 100, 20, 250);
+            metrics.llmCall("answer", "PRIVATE_SENTINEL", "ok", 100, 20, 250);
+            registry.counter("ovlo.office.llm.tokens", "purpose", "answer", "model", "claude-sonnet-5-5", "direction", "input", "member_id", "PRIVATE_SENTINEL").increment();
             registry.counter("ovlo.office.inquiry", "outcome", "NO_GROUNDS", "rejection_reason", "PRIVATE_SENTINEL").increment();
             registry.counter("ovlo.office.inquiry", "outcome", "ANSWERED", "rejection_reason", "NONE",
                     "office_id", "PRIVATE_SENTINEL").increment();
@@ -43,7 +46,7 @@ class SearchMetricsExportConfigTest {
             registry.counter("ovlo.office.search.completed", "provider", "POSTGRES", "path", "RANKED",
                     "candidates", "PRESENT", "member_id", "PRIVATE_SENTINEL").increment();
             registry.counter("ovlo.office.inquiry.retrieval", "query_kind", "PRIVATE_SENTINEL", "result", "PRESENT").increment();
-            assertThat(registry.getMeters()).hasSize(38);
+            assertThat(registry.getMeters()).hasSize(43);
             String body = null;
             ExportMetricsServiceRequest payload = null;
             for (int i=0; i<20; i++) {
@@ -56,17 +59,21 @@ class SearchMetricsExportConfigTest {
             }
             assertThat(body).isNotNull().contains("ovlo.office.search.completed", "ovlo.office.inquiry.retrieval", "synthetic-pod",
                             "NO_ELIGIBLE_NOTICES")
-                    .doesNotContain("forbidden.counter", "PRIVATE_SENTINEL", "long_body", "ovlo.office.inquiry.latency", "traceId", "spanId", "trace_id", "span_id");
+                    .contains("ovlo.office.llm.tokens", "ovlo.office.inquiry.latency")
+                    .doesNotContain("forbidden.counter", "PRIVATE_SENTINEL", "long_body", "traceId", "spanId", "trace_id", "span_id");
             assertThat(payload).isNotNull();
             var exported = payload.getResourceMetricsList().stream()
                     .flatMap(r -> r.getScopeMetricsList().stream()).flatMap(s -> s.getMetricsList().stream()).toList();
             assertThat(exported).isNotEmpty().allSatisfy(metric -> {
                 assertThat(metric.getName()).isIn("ovlo.office.search.completed", "ovlo.office.inquiry.retrieval",
-                        "ovlo.office.inquiry");
-                assertThat(metric.hasSum()).isTrue();
-                assertThat(metric.getSum().getIsMonotonic()).isTrue();
-                assertThat(metric.getSum().getDataPointsList()).isNotEmpty().allSatisfy(point ->
-                        assertThat(point.getExemplarsList()).isEmpty());
+                        "ovlo.office.inquiry", "ovlo.office.inquiry.latency", "ovlo.office.llm.calls", "ovlo.office.llm.tokens", "ovlo.office.llm.latency");
+                if (metric.hasSum()) {
+                    assertThat(metric.getSum().getIsMonotonic()).isTrue();
+                    assertThat(metric.getSum().getDataPointsList()).isNotEmpty().allSatisfy(point -> assertThat(point.getExemplarsList()).isEmpty());
+                } else {
+                    assertThat(metric.hasHistogram()).isTrue();
+                    assertThat(metric.getHistogram().getDataPointsList()).isNotEmpty().allSatisfy(point -> assertThat(point.getExemplarsList()).isEmpty());
+                }
             });
         } finally { registry.close(); server.stop(0); }
     }
@@ -127,7 +134,9 @@ class SearchMetricsExportConfigTest {
         assertThat(SearchMetricsExportConfig.allowed(inquiryId(Meter.Type.TIMER, "outcome", "ANSWERED",
                 "rejection_reason", "NONE"))).isFalse();
         assertThat(SearchMetricsExportConfig.allowed(new Meter.Id("ovlo.office.inquiry.latency",
-                Tags.of("outcome", "ANSWERED"), null, null, Meter.Type.TIMER))).isFalse();
+                Tags.of("outcome", "ANSWERED"), null, null, Meter.Type.TIMER))).isTrue();
+        assertThat(SearchMetricsExportConfig.allowed(new Meter.Id("ovlo.office.inquiry.latency",
+                Tags.of("outcome", "ANSWERED", "office_id", "private"), null, null, Meter.Type.TIMER))).isFalse();
     }
 
     private static Meter.Id inquiryId(Meter.Type type, String... tags) {

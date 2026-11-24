@@ -175,11 +175,14 @@ public class ChatPersistenceAdapter implements LoadChatPort, SaveChatPort, SaveR
     @Override
     @Transactional
     public void markRead(ChatRoomId chatRoomId, MemberId memberId) {
-        var id = new ChatRoomReadMarkerJpaEntity.ReadMarkerId(chatRoomId.value(), memberId.value());
-        var marker = readMarkerRepository.findById(id)
-                .orElse(new ChatRoomReadMarkerJpaEntity(chatRoomId.value(), memberId.value()));
-        marker.setLastReadAt(Instant.now());
-        readMarkerRepository.save(marker);
+        // The parent exists before the first marker. Lock it to serialize concurrent initial
+        // reads on both PostgreSQL and the local H2 profile; locking an absent marker cannot do that.
+        jdbc.queryForObject("SELECT id FROM chat_room WHERE id=? FOR UPDATE",Long.class,chatRoomId.value());
+        var now=java.sql.Timestamp.from(Instant.now());
+        int updated=jdbc.update("UPDATE chat_room_read_marker SET last_read_at=GREATEST(last_read_at,?) WHERE chat_room_id=? AND member_id=?",
+                now,chatRoomId.value(),memberId.value());
+        if(updated==0) jdbc.update("INSERT INTO chat_room_read_marker(chat_room_id,member_id,last_read_at) VALUES(?,?,?)",
+                chatRoomId.value(),memberId.value(),now);
     }
 
     @Override

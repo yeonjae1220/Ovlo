@@ -1,5 +1,10 @@
 # Ovlo 전반 점검 후 개선 결과
 
+> 아래 본문은 최초 구현 시점의 기록이다. 이후 PR [#112](https://github.com/yeonjae1220/Ovlo/pull/112)로
+> 운영 배포·실제 DB 백업의 NAS 도착과 격리 복원을 완료했고,
+> [#113](https://github.com/yeonjae1220/Ovlo/pull/113)으로 배포 지연·HTTP probe 정렬을 완료했다.
+> 현재 원래 6단계 계획의 잔여 작업은 [후속 이행표](project-audit-followup.md)에서 추적한다.
+
 기준일: 2026-11-24 KST. 기준 커밋: `ff02a6c7d8a6a022b902868e86dd4f97e9ac1c70`.
 작업 브랜치: `codex/project-audit-improvements`.
 

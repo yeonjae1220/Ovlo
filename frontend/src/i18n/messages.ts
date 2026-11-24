@@ -24,6 +24,15 @@ export function resolveUiLang(input: string | null | undefined): UiLanguage {
 type Messages = Record<string, string>
 
 const en: Messages = {
+  "report.evidence.title": "Sources and currency of information",
+  "report.evidence.unknownDate": "Reference date not recorded",
+  "report.evidence.missing": "Supporting source links are missing. Check the university’s official guidance before using this information.",
+  "report.evidence.undated": "Sources are listed, but the reference date is unknown. Check the latest official guidance.",
+  "report.evidence.old": "The reference date is old. Check for changes in the official guidance.",
+  "report.evidence.checkSource": "Source links are provided. Their presence does not mean every statement has been verified.",
+  "report.evidence.volatile": "Fees, visas, deadlines and eligibility can change by term and personal circumstances. Confirm them with the university or responsible authority before applying or paying.",
+  "report.evidence.links": "View {count} source links",
+  "univ.detail.dormUnknown": "Dormitory availability not confirmed",
   'profile.photoFormats': 'Profile photo: JPEG or PNG, up to 20 MB. Convert HEIC or WebP before uploading.',
   'board.directory': 'Find boards',
   'board.search': 'Search board names',
@@ -711,6 +720,15 @@ const en: Messages = {
 }
 
 const ko: Messages = {
+  "report.evidence.title": "출처와 정보 기준",
+  "report.evidence.unknownDate": "정보 기준일 미등록",
+  "report.evidence.missing": "근거 출처 링크가 없습니다. 이 정보를 이용하기 전에 대학의 공식 안내를 확인하세요.",
+  "report.evidence.undated": "출처는 있지만 정보 기준일을 확인할 수 없습니다. 최신 공식 안내를 확인하세요.",
+  "report.evidence.old": "정보 기준일이 오래되었습니다. 공식 안내에서 변경 사항을 확인하세요.",
+  "report.evidence.checkSource": "출처 링크가 제공됩니다. 링크가 있다는 이유로 모든 내용이 검증됐다는 뜻은 아닙니다.",
+  "report.evidence.volatile": "비용·비자·마감일·지원 자격은 학기와 개인 상황에 따라 달라질 수 있습니다. 신청·결제 전에 대학 또는 담당 기관에 확인하세요.",
+  "report.evidence.links": "출처 링크 {count}개 보기",
+  "univ.detail.dormUnknown": "기숙사 제공 여부 미확인",
   'profile.photoFormats': '프로필 사진: JPEG·PNG, 최대 20 MB. HEIC·WebP는 변환 후 올려 주세요.',
   'board.directory': '게시판 찾기',
   'board.search': '게시판 이름 검색',
@@ -1368,6 +1386,15 @@ const ko: Messages = {
 }
 
 const ja: Messages = {
+  "report.evidence.title": "出典と情報の基準日",
+  "report.evidence.unknownDate": "情報の基準日は未登録です",
+  "report.evidence.missing": "根拠となる出典リンクがありません。利用前に大学の公式案内をご確認ください。",
+  "report.evidence.undated": "出典はありますが、情報の基準日は不明です。最新の公式案内をご確認ください。",
+  "report.evidence.old": "情報の基準日が古くなっています。公式案内で変更点をご確認ください。",
+  "report.evidence.checkSource": "出典リンクを掲載しています。すべての記述が検証済みであることを意味しません。",
+  "report.evidence.volatile": "費用・ビザ・締切・応募資格は学期や個人の状況によって変わります。申請・支払い前に大学や担当機関へご確認ください。",
+  "report.evidence.links": "出典リンク{count}件を見る",
+  "univ.detail.dormUnknown": "寮の提供状況は未確認です",
   'report.videos.title': '交換留学生の動画',
   'report.videos.note': 'この大学での留学生活を扱ったYouTubeの公開動画へのリンクです。内容はOvloが確認したものではありません。',
   'report.videos.more': 'もっと見る',
@@ -1717,6 +1744,15 @@ const ja: Messages = {
 }
 
 const zh: Messages = {
+  "report.evidence.title": "来源与信息日期",
+  "report.evidence.unknownDate": "未记录信息基准日期",
+  "report.evidence.missing": "缺少依据来源链接。使用此信息前，请查看大学的官方说明。",
+  "report.evidence.undated": "有来源链接，但信息日期不明。请查看最新的官方说明。",
+  "report.evidence.old": "信息日期较早。请通过官方说明确认是否有变化。",
+  "report.evidence.checkSource": "已提供来源链接，但这不代表所有内容均经过核实。",
+  "report.evidence.volatile": "费用、签证、截止日期和申请资格可能因学期和个人情况而变化。申请或付款前，请向大学或主管机构确认。",
+  "report.evidence.links": "查看{count}个来源链接",
+  "univ.detail.dormUnknown": "宿舍供应情况未确认",
   'report.videos.title': '交换生视频',
   'report.videos.note': '以下链接指向介绍该校交换生活的 YouTube 公开视频，内容未经 Ovlo 核实。',
   'report.videos.more': '显示更多',
@@ -2066,6 +2102,15 @@ const zh: Messages = {
 }
 
 const es: Messages = {
+  "report.evidence.title": "Fuentes y fecha de la información",
+  "report.evidence.unknownDate": "Fecha de referencia no registrada",
+  "report.evidence.missing": "Faltan enlaces a las fuentes. Consulte la información oficial de la universidad antes de utilizar estos datos.",
+  "report.evidence.undated": "Hay fuentes, pero se desconoce la fecha de referencia. Consulte la información oficial más reciente.",
+  "report.evidence.old": "La fecha de referencia es antigua. Compruebe los cambios en la información oficial.",
+  "report.evidence.checkSource": "Se incluyen fuentes. Esto no significa que se haya verificado cada afirmación.",
+  "report.evidence.volatile": "Los costes, visados, plazos y requisitos pueden variar según el semestre y su situación. Confírmelos con la universidad o autoridad competente antes de solicitar o pagar.",
+  "report.evidence.links": "Ver {count} enlaces a fuentes",
+  "univ.detail.dormUnknown": "Disponibilidad de residencia sin confirmar",
   'report.videos.title': 'Vídeos de estudiantes de intercambio',
   'report.videos.note': 'Enlaces a vídeos públicos de YouTube sobre estudiar en esta universidad. Ovlo no ha revisado su contenido.',
   'report.videos.more': 'Ver más',
@@ -2415,6 +2460,15 @@ const es: Messages = {
 }
 
 const fr: Messages = {
+  "report.evidence.title": "Sources et date des informations",
+  "report.evidence.unknownDate": "Date de référence non renseignée",
+  "report.evidence.missing": "Les liens vers les sources manquent. Consultez les informations officielles de l’université avant d’utiliser ces données.",
+  "report.evidence.undated": "Des sources sont indiquées, mais leur date de référence est inconnue. Consultez les informations officielles récentes.",
+  "report.evidence.old": "La date de référence est ancienne. Vérifiez les changements dans les informations officielles.",
+  "report.evidence.checkSource": "Des liens sont fournis. Cela ne signifie pas que chaque affirmation a été vérifiée.",
+  "report.evidence.volatile": "Les frais, visas, échéances et conditions peuvent varier selon le semestre et votre situation. Confirmez-les auprès de l’université ou de l’autorité compétente avant toute demande ou tout paiement.",
+  "report.evidence.links": "Voir les {count} liens sources",
+  "univ.detail.dormUnknown": "Disponibilité des résidences non confirmée",
   'report.videos.title': 'Vidéos d’étudiants en échange',
   'report.videos.note': 'Liens vers des vidéos YouTube publiques sur les études dans cette université. Ovlo n’a pas vérifié leur contenu.',
   'report.videos.more': 'Afficher plus',
@@ -2764,6 +2818,15 @@ const fr: Messages = {
 }
 
 const de: Messages = {
+  "report.evidence.title": "Quellen und Informationsstand",
+  "report.evidence.unknownDate": "Kein Informationsstand angegeben",
+  "report.evidence.missing": "Quellenlinks fehlen. Prüfen Sie die offiziellen Angaben der Hochschule, bevor Sie diese Informationen nutzen.",
+  "report.evidence.undated": "Quellen sind angegeben, der Informationsstand ist jedoch unbekannt. Prüfen Sie die aktuellen offiziellen Angaben.",
+  "report.evidence.old": "Der Informationsstand ist veraltet. Prüfen Sie Änderungen in den offiziellen Angaben.",
+  "report.evidence.checkSource": "Quellenlinks sind vorhanden. Dies bedeutet nicht, dass jede Aussage überprüft wurde.",
+  "report.evidence.volatile": "Kosten, Visa, Fristen und Voraussetzungen können je nach Semester und persönlicher Situation abweichen. Bestätigen Sie diese vor einer Bewerbung oder Zahlung bei der Hochschule oder zuständigen Behörde.",
+  "report.evidence.links": "{count} Quellenlinks anzeigen",
+  "univ.detail.dormUnknown": "Wohnheimverfügbarkeit nicht bestätigt",
   'report.videos.title': 'Videos von Austauschstudierenden',
   'report.videos.note': 'Links zu öffentlichen YouTube-Videos über das Studium an dieser Hochschule. Ovlo hat die Inhalte nicht geprüft.',
   'report.videos.more': 'Mehr anzeigen',
@@ -3113,6 +3176,15 @@ const de: Messages = {
 }
 
 const pt: Messages = {
+  "report.evidence.title": "Fontes e data das informações",
+  "report.evidence.unknownDate": "Data de referência não registada",
+  "report.evidence.missing": "Faltam ligações às fontes. Consulte as informações oficiais da universidade antes de usar estes dados.",
+  "report.evidence.undated": "Existem fontes, mas a data de referência é desconhecida. Consulte as informações oficiais mais recentes.",
+  "report.evidence.old": "A data de referência é antiga. Confirme eventuais alterações nas informações oficiais.",
+  "report.evidence.checkSource": "São fornecidas ligações às fontes. Isto não significa que todas as afirmações tenham sido verificadas.",
+  "report.evidence.volatile": "Custos, vistos, prazos e requisitos podem variar conforme o semestre e a sua situação. Confirme-os com a universidade ou a autoridade competente antes de se candidatar ou pagar.",
+  "report.evidence.links": "Ver {count} ligações às fontes",
+  "univ.detail.dormUnknown": "Disponibilidade de residência não confirmada",
   'report.videos.title': 'Vídeos de estudantes de intercâmbio',
   'report.videos.note': 'Links para vídeos públicos do YouTube sobre estudar nesta universidade. A Ovlo não verificou o conteúdo.',
   'report.videos.more': 'Mostrar mais',
@@ -3489,6 +3561,15 @@ const pt: Messages = {
 }
 
 const ru: Messages = {
+  "report.evidence.title": "Источники и актуальность информации",
+  "report.evidence.unknownDate": "Дата актуальности не указана",
+  "report.evidence.missing": "Ссылки на источники отсутствуют. Перед использованием сведений проверьте официальную информацию университета.",
+  "report.evidence.undated": "Источники указаны, но дата актуальности неизвестна. Проверьте свежую официальную информацию.",
+  "report.evidence.old": "Дата актуальности устарела. Проверьте изменения в официальной информации.",
+  "report.evidence.checkSource": "Ссылки на источники предоставлены. Это не означает, что каждое утверждение проверено.",
+  "report.evidence.volatile": "Расходы, визы, сроки и требования могут меняться в зависимости от семестра и вашей ситуации. Уточните их в университете или компетентном органе перед подачей заявки или оплатой.",
+  "report.evidence.links": "Показать ссылки на источники: {count}",
+  "univ.detail.dormUnknown": "Наличие общежития не подтверждено",
   'report.videos.title': 'Видео студентов по обмену',
   'report.videos.note': 'Ссылки на общедоступные видео YouTube об учёбе в этом университете. Ovlo не проверял их содержание.',
   'report.videos.more': 'Показать ещё',
