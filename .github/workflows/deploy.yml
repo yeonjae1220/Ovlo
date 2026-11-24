@@ -77,6 +77,9 @@ jobs:
       - name: Chat authorization and legacy account migration regressions
         run: ./gradlew integrationTest --tests '*ChatAccessIntegrationTest' --tests '*PrivacyBoundaryIntegrationTest' --tests '*LegacyDevelopmentAccountMigrationIntegrationTest' --no-daemon
 
+      - name: Full PostgreSQL and Redis integration regressions
+        run: ./gradlew integrationTest --no-daemon
+
       - name: Notice source approval and migration regressions
         run: ./gradlew integrationTest --tests '*NoticeGovernanceIntegrationTest' --tests '*NoticeSourceMigrationIntegrationTest' --tests '*NoticeRetranslationIntegrationTest' --tests '*NoticeTranslationRecoveryIntegrationTest' --tests '*NoticeTranslationMigrationIntegrationTest' --tests '*NoticeReviewRemainingIssuesIntegrationTest' --tests '*OfficeFullReviewIntegrationTest' --tests '*OfficePrivacyRecoveryIntegrationTest' --tests '*OfficeInFlightAccessIntegrationTest' --tests '*OfficeRetainedAccessIntegrationTest' --tests '*OfficeNoticeApplicabilityIntegrationTest' --tests '*RedisTranslationWorkAdapterIntegrationTest' --tests '*RedisTranslationAdmissionAdapterIntegrationTest' --no-daemon
 
