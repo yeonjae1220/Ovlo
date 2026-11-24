@@ -9,6 +9,8 @@ import type { VideoReview, ExchangeUniversity } from '../../types'
 import { useI18n } from '../../i18n/I18nProvider'
 import { QueryErrorNotice } from '../../components/ui'
 import type { MessageKey } from '../../i18n/messages'
+import { hasReviewAnalysis } from '../../utils/videoReview'
+import VideoLinkSection from './VideoLinkSection'
 
 const C = {
   bg:          'var(--color-bg)',
@@ -137,6 +139,9 @@ export default function ExchangeUniversityDetailPage() {
   const { data: reviewPage, isLoading: reviewLoading } = useExchangeUniversityReviews(univId, direction)
   const { data: aiReport } = useUniversityReportByExchangeUniv(univId || null, reportLang)
   const reviews = reviewPage?.content ?? []
+  // 분석 값이 없는 행은 영상 링크 구역(대표 대학 기준 API)이 보여 준다. 대표 대학에 연결되지 않은 행은 그 API 를 쓸 수 없어 예전 목록에 그대로 둔다.
+  const analyzedReviews = univ?.globalUnivId ? reviews.filter(hasReviewAnalysis) : reviews
+  const showReviewList = analyzedReviews.length > 0 || direction !== undefined
 
   if (univLoading) return <div style={{ padding: 40, color: C.textMuted }}>{t('exch.detail.loading')}</div>
   // 🔴 조회 실패를 아래 not-found 분기가 삼키면 '없다'는 **사실이 아닌 문장**이 뜬다 (GLOBAL-PIT-108).
@@ -160,8 +165,8 @@ export default function ExchangeUniversityDetailPage() {
           <p style={{ margin: '0 0 12px', color: C.textMuted, fontSize: 15 }}>{univ.nameEn}</p>
         )}
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, alignItems: 'center' }}>
-          <Badge text={`${univ.country} · ${univ.city}`} color={C.textMuted} />
-          <Badge text={`${univ.reviewCount} ${t('exch.detail.reviews')}`} color={C.activeText} />
+          <Badge text={[univ.country, univ.city].filter(Boolean).join(' · ')} color={C.textMuted} />
+          <Badge text={`${univ.reviewCount} ${t('exch.reviews')}`} color={C.activeText} />
         </div>
         {univ.website && (
           <a href={univ.website} target="_blank" rel="noopener noreferrer"
@@ -308,36 +313,44 @@ export default function ExchangeUniversityDetailPage() {
         </div>
       )}
 
-      {/* 방향 필터 */}
-      <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 20 }}>
-        {DIRECTION_VALUES.map(f => (
-          <button key={String(f.value)} onClick={() => setDirection(f.value)}
-            style={{
-              padding: '7px 14px', borderRadius: 20, fontSize: 13, cursor: 'pointer',
-              border: direction === f.value ? `2px solid ${C.activeBorder}` : `1px solid ${C.borderLight}`,
-              background: direction === f.value ? C.activeBg : C.card,
-              color: direction === f.value ? C.activeText : C.textMuted,
-              fontWeight: direction === f.value ? 700 : 400,
-            }}>
-            {t(f.key)}
-          </button>
-        ))}
-      </div>
+      <VideoLinkSection globalUnivId={univ.globalUnivId} locale={language} />
 
-      {/* 리뷰 제목 */}
-      <h2 style={{ fontSize: 18, fontWeight: 700, color: C.textPrimary, marginBottom: 16 }}>
-        {t('exch.detail.reviews')} ({reviewPage?.totalElements ?? 0})
-      </h2>
-
-      {reviewLoading && <p style={{ color: C.textMuted }}>{t('common.loading')}</p>}
-      {!reviewLoading && reviews.length === 0 && (
+      {!reviewLoading && !showReviewList && univ.reviewCount === 0 && (
         <p style={{ color: C.textMuted, padding: '20px 0' }}>{t('exch.empty')}</p>
       )}
 
-      {/* 리뷰 목록 */}
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
-        {reviews.map(r => <ReviewCard key={r.id} review={r} univ={univ} />)}
-      </div>
+      {showReviewList && (
+        <>
+          {/* 방향 필터 */}
+          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 20 }}>
+            {DIRECTION_VALUES.map(f => (
+              <button key={String(f.value)} onClick={() => setDirection(f.value)}
+                style={{
+                  padding: '7px 14px', borderRadius: 20, fontSize: 13, cursor: 'pointer',
+                  border: direction === f.value ? `2px solid ${C.activeBorder}` : `1px solid ${C.borderLight}`,
+                  background: direction === f.value ? C.activeBg : C.card,
+                  color: direction === f.value ? C.activeText : C.textMuted,
+                  fontWeight: direction === f.value ? 700 : 400,
+                }}>
+                {t(f.key)}
+              </button>
+            ))}
+          </div>
+
+          <h2 style={{ fontSize: 18, fontWeight: 700, color: C.textPrimary, marginBottom: 16 }}>
+            {t('exch.detail.reviews')} ({analyzedReviews.length})
+          </h2>
+
+          {reviewLoading && <p style={{ color: C.textMuted }}>{t('common.loading')}</p>}
+          {!reviewLoading && analyzedReviews.length === 0 && (
+            <p style={{ color: C.textMuted, padding: '20px 0' }}>{t('exch.empty')}</p>
+          )}
+
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+            {analyzedReviews.map(r => <ReviewCard key={r.id} review={r} univ={univ} />)}
+          </div>
+        </>
+      )}
     </div>
   )
 }

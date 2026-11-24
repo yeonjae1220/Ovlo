@@ -101,7 +101,9 @@ jobs:
         run: node scripts/test-notice-length.cjs
         working-directory: frontend
       - name: Test university video links
-        run: node scripts/test-video-links.cjs
+        run: |
+          node scripts/test-video-links.cjs
+          node scripts/test-exchange-detail-videos.cjs
         working-directory: frontend
       - name: Test legal notices
         run: node scripts/test-legal-notice.cjs
