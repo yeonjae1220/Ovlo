@@ -15,6 +15,12 @@ metadata:
   namespace: ovlo
 spec:
   replicas: 1
+  minReadySeconds: 10
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
   selector:
     matchLabels:
       app: frontend
@@ -23,6 +29,7 @@ spec:
       labels:
         app: frontend
     spec:
+      terminationGracePeriodSeconds: 45
       nodeSelector:
         project2: ovlo
       containers:
@@ -36,6 +43,11 @@ spec:
           # 때마다 GHCR 에 물어봐야 해서, 인터넷이 끊긴 동안 OOMKill 등으로 재시작하면 이미지가
           # 노드에 있는데도 ImagePullBackOff 로 못 뜬다. 라이브 값을 회수했다.
           imagePullPolicy: Never
+          # Allow ingress endpoint updates before Next.js receives SIGTERM.
+          lifecycle:
+            preStop:
+              exec:
+                command: ["sleep", "15"]
           env:
             - name: PORT
               value: "3000"
@@ -48,25 +60,29 @@ spec:
           ports:
             - containerPort: 3000
           # readiness 도 liveness 와 같은 /health/live 다 — /health/ready(백엔드까지 확인)가 아니다.
-          # ① /health/ready 가 부르는 백엔드 /actuator/health/readiness 는 ADMIN 전용이라 401 이다
-          #    (SecurityConfig, 2026-09-25 파드 안에서 실측). 여기에 걸면 새 파드가 영영 Ready 가
-          #    못 돼 롤아웃이 멈춘다.
-          # ② 그게 풀려도 백엔드 readiness 그룹이 db·redis 를 포함하므로, 레플리카 1개인 frontend 에
+          # 백엔드 readiness 그룹은 db·redis 를 포함하므로, 레플리카 1개인 frontend 에
           #    걸면 DB·Redis 순단 하나가 로그인 화면까지 503 으로 만든다. 백엔드 상태는 라우팅이
           #    아니라 모니터링이 볼 일이다.
+          startupProbe:
+            httpGet:
+              path: /health/live
+              port: 3000
+            periodSeconds: 2
+            timeoutSeconds: 2
+            failureThreshold: 30
           readinessProbe:
             httpGet:
               path: /health/live
               port: 3000
-            initialDelaySeconds: 10
-            periodSeconds: 10
+            periodSeconds: 5
+            timeoutSeconds: 2
             failureThreshold: 3
           livenessProbe:
             httpGet:
               path: /health/live
               port: 3000
-            initialDelaySeconds: 30
             periodSeconds: 20
+            timeoutSeconds: 2
             failureThreshold: 3
           # 64Mi 에서는 next-server 가 한도에 닿아 OOMKill 됐다(memory.peak == memory.max).
           # 같은 구성의 TimeManager frontend 는 512Mi 로 올린 뒤 관측 최고치가 약 82Mi 다(2026-09-25).

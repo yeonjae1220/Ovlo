@@ -18,7 +18,13 @@ metadata:
   namespace: ovlo
 spec:
   replicas: 1
-  # strategy 를 일부러 지정하지 않는다(= RollingUpdate). RWO PVC(업로드 미디어)를 쓰지만
+  minReadySeconds: 10
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  # RWO PVC(업로드 미디어)를 쓰지만
   # GLOBAL-PIT-095 에 해당하지 않는다 — 2026-09-07 실측 근거 셋:
   #   ① 이 컨테이너는 데이터 디렉터리를 배타 락하지 않는다(postgres/minio 와 다름).
   #      구·신 파드가 잠시 함께 떠도 서로를 막지 않는다.
@@ -26,8 +32,7 @@ spec:
   #      스케줄러가 이 PVC 를 쓰는 파드를 그 노드 밖에 배치하지 못한다.
   #      따라서 파드 레벨 nodeSelector/affinity 는 같은 제약을 두 벌 적는 것이라 불필요하다.
   #   ③ 실제로 130세대까지 정상 롤아웃됐다.
-  # 단일 레플리카 DB 와 달리 여기서는 RollingUpdate 가 진짜 무중단을 준다.
-  # Recreate 로 바꾸면 배포마다 앱 기동 시간만큼 다운타임이 생긴다.
+  # 새 파드의 HTTP readiness 안정화와 기존 파드의 preStop 유예를 함께 적용한다.
   selector:
     matchLabels:
       app: app
@@ -36,12 +41,17 @@ spec:
       labels:
         app: app
     spec:
+      terminationGracePeriodSeconds: 60
       nodeSelector:
         project2: ovlo
       containers:
         - name: app
           image: ghcr.io/yeonjae1220/ovlo:latest
           imagePullPolicy: Always
+          lifecycle:
+            preStop:
+              exec:
+                command: ["sleep", "15"]
           ports:
             - containerPort: 8080
           env:
@@ -159,6 +169,9 @@ spec:
                 secretKeyRef:
                   name: ovlo-secret
                   key: ANTHROPIC_API_KEY
+                  optional: true # CI preflight + OfficePilotConfigGuard enforce normal/degraded mode.
+            - name: OVLO_OFFICE_ALLOW_DEGRADED
+              value: "false" # CI renders the explicit repository variable into this slot.
             - name: OVLO_LLM_ANSWER_MODEL
               value: "claude-sonnet-5-5"
             - name: OVLO_LLM_MODEL
@@ -175,10 +188,8 @@ spec:
             - name: TRUSTED_PROXY_IPS
               value: "127.0.0.1,::1,10.42.0.0/16"
             # ── 아래는 라이브에서 회수한 값이다 (GLOBAL-PIT-083) ──────────────
-            # 이 앱의 CI 는 `kubectl set image` 형이라 이 매니페스트를 apply 하지 않는다
-            # (GLOBAL-PIT-036). 그래서 여기 적힌 값은 저절로 라이브에 닿지 않고,
-            # 반대로 라이브에만 있던 값은 누군가 수동 apply 하는 순간 조용히 사라진다.
-            # 2026-09-08 실측(`kubectl get deploy -o json`)으로 회수했다.
+            # CI now renders this Deployment with the exact image tag, then diff/apply.
+            # Keep runtime env/probes here so image-only deployment cannot leave drift.
             - name: OTEL_SDK_DISABLED
               value: "false"
             - name: OTEL_EXPORTER_OTLP_ENDPOINT
@@ -198,19 +209,26 @@ spec:
           volumeMounts:
             - name: media-data
               mountPath: /tmp/ovlo-media
+          startupProbe:
+            httpGet:
+              path: /actuator/health/liveness
+              port: 8080
+            periodSeconds: 5
+            timeoutSeconds: 3
+            failureThreshold: 36
           readinessProbe:
             httpGet:
               path: /actuator/health/readiness
               port: 8080
-            initialDelaySeconds: 60
-            periodSeconds: 10
-            failureThreshold: 5
+            periodSeconds: 5
+            timeoutSeconds: 3
+            failureThreshold: 3
           livenessProbe:
             httpGet:
               path: /actuator/health/liveness
               port: 8080
-            initialDelaySeconds: 90
-            periodSeconds: 15
+            periodSeconds: 10
+            timeoutSeconds: 3
             failureThreshold: 3
           resources:
             requests:
