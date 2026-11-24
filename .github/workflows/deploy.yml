@@ -51,6 +51,7 @@ jobs:
       # Includes reaction concurrency, marketplace, office/Redis, catalog/video,
       # privacy and restoration tests in one run; do not weaken individual assertions.
       - name: Full PostgreSQL and Redis integration regressions
+        timeout-minutes: 15
         run: ./gradlew integrationTest --no-daemon
 
       - name: Upload notice retrieval reports

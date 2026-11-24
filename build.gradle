@@ -118,6 +118,15 @@ tasks.register('integrationTest', Test) {
     group = 'verification'
     testClassesDirs = sourceSets.test.output.classesDirs
     classpath = sourceSets.test.runtimeClasspath
+    // Each Testcontainers fixture has its own Spring context. Bound retained
+    // contexts so a complete run does not keep dozens of pools/EMFs alive.
+    maxHeapSize = '1g'
+    systemProperty 'spring.test.context.cache.maxSize', '4'
+    beforeSuite { descriptor ->
+        if (descriptor.className != null) {
+            logger.lifecycle("Integration suite: ${descriptor.className}")
+        }
+    }
     useJUnitPlatform {
         includeTags 'integration'
     }
