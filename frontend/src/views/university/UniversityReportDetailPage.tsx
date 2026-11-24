@@ -8,6 +8,7 @@ import { useUniversityReport, useUniversityReportLanguages } from '../../hooks/u
 import { useI18n } from '../../i18n/I18nProvider'
 import { QueryErrorNotice } from '../../components/ui'
 import VideoLinkSection from './VideoLinkSection'
+import ReportEvidencePanel from './ReportEvidencePanel'
 
 const C = {
   bg:          'var(--color-bg)',
@@ -129,16 +130,9 @@ export default function UniversityReportDetailPage() {
           )}
         </div>
         {report.lang !== lang && <p role="status">{t('univ.detail.languageFallback', { language: LANG_LABEL[report.lang] ?? report.lang })}</p>}
-        {/* 옛 리포트의 '영상 N개 분석'은 실제 원천과 맞지 않아 표시하지 않는다. 출처가 확인된 재생성 리포트만 보여준다. */}
-        {(parsed?.sources?.length || parsed?.as_of) && (
-          <div style={{ marginTop: 10, fontSize: 12, color: C.textDim }}>
-            {[
-              parsed?.sources?.length ? t('univ.detail.sources', { count: parsed.sources.length }) : null,
-              parsed?.as_of ? t('univ.detail.asOf', { date: parsed.as_of }) : null,
-            ].filter(Boolean).join(' · ')}
-          </div>
-        )}
       </div>
+
+      <ReportEvidencePanel content={parsed} />
 
       {/* AI 면책 고지 */}
       <div style={{
@@ -176,8 +170,8 @@ export default function UniversityReportDetailPage() {
           )}
           {parsed.housing && (
             <InfoCard icon="🏠" title={t('univ.detail.dorm')}>
-              <div style={{ fontSize: 13, fontWeight: 600, color: parsed.housing.dorm_available ? C.success : C.danger }}>
-                {parsed.housing.dorm_available ? t('univ.detail.dormAvailable') : t('univ.detail.dormNotAvailable')}
+              <div style={{ fontSize: 13, fontWeight: 600, color: parsed.housing.dorm_available === true ? C.success : C.textSec }}>
+                {parsed.housing.dorm_available === true ? t('univ.detail.dormAvailable') : parsed.housing.dorm_available === false ? t('univ.detail.dormNotAvailable') : t('univ.detail.dormUnknown')}
               </div>
               {parsed.housing.dorm_price && (
                 <div style={{ fontSize: 11, color: C.textMuted, marginTop: 2 }}>{parsed.housing.dorm_price}</div>

@@ -1,5 +1,29 @@
 # 학교 챗봇 검색 최소 계측
 
+## 2026-11-24 전체 개선 후속
+
+기존 검색·저장 결과 집계에 `ovlo.office.inquiry.latency`와 `ovlo.office.llm.calls`,
+`ovlo.office.llm.tokens`, `ovlo.office.llm.latency`를 추가했다. 아래의 기존 검색 계측 설명은 유지한다.
+질문·답변·학생·학교·문의 ID·언어를 새 태그로 보내지 않는다. 실제 OTLP protobuf에서 허용되지 않은
+태그·모델·exemplar가 전송되지 않는지 회귀 검사한다.
+
+- 문의 지연: 저장 완료된 outcome만 구분하며, 시작부터 최종 저장까지의 처리 시간이다.
+- LLM 호출: `purpose`는 answer/inquiry-screen/inquiry-verify/translate/translation-verify/marketplace-translate,
+  `result`는 ok/refused/incomplete/error로 제한한다.
+- 모델: 현재 설정의 opus/sonnet 5-5와 게이트웨이의 `anthropic/claude-*-5.5` 별칭, unknown만 허용한다.
+  모델을 교체할 때 allowlist와 테스트를 함께 검토한다. 임의 모델 문자열은 수집하지 않는다.
+- 토큰은 제공자가 응답한 input/output 사용량이며, **청구 금액이 아니다**. 실패 후 사용량을 받지 못했거나
+  전송 전에 프로세스가 종료된 경우 누락될 수 있다. 통화별 실제 비용은 제공자 청구와 대조한다.
+- 타이머의 count/sum으로 호출 수와 평균 지연을 비교한다. 이 변경만으로 p95나 서비스 전체 저장 성공률이
+  생겼다고 해석하지 않는다. 실제 요청이 없어서 시계열이 없는 상태도 0회와 구분한다.
+
+운영 Collector에서는 `app_` 접두사와 `service_name="ovlo-search-metrics"`를 사용한다.
+`sum(increase(app_ovlo_office_llm_tokens_total{service_name="ovlo-search-metrics"}[1h])) by (purpose,model,direction)`로
+사용량을, `app_ovlo_office_llm_calls_total`로 실패·불완전 응답을 관찰한다.
+문의의 정상 저장 결과는 기존 `app_ovlo_office_inquiry_total`, HTTP 오류는 기존 ingress 관측과 함께 본다.
+채팅 재연결은 실제 소켓 단절을 넣은 격리 브라우저 검사로 확인했다. 운영 브라우저별 복구율을 수집하는
+새 클라이언트 추적 시스템이나 외부 수신자에게 보내는 알림은 추가하지 않는다.
+
 [위키 검토 절차 OV-FEAT-017](https://github.com/yeonjae1220/llm-wiki/blob/b41cd3c5a771dabc36777ae8afbd0612a06f6b84/Projects/Ovlo/features/office-search-review-procedure.md)의 미구현 항목을
 `origin/main@e600eb4`와 대조했다. S-04·S-05는 보류 상태로 유지하고, 조사할 검색 경로와 후속 질문의 후보 유무만 먼저 관측한다.
 계획 §1 숫자는 재조회하지 않았다. 운영 질문 표본 수집, 검색 보정, 검색어 재작성, 추가 LLM 호출은 수행하지 않는다.

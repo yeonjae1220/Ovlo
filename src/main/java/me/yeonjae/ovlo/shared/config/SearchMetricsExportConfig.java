@@ -21,7 +21,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-/** Only the anonymous retrieval counters and the saved-outcome counter are pushed to the internal collector. */
+/** Only explicitly allowlisted anonymous aggregates are pushed to the internal collector. */
 @Configuration(proxyBeanMethods = false)
 @ConditionalOnProperty(name = "ovlo.search.metrics.export.enabled", havingValue = "true")
 public class SearchMetricsExportConfig {
@@ -36,6 +36,10 @@ public class SearchMetricsExportConfig {
             "outcome", names(InquiryOutcome.values()),
             "rejection_reason", Stream.concat(Stream.of(OfficeMetrics.NO_REJECTION_REASON),
                     names(InquiryRejectionReason.values()).stream()).collect(Collectors.toUnmodifiableSet()));
+    private static final Set<String> LLM_PURPOSES = Set.of("answer", "inquiry-screen", "inquiry-verify", "translate", "translation-verify", "marketplace-translate");
+    // Configured model names are not free-form export dimensions. New models require an explicit review.
+    private static final Set<String> LLM_MODELS = Set.of("claude-opus-5-5", "claude-sonnet-5-5",
+            "anthropic/claude-opus-5.5", "anthropic/claude-sonnet-5.5", "unknown");
 
     private static Set<String> names(Enum<?>[] values) {
         return Arrays.stream(values).map(Enum::name).collect(Collectors.toUnmodifiableSet());
@@ -67,11 +71,19 @@ public class SearchMetricsExportConfig {
     }
 
     static boolean allowed(Meter.Id id) {
-        if (id.getType() != Meter.Type.COUNTER) return false;
+        Meter.Type expectedType = switch (id.getName()) {
+            case "ovlo.office.inquiry.latency", "ovlo.office.llm.latency" -> Meter.Type.TIMER;
+            default -> Meter.Type.COUNTER;
+        };
+        if (id.getType() != expectedType) return false;
         Map<String, Set<String>> tags = switch (id.getName()) {
             case "ovlo.office.search.completed" -> SEARCH_TAGS;
             case "ovlo.office.inquiry.retrieval" -> RETRIEVAL_TAGS;
             case "ovlo.office.inquiry" -> INQUIRY_TAGS;
+            case "ovlo.office.inquiry.latency" -> Map.of("outcome", names(InquiryOutcome.values()));
+            case "ovlo.office.llm.calls" -> Map.of("purpose", LLM_PURPOSES, "model", LLM_MODELS, "result", Set.of("ok", "refused", "incomplete", "error"));
+            case "ovlo.office.llm.tokens" -> Map.of("purpose", LLM_PURPOSES, "model", LLM_MODELS, "direction", Set.of("input", "output"));
+            case "ovlo.office.llm.latency" -> Map.of("purpose", LLM_PURPOSES, "model", LLM_MODELS);
             default -> Map.of();
         };
         return !tags.isEmpty() && id.getTags().size() == tags.size()

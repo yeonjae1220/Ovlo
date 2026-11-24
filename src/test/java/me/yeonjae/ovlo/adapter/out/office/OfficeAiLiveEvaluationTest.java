@@ -28,11 +28,12 @@ class OfficeAiLiveEvaluationTest {
     static final List<Map<String,Object>> RESULTS=new ArrayList<>();
     static final AtomicLong IDS=new AtomicLong(100);
     static AnthropicLlmAdapter llm;
+    static final SimpleMeterRegistry LIVE_METRICS=new SimpleMeterRegistry();
     record Case(String name, String question, NoticeLang lang, InquiryOutcome expected, String previousQuestion) {
         public String toString() { return name; }
     }
     @BeforeAll static void setup() {
-        llm=new AnthropicLlmAdapter(new OfficeMetrics(new SimpleMeterRegistry()),System.getenv("ANTHROPIC_API_KEY"),
+        llm=new AnthropicLlmAdapter(new OfficeMetrics(LIVE_METRICS),System.getenv("ANTHROPIC_API_KEY"),
             System.getenv().getOrDefault("OVLO_LLM_BASE_URL","https://api.bizrouter.ai"),
             "claude-opus-5-5","medium",2048,90,false,"claude-sonnet-5-5");
     }
@@ -104,6 +105,12 @@ class OfficeAiLiveEvaluationTest {
         } else { assertThat(result.answerText()).isNull(); assertThat(result.canEscalate()).isTrue(); }
         verify(lease).complete(); verify(lease).close();
     }
+    /** Four synthetic cases, at most screen + answer + verify each; adapter retries are disabled. */
+    @Test void boundedAuditSample() {
+        cases().filter(c -> Set.of("ko-date","en-location","unknown-school-question","prompt-extraction").contains(c.name()))
+                .forEach(this::evaluatesCompleteDecisionPipeline);
+        assertThat(LIVE_METRICS.find("ovlo.office.llm.calls").counters().stream().mapToDouble(io.micrometer.core.instrument.Counter::count).sum()).isLessThanOrEqualTo(12);
+    }
     @Test void independentVerifierRejectsValidLookingFalseCitationAndMaliciousNotice() {
         var request=new AnswerGenerationPort.Request("When is dormitory check-in?",NoticeLang.EN,
             List.of(new AnswerGenerationPort.Candidate(1,1L,"Dormitory","Check-in is November 20, 2026, from 14:00 to 17:00.",null)));
@@ -165,5 +172,9 @@ class OfficeAiLiveEvaluationTest {
     @AfterAll static void evidence() throws Exception {
         Path path=Path.of("build/reports/live-ai/results.json");Files.createDirectories(path.getParent());
         Files.writeString(path,tools.jackson.databind.json.JsonMapper.builder().build().writerWithDefaultPrettyPrinter().writeValueAsString(RESULTS));
+        var usage=LIVE_METRICS.getMeters().stream().filter(m->m.getId().getName().startsWith("ovlo.office.llm."))
+                .map(m->Map.of("name",m.getId().getName(),"tags",m.getId().getTags().stream().collect(java.util.stream.Collectors.toMap(io.micrometer.core.instrument.Tag::getKey,io.micrometer.core.instrument.Tag::getValue)),
+                        "measurements",java.util.stream.StreamSupport.stream(m.measure().spliterator(),false).map(v->Map.of("statistic",v.getStatistic().name(),"value",v.getValue())).toList())).toList();
+        Files.writeString(path.resolveSibling("usage.json"),tools.jackson.databind.json.JsonMapper.builder().build().writerWithDefaultPrettyPrinter().writeValueAsString(usage));
     }
 }
