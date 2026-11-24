@@ -14,17 +14,22 @@ import me.yeonjae.ovlo.domain.office.exception.PartnerException;
 import me.yeonjae.ovlo.domain.post.exception.PostException;
 import me.yeonjae.ovlo.domain.university.exception.UniversityException;
 import me.yeonjae.ovlo.domain.verification.exception.VerificationException;
+import jakarta.validation.ConstraintViolation;
+import jakarta.validation.ConstraintViolationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.HandlerMethodValidationException;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.HashMap;
@@ -193,6 +198,19 @@ public class GlobalExceptionHandler {
         return domain + "_" + errorType.name();
     }
 
+    private static String clientErrorCode(HttpStatusCode status) {
+        return switch (status.value()) {
+            case 404 -> "NOT_FOUND";
+            case 405 -> "METHOD_NOT_ALLOWED";
+            default -> "REQUEST_ERROR";
+        };
+    }
+
+    private static String clientErrorMessage(HttpStatusCode status) {
+        HttpStatus resolved = HttpStatus.resolve(status.value());
+        return resolved != null ? resolved.getReasonPhrase() : "Bad request";
+    }
+
     @ExceptionHandler(TooManyRequestsException.class)
     public ResponseEntity<ErrorResponse> handleTooManyRequests(TooManyRequestsException ex) {
         return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS)
@@ -256,8 +274,52 @@ public class GlobalExceptionHandler {
                         : ErrorResponse.ofFields("VALIDATION_ERROR", errors));
     }
 
+    /**
+     * class-level {@code @Validated} 컨트롤러의 메서드 제약(@Min·@Max 등) 위반 → 400.
+     * 이 경로는 AOP 가 검증해 {@link HandlerMethodValidationException} 이 아니라 이 예외가 나온다(GLOBAL-PIT-275).
+     * 필드 이름은 경로의 마지막 마디(인자 이름)만 내보내 메서드·클래스 이름을 숨긴다.
+     */
+    @ExceptionHandler(ConstraintViolationException.class)
+    public ResponseEntity<ErrorResponse> handleConstraintViolation(ConstraintViolationException ex) {
+        Map<String, String> errors = new HashMap<>();
+        for (ConstraintViolation<?> violation : ex.getConstraintViolations()) {
+            String path = violation.getPropertyPath().toString();
+            errors.put(path.substring(path.lastIndexOf('.') + 1), violation.getMessage());
+        }
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(errors.isEmpty()
+                        ? ErrorResponse.of("VALIDATION_ERROR", "요청 값이 올바르지 않습니다.")
+                        : ErrorResponse.ofFields("VALIDATION_ERROR", errors));
+    }
+
+    /** 숫자 자리에 문자가 오는 등 인자 타입 불일치 → 400. 변환 예외의 내부 메시지는 내보내지 않는다. */
+    @ExceptionHandler(MethodArgumentTypeMismatchException.class)
+    public ResponseEntity<ErrorResponse> handleTypeMismatch(MethodArgumentTypeMismatchException ex) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(ErrorResponse.of("INVALID_ARGUMENT", "유효하지 않은 값입니다: " + ex.getName()));
+    }
+
+    /**
+     * 읽을 수 없는 요청 본문(깨진 JSON 등) → 400. 파서 메시지는 응답에 내보내지 않는다.
+     * 역직렬화 중 서버 쪽 결함도 이 예외로 감싸여 오므로 원인은 로그에 남긴다.
+     */
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    public ResponseEntity<ErrorResponse> handleUnreadableBody(HttpMessageNotReadableException ex) {
+        log.warn("Unreadable request body: {}", ex.getMostSpecificCause().toString());
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(ErrorResponse.of("MALFORMED_REQUEST", "요청 본문을 읽을 수 없습니다."));
+    }
+
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponse> handleGeneral(Exception ex) {
+        // Spring MVC 가 상태 코드를 정해 둔 예외(없는 경로 404, 메서드 405, 필수 인자 누락 400, 미지원 Content-Type 415 등)는
+        // 그 코드를 그대로 쓴다 — 여기서 500 으로 뭉개면 잘못된 요청이 서버 장애로 보인다.
+        if (ex instanceof org.springframework.web.ErrorResponse mvcError && mvcError.getStatusCode().is4xxClientError()) {
+            HttpStatusCode status = mvcError.getStatusCode();
+            log.debug("Client error {} [{}]: {}", status.value(), ex.getClass().getSimpleName(), ex.getMessage());
+            return ResponseEntity.status(status).headers(mvcError.getHeaders())
+                    .body(ErrorResponse.of(clientErrorCode(status), clientErrorMessage(status)));
+        }
         log.error("Unhandled exception [{}]: {}", ex.getClass().getName(), ex.getMessage(), ex);
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(ErrorResponse.of("INTERNAL_ERROR", "Internal server error"));
