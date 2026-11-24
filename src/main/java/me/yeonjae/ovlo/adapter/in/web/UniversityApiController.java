@@ -11,7 +11,9 @@ import me.yeonjae.ovlo.application.dto.result.PageResult;
 import me.yeonjae.ovlo.application.dto.result.UniversityCatalogCountryResult;
 import me.yeonjae.ovlo.application.dto.result.UniversityCatalogResult;
 import me.yeonjae.ovlo.application.dto.result.UniversityResult;
+import me.yeonjae.ovlo.application.dto.result.VideoLinkResult;
 import me.yeonjae.ovlo.application.port.in.university.GetUniversityQuery;
+import me.yeonjae.ovlo.application.port.in.university.GetUniversityVideoLinksQuery;
 import me.yeonjae.ovlo.application.port.in.university.SearchUniversityCatalogQuery;
 import me.yeonjae.ovlo.application.port.in.university.SearchUniversityQuery;
 import me.yeonjae.ovlo.domain.university.model.UniversityId;
@@ -37,6 +39,7 @@ public class UniversityApiController {
     private final SearchUniversityQuery searchUniversityQuery;
     private final GetUniversityQuery getUniversityQuery;
     private final SearchUniversityCatalogQuery searchCatalogQuery;
+    private final GetUniversityVideoLinksQuery videoLinksQuery;
     private final RateLimiterService rateLimiterService;
     private final ClientIpResolver clientIpResolver;
 
@@ -44,12 +47,14 @@ public class UniversityApiController {
             SearchUniversityQuery searchUniversityQuery,
             GetUniversityQuery getUniversityQuery,
             SearchUniversityCatalogQuery searchCatalogQuery,
+            GetUniversityVideoLinksQuery videoLinksQuery,
             RateLimiterService rateLimiterService,
             ClientIpResolver clientIpResolver
     ) {
         this.searchUniversityQuery = searchUniversityQuery;
         this.getUniversityQuery = getUniversityQuery;
         this.searchCatalogQuery = searchCatalogQuery;
+        this.videoLinksQuery = videoLinksQuery;
         this.rateLimiterService = rateLimiterService;
         this.clientIpResolver = clientIpResolver;
     }
@@ -109,5 +114,21 @@ public class UniversityApiController {
         rateLimiterService.checkSearchRate(clientIpResolver.resolve(httpRequest));
         UniversityResult result = getUniversityQuery.getById(new UniversityId(id));
         return ResponseEntity.ok(result);
+    }
+
+    @Operation(
+            summary = "대학의 교환학생 영상 링크",
+            description = "그 대학에 연결된 유튜브 영상의 링크·제목·채널·게시일(최신순). "
+                    + "원본에서 사라진 영상은 제외한다. id 는 global_universities.id"
+    )
+    @GetMapping("/{id}/video-links")
+    public ResponseEntity<PageResult<VideoLinkResult>> getVideoLinks(
+            @PathVariable @Min(1) long id,
+            @RequestParam(defaultValue = "0") @Min(0) @Max(1000) int page,
+            @RequestParam(defaultValue = "12") @Min(1) @Max(50) int size,
+            HttpServletRequest httpRequest
+    ) {
+        rateLimiterService.checkSearchRate(clientIpResolver.resolve(httpRequest));
+        return ResponseEntity.ok(videoLinksQuery.getVideoLinks(id, page, size));
     }
 }

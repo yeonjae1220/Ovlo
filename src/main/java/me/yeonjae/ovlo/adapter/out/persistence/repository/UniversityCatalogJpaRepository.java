@@ -41,14 +41,15 @@ public interface UniversityCatalogJpaRepository extends JpaRepository<GlobalUniv
                    FROM exchange_universities e
                    WHERE e.global_univ_id = gu.id
                    ORDER BY EXISTS (SELECT 1 FROM exchange_video_reviews v
-                                    WHERE v.university_id = e.id) DESC,
+                                    WHERE v.university_id = e.id
+                                      AND v.unavailable_since IS NULL) DESC,
                             (NULLIF(btrim(e.name_ko), '') IS NOT NULL) DESC,
                             e.id
                    LIMIT 1
             ) eu ON true
             WHERE gu.canonical_id IS NULL
               AND gu.inactive_reason IS NULL
-              AND (r.id IS NOT NULL OR EXISTS (SELECT 1 FROM exchange_video_reviews v WHERE v.university_id=eu.id))
+              AND (r.id IS NOT NULL OR EXISTS (SELECT 1 FROM exchange_video_reviews v WHERE v.university_id=eu.id AND v.unavailable_since IS NULL))
             UNION ALL
             SELECT NULL              AS global_univ_id,
                    eu.id             AS exchange_univ_id,
@@ -60,7 +61,7 @@ public interface UniversityCatalogJpaRepository extends JpaRepository<GlobalUniv
                    eu.city           AS city
             FROM exchange_universities eu
             WHERE eu.global_univ_id IS NULL
-              AND EXISTS (SELECT 1 FROM exchange_video_reviews v WHERE v.university_id=eu.id)
+              AND EXISTS (SELECT 1 FROM exchange_video_reviews v WHERE v.university_id=eu.id AND v.unavailable_since IS NULL)
             """;
 
     /**

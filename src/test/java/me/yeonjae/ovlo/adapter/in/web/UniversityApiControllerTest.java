@@ -1,6 +1,9 @@
 package me.yeonjae.ovlo.adapter.in.web;
 
+import me.yeonjae.ovlo.application.dto.result.PageResult;
+import me.yeonjae.ovlo.application.dto.result.VideoLinkResult;
 import me.yeonjae.ovlo.application.port.in.university.GetUniversityQuery;
+import me.yeonjae.ovlo.application.port.in.university.GetUniversityVideoLinksQuery;
 import me.yeonjae.ovlo.application.port.in.university.SearchUniversityCatalogQuery;
 import me.yeonjae.ovlo.application.port.in.university.SearchUniversityQuery;
 import me.yeonjae.ovlo.domain.university.model.UniversityId;
@@ -38,6 +41,7 @@ class UniversityApiControllerTest {
     @Mock private SearchUniversityQuery searchUniversityQuery;
     @Mock private GetUniversityQuery getUniversityQuery;
     @Mock private SearchUniversityCatalogQuery searchCatalogQuery;
+    @Mock private GetUniversityVideoLinksQuery videoLinksQuery;
     @Mock private RateLimiterService rateLimiter;
     @Mock private ClientIpResolver clientIpResolver;
 
@@ -46,7 +50,8 @@ class UniversityApiControllerTest {
     @BeforeEach
     void setUp() {
         UniversityApiController controller = new UniversityApiController(
-                searchUniversityQuery, getUniversityQuery, searchCatalogQuery, rateLimiter, clientIpResolver);
+                searchUniversityQuery, getUniversityQuery, searchCatalogQuery, videoLinksQuery,
+                rateLimiter, clientIpResolver);
         mockMvc = MockMvcBuilders.standaloneSetup(controller)
                 .setControllerAdvice(new GlobalExceptionHandler())
                 .build();
@@ -109,5 +114,39 @@ class UniversityApiControllerTest {
                 .andExpect(status().isOk());
 
         verify(rateLimiter).checkSearchRate(CLIENT_IP);
+    }
+
+    @Test
+    @DisplayName("영상 링크: rate limit 체크 후 링크·제목·채널·게시일만 내려준다")
+    void getVideoLinks_checksSearchRateAndReturnsLeanFields() throws Exception {
+        given(clientIpResolver.resolve(any())).willReturn(CLIENT_IP);
+        given(videoLinksQuery.getVideoLinks(5L, 0, 12)).willReturn(PageResult.of(
+                java.util.List.of(new VideoLinkResult(1L, "https://www.youtube.com/watch?v=abcdefghijk",
+                        "와세다 교환학생 후기", "국제교류팀", java.time.OffsetDateTime.parse("2026-03-01T00:00:00Z"))),
+                1, 0, 12));
+
+        mockMvc.perform(get("/api/v1/universities/5/video-links"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.totalElements").value(1))
+                .andExpect(jsonPath("$.content[0].youtubeUrl").value("https://www.youtube.com/watch?v=abcdefghijk"))
+                .andExpect(jsonPath("$.content[0].title").value("와세다 교환학생 후기"))
+                .andExpect(jsonPath("$.content[0].channel").value("국제교류팀"))
+                .andExpect(jsonPath("$.content[0].summary").doesNotExist())
+                .andExpect(jsonPath("$.content[0].overallRating").doesNotExist());
+
+        verify(rateLimiter).checkSearchRate(CLIENT_IP);
+    }
+
+    @Test
+    @DisplayName("영상 링크: rate limit 초과 → 429, 조회 미호출")
+    void getVideoLinks_rateLimited_returns429() throws Exception {
+        given(clientIpResolver.resolve(any())).willReturn(CLIENT_IP);
+        willThrow(new TooManyRequestsException("요청이 너무 많습니다"))
+                .given(rateLimiter).checkSearchRate(CLIENT_IP);
+
+        mockMvc.perform(get("/api/v1/universities/5/video-links"))
+                .andExpect(status().isTooManyRequests());
+
+        verify(videoLinksQuery, never()).getVideoLinks(any(Long.class), any(Integer.class), any(Integer.class));
     }
 }

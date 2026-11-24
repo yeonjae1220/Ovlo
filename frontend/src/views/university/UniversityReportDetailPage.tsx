@@ -7,6 +7,7 @@ import { useRouter } from 'next/navigation'
 import { useUniversityReport, useUniversityReportLanguages } from '../../hooks/useUniversity'
 import { useI18n } from '../../i18n/I18nProvider'
 import { QueryErrorNotice } from '../../components/ui'
+import VideoLinkSection from './VideoLinkSection'
 
 const C = {
   bg:          'var(--color-bg)',
@@ -273,6 +274,10 @@ export default function UniversityReportDetailPage() {
           </ReactMarkdown>
         </div>
       )}
+
+      <div style={{ marginTop: 24 }}>
+        <VideoLinkSection globalUnivId={report.globalUnivId} locale={lang} />
+      </div>
     </div>
   )
 }

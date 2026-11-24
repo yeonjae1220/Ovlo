@@ -139,6 +139,14 @@ class UniversityCatalogPersistenceAdapterIntegrationTest {
         assertThat(jdbc.queryForObject("SELECT country FROM exchange_universities WHERE id=?", String.class, japaneseExchange)).isEqualTo("Japan");
     }
 
+    @Test void unavailableVideosDoNotCountAsPublishedContent() {
+        Long exchange = insertExchange(emptyGlobalId, "숨겨진 영상", "Hidden video university", "France", "FR", "Paris");
+        insertReview(exchange, "https://youtu.be/hidden", 0);
+        jdbc.update("UPDATE exchange_video_reviews SET unavailable_since=now() WHERE university_id IN (?,?)", exchange, orphanExchangeId);
+        assertThat(search(null, null)).noneMatch(row -> emptyGlobalId.equals(row.globalUnivId())
+                || orphanExchangeId.equals(row.exchangeUnivId()));
+    }
+
     @Test
     @DisplayName("리포트+후기 대학은 두 플래그가 모두 true이고 리뷰 집계가 채워진다")
     void bothFlagsAndAggregation() {

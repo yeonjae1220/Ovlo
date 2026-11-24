@@ -270,6 +270,15 @@ export interface UniversityCatalogItem {
   reviewCount: number
 }
 
+/** 대학에 연결된 유튜브 영상 링크 — 분석 값 없이 링크·제목·채널·게시일만. */
+export interface VideoLink {
+  id: number
+  youtubeUrl: string
+  title?: string | null
+  channel?: string | null
+  publishedAt?: string | null
+}
+
 export interface VideoReview {
   id: number
   youtubeUrl: string
