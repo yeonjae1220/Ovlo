@@ -79,6 +79,14 @@ for (const lang of TERMS_LANGUAGES) {
   assert.match(JSON.stringify(doc), /24/, `${lang} terms: 24-hour review`)
 }
 
+// 약관 8조가 말하는 제휴 표시는 화면의 제휴 배지 문구와 같은 단어여야 한다
+const { messages } = load('src/i18n/messages.ts')
+for (const lang of TERMS_LANGUAGES) {
+  const badge = messages[lang]['student.arrival.disclosure'].split(/\s*[·・]\s*/)[0]
+  const partnerSection = JSON.stringify(legal.TERMS_OF_SERVICE[lang].sections[7])
+  assert.ok(badge && partnerSection.includes(badge), `${lang}: terms section 8 uses the badge word "${badge}"`)
+}
+
 // 두 언어는 같은 버전·시행일·구성이어야 한다
 for (const docs of [legal.TERMS_OF_SERVICE, legal.PRIVACY_POLICY]) {
   assert.equal(docs.ko.version, docs.en.version)

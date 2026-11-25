@@ -1510,6 +1510,16 @@ const ko: Messages = {
 }
 
 const ja: Messages = {
+  "partner.category.SIM": "SIMカード",
+  "partner.category.INSURANCE": "保険",
+  "partner.category.HOUSING": "住まい",
+  "partner.category.PICKUP": "空港送迎",
+  "student.arrival.title": "渡航前の準備",
+  "student.arrival.subtitle": "国際交流担当部署が表示を選んだ生活立ち上げサービスです。Ovlo が手数料を受け取る場合があります。",
+  "student.arrival.link": "渡航準備",
+  "student.arrival.empty": "国際交流担当部署はまだ提携サービスを有効にしていません。",
+  "student.arrival.disclosure": "提携・Ovlo が手数料を受け取る場合があります",
+  "student.arrival.open": "開く",
   "legal.versionLine": "バージョン {version}・施行日 {date}",
   "legal.draftNotice": "この文書は準備中の草案です。公開連絡先と外部 AI 処理事業者・保存方針を確認したうえで確定します。",
   "legal.viewPrivacy": "プライバシーポリシーを見る",
@@ -1930,6 +1940,16 @@ const ja: Messages = {
 }
 
 const zh: Messages = {
+  "partner.category.SIM": "电话卡",
+  "partner.category.INSURANCE": "保险",
+  "partner.category.HOUSING": "住宿",
+  "partner.category.PICKUP": "接机",
+  "student.arrival.title": "抵达前准备",
+  "student.arrival.subtitle": "这些是国际处选择向你展示的安顿服务。Ovlo 可能会获得佣金。",
+  "student.arrival.link": "抵达准备",
+  "student.arrival.empty": "国际处尚未开启任何合作服务。",
+  "student.arrival.disclosure": "合作 · Ovlo 可能会获得佣金",
+  "student.arrival.open": "打开",
   "legal.versionLine": "版本 {version} · 生效日期 {date}",
   "legal.draftNotice": "本文件是正在准备中的草案。公开联系方式以及外部 AI 处理服务商和保存政策确认后才会定稿。",
   "legal.viewPrivacy": "查看隐私政策",
@@ -2350,6 +2370,16 @@ const zh: Messages = {
 }
 
 const es: Messages = {
+  "partner.category.SIM": "Tarjeta SIM",
+  "partner.category.INSURANCE": "Seguro",
+  "partner.category.HOUSING": "Alojamiento",
+  "partner.category.PICKUP": "Recogida en el aeropuerto",
+  "student.arrival.title": "Antes de llegar",
+  "student.arrival.subtitle": "Servicios para instalarte que tu oficina internacional ha decidido mostrar. Ovlo puede recibir una comisión.",
+  "student.arrival.link": "Preparativos de llegada",
+  "student.arrival.empty": "Tu oficina aún no ha activado ningún servicio de colaboración.",
+  "student.arrival.disclosure": "Colaboración · Ovlo puede recibir una comisión",
+  "student.arrival.open": "Abrir",
   "legal.versionLine": "Versión {version} · Vigente desde {date}",
   "legal.draftNotice": "Este documento es un borrador en preparación. Antes de finalizarlo deben confirmarse los datos de contacto públicos y los acuerdos de procesamiento externo con IA y de conservación.",
   "legal.viewPrivacy": "Ver la Política de privacidad",
@@ -2770,6 +2800,16 @@ const es: Messages = {
 }
 
 const fr: Messages = {
+  "partner.category.SIM": "Carte SIM",
+  "partner.category.INSURANCE": "Assurance",
+  "partner.category.HOUSING": "Logement",
+  "partner.category.PICKUP": "Accueil à l’aéroport",
+  "student.arrival.title": "Avant votre arrivée",
+  "student.arrival.subtitle": "Services d’installation que votre service des relations internationales a choisi d’afficher. Ovlo peut percevoir une commission.",
+  "student.arrival.link": "Préparer votre arrivée",
+  "student.arrival.empty": "Votre service n’a encore activé aucun service partenaire.",
+  "student.arrival.disclosure": "Partenaire · Ovlo peut percevoir une commission",
+  "student.arrival.open": "Ouvrir",
   "legal.versionLine": "Version {version} · En vigueur depuis le {date}",
   "legal.draftNotice": "Ce document est un projet en cours de préparation. Les coordonnées publiques ainsi que les modalités de traitement externe par IA et de conservation doivent être confirmées avant sa finalisation.",
   "legal.viewPrivacy": "Voir la politique de confidentialité",
@@ -3190,6 +3230,16 @@ const fr: Messages = {
 }
 
 const de: Messages = {
+  "partner.category.SIM": "SIM-Karte",
+  "partner.category.INSURANCE": "Versicherung",
+  "partner.category.HOUSING": "Unterkunft",
+  "partner.category.PICKUP": "Flughafenabholung",
+  "student.arrival.title": "Vor deiner Ankunft",
+  "student.arrival.subtitle": "Dienste für den Start vor Ort, die dein International Office anzeigen lässt. Ovlo erhält möglicherweise eine Provision.",
+  "student.arrival.link": "Ankunfts-Checkliste",
+  "student.arrival.empty": "Dein International Office hat noch keine Partnerdienste aktiviert.",
+  "student.arrival.disclosure": "Partner · Ovlo erhält möglicherweise eine Provision",
+  "student.arrival.open": "Öffnen",
   "legal.versionLine": "Version {version} · Gültig ab {date}",
   "legal.draftNotice": "Dieses Dokument ist ein Entwurf in Vorbereitung. Öffentliche Kontaktdaten sowie die externe KI-Verarbeitung und die Aufbewahrungsregeln müssen vor der Fertigstellung bestätigt werden.",
   "legal.viewPrivacy": "Datenschutzerklärung ansehen",
@@ -3610,6 +3660,16 @@ const de: Messages = {
 }
 
 const pt: Messages = {
+  "partner.category.SIM": "Chip de celular (SIM)",
+  "partner.category.INSURANCE": "Seguro",
+  "partner.category.HOUSING": "Moradia",
+  "partner.category.PICKUP": "Transfer do aeroporto",
+  "student.arrival.title": "Antes de chegar",
+  "student.arrival.subtitle": "Serviços para a sua instalação que o seu escritório internacional escolheu mostrar. O Ovlo pode receber uma comissão.",
+  "student.arrival.link": "Preparação para a chegada",
+  "student.arrival.empty": "O seu escritório ainda não ativou nenhum serviço de parceiro.",
+  "student.arrival.disclosure": "Parceiro · O Ovlo pode receber uma comissão",
+  "student.arrival.open": "Abrir",
   "legal.versionLine": "Versão {version} · Em vigor desde {date}",
   "legal.draftNotice": "Este documento é um rascunho em preparação. Os contatos públicos e os acordos de processamento externo por IA e de retenção precisam ser confirmados antes da versão final.",
   "legal.viewPrivacy": "Ver a Política de Privacidade",
@@ -4057,6 +4117,16 @@ const pt: Messages = {
 }
 
 const ru: Messages = {
+  "partner.category.SIM": "SIM-карта",
+  "partner.category.INSURANCE": "Страхование",
+  "partner.category.HOUSING": "Жильё",
+  "partner.category.PICKUP": "Встреча в аэропорту",
+  "student.arrival.title": "Перед приездом",
+  "student.arrival.subtitle": "Услуги для обустройства, которые выбрал для показа ваш международный отдел. Ovlo может получать вознаграждение.",
+  "student.arrival.link": "Подготовка к приезду",
+  "student.arrival.empty": "Ваш международный отдел пока не включил партнёрские услуги.",
+  "student.arrival.disclosure": "Партнёр · Ovlo может получать вознаграждение",
+  "student.arrival.open": "Открыть",
   "legal.versionLine": "Версия {version} · Действует с {date}",
   "legal.draftNotice": "Этот документ — черновик в стадии подготовки. Публичные контакты, а также условия внешней обработки с помощью ИИ и хранения данных должны быть подтверждены до его окончательного утверждения.",
   "legal.viewPrivacy": "Политика конфиденциальности",
