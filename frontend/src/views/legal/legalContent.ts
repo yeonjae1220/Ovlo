@@ -1,5 +1,5 @@
 /**
- * 법적 문서 원문. 한국어가 정본이고, 영어와 (이용약관만) 나머지 UI 언어 번역을 둔다.
+ * 법적 문서 원문. 한국어가 정본이고, 영어와 나머지 UI 언어 번역을 둔다(terms/·privacy/).
  * 번역이 없는 언어는 영어를 보여 준다.
  * 문서 버전은 서버에 기록되는 동의 기록과 맞춰야 하므로 바꿀 때 version 과 updatedAt 을 모든 언어에서 같이 올린다.
  *
@@ -7,6 +7,13 @@
  */
 import type { UiLanguage } from '@/i18n/messages'
 import { GOOGLE_PRIVACY_URL, LEGAL_CONTACT_PLACEHOLDER, YOUTUBE_TERMS_URL } from './legalConstants'
+import { PRIVACY_DE } from './privacy/de'
+import { PRIVACY_ES } from './privacy/es'
+import { PRIVACY_FR } from './privacy/fr'
+import { PRIVACY_JA } from './privacy/ja'
+import { PRIVACY_PT } from './privacy/pt'
+import { PRIVACY_RU } from './privacy/ru'
+import { PRIVACY_ZH } from './privacy/zh'
 import { TERMS_DE } from './terms/de'
 import { TERMS_ES } from './terms/es'
 import { TERMS_FR } from './terms/fr'
@@ -222,6 +229,13 @@ export const PRIVACY_POLICY: LegalDocuments = {
       },
     ],
   },
+  ja: PRIVACY_JA,
+  zh: PRIVACY_ZH,
+  es: PRIVACY_ES,
+  fr: PRIVACY_FR,
+  de: PRIVACY_DE,
+  pt: PRIVACY_PT,
+  ru: PRIVACY_RU,
 }
 
 export const TERMS_OF_SERVICE: LegalDocuments = {

@@ -1,4 +1,4 @@
-// 약관·개인정보처리방침에 외부 영상 링크와 YouTube 고지가 ko·en 에 들어 있고, 약관 번역이 정본과 같은 구성이며, 링크가 실제 앵커로 그려지는지 검사한다.
+// 약관·개인정보처리방침에 외부 영상 링크와 YouTube 고지가 들어 있고, 모든 번역이 정본과 같은 구성이며, 링크가 실제 앵커로 그려지는지 검사한다.
 const assert = require('node:assert/strict')
 const fs = require('node:fs')
 const path = require('node:path')
@@ -58,25 +58,32 @@ for (const lang of ['ko', 'en']) {
     doc.sections.forEach((s, i) => assert.ok(s.heading.startsWith(`${i + 1}. `), `${lang} ${doc.title}: ${s.heading}`))
   }
 }
-// 이용약관 번역은 정본(ko)과 같은 버전·시행일·구성·링크이고, 연락처 자리도 그대로 남아 있어야 한다
+// 번역은 정본(ko)과 같은 버전·시행일·구성·링크이고, 연락처 자리도 그대로 남아 있어야 한다
 const { LEGAL_CONTACT_PLACEHOLDER } = legal
 const TERMS_LANGUAGES = ['ko', 'en', 'ja', 'zh', 'es', 'fr', 'de', 'pt', 'ru']
+const countPlaceholders = doc => JSON.stringify(doc).split(LEGAL_CONTACT_PLACEHOLDER).length - 1
+for (const [name, docs] of [['terms', legal.TERMS_OF_SERVICE], ['privacy', legal.PRIVACY_POLICY]]) {
+  for (const lang of TERMS_LANGUAGES) {
+    const doc = docs[lang]
+    assert.ok(doc, `${name} translation exists: ${lang}`)
+    assert.equal(doc.version, docs.ko.version, `${lang} ${name} version`)
+    assert.equal(doc.updatedAt, docs.ko.updatedAt, `${lang} ${name} date`)
+    assert.equal(doc.sections.length, docs.ko.sections.length, `${lang} ${name} section count`)
+    assert.deepEqual(hrefsOf(doc), hrefsOf(docs.ko), `${lang} ${name} links`)
+    doc.sections.forEach((s, i) => {
+      assert.ok(s.heading.startsWith(`${i + 1}. `), `${lang} ${name}: ${s.heading}`)
+      const ko = docs.ko.sections[i]
+      assert.equal(s.paragraphs.length, ko.paragraphs.length, `${lang} ${name} ${i + 1}: paragraphs`)
+      assert.equal((s.bullets ?? []).length, (ko.bullets ?? []).length, `${lang} ${name} ${i + 1}: bullets`)
+    })
+    assert.equal(countPlaceholders(doc), countPlaceholders(docs.ko), `${lang} ${name} contact placeholder`)
+  }
+}
 for (const lang of TERMS_LANGUAGES) {
-  const doc = legal.TERMS_OF_SERVICE[lang]
-  assert.ok(doc, `terms translation exists: ${lang}`)
-  assert.equal(doc.version, legal.TERMS_OF_SERVICE.ko.version, `${lang} terms version`)
-  assert.equal(doc.updatedAt, legal.TERMS_OF_SERVICE.ko.updatedAt, `${lang} terms date`)
-  assert.equal(doc.sections.length, legal.TERMS_OF_SERVICE.ko.sections.length, `${lang} terms section count`)
-  assert.deepEqual(hrefsOf(doc), hrefsOf(legal.TERMS_OF_SERVICE.ko), `${lang} terms links`)
-  doc.sections.forEach((s, i) => {
-    assert.ok(s.heading.startsWith(`${i + 1}. `), `${lang} terms: ${s.heading}`)
-    const ko = legal.TERMS_OF_SERVICE.ko.sections[i]
-    assert.equal(s.paragraphs.length, ko.paragraphs.length, `${lang} terms ${i + 1}: paragraphs`)
-    assert.equal((s.bullets ?? []).length, (ko.bullets ?? []).length, `${lang} terms ${i + 1}: bullets`)
-  })
-  const placeholders = JSON.stringify(doc).split(LEGAL_CONTACT_PLACEHOLDER).length - 1
-  assert.equal(placeholders, JSON.stringify(legal.TERMS_OF_SERVICE.ko).split(LEGAL_CONTACT_PLACEHOLDER).length - 1, `${lang} terms contact placeholder`)
-  assert.match(JSON.stringify(doc), /24/, `${lang} terms: 24-hour review`)
+  assert.match(JSON.stringify(legal.TERMS_OF_SERVICE[lang]), /24/, `${lang} terms: 24-hour review`)
+  // YouTube API 정책 III.A: 처리방침이 API 사용 사실을 밝힌다
+  // 번역은 그 언어의 어순을 따른다(예: Servicios de API de YouTube)
+  assert.match(JSON.stringify(legal.PRIVACY_POLICY[lang]), /YouTube.{0,3}API|API.{0,12}YouTube/, `${lang} privacy states use of YouTube API Services`)
 }
 
 // 약관 8조가 말하는 제휴 표시는 화면의 제휴 배지 문구와 같은 단어여야 한다
@@ -109,9 +116,10 @@ assert.match(anchor[0], /target="_blank"/)
 assert.match(anchor[0], /rel="noopener noreferrer"/)
 // UI 언어의 번역을 고르고, 번역이 없는 문서는 영어로 보여 준다
 assert.ok(html.includes(legal.TERMS_OF_SERVICE.ja.title), 'ja UI shows the ja terms')
-const privacyHtml = renderToStaticMarkup(React.createElement(Page, {
-  documents: legal.PRIVACY_POLICY, related: { href: '/terms', labelKey: 'legal.viewTerms' },
+const untranslated = { ko: legal.PRIVACY_POLICY.ko, en: legal.PRIVACY_POLICY.en }
+const fallbackHtml = renderToStaticMarkup(React.createElement(Page, {
+  documents: untranslated, related: { href: '/terms', labelKey: 'legal.viewTerms' },
 }))
-assert.ok(privacyHtml.includes(legal.PRIVACY_POLICY.en.title), 'missing translation falls back to en')
+assert.ok(fallbackHtml.includes(legal.PRIVACY_POLICY.en.title), 'missing translation falls back to en')
 
 console.log('legal notice tests passed')
