@@ -3,8 +3,8 @@ import { GOOGLE_PRIVACY_URL, LEGAL_CONTACT_PLACEHOLDER } from '../legalConstants
 
 /** 개인정보처리방침 중국어(간체) 번역. 정본은 legalContent.ts 의 한국어(ko). 원문을 바꾸면 이 파일도 같이 고치고 version 을 맞춘다. */
 export const PRIVACY_ZH: LegalDocument = {
-  version: 'v2',
-  updatedAt: '2026-11-24',
+  version: 'v3',
+  updatedAt: '2026-11-25',
   title: '隐私政策',
   intro:
     'Ovlo（以下简称“本服务”）依据大韩民国《个人信息保护法》保护用户的个人信息，并为迅速处理相关投诉，制定如下隐私政策。',

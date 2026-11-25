@@ -3,8 +3,8 @@ import { GOOGLE_PRIVACY_URL, LEGAL_CONTACT_PLACEHOLDER } from '../legalConstants
 
 /** 개인정보처리방침 프랑스어 번역. 정본은 legalContent.ts 의 한국어(ko). 원문을 바꾸면 이 파일도 같이 고치고 version 을 맞춘다. */
 export const PRIVACY_FR: LegalDocument = {
-  version: 'v2',
-  updatedAt: '2026-11-24',
+  version: 'v3',
+  updatedAt: '2026-11-25',
   title: 'Politique de confidentialité',
   intro:
     'Conformément à la loi sur la protection des informations personnelles (Personal Information Protection Act) de la République de Corée, Ovlo (ci-après le « Service ») adopte la présente politique de confidentialité afin de protéger les données personnelles des utilisateurs et de traiter rapidement les réclamations qui s’y rapportent.',

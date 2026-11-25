@@ -3,8 +3,8 @@ import { GOOGLE_PRIVACY_URL, LEGAL_CONTACT_PLACEHOLDER } from '../legalConstants
 
 /** 개인정보처리방침 독일어 번역. 정본은 legalContent.ts 의 한국어(ko). 원문을 바꾸면 이 파일도 같이 고치고 version 을 맞춘다. */
 export const PRIVACY_DE: LegalDocument = {
-  version: 'v2',
-  updatedAt: '2026-11-24',
+  version: 'v3',
+  updatedAt: '2026-11-25',
   title: 'Datenschutzerklärung',
   intro:
     'Ovlo (nachfolgend „Dienst“) legt gemäß dem koreanischen „Gesetz zum Schutz personenbezogener Daten“ (Personal Information Protection Act) die folgende Datenschutzerklärung fest, um die personenbezogenen Daten der Nutzer zu schützen und damit verbundene Anliegen zügig zu bearbeiten.',

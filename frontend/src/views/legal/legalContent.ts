@@ -40,8 +40,8 @@ export type LegalDocuments = { ko: LegalDocument; en: LegalDocument } & Partial<
 
 export const PRIVACY_POLICY: LegalDocuments = {
   ko: {
-    version: 'v2',
-    updatedAt: '2026-11-24',
+    version: 'v3',
+    updatedAt: '2026-11-25',
     title: '개인정보처리방침',
     intro:
       'Ovlo(이하 "서비스")는 「개인정보 보호법」에 따라 이용자의 개인정보를 보호하고 관련 고충을 신속하게 처리하기 위해 다음과 같이 개인정보처리방침을 둡니다.',
@@ -135,8 +135,8 @@ export const PRIVACY_POLICY: LegalDocuments = {
     ],
   },
   en: {
-    version: 'v2',
-    updatedAt: '2026-11-24',
+    version: 'v3',
+    updatedAt: '2026-11-25',
     title: 'Privacy Policy',
     intro:
       'Ovlo (the "Service") protects your personal data under the Personal Information Protection Act of the Republic of Korea and handles related requests promptly, as described below.',

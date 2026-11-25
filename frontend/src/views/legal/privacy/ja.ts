@@ -3,8 +3,8 @@ import { GOOGLE_PRIVACY_URL, LEGAL_CONTACT_PLACEHOLDER } from '../legalConstants
 
 /** 개인정보처리방침 일본어 번역. 정본은 legalContent.ts 의 한국어(ko). 원문을 바꾸면 이 파일도 같이 고치고 version 을 맞춘다. */
 export const PRIVACY_JA: LegalDocument = {
-  version: 'v2',
-  updatedAt: '2026-11-24',
+  version: 'v3',
+  updatedAt: '2026-11-25',
   title: 'プライバシーポリシー',
   intro:
     'Ovlo（以下「本サービス」）は、大韓民国の「個人情報保護法」に基づき利用者の個人情報を保護し、関連する苦情を迅速に処理するため、次のとおりプライバシーポリシーを定めます。',
