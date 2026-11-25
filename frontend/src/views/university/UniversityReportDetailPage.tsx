@@ -99,7 +99,7 @@ export default function UniversityReportDetailPage() {
   return (
     <div style={{ padding: '32px 20px', fontFamily: 'system-ui, sans-serif' }}>
       <button
-        onClick={() => router.back()}
+        onClick={() => router.push('/university-reports')}
         style={{ background: 'none', border: 'none', cursor: 'pointer', color: C.textMuted, fontSize: 14, marginBottom: 20, padding: 0 }}
       >
         {t('univ.detail.back')}
