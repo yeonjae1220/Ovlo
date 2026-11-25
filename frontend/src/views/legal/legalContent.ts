@@ -1,17 +1,25 @@
 /**
- * 법적 문서 원문 (ko·en). UI 언어가 ko 면 한국어, 그 외는 영어를 보여 준다.
- * 문서 버전은 서버에 기록되는 동의 기록과 맞춰야 하므로 바꿀 때 version 과 updatedAt 을 같이 올린다.
+ * 법적 문서 원문. 한국어가 정본이고, 영어와 (이용약관만) 나머지 UI 언어 번역을 둔다.
+ * 번역이 없는 언어는 영어를 보여 준다.
+ * 문서 버전은 서버에 기록되는 동의 기록과 맞춰야 하므로 바꿀 때 version 과 updatedAt 을 모든 언어에서 같이 올린다.
  *
  * ⚠️ 대외 연락처가 아직 정해지지 않았다. CONTACT_PLACEHOLDER 가 남아 있는 동안은 회원 대규모 모집·파일럿을 시작하지 않는다.
  */
+import type { UiLanguage } from '@/i18n/messages'
+import { GOOGLE_PRIVACY_URL, LEGAL_CONTACT_PLACEHOLDER, YOUTUBE_TERMS_URL } from './legalConstants'
+import { TERMS_DE } from './terms/de'
+import { TERMS_ES } from './terms/es'
+import { TERMS_FR } from './terms/fr'
+import { TERMS_JA } from './terms/ja'
+import { TERMS_PT } from './terms/pt'
+import { TERMS_RU } from './terms/ru'
+import { TERMS_ZH } from './terms/zh'
 
-export const LEGAL_CONTACT_PLACEHOLDER = '[연락처 확정 후 기재 / to be announced]'
+export { LEGAL_CONTACT_PLACEHOLDER }
 
 export type LegalLink = { label: string; href: string }
 export type LegalSection = { heading: string; paragraphs: string[]; bullets?: string[]; links?: LegalLink[] }
 
-const YOUTUBE_TERMS_URL = 'https://www.youtube.com/t/terms'
-const GOOGLE_PRIVACY_URL = 'https://policies.google.com/privacy'
 export type LegalDocument = {
   version: string
   updatedAt: string
@@ -20,7 +28,10 @@ export type LegalDocument = {
   sections: LegalSection[]
 }
 
-export const PRIVACY_POLICY: Record<'ko' | 'en', LegalDocument> = {
+/** ko·en 은 반드시 있고, 다른 언어는 번역이 있을 때만 둔다. */
+export type LegalDocuments = { ko: LegalDocument; en: LegalDocument } & Partial<Record<UiLanguage, LegalDocument>>
+
+export const PRIVACY_POLICY: LegalDocuments = {
   ko: {
     version: 'v2',
     updatedAt: '2026-11-24',
@@ -213,7 +224,7 @@ export const PRIVACY_POLICY: Record<'ko' | 'en', LegalDocument> = {
   },
 }
 
-export const TERMS_OF_SERVICE: Record<'ko' | 'en', LegalDocument> = {
+export const TERMS_OF_SERVICE: LegalDocuments = {
   ko: {
     version: 'v3',
     updatedAt: '2026-11-25',
@@ -408,6 +419,13 @@ export const TERMS_OF_SERVICE: Record<'ko' | 'en', LegalDocument> = {
       },
     ],
   },
+  ja: TERMS_JA,
+  zh: TERMS_ZH,
+  es: TERMS_ES,
+  fr: TERMS_FR,
+  de: TERMS_DE,
+  pt: TERMS_PT,
+  ru: TERMS_RU,
 }
 
 /**

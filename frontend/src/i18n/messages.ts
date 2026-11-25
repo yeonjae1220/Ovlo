@@ -24,6 +24,10 @@ export function resolveUiLang(input: string | null | undefined): UiLanguage {
 type Messages = Record<string, string>
 
 const en: Messages = {
+  "legal.versionLine": "Version {version} · Effective {date}",
+  "legal.draftNotice": "This document is a draft in preparation. Public contact details and external AI processing and retention arrangements must be confirmed before finalization.",
+  "legal.viewPrivacy": "View Privacy Policy",
+  "legal.viewTerms": "View Terms of Service",
   "report.evidence.title": "Sources and currency of information",
   "report.evidence.unknownDate": "Reference date not recorded",
   "report.evidence.missing": "Supporting source links are missing. Check the university’s official guidance before using this information.",
@@ -778,6 +782,10 @@ const en: Messages = {
 }
 
 const ko: Messages = {
+  "legal.versionLine": "버전 {version} · 시행 {date}",
+  "legal.draftNotice": "이 문서는 준비 중인 초안입니다. 운영 연락처와 외부 AI 처리 업체·보관 정책을 확인한 뒤 확정합니다.",
+  "legal.viewPrivacy": "개인정보처리방침 보기",
+  "legal.viewTerms": "이용약관 보기",
   "report.evidence.title": "출처와 정보 기준",
   "report.evidence.unknownDate": "정보 기준일 미등록",
   "report.evidence.missing": "근거 출처 링크가 없습니다. 이 정보를 이용하기 전에 대학의 공식 안내를 확인하세요.",
@@ -1502,6 +1510,10 @@ const ko: Messages = {
 }
 
 const ja: Messages = {
+  "legal.versionLine": "バージョン {version}・施行日 {date}",
+  "legal.draftNotice": "この文書は準備中の草案です。公開連絡先と外部 AI 処理事業者・保存方針を確認したうえで確定します。",
+  "legal.viewPrivacy": "プライバシーポリシーを見る",
+  "legal.viewTerms": "利用規約を見る",
   "report.evidence.title": "出典と情報の基準日",
   "report.evidence.unknownDate": "情報の基準日は未登録です",
   "report.evidence.missing": "根拠となる出典リンクがありません。利用前に大学の公式案内をご確認ください。",
@@ -1918,6 +1930,10 @@ const ja: Messages = {
 }
 
 const zh: Messages = {
+  "legal.versionLine": "版本 {version} · 生效日期 {date}",
+  "legal.draftNotice": "本文件是正在准备中的草案。公开联系方式以及外部 AI 处理服务商和保存政策确认后才会定稿。",
+  "legal.viewPrivacy": "查看隐私政策",
+  "legal.viewTerms": "查看服务条款",
   "report.evidence.title": "来源与信息日期",
   "report.evidence.unknownDate": "未记录信息基准日期",
   "report.evidence.missing": "缺少依据来源链接。使用此信息前，请查看大学的官方说明。",
@@ -2334,6 +2350,10 @@ const zh: Messages = {
 }
 
 const es: Messages = {
+  "legal.versionLine": "Versión {version} · Vigente desde {date}",
+  "legal.draftNotice": "Este documento es un borrador en preparación. Antes de finalizarlo deben confirmarse los datos de contacto públicos y los acuerdos de procesamiento externo con IA y de conservación.",
+  "legal.viewPrivacy": "Ver la Política de privacidad",
+  "legal.viewTerms": "Ver las Condiciones del servicio",
   "report.evidence.title": "Fuentes y fecha de la información",
   "report.evidence.unknownDate": "Fecha de referencia no registrada",
   "report.evidence.missing": "Faltan enlaces a las fuentes. Consulte la información oficial de la universidad antes de utilizar estos datos.",
@@ -2750,6 +2770,10 @@ const es: Messages = {
 }
 
 const fr: Messages = {
+  "legal.versionLine": "Version {version} · En vigueur depuis le {date}",
+  "legal.draftNotice": "Ce document est un projet en cours de préparation. Les coordonnées publiques ainsi que les modalités de traitement externe par IA et de conservation doivent être confirmées avant sa finalisation.",
+  "legal.viewPrivacy": "Voir la politique de confidentialité",
+  "legal.viewTerms": "Voir les conditions d’utilisation",
   "report.evidence.title": "Sources et date des informations",
   "report.evidence.unknownDate": "Date de référence non renseignée",
   "report.evidence.missing": "Les liens vers les sources manquent. Consultez les informations officielles de l’université avant d’utiliser ces données.",
@@ -3166,6 +3190,10 @@ const fr: Messages = {
 }
 
 const de: Messages = {
+  "legal.versionLine": "Version {version} · Gültig ab {date}",
+  "legal.draftNotice": "Dieses Dokument ist ein Entwurf in Vorbereitung. Öffentliche Kontaktdaten sowie die externe KI-Verarbeitung und die Aufbewahrungsregeln müssen vor der Fertigstellung bestätigt werden.",
+  "legal.viewPrivacy": "Datenschutzerklärung ansehen",
+  "legal.viewTerms": "Nutzungsbedingungen ansehen",
   "report.evidence.title": "Quellen und Informationsstand",
   "report.evidence.unknownDate": "Kein Informationsstand angegeben",
   "report.evidence.missing": "Quellenlinks fehlen. Prüfen Sie die offiziellen Angaben der Hochschule, bevor Sie diese Informationen nutzen.",
@@ -3582,6 +3610,10 @@ const de: Messages = {
 }
 
 const pt: Messages = {
+  "legal.versionLine": "Versão {version} · Em vigor desde {date}",
+  "legal.draftNotice": "Este documento é um rascunho em preparação. Os contatos públicos e os acordos de processamento externo por IA e de retenção precisam ser confirmados antes da versão final.",
+  "legal.viewPrivacy": "Ver a Política de Privacidade",
+  "legal.viewTerms": "Ver os Termos de Serviço",
   "report.evidence.title": "Fontes e data das informações",
   "report.evidence.unknownDate": "Data de referência não registada",
   "report.evidence.missing": "Faltam ligações às fontes. Consulte as informações oficiais da universidade antes de usar estes dados.",
@@ -4025,6 +4057,10 @@ const pt: Messages = {
 }
 
 const ru: Messages = {
+  "legal.versionLine": "Версия {version} · Действует с {date}",
+  "legal.draftNotice": "Этот документ — черновик в стадии подготовки. Публичные контакты, а также условия внешней обработки с помощью ИИ и хранения данных должны быть подтверждены до его окончательного утверждения.",
+  "legal.viewPrivacy": "Политика конфиденциальности",
+  "legal.viewTerms": "Условия использования",
   "report.evidence.title": "Источники и актуальность информации",
   "report.evidence.unknownDate": "Дата актуальности не указана",
   "report.evidence.missing": "Ссылки на источники отсутствуют. Перед использованием сведений проверьте официальную информацию университета.",
