@@ -179,13 +179,10 @@ class ModerationIntegrationTest {
         mvc.perform(get("/api/v1/members/" + author).header("Authorization", token(viewer))).andExpect(status().isOk());
     }
 
-    @Test @DisplayName("구버전 파드용 marketplace_block 호환 뷰로 쓴 차단이 member_block 에 반영된다")
-    void legacyMarketplaceBlockViewWritesThrough() {
-        db.update("INSERT INTO marketplace_block(actor_id,target_id) VALUES(?,?) ON CONFLICT DO NOTHING", viewer, author);
-        db.update("INSERT INTO marketplace_block(actor_id,target_id) VALUES(?,?) ON CONFLICT DO NOTHING", viewer, author);
-        assertThat(db.queryForObject("SELECT count(*) FROM member_block WHERE actor_id=? AND target_id=?", Long.class, viewer, author)).isOne();
-        db.update("DELETE FROM marketplace_block WHERE actor_id=? AND target_id=?", viewer, author);
-        assertThat(db.queryForObject("SELECT count(*) FROM member_block WHERE actor_id=?", Long.class, viewer)).isZero();
+    @Test @DisplayName("구버전 호환 뷰 marketplace_block 은 V57 에서 지워지고 차단 테이블만 남는다")
+    void legacyMarketplaceBlockViewIsDropped() {
+        assertThat(db.queryForObject("SELECT to_regclass('marketplace_block') IS NULL", Boolean.class)).isTrue();
+        assertThat(db.queryForObject("SELECT to_regclass('member_block') IS NOT NULL", Boolean.class)).isTrue();
     }
 
     @Test @DisplayName("기각된 뒤에는 같은 대상을 다시 신고할 수 있다")
