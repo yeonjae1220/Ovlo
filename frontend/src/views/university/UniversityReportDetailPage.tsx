@@ -45,7 +45,7 @@ interface ReportContent {
 /** "스트라스클라이드 대학교 교환학생 가이드" → "스트라스클라이드 대학교" */
 function stripReportSuffix(title: string) {
   return title
-    .replace(/\s*[–-]?\s*(교환학생\s*가이드|Exchange\s*(Student\s*)?Guide|Austauschführer|Leitfaden für Austauschstudierende|Guide d'échange|Guía de intercambio|Trao đổi sinh viên|交换生指南|交換学生ガイド|交換留学ガイド)\s*$/i, '')
+    .replace(/\s*[—–-]?\s*(교환학생\s*가이드|Exchange\s*(Student\s*)?Guide|Austauschführer|Leitfaden für Austauschstudierende|Guide d'échange|Guía de intercambio|Trao đổi sinh viên|交换生指南|交換学生ガイド|交換留学ガイド)\s*$/i, '')
     .replace(/^\s*(Guide d'échange|Hướng dẫn trao đổi sinh viên)\s*[–:-]?\s*/i, '')
     .replace(/:\s*$/, '')
     .trim()
