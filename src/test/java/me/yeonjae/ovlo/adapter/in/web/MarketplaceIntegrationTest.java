@@ -142,37 +142,44 @@ class MarketplaceIntegrationTest {
     @Test void blockListIsPrivateAndAllowsUnblockingWithoutAccessToListing() throws Exception {
         var listing=market.create(seller,details("Blocked listing",market.upload(seller,png)));
         blocks.block(buyer,seller);blocks.block(other,buyer);
-        mvc.perform(get("/api/v1/marketplace/blocks")).andExpect(status().isUnauthorized());
+        mvc.perform(get("/api/v1/blocks")).andExpect(status().isUnauthorized());
         mvc.perform(get("/api/v1/marketplace/"+listing.id()).header("Authorization",token(buyer))).andExpect(status().isNotFound());
-        mvc.perform(get("/api/v1/marketplace/blocks").header("Authorization",token(buyer)).param("actor",""+other))
+        mvc.perform(get("/api/v1/blocks").header("Authorization",token(buyer)).param("actor",""+other))
                 .andExpect(status().isOk()).andExpect(jsonPath("$.content.length()").value(1))
                 .andExpect(jsonPath("$.content[0].memberId").value(seller))
                 .andExpect(jsonPath("$.content[0].nickname").exists())
                 .andExpect(jsonPath("$.content[0].email").doesNotExist())
                 .andExpect(jsonPath("$.content[0].status").doesNotExist());
-        mvc.perform(get("/api/v1/marketplace/blocks").header("Authorization",token(seller)))
+        mvc.perform(get("/api/v1/blocks").header("Authorization",token(seller)))
                 .andExpect(status().isOk()).andExpect(jsonPath("$.content.length()").value(0));
-        mvc.perform(delete("/api/v1/marketplace/blocks/"+seller).header("Authorization",token(buyer)))
+        mvc.perform(delete("/api/v1/blocks/"+seller).header("Authorization",token(buyer)))
                 .andExpect(status().isNoContent());
         mvc.perform(get("/api/v1/marketplace/"+listing.id()).header("Authorization",token(buyer))).andExpect(status().isOk());
         assertThat(store.blocked(other,buyer)).isTrue();
         jdbc.update("UPDATE member SET status='SUSPENDED' WHERE id=?",buyer);
-        mvc.perform(get("/api/v1/marketplace/blocks").header("Authorization",token(buyer))).andExpect(status().isUnauthorized());
+        mvc.perform(get("/api/v1/blocks").header("Authorization",token(buyer))).andExpect(status().isUnauthorized());
     }
     @Test void blockListHasBoundedStablePaginationWhileEntriesAreRemoved() throws Exception {
         var ids=new ArrayList<Long>();
         for(int i=0;i<21;i++) {long id=member();ids.add(id);blocks.block(buyer,id);}
-        mvc.perform(get("/api/v1/marketplace/blocks").header("Authorization",token(buyer)))
+        mvc.perform(get("/api/v1/blocks").header("Authorization",token(buyer)))
                 .andExpect(status().isOk()).andExpect(jsonPath("$.content.length()").value(20))
                 .andExpect(jsonPath("$.content[0].memberId").value(ids.getLast()))
                 .andExpect(jsonPath("$.nextBefore").value(ids.get(1)));
         blocks.unblock(buyer,ids.getLast());
-        mvc.perform(get("/api/v1/marketplace/blocks").header("Authorization",token(buyer)).param("before",ids.get(1).toString()))
+        mvc.perform(get("/api/v1/blocks").header("Authorization",token(buyer)).param("before",ids.get(1).toString()))
                 .andExpect(status().isOk()).andExpect(jsonPath("$.content.length()").value(1))
                 .andExpect(jsonPath("$.content[0].memberId").value(ids.getFirst()))
                 .andExpect(jsonPath("$.nextBefore").isEmpty());
-        mvc.perform(get("/api/v1/marketplace/blocks").header("Authorization",token(buyer)).param("before","0"))
+        mvc.perform(get("/api/v1/blocks").header("Authorization",token(buyer)).param("before","0"))
                 .andExpect(status().isBadRequest());
+    }
+    @Test void retiredMarketplaceBlockEndpointsNoLongerBlockOrList() throws Exception {
+        mvc.perform(put("/api/v1/marketplace/blocks/"+seller).header("Authorization",token(buyer)))
+                .andExpect(status().is4xxClientError());
+        assertThat(store.blocked(buyer,seller)).isFalse();
+        mvc.perform(get("/api/v1/marketplace/blocks").header("Authorization",token(buyer)))
+                .andExpect(status().is4xxClientError());
     }
     @Test void truncatedProviderResponseIsNotCachedAndCanBeRetried() throws Exception {
         var listing=market.create(seller,details("Complete translation",market.upload(seller,png)));
