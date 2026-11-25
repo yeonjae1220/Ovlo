@@ -28,7 +28,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 /** Real HTTP/security, PostgreSQL, Redis and STOMP. No production accounts or mocked adapters. */
 @Tag("integration") @Testcontainers @ActiveProfiles("test")
 @SpringBootTest(webEnvironment=SpringBootTest.WebEnvironment.RANDOM_PORT,
-        properties={"lab.feedback.endpoint=http://127.0.0.1:1", "ovlo.search.provider=postgres", "CORS_ALLOWED_ORIGINS=http://localhost:3358"})
+        properties={"lab.feedback.endpoint=http://127.0.0.1:1", "ovlo.search.provider=postgres", "CORS_ALLOWED_ORIGINS=http://localhost:3358",
+                // All journeys sign up from 127.0.0.1 against one Redis; the production limit (5) is per IP.
+                "ovlo.rate-limit.signup-limit=20"})
 class ServiceJourneyIntegrationTest {
     @Container static final PostgreSQLContainer<?> pg=new PostgreSQLContainer<>("postgres:16");
     @Container static final GenericContainer<?> redis=new GenericContainer<>("redis:7-alpine").withExposedPorts(6379);
