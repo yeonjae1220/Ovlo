@@ -14,11 +14,13 @@ type Props = {
 /**
  * 개인정보처리방침·이용약관 공통 렌더러. UI 언어의 번역이 있으면 그 언어로, 없으면 영어로 보여 준다.
  * 연락처 placeholder 가 남아 있으면 눈에 띄게 표시해 "확정 전" 상태를 숨기지 않는다.
+ * 정본은 한국어이므로, 번역본을 보여 줄 때는 한국어 원문이 우선한다는 조항을 함께 싣는다.
  */
 export default function LegalDocumentPage({ documents, related }: Props) {
   const { language, t } = useI18n()
   const doc = documents[language] ?? documents.en
   const hasPlaceholder = JSON.stringify(doc).includes(LEGAL_CONTACT_PLACEHOLDER)
+  const isTranslation = doc !== documents.ko
 
   return (
     <article style={{ maxWidth: 760, margin: '0 auto', padding: '32px 16px 72px', lineHeight: 1.75, color: 'var(--color-text)' }}>
@@ -44,6 +46,12 @@ export default function LegalDocumentPage({ documents, related }: Props) {
           }}
         >
           {t('legal.draftNotice')}
+        </p>
+      )}
+
+      {isTranslation && (
+        <p role="note" style={{ margin: '0 0 24px', fontSize: 14, color: 'var(--color-text-dim)' }}>
+          {t('legal.translationNotice')}
         </p>
       )}
 

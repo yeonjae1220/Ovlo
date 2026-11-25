@@ -102,11 +102,12 @@ for (const docs of [legal.TERMS_OF_SERVICE, legal.PRIVACY_POLICY]) {
   assert.deepEqual(hrefsOf(docs.ko), hrefsOf(docs.en))
 }
 
-const Page = load('src/views/legal/LegalDocumentPage.tsx', {
+const loadPage = language => load('src/views/legal/LegalDocumentPage.tsx', {
   'next/link': { __esModule: true, default: ({ href, children, ...rest }) => React.createElement('a', { href, ...rest }, children) },
-  '@/i18n/I18nProvider': { useI18n: () => ({ language: 'ja', t: key => key }) },
+  '@/i18n/I18nProvider': { useI18n: () => ({ language, t: key => key }) },
   './legalContent': legal,
 }).default
+const Page = loadPage('ja')
 const html = renderToStaticMarkup(React.createElement(Page, {
   documents: legal.TERMS_OF_SERVICE, related: { href: '/privacy', labelKey: 'legal.viewPrivacy' },
 }))
@@ -121,5 +122,19 @@ const fallbackHtml = renderToStaticMarkup(React.createElement(Page, {
   documents: untranslated, related: { href: '/terms', labelKey: 'legal.viewTerms' },
 }))
 assert.ok(fallbackHtml.includes(legal.PRIVACY_POLICY.en.title), 'missing translation falls back to en')
+
+// 번역본에는 한국어 원문이 우선한다는 조항이 붙고, 한국어 원문에는 붙지 않는다
+assert.ok(html.includes('legal.translationNotice'), 'translated terms carry the Korean-prevails clause')
+assert.ok(fallbackHtml.includes('legal.translationNotice'), 'en fallback carries the Korean-prevails clause')
+for (const documents of [legal.TERMS_OF_SERVICE, legal.PRIVACY_POLICY]) {
+  const koHtml = renderToStaticMarkup(React.createElement(loadPage('ko'), {
+    documents, related: { href: '/terms', labelKey: 'legal.viewTerms' },
+  }))
+  assert.ok(koHtml.includes(documents.ko.title), 'ko UI shows the Korean original')
+  assert.ok(!koHtml.includes('legal.translationNotice'), 'Korean original has no translation clause')
+}
+for (const [lang, dict] of Object.entries(messages)) {
+  assert.ok(dict['legal.translationNotice'], `${lang} has the Korean-prevails clause text`)
+}
 
 console.log('legal notice tests passed')
