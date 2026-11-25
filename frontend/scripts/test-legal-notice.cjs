@@ -109,7 +109,7 @@ const loadPage = language => load('src/views/legal/LegalDocumentPage.tsx', {
 }).default
 const Page = loadPage('ja')
 const html = renderToStaticMarkup(React.createElement(Page, {
-  documents: legal.TERMS_OF_SERVICE, related: { href: '/privacy', labelKey: 'legal.viewPrivacy' },
+  documents: legal.TERMS_OF_SERVICE, related: { href: '/privacy', labelKey: 'legal.viewPrivacy' }, path: '/terms',
 }))
 const anchor = new RegExp(`<a href="${YOUTUBE_TERMS}"[^>]*>`).exec(html)
 assert.ok(anchor, 'YouTube terms rendered as an anchor')
@@ -119,7 +119,7 @@ assert.match(anchor[0], /rel="noopener noreferrer"/)
 assert.ok(html.includes(legal.TERMS_OF_SERVICE.ja.title), 'ja UI shows the ja terms')
 const untranslated = { ko: legal.PRIVACY_POLICY.ko, en: legal.PRIVACY_POLICY.en }
 const fallbackHtml = renderToStaticMarkup(React.createElement(Page, {
-  documents: untranslated, related: { href: '/terms', labelKey: 'legal.viewTerms' },
+  documents: untranslated, related: { href: '/terms', labelKey: 'legal.viewTerms' }, path: '/privacy',
 }))
 assert.ok(fallbackHtml.includes(legal.PRIVACY_POLICY.en.title), 'missing translation falls back to en')
 
@@ -128,13 +128,31 @@ assert.ok(html.includes('legal.translationNotice'), 'translated terms carry the 
 assert.ok(fallbackHtml.includes('legal.translationNotice'), 'en fallback carries the Korean-prevails clause')
 for (const documents of [legal.TERMS_OF_SERVICE, legal.PRIVACY_POLICY]) {
   const koHtml = renderToStaticMarkup(React.createElement(loadPage('ko'), {
-    documents, related: { href: '/terms', labelKey: 'legal.viewTerms' },
+    documents, related: { href: '/terms', labelKey: 'legal.viewTerms' }, path: '/privacy',
   }))
   assert.ok(koHtml.includes(documents.ko.title), 'ko UI shows the Korean original')
   assert.ok(!koHtml.includes('legal.translationNotice'), 'Korean original has no translation clause')
 }
 for (const [lang, dict] of Object.entries(messages)) {
-  assert.ok(dict['legal.translationNotice'], `${lang} has the Korean-prevails clause text`)
+  for (const key of ['legal.translationNotice', 'legal.viewKoreanOriginal', 'legal.viewTranslation']) {
+    assert.ok(dict[key], `${lang} has ${key}`)
+  }
 }
+
+// 번역본은 한국어 원문 경로로 링크하고, 원문 페이지는 번역본으로 돌아가는 링크를 둔다
+assert.match(html, /<a href="\/terms\/ko" hrefLang="ko"[^>]*>legal\.viewKoreanOriginal<\/a>/, 'translation links to the Korean original')
+assert.match(html, /<article lang="ja"/, 'translated article is marked with its language')
+assert.match(fallbackHtml, /<article lang="en"/, 'en fallback is marked as English')
+const renderOriginal = language => renderToStaticMarkup(React.createElement(loadPage(language), {
+  documents: legal.TERMS_OF_SERVICE, related: { href: '/privacy', labelKey: 'legal.viewPrivacy' }, path: '/terms', original: true,
+}))
+const originalForJa = renderOriginal('ja')
+assert.ok(originalForJa.includes(legal.TERMS_OF_SERVICE.ko.title), 'original route shows the Korean terms in a ja UI')
+assert.match(originalForJa, /<article lang="ko"/, 'Korean original is marked as Korean')
+assert.ok(!originalForJa.includes('legal.translationNotice'), 'Korean original has no translation clause')
+assert.match(originalForJa, /<a href="\/terms"[^>]*>legal\.viewTranslation<\/a>/, 'original links back to the translation')
+assert.ok(!renderOriginal('ko').includes('legal.viewTranslation'), 'ko UI has no translation to return to')
+assert.match(originalForJa, /<a href="\/privacy\/ko"[^>]*>legal\.viewPrivacy<\/a>/, 'original links to the Korean original of the related document')
+assert.match(html, /<a href="\/privacy"[^>]*>legal\.viewPrivacy<\/a>/, 'translation links to the translated related document')
 
 console.log('legal notice tests passed')
