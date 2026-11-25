@@ -13,6 +13,7 @@ import {
 import { useAuthStore } from '../../store/authStore'
 import { useI18n } from '../../i18n/I18nProvider'
 import { Avatar, Badge, Button, Card, EmptyState, PageHeader, QueryErrorNotice, TextField } from '../../components/ui'
+import { ReportDialog, type ReportTarget } from '../../components/moderation/ReportDialog'
 
 const C = {
   border: 'var(--color-border)',
@@ -46,6 +47,7 @@ export default function PostDetailPage() {
   const unreact = useUnreact()
 
   const [commentContent, setCommentContent] = useState('')
+  const [reportTarget, setReportTarget] = useState<ReportTarget | null>(null)
 
   if (isLoading) return <p style={{ color: C.muted }}>{t('common.loading')}</p>
   // 🔴 조회 실패를 그대로 두면 아래 `!post` 가 '게시글을 찾을 수 없습니다' 를 그린다 —
@@ -127,6 +129,11 @@ export default function PostDetailPage() {
                   {t('post.delete')}
                 </Button>
               )}
+              {currentUser && !isMyPost && (
+                <Button onClick={() => setReportTarget({ type: 'POST', id: post.id })} variant="ghost" icon="⚑" style={{ marginLeft: 'auto' }}>
+                  {t('moderation.report.action')}
+                </Button>
+              )}
             </div>
           </>
         )}
@@ -149,6 +156,16 @@ export default function PostDetailPage() {
                     <Avatar label={`#${comment.authorId}`} size="sm" />
                     <span style={{ fontWeight: 850, fontSize: 13, color: C.muted }}>#{comment.authorId}</span>
                   </div>
+                  {currentUser && String(comment.authorId) !== currentUser.id && (
+                    <button
+                      type="button"
+                      onClick={() => setReportTarget({ type: 'COMMENT', id: comment.id })}
+                      aria-label={t('moderation.report.commentAria', { id: comment.authorId })}
+                      style={{ color: C.muted, fontSize: 12, background: 'none', border: 'none', cursor: 'pointer', padding: 4 }}
+                    >
+                      {t('moderation.report.action')}
+                    </button>
+                  )}
                   {currentUser && String(comment.authorId) === currentUser.id && (
                     <button
                       onClick={() => deleteComment.mutate({ postId: id!, commentId: String(comment.id) })}
@@ -177,6 +194,7 @@ export default function PostDetailPage() {
           </Button>
         </div>
       </Card>
+      {reportTarget && <ReportDialog key={`${reportTarget.type}-${reportTarget.id}`} target={reportTarget} onClose={() => setReportTarget(null)} />}
     </div>
   )
 }

@@ -92,6 +92,12 @@ public class GlobalExceptionHandler {
                 .body(ErrorResponse.of(resolveCode(PostException.class, ex.getErrorType()), ex.getMessage()));
     }
 
+    @ExceptionHandler(me.yeonjae.ovlo.domain.moderation.exception.ModerationException.class)
+    public ResponseEntity<ErrorResponse> handleModerationException(me.yeonjae.ovlo.domain.moderation.exception.ModerationException ex) {
+        return ResponseEntity.status(resolveStatus(ex.getErrorType()))
+                .body(ErrorResponse.of(resolveCode(me.yeonjae.ovlo.domain.moderation.exception.ModerationException.class, ex.getErrorType()), ex.getMessage()));
+    }
+
     @ExceptionHandler(FollowException.class)
     public ResponseEntity<ErrorResponse> handleFollowException(FollowException ex) {
         return ResponseEntity.status(resolveStatus(ex.getErrorType()))

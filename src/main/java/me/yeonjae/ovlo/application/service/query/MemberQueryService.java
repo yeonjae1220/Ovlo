@@ -20,9 +20,11 @@ public class MemberQueryService implements GetMemberQuery {
     private static final int SEARCH_RESULT_LIMIT = 20;
 
     private final LoadMemberPort loadMemberPort;
+    private final me.yeonjae.ovlo.application.port.out.moderation.MemberBlockPort memberBlockPort;
 
-    public MemberQueryService(LoadMemberPort loadMemberPort) {
+    public MemberQueryService(LoadMemberPort loadMemberPort, me.yeonjae.ovlo.application.port.out.moderation.MemberBlockPort memberBlockPort) {
         this.loadMemberPort = loadMemberPort;
+        this.memberBlockPort = memberBlockPort;
     }
 
     @Override
@@ -35,15 +37,19 @@ public class MemberQueryService implements GetMemberQuery {
     @Override
     public MemberResult getProfile(MemberId target, MemberId viewer) {
         MemberResult profile = getById(target);
-        if ("WITHDRAWN".equals(profile.status()) || "SUSPENDED".equals(profile.status())) {
+        boolean blockedByTarget = viewer != null && !target.equals(viewer)
+                && memberBlockPort.blocked(target.value(), viewer.value());
+        if (blockedByTarget || "WITHDRAWN".equals(profile.status()) || "SUSPENDED".equals(profile.status())) {
             throw new MemberException("회원을 찾을 수 없습니다", MemberException.ErrorType.NOT_FOUND);
         }
         return target.equals(viewer) ? profile : profile.withoutPrivateFields();
     }
 
     @Override
-    public List<MemberSummaryResult> searchByNickname(String keyword) {
+    public List<MemberSummaryResult> searchByNickname(String keyword, Long viewerId) {
+        java.util.Set<Long> hidden = viewerId == null ? java.util.Set.of() : memberBlockPort.relatedMemberIds(viewerId);
         return loadMemberPort.searchByNickname(keyword, SEARCH_RESULT_LIMIT).stream()
+                .filter(m -> !hidden.contains(m.getId().value()))
                 .map(MemberSummaryResult::from)
                 .toList();
     }

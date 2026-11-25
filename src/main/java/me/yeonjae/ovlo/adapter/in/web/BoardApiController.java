@@ -129,8 +129,9 @@ public class BoardApiController {
     public ResponseEntity<PageResult<PostResult>> listPosts(
             @PathVariable Long id,
             @RequestParam(defaultValue = "0") @Min(0) int page,
-            @RequestParam(defaultValue = "20") @Min(1) @Max(100) int size
+            @RequestParam(defaultValue = "20") @Min(1) @Max(100) int size,
+            @AuthenticationPrincipal Long memberId
     ) {
-        return ResponseEntity.ok(getPostQuery.listByBoard(id, page, size));
+        return ResponseEntity.ok(getPostQuery.listByBoard(id, memberId, page, size));
     }
 }

@@ -10,6 +10,8 @@ import {LANGUAGE_LABELS, SUPPORTED_UI_LANGUAGES} from '../../i18n/messages'
 import {useMarketText} from './marketplaceText'
 import {Photo, Price, MarketError} from './MarketplaceShared'
 import MarketplaceForm from './MarketplaceForm'
+import {invalidateAfterBlockChange} from '../../hooks/useModeration'
+import {moderationApi} from '../../api/moderation'
 import s from './Marketplace.module.css'
 
 export default function MarketplaceDetailPage({editing = false}: {editing?: boolean}) {
@@ -20,7 +22,7 @@ export default function MarketplaceDetailPage({editing = false}: {editing?: bool
   // Keep the editor mounted across new versions, visibility changes and background read failures.
   if(editing && result.data?.sellerId === Number(user)) return <MarketplaceForm key={`${user}:${id}`} listing={result.data} loadError={result.error} onRetry={() => void result.refetch()}/>
   if(result.isPending) return <p>{text('loading')}</p>
-  if(result.isError) return <div className={s.page}><Link href="/marketplace">{text('back')}</Link><Link className={s.button} href="/marketplace/blocks">{text('manageBlocks')}</Link><MarketError error={result.error}/><button className={s.button} onClick={() => void result.refetch()}>{text('retry')}</button></div>
+  if(result.isError) return <div className={s.page}><Link href="/marketplace">{text('back')}</Link><Link className={s.button} href="/blocks">{text('manageBlocks')}</Link><MarketError error={result.error}/><button className={s.button} onClick={() => void result.refetch()}>{text('retry')}</button></div>
   const item = result.data
   if(editing) return <div className={s.page}><Link href={`/marketplace/${id}`}>{text('back')}</Link></div>
   return <Details key={`${user}:${item.id}`} item={item}/>
@@ -39,8 +41,8 @@ function Details({item}: {item: Listing}) {
   const remove=useMutation({mutationFn:()=>marketplaceApi.remove(item),onSuccess:async()=>{await cache.invalidateQueries({queryKey:['market-list']});router.push('/marketplace')}})
   const contact=useMutation({mutationFn:()=>marketplaceApi.contact(item.id),onSuccess:room=>router.push(`/chat/${room}`)})
   const report=useMutation({mutationFn:()=>marketplaceApi.report(item.id,reason),onSuccess:()=>setReportOpen(false)})
-  const block=useMutation({mutationFn:()=>marketplaceApi.block(item.sellerId),onSuccess:async()=>{setBlocked(true);await cache.invalidateQueries({queryKey:['market-list']})}})
-  const unblock=useMutation({mutationFn:()=>marketplaceApi.unblock(item.sellerId),onSuccess:async()=>{setBlocked(false);await refresh()}})
+  const block=useMutation({mutationFn:()=>moderationApi.block(item.sellerId),onSuccess:async()=>{setBlocked(true);await invalidateAfterBlockChange(cache)}})
+  const unblock=useMutation({mutationFn:()=>moderationApi.unblock(item.sellerId),onSuccess:async()=>{setBlocked(false);await invalidateAfterBlockChange(cache)}})
   const translation=useQuery({queryKey:['market-translation',user,item.id,item.version,target],queryFn:()=>marketplaceApi.translate(item.id,target),enabled:translated && !blocked && !item.hidden,retry:false,staleTime:Infinity})
   const tx=translated?translation.data:undefined
   if(blocked) return <div className={s.page}><p>{text('blocked')}</p><button className={s.button} disabled={unblock.isPending} onClick={()=>unblock.mutate()}>{text('unblock')}</button><MarketError error={unblock.error}/><Link className={s.button} href="/marketplace">{text('back')}</Link></div>

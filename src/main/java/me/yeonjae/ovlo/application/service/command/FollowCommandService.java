@@ -18,10 +18,13 @@ public class FollowCommandService implements FollowMemberUseCase, UnfollowMember
 
     private final LoadFollowPort loadFollowPort;
     private final SaveFollowPort saveFollowPort;
+    private final me.yeonjae.ovlo.application.port.out.moderation.MemberBlockPort memberBlockPort;
 
-    public FollowCommandService(LoadFollowPort loadFollowPort, SaveFollowPort saveFollowPort) {
+    public FollowCommandService(LoadFollowPort loadFollowPort, SaveFollowPort saveFollowPort,
+                                me.yeonjae.ovlo.application.port.out.moderation.MemberBlockPort memberBlockPort) {
         this.loadFollowPort = loadFollowPort;
         this.saveFollowPort = saveFollowPort;
+        this.memberBlockPort = memberBlockPort;
     }
 
     @Override
@@ -29,6 +32,10 @@ public class FollowCommandService implements FollowMemberUseCase, UnfollowMember
         MemberId followerId = new MemberId(command.followerId());
         MemberId followeeId = new MemberId(command.followeeId());
 
+        // 차단 관계는 드러내지 않고, 없는 회원과 같은 응답을 준다.
+        if (memberBlockPort.blockedEitherWay(command.followerId(), command.followeeId())) {
+            throw new FollowException("회원을 찾을 수 없습니다", FollowException.ErrorType.NOT_FOUND);
+        }
         if (loadFollowPort.existsByFollowerAndFollowee(followerId, followeeId)) {
             throw new FollowException("이미 팔로우 중인 회원입니다", FollowException.ErrorType.CONFLICT);
         }

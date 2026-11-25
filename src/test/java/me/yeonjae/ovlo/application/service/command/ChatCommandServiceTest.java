@@ -41,6 +41,8 @@ class ChatCommandServiceTest {
     @Mock me.yeonjae.ovlo.application.port.out.chat.ChatMessagePolicyPort messagePolicy;
     @Mock org.springframework.context.ApplicationEventPublisher eventPublisher;
 
+    @Mock me.yeonjae.ovlo.application.port.out.moderation.MemberBlockPort memberBlockPort;
+
     @InjectMocks
     ChatCommandService service;
 

@@ -28,7 +28,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 /** Real HTTP/security, PostgreSQL, Redis and STOMP. No production accounts or mocked adapters. */
 @Tag("integration") @Testcontainers @ActiveProfiles("test")
 @SpringBootTest(webEnvironment=SpringBootTest.WebEnvironment.RANDOM_PORT,
-        properties={"lab.feedback.endpoint=http://127.0.0.1:1", "ovlo.search.provider=postgres", "CORS_ALLOWED_ORIGINS=http://localhost:3358"})
+        properties={"lab.feedback.endpoint=http://127.0.0.1:1", "ovlo.search.provider=postgres", "CORS_ALLOWED_ORIGINS=http://localhost:3358",
+                // All journeys sign up from 127.0.0.1 against one Redis; the production limit (5) is per IP.
+                "ovlo.rate-limit.signup-limit=20"})
 class ServiceJourneyIntegrationTest {
     @Container static final PostgreSQLContainer<?> pg=new PostgreSQLContainer<>("postgres:16");
     @Container static final GenericContainer<?> redis=new GenericContainer<>("redis:7-alpine").withExposedPorts(6379);
@@ -179,6 +181,40 @@ class ServiceJourneyIntegrationTest {
         chatRoundTrip(staff,marketRoom,"Is this bundle available?");
         call("PATCH","/api/v1/marketplace/"+listing+"/status",student,Map.of("version",0,"status","RESERVED"),200);
         call("PATCH","/api/v1/marketplace/"+listing+"/status",student,Map.of("version",0,"status","COMPLETED"),409);
+    }
+    @Test void blockedDmSendIsRejectedToTheSenderOverStomp() throws Exception {
+        long school=db.queryForObject("INSERT INTO global_universities(name_en,country_code) VALUES('Block Test','KR') RETURNING id",Long.class);
+        User alice=register("stomp_block_alice",school),bob=register("stomp_block_bob",school);
+        long room=call("POST","/api/v1/chat/rooms",alice,Map.of("type","DM","participantIds",List.of(bob.id())),201).get("chatRoomId").asLong();
+        call("PUT","/api/v1/blocks/"+alice.id(),bob,null,204);
+        var client=new WebSocketStompClient(new StandardWebSocketClient());
+        client.setMessageConverter(new StringMessageConverter() {
+            @Override protected boolean supportsMimeType(org.springframework.messaging.MessageHeaders headers) { return true; }
+        });
+        var errors=new LinkedBlockingQueue<String>();
+        var headers=new StompHeaders();headers.add("Authorization","Bearer "+alice.token());
+        var session=client.connectAsync("ws://127.0.0.1:"+port+"/ws/websocket",new org.springframework.web.socket.WebSocketHttpHeaders(),headers,new StompSessionHandlerAdapter() {}).get(15,TimeUnit.SECONDS);
+        try {
+            session.subscribe("/user/queue/errors",new StompFrameHandler() {
+                public Type getPayloadType(StompHeaders h) {return String.class;}
+                public void handleFrame(StompHeaders h,Object payload) {errors.offer((String)payload);}
+            });
+            var destination=new StompHeaders();destination.setDestination("/app/chat/"+room);
+            destination.setContentType(org.springframework.http.MediaType.APPLICATION_JSON);
+            // The inbound channel is unordered and the error queue has no room to probe, so resend until the
+            // subscription is live. Rejected sends store nothing, so repeats are harmless.
+            String error=null;
+            for(int attempt=0;attempt<15&&error==null;attempt++) {
+                session.send(destination,json.writeValueAsString(Map.of("content","Blocked hello","clientMessageId","client-"+attempt)));
+                error=errors.poll(1,TimeUnit.SECONDS);
+            }
+            assertThat(error).isNotNull();
+            var body=json.readTree(error);
+            assertThat(body.get("roomId").asLong()).isEqualTo(room);
+            assertThat(body.get("code").asText()).isEqualTo("FORBIDDEN");
+            assertThat(body.get("clientMessageId").asText()).startsWith("client-");
+        } finally { session.disconnect();client.stop(); }
+        assertThat(call("GET","/api/v1/chat/rooms/"+room+"/messages",alice,null,200).toString()).doesNotContain("Blocked hello");
     }
     void chatRoundTrip(User user,long room,String message) throws Exception {
         var client=new WebSocketStompClient(new StandardWebSocketClient());

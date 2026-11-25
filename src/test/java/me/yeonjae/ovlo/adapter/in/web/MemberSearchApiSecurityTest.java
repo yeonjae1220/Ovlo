@@ -15,7 +15,9 @@ import org.springframework.web.context.WebApplicationContext;
 
 import java.util.List;
 
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -62,13 +64,13 @@ class MemberSearchApiSecurityTest {
         mockMvc.perform(get("/api/v1/members/search").param("nickname", "a"))
                 .andExpect(status().isUnauthorized());
 
-        verify(getMemberQuery, never()).searchByNickname(anyString());
+        verify(getMemberQuery, never()).searchByNickname(anyString(), any());
     }
 
     @Test
     @DisplayName("로그인 회원 검색 응답에는 공개 필드만 있고 이메일·생년월일·연락처는 없다")
     void search_authenticated_returnsPublicFieldsOnly() throws Exception {
-        given(getMemberQuery.searchByNickname("kim"))
+        given(getMemberQuery.searchByNickname(eq("kim"), any()))
                 .willReturn(List.of(new MemberSummaryResult(7L, "kimchi", "김치", null)));
 
         mockMvc.perform(get("/api/v1/members/search").param("nickname", "kim")

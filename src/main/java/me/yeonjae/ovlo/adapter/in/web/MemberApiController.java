@@ -108,7 +108,7 @@ public class MemberApiController {
         if (nickname == null || nickname.isBlank()) {
             return ResponseEntity.ok(List.of());
         }
-        List<MemberSummaryResult> results = getMemberQuery.searchByNickname(nickname);
+        List<MemberSummaryResult> results = getMemberQuery.searchByNickname(nickname, memberId);
         return ResponseEntity.ok(results);
     }
 

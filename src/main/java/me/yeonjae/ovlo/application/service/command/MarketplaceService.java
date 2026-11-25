@@ -110,18 +110,6 @@ public class MarketplaceService implements MarketplaceUseCase {
         active(actor); var l=load(id,false); visible(l,actor);
         store.report(id,actor,PickupLocation.text(reason,1000,"Reason"));
     }
-    @Override @Transactional(readOnly=true) public BlockedMemberPage blockedMembers(long actor,Long before) {
-        active(actor);
-        if(before!=null && before<=0) throw new IllegalArgumentException("Invalid block cursor");
-        var rows=store.blockedMembers(actor,before);
-        var page=rows.stream().limit(20).toList();
-        return new BlockedMemberPage(page,rows.size()>20?page.getLast().memberId():null);
-    }
-    @Override public void block(long actor,long target,boolean blocked) {
-        active(actor); if(actor==target) throw new IllegalArgumentException("Cannot block yourself");
-        if(members.findById(new MemberId(target)).isEmpty()) throw new MarketplaceException(NOT_FOUND,"Member not found");
-        store.block(actor,target,blocked);
-    }
     @Override @Transactional(readOnly=true) public List<MarketplaceStore.Report> reports() { return store.reports(); }
     @Override public void moderate(String admin,long id,long expected,boolean hidden) {
         var l=load(id,true); version(l,expected); l.moderate(hidden); store.save(l,expected); store.audit(id,admin,hidden?"HIDE":"RESTORE");

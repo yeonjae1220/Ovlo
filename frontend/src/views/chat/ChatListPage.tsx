@@ -8,6 +8,7 @@ import { useI18n } from '../../i18n/I18nProvider'
 import { useMemberSearch } from '../../hooks/useMember'
 import { useAuthStore } from '../../store/authStore'
 import type { ChatRoomType, MemberSummary } from '../../types'
+import { httpStatusOf } from '../../api/moderation'
 import { Avatar, Badge, Button, Card, EmptyState, PageHeader, QueryErrorNotice, SearchBox, SelectField, TextField } from '../../components/ui'
 
 const C = {
@@ -39,6 +40,8 @@ export default function ChatListPage() {
   const [roomName, setRoomName] = useState('')
   const [nicknameQuery, setNicknameQuery] = useState('')
   const [selectedMember, setSelectedMember] = useState<MemberSummary | null>(null)
+  // 403 = 서로 차단한 상대와는 DM 을 열 수 없다
+  const createRoomErrorText = httpStatusOf(createRoom.error) === 403 ? t('chat.blocked.cannotStart') : t('chat.form.error')
 
   const { data: searchResults } = useMemberSearch(nicknameQuery)
   const filteredResults = searchResults?.filter((m) => m.id !== currentUser?.id) ?? []
@@ -181,6 +184,9 @@ export default function ChatListPage() {
             </div>
           )}
         </div>
+        {!showForm && createRoom.isError && (
+          <p role="alert" style={{ color: C.danger, margin: '10px 0 0', fontSize: 13 }}>{createRoomErrorText}</p>
+        )}
       </Card>
 
       {showForm && (
@@ -260,7 +266,7 @@ export default function ChatListPage() {
               </Button>
             </div>
             {createRoom.isError && (
-              <p style={{ color: C.danger, margin: 0, fontSize: 13 }}>{t('chat.form.error')}</p>
+              <p role="alert" style={{ color: C.danger, margin: 0, fontSize: 13 }}>{createRoomErrorText}</p>
             )}
           </div>
         </Card>

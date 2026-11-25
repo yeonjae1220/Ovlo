@@ -4,6 +4,8 @@ import { useAuthStore } from '../store/authStore'
 
 let client: Client | null = null
 
+export type ChatSendError = { roomId: number; clientMessageId: string | null; code: string; message: string }
+
 export const stompClient = {
   connect(token: string, callbacks: { onConnect?: () => void; onDisconnect?: () => void } = {}): Promise<void> {
     return new Promise((resolve, reject) => {
@@ -67,14 +69,22 @@ export const stompClient = {
     })
   },
 
-  publish(roomId: string, content: string): boolean {
+  /** 서버가 내 전송을 거절하면(차단된 DM 등) 이 세션에만 알려 준다. */
+  subscribeErrors(callback: (error: ChatSendError) => void): StompSubscription | null {
+    if (!client?.connected) return null
+    return client.subscribe('/user/queue/errors', (frame) => {
+      callback(JSON.parse(frame.body))
+    })
+  },
+
+  publish(roomId: string, content: string, clientMessageId: string): boolean {
     if (!client?.connected) return false
     try {
-    client.publish({
-      destination: `/app/chat/${roomId}`,
-      body: JSON.stringify({ content }),
-    })
-    return true
+      client.publish({
+        destination: `/app/chat/${roomId}`,
+        body: JSON.stringify({ content, clientMessageId }),
+      })
+      return true
     } catch { return false }
   },
 

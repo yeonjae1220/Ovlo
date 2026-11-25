@@ -41,12 +41,15 @@ public class PostCommandService
     private final SavePostPort savePostPort;
     private final LoadBoardPort loadBoardPort;
     private final GetMyVerificationStatusQuery getMyVerificationStatusQuery;
+    private final me.yeonjae.ovlo.application.port.out.moderation.MemberBlockPort memberBlockPort;
 
     public PostCommandService(LoadPostPort loadPostPort, SavePostPort savePostPort,
                               LoadBoardPort loadBoardPort,
                               GetMyVerificationStatusQuery getMyVerificationStatusQuery,
-                              me.yeonjae.ovlo.application.port.out.post.SaveCommentPort comments) {
+                              me.yeonjae.ovlo.application.port.out.post.SaveCommentPort comments,
+                              me.yeonjae.ovlo.application.port.out.moderation.MemberBlockPort memberBlockPort) {
         this.comments = comments;
+        this.memberBlockPort = memberBlockPort;
         this.loadPostPort = loadPostPort;
         this.savePostPort = savePostPort;
         this.loadBoardPort = loadBoardPort;
@@ -98,7 +101,7 @@ public class PostCommandService
 
     @Override
     public CommentResult createComment(CreateCommentCommand command) {
-        Post post = loadPostOrThrow(command.postId());
+        Post post = loadPostVisibleTo(command.postId(), command.authorId());
         var comment = post.addComment(new MemberId(command.authorId()), command.content());
         return CommentResult.from(comments.insertComment(post.getId(), comment));
     }
@@ -112,7 +115,7 @@ public class PostCommandService
 
     @Override
     public void react(ReactToPostCommand command) {
-        Post post = loadPostOrThrow(command.postId());
+        Post post = loadPostVisibleTo(command.postId(), command.memberId());
         ReactionType type = ReactionType.valueOf(command.reactionType());
         MemberId memberId = new MemberId(command.memberId());
         // 도메인 불변식 검증(중복 CONFLICT · 좋아요↔싫어요 전환 · 삭제 게시글 차단).
@@ -138,6 +141,16 @@ public class PostCommandService
         }
         post.delete();
         savePostPort.save(post);
+    }
+
+    /** 차단 관계인 작성자의 글은 조회 화면과 같이 없는 글로 취급한다. */
+    private Post loadPostVisibleTo(Long postId, Long actorId) {
+        Post post = loadPostOrThrow(postId);
+        long authorId = post.getAuthorId().value();
+        if (actorId != null && actorId != authorId && memberBlockPort.blockedEitherWay(actorId, authorId)) {
+            throw new PostException("게시글을 찾을 수 없습니다: " + postId, PostException.ErrorType.NOT_FOUND);
+        }
+        return post;
     }
 
     private Post loadPostOrThrow(Long postId) {

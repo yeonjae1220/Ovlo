@@ -5,6 +5,8 @@ import java.time.Instant;
 
 @Entity
 @Table(name = "message")
+// 신고 처리로 내린 메시지는 어떤 JPA 조회에도 나오지 않는다(네이티브 SQL 은 각자 조건을 건다).
+@org.hibernate.annotations.SQLRestriction("hidden_by_moderation = false")
 public class MessageJpaEntity {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY) private Long id;
     @Column(name = "chat_room_id", nullable = false) private Long chatRoomId;

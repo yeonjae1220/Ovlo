@@ -21,6 +21,9 @@ import { useMyVerification } from '../../hooks/useVerification'
 import { TrustBadge } from '../verification/TrustBadge'
 import { VerificationSection } from '../verification/VerificationSection'
 import { Avatar, QueryErrorNotice } from '../../components/ui'
+import { useBlockStatus, useUnblockMember } from '../../hooks/useModeration'
+import { ReportDialog } from '../../components/moderation/ReportDialog'
+import { BlockConfirmDialog } from '../../components/moderation/BlockConfirmDialog'
 
 const C = {
   card:        'var(--color-surface)',
@@ -69,6 +72,13 @@ export default function ProfilePage() {
   const { data: followingIds } = useFollowingStatus(isOwner || !id ? [] : [id])
   const isFollowing = followingIds?.has(String(id)) ?? false
   const { data: myVerification } = useMyVerification(isOwner)
+  const viewedMemberId = id && /^[1-9][0-9]*$/.test(id) ? Number(id) : null
+  const canModerate = !!currentUser && !isOwner && viewedMemberId !== null
+  const blockStatus = useBlockStatus(viewedMemberId, canModerate)
+  const blockedByMe = blockStatus.data?.blockedByMe ?? false
+  const unblockMutation = useUnblockMember()
+  const [reportOpen, setReportOpen] = useState(false)
+  const [blockConfirmOpen, setBlockConfirmOpen] = useState(false)
 
   const { getRootProps, getInputProps } = useDropzone({
     accept: { 'image/jpeg': ['.jpg', '.jpeg'], 'image/png': ['.png'] },
@@ -182,12 +192,43 @@ export default function ProfilePage() {
               {(followersError || followingsError) && <p role="status">{t('common.actionFailed')}</p>}
               {isOwner ? (
                 <button onClick={startEdit}>{t('profile.editBtn')}</button>
-              ) : (
+              ) : blockedByMe ? null : (
                 isFollowing ? (
                   <button onClick={() => unfollowMutation.mutate(id!)}>{t('profile.unfollow')}</button>
                 ) : (
                   <button onClick={() => followMutation.mutate(id!)}>{t('profile.follow')}</button>
                 )
+              )}
+              {canModerate && (
+                <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 10 }}>
+                  <button type="button" onClick={() => setReportOpen(true)}>{t('moderation.report.memberAction')}</button>
+                  {blockStatus.isError ? (
+                    <button type="button" onClick={() => void blockStatus.refetch()}>{t('moderation.block.statusRetry')}</button>
+                  ) : blockedByMe ? (
+                    <button
+                      type="button"
+                      disabled={unblockMutation.isPending}
+                      onClick={() => unblockMutation.mutate(viewedMemberId!)}
+                    >
+                      {t('moderation.block.unblock')}
+                    </button>
+                  ) : (
+                    <button
+                      type="button"
+                      disabled={blockStatus.isPending}
+                      onClick={() => setBlockConfirmOpen(true)}
+                      style={{ color: C.danger, border: `1px solid ${C.danger}`, background: C.dangerSoft }}
+                    >
+                      {t('moderation.block.action')}
+                    </button>
+                  )}
+                </div>
+              )}
+              {canModerate && blockedByMe && (
+                <p role="status" style={{ color: C.textMuted, fontSize: 13, margin: '8px 0 0' }}>{t('moderation.block.youBlocked')}</p>
+              )}
+              {unblockMutation.isError && (
+                <p role="alert" style={{ color: C.danger, fontSize: 13, margin: '8px 0 0' }}>{t('moderation.unblock.error')}</p>
               )}
             </>
           )}
@@ -313,6 +354,15 @@ export default function ProfilePage() {
             <p style={{ margin: '8px 0 0', fontSize: 12, color: C.textDim }}>{t('profile.theme.hint')}</p>
           </div>
 
+          {/* 차단한 회원 */}
+          <div style={{ marginTop: 32, paddingTop: 24, borderTop: `1px solid ${C.border}` }}>
+            <h3 style={{ margin: '0 0 4px', fontSize: 16, fontWeight: 700, color: C.textPrimary }}>
+              {t('moderation.blocks.title')}
+            </h3>
+            <p style={{ margin: '0 0 12px', fontSize: 12, color: C.textDim }}>{t('moderation.blocks.settingsHint')}</p>
+            <Link href="/blocks" style={{ color: C.purple, fontSize: 14, fontWeight: 600 }}>{t('moderation.blocks.manage')}</Link>
+          </div>
+
           {/* 로그아웃 / 탈퇴 */}
           <div style={{ marginTop: 32, paddingTop: 24, borderTop: `1px solid ${C.border}`, display: 'flex', gap: 12 }}>
             <button onClick={handleLogout}>{t('profile.logout')}</button>
@@ -325,6 +375,12 @@ export default function ProfilePage() {
             </button>
           </div>
         </>
+      )}
+      {reportOpen && viewedMemberId !== null && (
+        <ReportDialog target={{ type: 'MEMBER', id: viewedMemberId }} onClose={() => setReportOpen(false)} />
+      )}
+      {blockConfirmOpen && viewedMemberId !== null && (
+        <BlockConfirmDialog memberId={viewedMemberId} nickname={member.nickname} onClose={() => setBlockConfirmOpen(false)} />
       )}
     </div>
   )

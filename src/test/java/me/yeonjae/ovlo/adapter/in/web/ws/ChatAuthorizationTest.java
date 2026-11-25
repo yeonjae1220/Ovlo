@@ -39,7 +39,8 @@ class ChatAuthorizationTest {
 
     @ParameterizedTest
     @ValueSource(strings = {"/topic/chat/*", "/topic/**", "/topic/chat/{room}", "/topic/chat/7/**",
-        "/topic/chat/7/", "/topic/chat/0", "/queue/anything", "/topic/chat/999999999999999999999999"})
+        "/topic/chat/7/", "/topic/chat/0", "/queue/anything", "/user/queue/errors/x", "/user/queue/other",
+        "/queue/errors-usersynthetic-session", "/topic/chat/999999999999999999999999"})
     void rejectsPatternsUnknownDestinationsAndOverflow(String destination) {
         assertThatThrownBy(() -> inbound.preSend(frame(StompCommand.SUBSCRIBE, destination), null))
             .isInstanceOf(MessageDeliveryException.class);
@@ -102,5 +103,24 @@ class ChatAuthorizationTest {
         outbound.disconnected(new SessionDisconnectEvent(this, frame(StompCommand.DISCONNECT, null),
             "synthetic-session", CloseStatus.NORMAL));
         assertThat(outbound.preSend(delivery("/topic/chat/7/read"), null)).isNull();
+    }
+
+    @Test void errorQueueNeedsIdentityAndOnlyReachesTheOwnSession() {
+        assertThat(inbound.preSend(frame(StompCommand.SUBSCRIBE, "/user/queue/errors"), null)).isNotNull();
+        verifyNoInteractions(rooms);
+        assertThat(outbound.preSend(delivery("/queue/errors-usersynthetic-session"), null)).isNotNull();
+        assertThat(outbound.preSend(delivery("/queue/errors-userother-session"), null)).isNull();
+
+        var anonymous = frame(StompCommand.SUBSCRIBE, "/user/queue/errors");
+        StompHeaderAccessor.getAccessor(anonymous, StompHeaderAccessor.class).getSessionAttributes().clear();
+        assertThatThrownBy(() -> inbound.preSend(anonymous, null)).isInstanceOf(MessageDeliveryException.class);
+    }
+
+    @Test void errorQueueIsClosedBeforeSubscribingAndAfterDisconnect() {
+        assertThat(outbound.preSend(delivery("/queue/errors-usersynthetic-session"), null)).isNull();
+        inbound.preSend(frame(StompCommand.SUBSCRIBE, "/user/queue/errors"), null);
+        outbound.disconnected(new SessionDisconnectEvent(this, frame(StompCommand.DISCONNECT, null),
+            "synthetic-session", CloseStatus.NORMAL));
+        assertThat(outbound.preSend(delivery("/queue/errors-usersynthetic-session"), null)).isNull();
     }
 }

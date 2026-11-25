@@ -22,6 +22,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.Instant;
 import java.util.List;
+import java.util.Set;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -35,6 +36,9 @@ class PostQueryServiceTest {
 
     @Mock
     private LoadPostPort loadPostPort;
+
+    @Mock
+    private me.yeonjae.ovlo.application.port.out.moderation.MemberBlockPort memberBlockPort;
 
     @InjectMocks
     private PostQueryService service;
@@ -82,11 +86,11 @@ class PostQueryServiceTest {
         @Test
         @DisplayName("게시판 ID로 게시글 목록을 페이지네이션으로 조회한다")
         void shouldListByBoard_withPagination() {
-            given(loadPostPort.findByBoardId(new BoardId(1L), 0, 20))
+            given(loadPostPort.findByBoardId(new BoardId(1L), Set.of(), 0, 20))
                     .willReturn(List.of(activePost));
-            given(loadPostPort.countByBoardId(new BoardId(1L))).willReturn(1L);
+            given(loadPostPort.countByBoardId(new BoardId(1L), Set.of())).willReturn(1L);
 
-            PageResult<PostResult> result = service.listByBoard(1L, 0, 20);
+            PageResult<PostResult> result = service.listByBoard(1L, null, 0, 20);
 
             assertThat(result.content()).hasSize(1);
             assertThat(result.content().get(0).id()).isEqualTo(1L);
@@ -96,22 +100,22 @@ class PostQueryServiceTest {
         @Test
         @DisplayName("페이지 offset이 올바르게 계산된다")
         void shouldCalculateOffset_correctly() {
-            given(loadPostPort.findByBoardId(eq(new BoardId(1L)), eq(40), eq(20)))
+            given(loadPostPort.findByBoardId(eq(new BoardId(1L)), eq(Set.of()), eq(40), eq(20)))
                     .willReturn(List.of());
-            given(loadPostPort.countByBoardId(new BoardId(1L))).willReturn(0L);
+            given(loadPostPort.countByBoardId(new BoardId(1L), Set.of())).willReturn(0L);
 
-            service.listByBoard(1L, 2, 20);
+            service.listByBoard(1L, null, 2, 20);
 
-            verify(loadPostPort).findByBoardId(new BoardId(1L), 40, 20);
+            verify(loadPostPort).findByBoardId(new BoardId(1L), Set.of(), 40, 20);
         }
 
         @Test
         @DisplayName("게시글이 없으면 빈 목록을 반환한다")
         void shouldReturnEmpty_whenNoPosts() {
-            given(loadPostPort.findByBoardId(any(), anyInt(), anyInt())).willReturn(List.of());
-            given(loadPostPort.countByBoardId(any())).willReturn(0L);
+            given(loadPostPort.findByBoardId(any(), any(), anyInt(), anyInt())).willReturn(List.of());
+            given(loadPostPort.countByBoardId(any(), any())).willReturn(0L);
 
-            PageResult<PostResult> result = service.listByBoard(1L, 0, 20);
+            PageResult<PostResult> result = service.listByBoard(1L, null, 0, 20);
 
             assertThat(result.content()).isEmpty();
             assertThat(result.totalElements()).isZero();
@@ -131,10 +135,10 @@ class PostQueryServiceTest {
                     new CommentId(10L), postId, new MemberId(2L), "댓글 내용", false);
 
             given(loadPostPort.findById(postId)).willReturn(Optional.of(activePost));
-            given(loadPostPort.findCommentsByPostId(postId, 0, 10)).willReturn(List.of(comment));
-            given(loadPostPort.countCommentsByPostId(postId)).willReturn(1L);
+            given(loadPostPort.findCommentsByPostId(postId, Set.of(), 0, 10)).willReturn(List.of(comment));
+            given(loadPostPort.countCommentsByPostId(postId, Set.of())).willReturn(1L);
 
-            PageResult<CommentResult> result = service.getComments(postId, 0, 10);
+            PageResult<CommentResult> result = service.getComments(postId, null, 0, 10);
 
             assertThat(result.content()).hasSize(1);
             assertThat(result.content().get(0).content()).isEqualTo("댓글 내용");
@@ -148,7 +152,7 @@ class PostQueryServiceTest {
             PostId postId = new PostId(999L);
             given(loadPostPort.findById(postId)).willReturn(Optional.empty());
 
-            assertThatThrownBy(() -> service.getComments(postId, 0, 10))
+            assertThatThrownBy(() -> service.getComments(postId, null, 0, 10))
                     .isInstanceOf(PostException.class)
                     .hasMessageContaining("게시글을 찾을 수 없습니다");
         }
@@ -161,7 +165,7 @@ class PostQueryServiceTest {
                     "제목", "내용", true, List.of(), List.of(), Instant.now());
             given(loadPostPort.findById(postId)).willReturn(Optional.of(deletedPost));
 
-            assertThatThrownBy(() -> service.getComments(postId, 0, 10))
+            assertThatThrownBy(() -> service.getComments(postId, null, 0, 10))
                     .isInstanceOf(PostException.class)
                     .hasMessageContaining("게시글을 찾을 수 없습니다");
         }
@@ -171,10 +175,10 @@ class PostQueryServiceTest {
         void shouldReturnEmpty_whenNoComments() {
             PostId postId = new PostId(1L);
             given(loadPostPort.findById(postId)).willReturn(Optional.of(activePost));
-            given(loadPostPort.findCommentsByPostId(postId, 0, 10)).willReturn(List.of());
-            given(loadPostPort.countCommentsByPostId(postId)).willReturn(0L);
+            given(loadPostPort.findCommentsByPostId(postId, Set.of(), 0, 10)).willReturn(List.of());
+            given(loadPostPort.countCommentsByPostId(postId, Set.of())).willReturn(0L);
 
-            PageResult<CommentResult> result = service.getComments(postId, 0, 10);
+            PageResult<CommentResult> result = service.getComments(postId, null, 0, 10);
 
             assertThat(result.content()).isEmpty();
             assertThat(result.totalElements()).isZero();
@@ -185,12 +189,12 @@ class PostQueryServiceTest {
         void shouldCalculateOffset_correctly() {
             PostId postId = new PostId(1L);
             given(loadPostPort.findById(postId)).willReturn(Optional.of(activePost));
-            given(loadPostPort.findCommentsByPostId(postId, 20, 10)).willReturn(List.of());
-            given(loadPostPort.countCommentsByPostId(postId)).willReturn(0L);
+            given(loadPostPort.findCommentsByPostId(postId, Set.of(), 20, 10)).willReturn(List.of());
+            given(loadPostPort.countCommentsByPostId(postId, Set.of())).willReturn(0L);
 
-            service.getComments(postId, 2, 10);
+            service.getComments(postId, null, 2, 10);
 
-            verify(loadPostPort).findCommentsByPostId(postId, 20, 10);
+            verify(loadPostPort).findCommentsByPostId(postId, Set.of(), 20, 10);
         }
     }
 }

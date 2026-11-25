@@ -11,8 +11,18 @@ import { stompClient } from '../../utils/stomp'
 import type { HistoryMessage, Message } from '../../types'
 import { useI18n } from '../../i18n/I18nProvider'
 import { Avatar, Badge, Button, Card, QueryErrorNotice, TextField } from '../../components/ui'
+import { useBlockStatus, useUnblockMember } from '../../hooks/useModeration'
+import { ReportDialog, type ReportTarget } from '../../components/moderation/ReportDialog'
+import { BlockConfirmDialog } from '../../components/moderation/BlockConfirmDialog'
 
 const PAGE_SIZE = 50
+/**
+ * 서버가 거절한 전송은 /user/queue/errors 로 곧바로 알려 온다.
+ * 그 알림도 방송도 이 시간 안에 오지 않으면(연결이 끊겼거나 구버전 서버) '전달되지 않음'으로 표시한다.
+ */
+const SEND_ACK_TIMEOUT_MS = 8000
+
+type PendingSend = { clientId: string; content: string; timer: ReturnType<typeof setTimeout> | undefined }
 const C = {
   border: 'var(--color-border)',
   surface: 'var(--color-surface)',
@@ -54,11 +64,21 @@ export default function ChatRoomPage() {
   const [connected, setConnected] = useState(false)
   const [wsCount, setWsCount] = useState(0)
   const [reconnectVersion, setReconnectVersion] = useState(0)
+  const [sendFailed, setSendFailed] = useState(false)
+  const [reportTarget, setReportTarget] = useState<ReportTarget | null>(null)
+  const [blockConfirmOpen, setBlockConfirmOpen] = useState(false)
 
   const bottomRef = useRef<HTMLDivElement>(null)
   const historyLoadedRef = useRef(false)
   const wsBufferRef = useRef<Message[]>([])
   const seenIdsRef = useRef(new Set<string>())
+  // 보냈지만 아직 서버 방송으로 되돌아오지 않은 내 메시지(보낸 순서)
+  // 같은 배열을 제자리에서 고친다 — 소켓 콜백과 타이머가 서로 다른 렌더에서 같은 목록을 봐야 한다.
+  const pendingSendsRef = useRef<PendingSend[]>([])
+  // 소켓 콜백(doConnect)은 첫 렌더의 클로저를 쥐므로 최신 실패 처리기를 ref 로 넘긴다.
+  const markSendFailedRef = useRef<(entry: PendingSend) => void>(() => {})
+  const currentUserIdRef = useRef(currentUser?.id)
+  useEffect(() => { currentUserIdRef.current = currentUser?.id }, [currentUser?.id])
 
   // 최신 accessToken/id를 ref에 유지 — visibilitychange 핸들러의 stale closure 방지
   const accessTokenRef = useRef(accessToken)
@@ -77,8 +97,18 @@ export default function ChatRoomPage() {
     historyLoadedRef.current = false
     wsBufferRef.current = []
     seenIdsRef.current = new Set()
+    setSendFailed(false)
   }, [id])
   /* eslint-enable react-hooks/set-state-in-effect */
+
+  // 방을 떠나면 대기 중인 전달 확인 타이머를 정리한다
+  useEffect(() => {
+    const pending = pendingSendsRef.current
+    return () => {
+      pending.forEach((p) => clearTimeout(p.timer))
+      pending.splice(0, pending.length)
+    }
+  }, [id])
 
   // 히스토리 로드 → 메시지 상태에 병합
   useEffect(() => {
@@ -126,7 +156,19 @@ export default function ChatRoomPage() {
       stompClient.subscribeRead(roomId, () => {
         queryClient.invalidateQueries({ queryKey: ['chatRoom', roomId] })
       })
+      stompClient.subscribeErrors((error) => {
+        if (String(error.roomId) !== roomId) return
+        const pending = pendingSendsRef.current
+        const failed = error.clientMessageId === null
+          ? pending[0]
+          : pending.find((p) => p.clientId === error.clientMessageId)
+        if (failed) markSendFailedRef.current(failed)
+      })
       stompClient.subscribe(roomId, (incoming) => {
+        if (String(incoming.senderId) === String(currentUserIdRef.current)) {
+          const acknowledged = pendingSendsRef.current.shift()
+          if (acknowledged) clearTimeout(acknowledged.timer)
+        }
         const msgId = String(incoming.messageId)
         if (seenIdsRef.current.has(msgId)) return
         seenIdsRef.current.add(msgId)
@@ -184,10 +226,40 @@ export default function ChatRoomPage() {
     }
   }, [wsCount])
 
+  const myId = currentUser?.id ? Number(currentUser.id) : null
+  const dmPartnerIds = room && room.type === 'DM' ? room.participantIds.filter((p) => p !== myId) : []
+  const dmPartnerId = dmPartnerIds.length === 1 ? dmPartnerIds[0] : null
+  const blockStatus = useBlockStatus(dmPartnerId, dmPartnerId !== null && !!currentUser)
+  const blockedByMe = blockStatus.data?.blockedByMe ?? false
+  const unblock = useUnblockMember()
+
+  const markSendFailed = (entry: PendingSend) => {
+    const pending = pendingSendsRef.current
+    const index = pending.indexOf(entry)
+    if (index < 0) return
+    pending.splice(index, 1)
+    clearTimeout(entry.timer)
+    const content = entry.content
+    setSendFailed(true)
+    setInput((current) => (current.trim() ? current : content))
+    if (dmPartnerId !== null) void blockStatus.refetch()
+  }
+
+  useEffect(() => { markSendFailedRef.current = markSendFailed })
+
   const sendMessage = () => {
-    if (!input.trim() || !connected) return
-    if (stompClient.publish(id!, input)) setInput('')
-    else setConnected(false)
+    if (!input.trim() || !connected || blockedByMe) return
+    const content = input
+    const clientId = crypto.randomUUID()
+    if (stompClient.publish(id!, content, clientId)) {
+      setInput('')
+      setSendFailed(false)
+      const entry: PendingSend = { clientId, content, timer: undefined }
+      entry.timer = setTimeout(() => markSendFailedRef.current(entry), SEND_ACK_TIMEOUT_MS)
+      pendingSendsRef.current.push(entry)
+    } else {
+      setConnected(false)
+    }
   }
 
   if (isLoading) return <p style={{ color: C.muted }}>{t('chat.room.loading')}</p>
@@ -230,6 +302,29 @@ export default function ChatRoomPage() {
             </div>
           </div>
         </div>
+        {dmPartnerId !== null && (
+          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 10 }}>
+            <Button variant="ghost" icon="⚑" style={{ minHeight: 34 }} onClick={() => setReportTarget({ type: 'MEMBER', id: dmPartnerId })}>
+              {t('moderation.report.memberAction')}
+            </Button>
+            {blockStatus.isError ? (
+              <Button variant="ghost" style={{ minHeight: 34 }} onClick={() => void blockStatus.refetch()}>
+                {t('moderation.block.statusRetry')}
+              </Button>
+            ) : blockedByMe ? (
+              <Button variant="secondary" style={{ minHeight: 34 }} disabled={unblock.isPending} onClick={() => unblock.mutate(dmPartnerId)}>
+                {t('moderation.block.unblock')}
+              </Button>
+            ) : (
+              <Button variant="danger" style={{ minHeight: 34 }} disabled={blockStatus.isPending} onClick={() => setBlockConfirmOpen(true)}>
+                {t('moderation.block.action')}
+              </Button>
+            )}
+          </div>
+        )}
+        {unblock.isError && (
+          <p role="alert" style={{ color: C.danger, fontSize: 13, margin: '8px 0 0' }}>{t('moderation.unblock.error')}</p>
+        )}
       </Card>
 
       {hasMore && (
@@ -282,6 +377,17 @@ export default function ChatRoomPage() {
                 )}
                 {msg.content}
                 <div style={{ fontSize: 10, color: isMine ? 'rgba(255,255,255,0.7)' : C.dim, marginTop: 4, textAlign: 'right', display: 'flex', justifyContent: 'flex-end', gap: 4, alignItems: 'center' }}>
+                  {!isMine && currentUser && /^[1-9][0-9]*$/.test(msg.id) && (
+                    <button
+                      type="button"
+                      onClick={() => setReportTarget({ type: 'CHAT_MESSAGE', id: Number(msg.id) })}
+                      aria-label={t('moderation.report.messageAria', { name: nickname })}
+                      title={t('moderation.report.title.CHAT_MESSAGE')}
+                      style={{ marginRight: 'auto', color: C.dim, fontSize: 11, background: 'none', border: 'none', cursor: 'pointer', padding: '2px 4px 2px 0', minHeight: 24 }}
+                    >
+                      {t('moderation.report.action')}
+                    </button>
+                  )}
                   {isMine && (
                     <span style={{ opacity: 0.8 }}>{getReadStatus(msg.sentAt)}</span>
                   )}
@@ -295,6 +401,14 @@ export default function ChatRoomPage() {
       </div>
 
       <Card style={{ padding: 10, marginTop: 10 }}>
+        {blockedByMe && (
+          <p role="status" style={{ margin: '0 0 8px', fontSize: 13, color: C.textSecondary }}>{t('chat.blocked.byMe')}</p>
+        )}
+        {sendFailed && (
+          <p role="alert" style={{ margin: '0 0 8px', fontSize: 13, color: C.danger }}>
+            {dmPartnerId !== null ? t('chat.send.notDeliveredDm') : t('chat.send.notDelivered')}
+          </p>
+        )}
         <div style={{ display: 'flex', gap: 8, alignItems: isMobile ? 'stretch' : 'center', flexDirection: isMobile ? 'column' : 'row' }}>
           <TextField
             placeholder={t('chat.room.msgPlaceholder')}
@@ -302,11 +416,11 @@ export default function ChatRoomPage() {
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && sendMessage()}
             style={{ flex: 1, fontSize: 16 }}
-            disabled={!connected}
+            disabled={!connected || blockedByMe}
           />
           <Button
             onClick={sendMessage}
-            disabled={!connected || !input.trim()}
+            disabled={!connected || blockedByMe || !input.trim()}
             variant="primary"
             style={{ width: isMobile ? '100%' : 'auto', minHeight: isMobile ? 44 : undefined }}
           >
@@ -314,6 +428,16 @@ export default function ChatRoomPage() {
           </Button>
         </div>
       </Card>
+      {reportTarget && (
+        <ReportDialog key={`${reportTarget.type}-${reportTarget.id}`} target={reportTarget} onClose={() => setReportTarget(null)} />
+      )}
+      {blockConfirmOpen && dmPartnerId !== null && (
+        <BlockConfirmDialog
+          memberId={dmPartnerId}
+          nickname={room.participantNicknames?.[dmPartnerId] ?? `#${dmPartnerId}`}
+          onClose={() => setBlockConfirmOpen(false)}
+        />
+      )}
     </div>
   )
 }

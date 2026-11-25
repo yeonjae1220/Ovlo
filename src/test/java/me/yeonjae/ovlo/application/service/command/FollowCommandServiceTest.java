@@ -28,6 +28,8 @@ class FollowCommandServiceTest {
     @Mock LoadFollowPort loadFollowPort;
     @Mock SaveFollowPort saveFollowPort;
 
+    @Mock me.yeonjae.ovlo.application.port.out.moderation.MemberBlockPort memberBlockPort;
+
     @InjectMocks
     FollowCommandService service;
 

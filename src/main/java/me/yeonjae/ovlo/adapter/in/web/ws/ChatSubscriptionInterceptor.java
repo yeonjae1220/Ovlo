@@ -36,9 +36,17 @@ public class ChatSubscriptionInterceptor implements ChannelInterceptor {
         if (headers == null) return message;
         var command = headers.getCommand();
         if (command != StompCommand.SUBSCRIBE && command != StompCommand.SEND) return message;
-        Long room = roomId(command == StompCommand.SUBSCRIBE ? TOPIC : SEND, headers.getDestination());
         var attributes = headers.getSessionAttributes();
         Object rawMember = attributes == null ? null : attributes.get(WsSessionKeys.MEMBER_ID);
+        if (command == StompCommand.SUBSCRIBE && ChatWebSocketHandler.ERROR_SUBSCRIPTION.equals(headers.getDestination())) {
+            // 전송 실패 알림 큐. 사용자 목적지 해석이 이 세션 전용 주소로 바꾸므로 방 권한 확인은 필요 없다.
+            if (!(rawMember instanceof Long member) || headers.getSessionId() == null) {
+                throw new MessageDeliveryException(message, "세션이 필요합니다");
+            }
+            outbound.register(headers.getSessionId(), member);
+            return message;
+        }
+        Long room = roomId(command == StompCommand.SUBSCRIBE ? TOPIC : SEND, headers.getDestination());
         if (room == null || !(rawMember instanceof Long member) || !rooms.isMemberOfRoom(room, member)) {
             throw new MessageDeliveryException(message, "채팅방 접근 권한이 없습니다");
         }
