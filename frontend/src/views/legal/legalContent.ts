@@ -1,17 +1,32 @@
 /**
- * 법적 문서 원문 (ko·en). UI 언어가 ko 면 한국어, 그 외는 영어를 보여 준다.
- * 문서 버전은 서버에 기록되는 동의 기록과 맞춰야 하므로 바꿀 때 version 과 updatedAt 을 같이 올린다.
+ * 법적 문서 원문. 한국어가 정본이고, 영어와 나머지 UI 언어 번역을 둔다(terms/·privacy/).
+ * 번역이 없는 언어는 영어를 보여 준다.
+ * 문서 버전은 서버에 기록되는 동의 기록과 맞춰야 하므로 바꿀 때 version 과 updatedAt 을 모든 언어에서 같이 올린다.
  *
  * ⚠️ 대외 연락처가 아직 정해지지 않았다. CONTACT_PLACEHOLDER 가 남아 있는 동안은 회원 대규모 모집·파일럿을 시작하지 않는다.
  */
+import type { UiLanguage } from '@/i18n/messages'
+import { GOOGLE_PRIVACY_URL, LEGAL_CONTACT_PLACEHOLDER, YOUTUBE_TERMS_URL } from './legalConstants'
+import { PRIVACY_DE } from './privacy/de'
+import { PRIVACY_ES } from './privacy/es'
+import { PRIVACY_FR } from './privacy/fr'
+import { PRIVACY_JA } from './privacy/ja'
+import { PRIVACY_PT } from './privacy/pt'
+import { PRIVACY_RU } from './privacy/ru'
+import { PRIVACY_ZH } from './privacy/zh'
+import { TERMS_DE } from './terms/de'
+import { TERMS_ES } from './terms/es'
+import { TERMS_FR } from './terms/fr'
+import { TERMS_JA } from './terms/ja'
+import { TERMS_PT } from './terms/pt'
+import { TERMS_RU } from './terms/ru'
+import { TERMS_ZH } from './terms/zh'
 
-export const LEGAL_CONTACT_PLACEHOLDER = '[연락처 확정 후 기재 / to be announced]'
+export { LEGAL_CONTACT_PLACEHOLDER }
 
 export type LegalLink = { label: string; href: string }
 export type LegalSection = { heading: string; paragraphs: string[]; bullets?: string[]; links?: LegalLink[] }
 
-const YOUTUBE_TERMS_URL = 'https://www.youtube.com/t/terms'
-const GOOGLE_PRIVACY_URL = 'https://policies.google.com/privacy'
 export type LegalDocument = {
   version: string
   updatedAt: string
@@ -20,10 +35,13 @@ export type LegalDocument = {
   sections: LegalSection[]
 }
 
-export const PRIVACY_POLICY: Record<'ko' | 'en', LegalDocument> = {
+/** ko·en 은 반드시 있고, 다른 언어는 번역이 있을 때만 둔다. */
+export type LegalDocuments = { ko: LegalDocument; en: LegalDocument } & Partial<Record<UiLanguage, LegalDocument>>
+
+export const PRIVACY_POLICY: LegalDocuments = {
   ko: {
-    version: 'v2',
-    updatedAt: '2026-11-24',
+    version: 'v3',
+    updatedAt: '2026-11-25',
     title: '개인정보처리방침',
     intro:
       'Ovlo(이하 "서비스")는 「개인정보 보호법」에 따라 이용자의 개인정보를 보호하고 관련 고충을 신속하게 처리하기 위해 다음과 같이 개인정보처리방침을 둡니다.',
@@ -114,11 +132,15 @@ export const PRIVACY_POLICY: Record<'ko' | 'en', LegalDocument> = {
         heading: '11. 방침의 변경',
         paragraphs: ['이 방침을 변경할 때는 시행 7일 전부터 서비스 공지로 알립니다. 수집 항목·목적·보유 기간이 이용자에게 불리하게 바뀌는 경우에는 30일 전에 알립니다.'],
       },
+      {
+        heading: '12. 언어',
+        paragraphs: ['이 방침은 한국어로 작성됩니다. 이용자의 편의를 위해 다른 언어 번역본을 제공하며, 번역본과 한국어 원문의 내용이 다르면 한국어 원문이 우선합니다.'],
+      },
     ],
   },
   en: {
-    version: 'v2',
-    updatedAt: '2026-11-24',
+    version: 'v3',
+    updatedAt: '2026-11-25',
     title: 'Privacy Policy',
     intro:
       'Ovlo (the "Service") protects your personal data under the Personal Information Protection Act of the Republic of Korea and handles related requests promptly, as described below.',
@@ -209,11 +231,22 @@ export const PRIVACY_POLICY: Record<'ko' | 'en', LegalDocument> = {
         heading: '11. Changes',
         paragraphs: ['We announce changes to this policy at least 7 days before they take effect, or 30 days before when the change is unfavorable to you (items collected, purposes or retention).'],
       },
+      {
+        heading: '12. Language',
+        paragraphs: ['This policy is written in Korean. Translations into other languages are provided for your convenience; if a translation and the Korean original differ, the Korean original prevails.'],
+      },
     ],
   },
+  ja: PRIVACY_JA,
+  zh: PRIVACY_ZH,
+  es: PRIVACY_ES,
+  fr: PRIVACY_FR,
+  de: PRIVACY_DE,
+  pt: PRIVACY_PT,
+  ru: PRIVACY_RU,
 }
 
-export const TERMS_OF_SERVICE: Record<'ko' | 'en', LegalDocument> = {
+export const TERMS_OF_SERVICE: LegalDocuments = {
   ko: {
     version: 'v3',
     updatedAt: '2026-11-25',
@@ -309,6 +342,10 @@ export const TERMS_OF_SERVICE: Record<'ko' | 'en', LegalDocument> = {
       {
         heading: '13. 약관의 변경',
         paragraphs: [`약관을 바꿀 때는 시행 7일 전(이용자에게 불리한 변경은 30일 전)에 공지합니다. 문의: ${LEGAL_CONTACT_PLACEHOLDER}`],
+      },
+      {
+        heading: '14. 언어',
+        paragraphs: ['이 약관은 한국어로 작성됩니다. 이용자의 편의를 위해 다른 언어 번역본을 제공하며, 번역본과 한국어 원문의 내용이 다르면 한국어 원문이 우선합니다.'],
       },
     ],
   },
@@ -406,8 +443,19 @@ export const TERMS_OF_SERVICE: Record<'ko' | 'en', LegalDocument> = {
         heading: '13. Changes to these terms',
         paragraphs: [`We announce changes at least 7 days in advance (30 days for changes unfavorable to users). Contact: ${LEGAL_CONTACT_PLACEHOLDER}`],
       },
+      {
+        heading: '14. Language',
+        paragraphs: ['These terms are written in Korean. Translations into other languages are provided for your convenience; if a translation and the Korean original differ, the Korean original prevails.'],
+      },
     ],
   },
+  ja: TERMS_JA,
+  zh: TERMS_ZH,
+  es: TERMS_ES,
+  fr: TERMS_FR,
+  de: TERMS_DE,
+  pt: TERMS_PT,
+  ru: TERMS_RU,
 }
 
 /**
