@@ -107,5 +107,9 @@ export const TERMS_PT: LegalDocument = {
         `As alterações destes termos são comunicadas 7 dias antes de entrarem em vigor (30 dias antes, no caso de alterações desfavoráveis aos usuários). Contato: ${LEGAL_CONTACT_PLACEHOLDER}`,
       ],
     },
+    {
+      heading: '14. Idioma',
+      paragraphs: ['Estes termos são redigidos em coreano. As traduções para outros idiomas são fornecidas por conveniência; em caso de divergência entre uma tradução e o original em coreano, prevalece o original em coreano.'],
+    },
   ],
 }

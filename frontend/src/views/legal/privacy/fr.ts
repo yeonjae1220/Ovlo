@@ -101,5 +101,9 @@ export const PRIVACY_FR: LegalDocument = {
         'Toute modification de la présente politique est annoncée par un avis dans le Service à partir de 7 jours avant son entrée en vigueur. Lorsque les données collectées, les finalités ou les durées de conservation sont modifiées de manière défavorable aux utilisateurs, la modification est annoncée 30 jours à l’avance.',
       ],
     },
+    {
+      heading: '12. Langue',
+      paragraphs: ['La présente politique est rédigée en coréen. Des traductions dans d’autres langues sont fournies à titre indicatif ; en cas de divergence entre une traduction et l’original coréen, l’original coréen prévaut.'],
+    },
   ],
 }

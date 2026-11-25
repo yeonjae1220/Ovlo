@@ -132,6 +132,10 @@ export const PRIVACY_POLICY: LegalDocuments = {
         heading: '11. 방침의 변경',
         paragraphs: ['이 방침을 변경할 때는 시행 7일 전부터 서비스 공지로 알립니다. 수집 항목·목적·보유 기간이 이용자에게 불리하게 바뀌는 경우에는 30일 전에 알립니다.'],
       },
+      {
+        heading: '12. 언어',
+        paragraphs: ['이 방침은 한국어로 작성됩니다. 이용자의 편의를 위해 다른 언어 번역본을 제공하며, 번역본과 한국어 원문의 내용이 다르면 한국어 원문이 우선합니다.'],
+      },
     ],
   },
   en: {
@@ -226,6 +230,10 @@ export const PRIVACY_POLICY: LegalDocuments = {
       {
         heading: '11. Changes',
         paragraphs: ['We announce changes to this policy at least 7 days before they take effect, or 30 days before when the change is unfavorable to you (items collected, purposes or retention).'],
+      },
+      {
+        heading: '12. Language',
+        paragraphs: ['This policy is written in Korean. Translations into other languages are provided for your convenience; if a translation and the Korean original differ, the Korean original prevails.'],
       },
     ],
   },
@@ -335,6 +343,10 @@ export const TERMS_OF_SERVICE: LegalDocuments = {
         heading: '13. 약관의 변경',
         paragraphs: [`약관을 바꿀 때는 시행 7일 전(이용자에게 불리한 변경은 30일 전)에 공지합니다. 문의: ${LEGAL_CONTACT_PLACEHOLDER}`],
       },
+      {
+        heading: '14. 언어',
+        paragraphs: ['이 약관은 한국어로 작성됩니다. 이용자의 편의를 위해 다른 언어 번역본을 제공하며, 번역본과 한국어 원문의 내용이 다르면 한국어 원문이 우선합니다.'],
+      },
     ],
   },
   en: {
@@ -430,6 +442,10 @@ export const TERMS_OF_SERVICE: LegalDocuments = {
       {
         heading: '13. Changes to these terms',
         paragraphs: [`We announce changes at least 7 days in advance (30 days for changes unfavorable to users). Contact: ${LEGAL_CONTACT_PLACEHOLDER}`],
+      },
+      {
+        heading: '14. Language',
+        paragraphs: ['These terms are written in Korean. Translations into other languages are provided for your convenience; if a translation and the Korean original differ, the Korean original prevails.'],
       },
     ],
   },

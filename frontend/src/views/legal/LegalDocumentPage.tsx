@@ -18,7 +18,7 @@ type Props = {
 /**
  * 개인정보처리방침·이용약관 공통 렌더러. UI 언어의 번역이 있으면 그 언어로, 없으면 영어로 보여 준다.
  * 연락처 placeholder 가 남아 있으면 눈에 띄게 표시해 "확정 전" 상태를 숨기지 않는다.
- * 정본은 한국어이므로, 번역본을 보여 줄 때는 한국어 원문이 우선한다는 조항과 원문 링크를 함께 싣는다.
+ * 정본은 한국어다(각 문서의 마지막 '언어' 조항). 번역본을 보여 줄 때는 한국어 원문으로 가는 링크를 단다.
  */
 export default function LegalDocumentPage({ documents, related, path, original = false }: Props) {
   const { language, t } = useI18n()
@@ -60,9 +60,7 @@ export default function LegalDocumentPage({ documents, related, path, original =
       )}
 
       {isTranslation && (
-        <p role="note" style={{ margin: '0 0 24px', fontSize: 14, color: 'var(--color-text-dim)' }}>
-          {t('legal.translationNotice')}
-          {' '}
+        <p style={{ margin: '0 0 24px', fontSize: 14 }}>
           <Link href={`${path}/ko`} hrefLang="ko" style={{ color: 'var(--color-primary)' }}>{t('legal.viewKoreanOriginal')}</Link>
         </p>
       )}

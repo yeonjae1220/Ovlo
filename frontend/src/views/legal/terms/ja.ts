@@ -98,5 +98,9 @@ export const TERMS_JA: LegalDocument = {
       heading: '13. 規約の変更',
       paragraphs: [`本規約を変更する場合は、施行の7日前（利用者に不利な変更は30日前）までに告知します。お問い合わせ：${LEGAL_CONTACT_PLACEHOLDER}`],
     },
+    {
+      heading: '14. 言語',
+      paragraphs: ['本規約は韓国語で作成されます。利用者の便宜のために他の言語の翻訳を提供しますが、翻訳と韓国語の原文の内容が異なる場合は、韓国語の原文が優先します。'],
+    },
   ],
 }

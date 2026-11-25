@@ -101,5 +101,9 @@ export const PRIVACY_DE: LegalDocument = {
         'Änderungen dieser Datenschutzerklärung werden ab 7 Tage vor ihrem Inkrafttreten durch eine Mitteilung im Dienst bekannt gegeben. Ändern sich die erhobenen Daten, die Zwecke oder die Aufbewahrungsdauer zum Nachteil der Nutzer, erfolgt die Mitteilung 30 Tage vorher.',
       ],
     },
+    {
+      heading: '12. Sprache',
+      paragraphs: ['Diese Datenschutzerklärung wird in koreanischer Sprache verfasst. Übersetzungen in andere Sprachen werden zur Erleichterung bereitgestellt; weichen eine Übersetzung und das koreanische Original voneinander ab, gilt das koreanische Original.'],
+    },
   ],
 }

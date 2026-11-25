@@ -107,5 +107,9 @@ export const TERMS_FR: LegalDocument = {
         `Toute modification des présentes conditions est annoncée 7 jours avant son entrée en vigueur (30 jours pour les modifications défavorables aux utilisateurs). Contact : ${LEGAL_CONTACT_PLACEHOLDER}`,
       ],
     },
+    {
+      heading: '14. Langue',
+      paragraphs: ['Les présentes conditions sont rédigées en coréen. Des traductions dans d’autres langues sont fournies à titre indicatif ; en cas de divergence entre une traduction et l’original coréen, l’original coréen prévaut.'],
+    },
   ],
 }

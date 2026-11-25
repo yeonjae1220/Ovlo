@@ -79,6 +79,14 @@ for (const [name, docs] of [['terms', legal.TERMS_OF_SERVICE], ['privacy', legal
     assert.equal(countPlaceholders(doc), countPlaceholders(docs.ko), `${lang} ${name} contact placeholder`)
   }
 }
+// 모든 언어의 두 문서는 마지막 조항에서 한국어 원문이 정본이고 우선한다고 밝힌다
+const KOREAN_WORD = { ko: /한국어/g, en: /Korean/g, ja: /韓国語/g, zh: /韩文/g, es: /coreano/g, fr: /coréen/g, de: /koreanisch/gi, pt: /coreano/g, ru: /корейск/gi }
+for (const lang of TERMS_LANGUAGES) {
+  for (const docs of [legal.TERMS_OF_SERVICE, legal.PRIVACY_POLICY]) {
+    const last = JSON.stringify(docs[lang].sections.at(-1))
+    assert.ok((last.match(KOREAN_WORD[lang]) ?? []).length >= 2, `${lang} ${docs[lang].title}: last clause names the Korean original as prevailing`)
+  }
+}
 for (const lang of TERMS_LANGUAGES) {
   assert.match(JSON.stringify(legal.TERMS_OF_SERVICE[lang]), /24/, `${lang} terms: 24-hour review`)
   // YouTube API 정책 III.A: 처리방침이 API 사용 사실을 밝힌다
@@ -123,18 +131,17 @@ const fallbackHtml = renderToStaticMarkup(React.createElement(Page, {
 }))
 assert.ok(fallbackHtml.includes(legal.PRIVACY_POLICY.en.title), 'missing translation falls back to en')
 
-// 번역본에는 한국어 원문이 우선한다는 조항이 붙고, 한국어 원문에는 붙지 않는다
-assert.ok(html.includes('legal.translationNotice'), 'translated terms carry the Korean-prevails clause')
-assert.ok(fallbackHtml.includes('legal.translationNotice'), 'en fallback carries the Korean-prevails clause')
+// 번역본은 한국어 원문으로 링크하고, 한국어 원문에는 그 링크가 없다
+assert.match(fallbackHtml, /<a href="\/privacy\/ko" hrefLang="ko"[^>]*>legal\.viewKoreanOriginal<\/a>/, 'en fallback links to the Korean original')
 for (const documents of [legal.TERMS_OF_SERVICE, legal.PRIVACY_POLICY]) {
   const koHtml = renderToStaticMarkup(React.createElement(loadPage('ko'), {
     documents, related: { href: '/terms', labelKey: 'legal.viewTerms' }, path: '/privacy',
   }))
   assert.ok(koHtml.includes(documents.ko.title), 'ko UI shows the Korean original')
-  assert.ok(!koHtml.includes('legal.translationNotice'), 'Korean original has no translation clause')
+  assert.ok(!koHtml.includes('legal.viewKoreanOriginal'), 'Korean original does not link to itself')
 }
 for (const [lang, dict] of Object.entries(messages)) {
-  for (const key of ['legal.translationNotice', 'legal.viewKoreanOriginal', 'legal.viewTranslation']) {
+  for (const key of ['legal.viewKoreanOriginal', 'legal.viewTranslation']) {
     assert.ok(dict[key], `${lang} has ${key}`)
   }
 }
@@ -149,7 +156,7 @@ const renderOriginal = language => renderToStaticMarkup(React.createElement(load
 const originalForJa = renderOriginal('ja')
 assert.ok(originalForJa.includes(legal.TERMS_OF_SERVICE.ko.title), 'original route shows the Korean terms in a ja UI')
 assert.match(originalForJa, /<article lang="ko"/, 'Korean original is marked as Korean')
-assert.ok(!originalForJa.includes('legal.translationNotice'), 'Korean original has no translation clause')
+assert.ok(!originalForJa.includes('legal.viewKoreanOriginal'), 'Korean original does not link to itself')
 assert.match(originalForJa, /<a href="\/terms"[^>]*>legal\.viewTranslation<\/a>/, 'original links back to the translation')
 assert.ok(!renderOriginal('ko').includes('legal.viewTranslation'), 'ko UI has no translation to return to')
 assert.match(originalForJa, /<a href="\/privacy\/ko"[^>]*>legal\.viewPrivacy<\/a>/, 'original links to the Korean original of the related document')

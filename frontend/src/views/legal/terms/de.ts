@@ -107,5 +107,9 @@ export const TERMS_DE: LegalDocument = {
         `Änderungen dieser Nutzungsbedingungen werden 7 Tage vor ihrem Inkrafttreten angekündigt (Änderungen zum Nachteil der Nutzer 30 Tage vorher). Kontakt: ${LEGAL_CONTACT_PLACEHOLDER}`,
       ],
     },
+    {
+      heading: '14. Sprache',
+      paragraphs: ['Diese Nutzungsbedingungen werden in koreanischer Sprache verfasst. Übersetzungen in andere Sprachen werden zur Erleichterung bereitgestellt; weichen eine Übersetzung und das koreanische Original voneinander ab, gilt das koreanische Original.'],
+    },
   ],
 }

@@ -98,5 +98,9 @@ export const TERMS_ZH: LegalDocument = {
       heading: '13. 条款的变更',
       paragraphs: [`变更本条款时，将于生效 7 日前（对用户不利的变更为 30 日前）进行公告。联系方式：${LEGAL_CONTACT_PLACEHOLDER}`],
     },
+    {
+      heading: '14. 语言',
+      paragraphs: ['本条款以韩文撰写。为方便用户，我们提供其他语言的译本；如译本与韩文原文不一致，以韩文原文为准。'],
+    },
   ],
 }

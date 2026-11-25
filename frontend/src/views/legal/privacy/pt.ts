@@ -101,5 +101,9 @@ export const PRIVACY_PT: LegalDocument = {
         'Ao alterar esta política, avisaremos por meio de comunicado no Serviço a partir de 7 dias antes da entrada em vigor. Se os dados coletados, as finalidades ou os prazos de conservação forem alterados de forma desfavorável ao usuário, avisaremos com 30 dias de antecedência.',
       ],
     },
+    {
+      heading: '12. Idioma',
+      paragraphs: ['Esta política é redigida em coreano. As traduções para outros idiomas são fornecidas por conveniência; em caso de divergência entre uma tradução e o original em coreano, prevalece o original em coreano.'],
+    },
   ],
 }
