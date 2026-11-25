@@ -22,8 +22,12 @@ public class MarketplaceApiController {
     private final RateLimiterService limiter;
     // 차단은 회원 단위다(중고거래에서 막으면 게시판·DM에서도 막힌다).
     private final me.yeonjae.ovlo.application.port.in.moderation.BlockMemberUseCase blocks;
+    private final me.yeonjae.ovlo.application.port.in.moderation.GetBlockedMembersQuery blockedMembers;
     public MarketplaceApiController(MarketplaceUseCase market,TranslateListingUseCase translations,RateLimiterService limiter,
-            me.yeonjae.ovlo.application.port.in.moderation.BlockMemberUseCase blocks) {this.market=market;this.translations=translations;this.limiter=limiter;this.blocks=blocks;}
+            me.yeonjae.ovlo.application.port.in.moderation.BlockMemberUseCase blocks,
+            me.yeonjae.ovlo.application.port.in.moderation.GetBlockedMembersQuery blockedMembers) {
+        this.market=market;this.translations=translations;this.limiter=limiter;this.blocks=blocks;this.blockedMembers=blockedMembers;
+    }
     public record ListingRequest(@NotBlank @Size(max=120) String title,@NotBlank @Size(max=5000) String description,
             @NotBlank String sourceLanguage,@NotBlank String category,@NotBlank String condition,
             boolean free,boolean bundle,boolean partialPickup,@NotNull AskingPrice price,@NotNull PickupLocation location,
@@ -71,8 +75,12 @@ public class MarketplaceApiController {
     @PostMapping("/{id}/reports") @ResponseStatus(HttpStatus.NO_CONTENT) public void report(@AuthenticationPrincipal Long actor,@PathVariable long id,@Valid @RequestBody ReportRequest r) {
         limiter.checkMarketplaceWriteRate(actor); market.report(actor,id,r.reason());
     }
-    @GetMapping("/blocks") public MarketplaceUseCase.BlockedMemberPage blocks(@AuthenticationPrincipal Long actor,
-            @RequestParam(required=false) @Positive Long before) {return market.blockedMembers(actor,before);}
+    // 차단은 회원 단위(/api/v1/blocks)로 옮겼다. 배포 중 이전 프론트엔드가 부르는 주소라 남겨 두며, 다음 릴리스에서 지운다.
+    @Deprecated(forRemoval=true)
+    @GetMapping("/blocks") public me.yeonjae.ovlo.application.dto.result.BlockedMemberPageResult blocks(@AuthenticationPrincipal Long actor,
+            @RequestParam(required=false) @Positive Long before) {return blockedMembers.blockedMembers(actor,before);}
+    @Deprecated(forRemoval=true)
     @PutMapping("/blocks/{target}") @ResponseStatus(HttpStatus.NO_CONTENT) public void block(@AuthenticationPrincipal Long actor,@PathVariable long target) {blocks.block(actor,target);}
+    @Deprecated(forRemoval=true)
     @DeleteMapping("/blocks/{target}") @ResponseStatus(HttpStatus.NO_CONTENT) public void unblock(@AuthenticationPrincipal Long actor,@PathVariable long target) {blocks.unblock(actor,target);}
 }

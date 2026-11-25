@@ -44,6 +44,7 @@ class MarketplaceIntegrationTest {
         r.add("spring.jpa.hibernate.ddl-auto",()->"none");r.add("spring.jpa.properties.hibernate.dialect",()->"org.hibernate.dialect.PostgreSQLDialect");
     }
     @Autowired MarketplaceUseCase market;
+    @Autowired me.yeonjae.ovlo.application.port.in.moderation.BlockMemberUseCase blocks;
     @Autowired TranslateListingUseCase translations;
     @Autowired MarketplaceStore store;
     @Autowired TranslationLeasePort leases;
@@ -131,16 +132,16 @@ class MarketplaceIntegrationTest {
             assertThat(rooms).hasSize(1);long room=rooms.iterator().next();
             assertThat(jdbc.queryForObject("SELECT count(*) FROM marketplace_chat WHERE listing_id=?",Long.class,l.id())).isEqualTo(1);
             messages.sendMessage(new SendMessageCommand(room,buyer,"Available?"));
-            market.block(seller,buyer,true);
+            blocks.block(seller,buyer);
             assertThatThrownBy(()->messages.sendMessage(new SendMessageCommand(room,buyer,"Blocked message"))).hasMessageContaining("blocked");
             assertThatThrownBy(()->market.contact(buyer,l.id())).hasMessageContaining("not found");
-            market.block(seller,buyer,false);assertThat(market.contact(buyer,l.id())).isEqualTo(room);
+            blocks.unblock(seller,buyer);assertThat(market.contact(buyer,l.id())).isEqualTo(room);
             mvc.perform(get("/api/v1/chat/rooms/"+room).header("Authorization",token(other))).andExpect(status().isNotFound());
         }
     }
     @Test void blockListIsPrivateAndAllowsUnblockingWithoutAccessToListing() throws Exception {
         var listing=market.create(seller,details("Blocked listing",market.upload(seller,png)));
-        market.block(buyer,seller,true);market.block(other,buyer,true);
+        blocks.block(buyer,seller);blocks.block(other,buyer);
         mvc.perform(get("/api/v1/marketplace/blocks")).andExpect(status().isUnauthorized());
         mvc.perform(get("/api/v1/marketplace/"+listing.id()).header("Authorization",token(buyer))).andExpect(status().isNotFound());
         mvc.perform(get("/api/v1/marketplace/blocks").header("Authorization",token(buyer)).param("actor",""+other))
@@ -160,12 +161,12 @@ class MarketplaceIntegrationTest {
     }
     @Test void blockListHasBoundedStablePaginationWhileEntriesAreRemoved() throws Exception {
         var ids=new ArrayList<Long>();
-        for(int i=0;i<21;i++) {long id=member();ids.add(id);market.block(buyer,id,true);}
+        for(int i=0;i<21;i++) {long id=member();ids.add(id);blocks.block(buyer,id);}
         mvc.perform(get("/api/v1/marketplace/blocks").header("Authorization",token(buyer)))
                 .andExpect(status().isOk()).andExpect(jsonPath("$.content.length()").value(20))
                 .andExpect(jsonPath("$.content[0].memberId").value(ids.getLast()))
                 .andExpect(jsonPath("$.nextBefore").value(ids.get(1)));
-        market.block(buyer,ids.getLast(),false);
+        blocks.unblock(buyer,ids.getLast());
         mvc.perform(get("/api/v1/marketplace/blocks").header("Authorization",token(buyer)).param("before",ids.get(1).toString()))
                 .andExpect(status().isOk()).andExpect(jsonPath("$.content.length()").value(1))
                 .andExpect(jsonPath("$.content[0].memberId").value(ids.getFirst()))
@@ -383,7 +384,7 @@ class MarketplaceIntegrationTest {
         var page=market.search(buyer,filter);assertThat(page.content()).hasSize(20);assertThat(page.hasNext()).isTrue();
         var next=market.search(buyer,new me.yeonjae.ovlo.application.dto.command.MarketplaceSearch("FR","paris",school,null,null,"KRW",ListingTag.RETURN_HOME,false,true,true,false,1));
         assertThat(next.content()).containsExactly(listings.getFirst());assertThat(next.hasNext()).isFalse();
-        market.block(seller,buyer,true);assertThat(adapter.search(buyer,filter)).isEmpty();
+        blocks.block(seller,buyer);assertThat(adapter.search(buyer,filter)).isEmpty();
     }
     @Test void waitingTranslatorRechecksEachCallersBlockStatus() throws Exception {
         var listing=market.create(seller,details("Blocked follower",market.upload(seller,png)));
@@ -400,7 +401,7 @@ class MarketplaceIntegrationTest {
             try {
                 assertThat(entered.await(10,TimeUnit.SECONDS)).isTrue();
                 var next=pool.submit(()->second.translate(other,listing.id(),"ko"));
-                assertThat(denied.await(10,TimeUnit.SECONDS)).isTrue();market.block(seller,other,true);
+                assertThat(denied.await(10,TimeUnit.SECONDS)).isTrue();blocks.block(seller,other);
                 assertThatThrownBy(()->next.get(5,TimeUnit.SECONDS)).hasCauseInstanceOf(me.yeonjae.ovlo.domain.marketplace.exception.MarketplaceException.class);
             } finally {finish.countDown();}
             assertThat(first.get(10,TimeUnit.SECONDS).title()).isEqualTo("제목");
