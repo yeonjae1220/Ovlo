@@ -33,15 +33,18 @@ public class ChatCommandService implements CreateChatRoomUseCase, SendMessageUse
     private final SaveReadMarkerPort saveReadMarkerPort;
     private final ApplicationEventPublisher eventPublisher;
     private final me.yeonjae.ovlo.application.port.out.chat.ChatMessagePolicyPort messagePolicy;
+    private final me.yeonjae.ovlo.application.port.out.moderation.MemberBlockPort memberBlockPort;
 
     public ChatCommandService(LoadChatPort loadChatPort, SaveChatPort saveChatPort,
                               SaveReadMarkerPort saveReadMarkerPort, ApplicationEventPublisher eventPublisher,
-                              me.yeonjae.ovlo.application.port.out.chat.ChatMessagePolicyPort messagePolicy) {
+                              me.yeonjae.ovlo.application.port.out.chat.ChatMessagePolicyPort messagePolicy,
+                              me.yeonjae.ovlo.application.port.out.moderation.MemberBlockPort memberBlockPort) {
         this.loadChatPort = loadChatPort;
         this.saveChatPort = saveChatPort;
         this.saveReadMarkerPort = saveReadMarkerPort;
         this.eventPublisher = eventPublisher;
         this.messagePolicy = messagePolicy;
+        this.memberBlockPort = memberBlockPort;
     }
 
     @Override
@@ -62,6 +65,9 @@ public class ChatCommandService implements CreateChatRoomUseCase, SendMessageUse
             }
             MemberId m1 = participants.get(0);
             MemberId m2 = participants.get(1);
+            if (memberBlockPort.blockedEitherWay(m1.value(), m2.value())) {
+                throw new ChatException("상대와 메시지를 주고받을 수 없습니다", ChatException.ErrorType.FORBIDDEN);
+            }
             Optional<ChatRoomId> existingRoomId = loadChatPort.findDmRoomId(m1, m2);
             if (existingRoomId.isPresent()) {
                 ChatRoom existingRoom = loadChatPort.findById(existingRoomId.get())

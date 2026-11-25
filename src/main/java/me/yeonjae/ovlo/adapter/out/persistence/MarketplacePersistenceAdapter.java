@@ -45,7 +45,7 @@ public class MarketplacePersistenceAdapter implements MarketplaceStore {
                 """);
         var p=new MapSqlParameterSource("actor",actor).addValue("offset",s.page()*20);
         if (s.mine()) sql.append(" AND l.seller_id=:actor");
-        else sql.append(" AND NOT l.hidden AND NOT EXISTS (SELECT 1 FROM marketplace_block b WHERE (b.actor_id=:actor AND b.target_id=l.seller_id) OR (b.target_id=:actor AND b.actor_id=l.seller_id))");
+        else sql.append(" AND NOT l.hidden AND NOT EXISTS (SELECT 1 FROM member_block b WHERE (b.actor_id=:actor AND b.target_id=l.seller_id) OR (b.target_id=:actor AND b.actor_id=l.seller_id))");
         filter(sql,p,"country","l.country_code",s.country()); filter(sql,p,"city","lower(l.city)",s.city()==null?null:s.city().trim().toLowerCase(Locale.ROOT));
         filter(sql,p,"school","l.university_id",s.universityId()); filter(sql,p,"category","l.category",s.category()); filter(sql,p,"currency","l.currency",s.currency());
         filter(sql,p,"free","l.free",s.free()); filter(sql,p,"bundle","l.bundle",s.bundle());
@@ -130,13 +130,13 @@ public class MarketplacePersistenceAdapter implements MarketplaceStore {
                 LEFT JOIN marketplace_listing l ON l.id=lp.listing_id
                 WHERE p.id=:id AND NOT p.deletion_pending AND ((lp.listing_id IS NULL AND p.owner_id=:viewer) OR
                     (NOT l.deleted AND NOT l.hidden AND NOT EXISTS (
-                        SELECT 1 FROM marketplace_block b WHERE
+                        SELECT 1 FROM member_block b WHERE
                         (b.actor_id=:viewer AND b.target_id=l.seller_id) OR
                         (b.target_id=:viewer AND b.actor_id=l.seller_id))))
                 """,Map.of("id",id,"viewer",viewer),Long.class)>0;
     }
     @Override public List<me.yeonjae.ovlo.application.dto.result.BlockedMarketplaceMember> blockedMembers(long actor,Long before) {
-        String sql="SELECT b.target_id,m.nickname FROM marketplace_block b JOIN member m ON m.id=b.target_id WHERE b.actor_id=:actor";
+        String sql="SELECT b.target_id,m.nickname FROM member_block b JOIN member m ON m.id=b.target_id WHERE b.actor_id=:actor";
         var parameters=new MapSqlParameterSource("actor",actor);
         if(before!=null) {sql+=" AND b.target_id<:before";parameters.addValue("before",before);}
         // Keyset pagination remains stable when a member removes a block on an earlier page.
@@ -144,12 +144,12 @@ public class MarketplacePersistenceAdapter implements MarketplaceStore {
         return jdbc.query(sql,parameters,(r,n)->new me.yeonjae.ovlo.application.dto.result.BlockedMarketplaceMember(r.getLong(1),r.getString(2)));
     }
     @Override public boolean blocked(long a,long b) {
-        return jdbc.queryForObject("SELECT count(*) FROM marketplace_block WHERE (actor_id=:a AND target_id=:b) OR (actor_id=:b AND target_id=:a)",Map.of("a",a,"b",b),Long.class)>0;
+        return jdbc.queryForObject("SELECT count(*) FROM member_block WHERE (actor_id=:a AND target_id=:b) OR (actor_id=:b AND target_id=:a)",Map.of("a",a,"b",b),Long.class)>0;
     }
     @Override public void block(long actor,long target,boolean block) {
         var p=Map.of("a",actor,"b",target);
-        if(block) jdbc.update("INSERT INTO marketplace_block(actor_id,target_id) VALUES(:a,:b) ON CONFLICT DO NOTHING",p);
-        else jdbc.update("DELETE FROM marketplace_block WHERE actor_id=:a AND target_id=:b",p);
+        if(block) jdbc.update("INSERT INTO member_block(actor_id,target_id) VALUES(:a,:b) ON CONFLICT DO NOTHING",p);
+        else jdbc.update("DELETE FROM member_block WHERE actor_id=:a AND target_id=:b",p);
     }
     @Override public Optional<Long> chat(long listing,long buyer) {
         return jdbc.queryForList("SELECT room_id FROM marketplace_chat WHERE listing_id=:l AND buyer_id=:b",Map.of("l",listing,"b",buyer),Long.class).stream().findFirst();

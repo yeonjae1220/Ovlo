@@ -18,7 +18,7 @@ public class MediaAccessAdapter implements MediaAccessPort {
             SELECT EXISTS(SELECT 1 FROM media_file f JOIN member owner ON owner.id=f.uploader_id AND owner.status='ACTIVE'
               JOIN member viewer ON viewer.id=? AND viewer.status='ACTIVE'
               WHERE f.id=? AND EXISTS(SELECT 1 FROM office_staff s WHERE s.office_id=? AND s.member_id=owner.id)
-              AND NOT EXISTS(SELECT 1 FROM marketplace_block b
+              AND NOT EXISTS(SELECT 1 FROM member_block b
                 WHERE (b.actor_id=viewer.id AND b.target_id=owner.id) OR (b.actor_id=owner.id AND b.target_id=viewer.id)))
             """,Boolean.class,requesterId,mediaId,officeId));
     }
@@ -33,7 +33,7 @@ public class MediaAccessAdapter implements MediaAccessPort {
               JOIN member viewer ON viewer.id=? AND viewer.status='ACTIVE'
               WHERE f.id=?
                 AND (f.uploader_id=viewer.id OR owner.profile_image_media_id=CAST(f.id AS varchar))
-                AND NOT EXISTS (SELECT 1 FROM marketplace_block b
+                AND NOT EXISTS (SELECT 1 FROM member_block b
                   WHERE (b.actor_id=viewer.id AND b.target_id=owner.id)
                      OR (b.actor_id=owner.id AND b.target_id=viewer.id))
             )

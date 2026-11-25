@@ -72,7 +72,7 @@ class PrivacyBoundaryIntegrationTest {
         commands.deleteComment(new me.yeonjae.ovlo.application.dto.command.DeleteCommentCommand(postId, first.id(), owner));
         commands.createComment(new me.yeonjae.ovlo.application.dto.command.CreateCommentCommand(postId, viewer, "Second"));
         save.save(stale);
-        org.assertj.core.api.Assertions.assertThat(query.listByBoard(1L, 0, 20).content().stream().filter(p -> p.id()==postId).findFirst().orElseThrow().commentCount()).isEqualTo(1);
+        org.assertj.core.api.Assertions.assertThat(query.listByBoard(1L, null, 0, 20).content().stream().filter(p -> p.id()==postId).findFirst().orElseThrow().commentCount()).isEqualTo(1);
         org.assertj.core.api.Assertions.assertThat(db.queryForObject("SELECT deleted FROM comment WHERE id=?", Boolean.class, first.id())).isTrue();
         mvc.perform(get("/api/v1/posts/" + postId).header("Authorization", token(viewer)))
                 .andExpect(status().isOk()).andExpect(jsonPath("$.commentCount").value(1));
@@ -101,9 +101,9 @@ class PrivacyBoundaryIntegrationTest {
         mvc.perform(get("/api/v1/media/" + media + "/file").header("Authorization", token(viewer))).andExpect(status().isNotFound());
         db.update("UPDATE member SET profile_image_media_id=? WHERE id=?", Long.toString(media), owner);
         mvc.perform(get("/api/v1/media/" + media).header("Authorization", token(viewer))).andExpect(status().isOk());
-        db.update("INSERT INTO marketplace_block(actor_id,target_id) VALUES(?,?)", viewer, owner);
+        db.update("INSERT INTO member_block(actor_id,target_id) VALUES(?,?)", viewer, owner);
         mvc.perform(get("/api/v1/media/" + media).header("Authorization", token(viewer))).andExpect(status().isNotFound());
-        db.update("DELETE FROM marketplace_block WHERE actor_id=?", viewer);
+        db.update("DELETE FROM member_block WHERE actor_id=?", viewer);
         db.update("UPDATE member SET status='WITHDRAWN' WHERE id=?", owner);
         mvc.perform(get("/api/v1/media/" + media).header("Authorization", token(viewer))).andExpect(status().isNotFound());
     }

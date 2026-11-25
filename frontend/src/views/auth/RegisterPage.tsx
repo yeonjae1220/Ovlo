@@ -284,6 +284,12 @@ export default function RegisterPage() {
         <Link href="/privacy" style={{ color: 'var(--color-primary)' }}>{t('legal.privacy')}</Link>
         {t('register.legal.suffix')}
       </p>
+      <p
+        role="note"
+        style={{ margin: '-8px 0 18px', padding: '10px 12px', fontSize: 12, lineHeight: 1.6, color: 'var(--color-text-secondary)', border: '1px solid var(--color-border)', borderRadius: 10, background: 'var(--color-surface-soft)' }}
+      >
+        {t('register.legal.ugc')}
+      </p>
 
       {/* ── Step 1: 계정 정보 ─────────────────────────────────────────── */}
       {step === 1 && (

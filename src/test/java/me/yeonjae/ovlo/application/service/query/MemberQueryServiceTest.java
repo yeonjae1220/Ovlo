@@ -29,6 +29,9 @@ class MemberQueryServiceTest {
     @Mock
     private LoadMemberPort loadMemberPort;
 
+    @Mock
+    me.yeonjae.ovlo.application.port.out.moderation.MemberBlockPort memberBlockPort;
+
     @InjectMocks
     private MemberQueryService memberQueryService;
 
@@ -141,7 +144,7 @@ class MemberQueryServiceTest {
         void shouldLimitAndReturnSummary() {
             given(loadMemberPort.searchByNickname("yeon", 20)).willReturn(List.of(member));
 
-            List<MemberSummaryResult> results = memberQueryService.searchByNickname("yeon");
+            List<MemberSummaryResult> results = memberQueryService.searchByNickname("yeon", null);
 
             assertThat(results).containsExactly(new MemberSummaryResult(1L, "yeonjae", "김연재", null));
         }

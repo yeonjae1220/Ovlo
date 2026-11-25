@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{admin/layout :: layout(~{::body}, '신고 처리', 'reports')}"
+      lang="ko">
+<body>
+
+<div class="section-header">
+  <span class="section-title">
+    신고 목록
+    <span class="text-muted" style="font-size:13px; font-weight:400;"
+          th:text="'(최근 ' + ${#lists.size(reports)} + '건)'"></span>
+  </span>
+  <span>
+    <a class="btn btn-sm" th:classappend="${status.name() == 'OPEN'} ? 'btn-primary' : 'btn-ghost'" th:href="@{/admin/reports(status='OPEN')}">처리 대기</a>
+    <a class="btn btn-sm" th:classappend="${status.name() == 'ACTIONED'} ? 'btn-primary' : 'btn-ghost'" th:href="@{/admin/reports(status='ACTIONED')}">조치함</a>
+    <a class="btn btn-sm" th:classappend="${status.name() == 'DISMISSED'} ? 'btn-primary' : 'btn-ghost'" th:href="@{/admin/reports(status='DISMISSED')}">기각</a>
+  </span>
+</div>
+<p class="text-muted" style="font-size:12px;">
+  약관상 신고는 24시간 안에 처리한다. 처리하면 같은 대상에 쌓인 대기 신고가 함께 닫힌다.
+</p>
+
+<div class="card" style="padding:0; overflow:hidden;">
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>대상</th>
+          <th>내용</th>
+          <th>작성자</th>
+          <th>신고자</th>
+          <th>사유</th>
+          <th>접수</th>
+          <th>처리</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr th:if="${reports.empty}">
+          <td colspan="8" style="text-align:center; padding:32px; color:var(--text-muted);">신고가 없습니다.</td>
+        </tr>
+        <tr th:each="r : ${reports}">
+          <td style="color:var(--text-muted);" th:text="${r.id()}"></td>
+          <td>
+            <span th:text="${r.targetType().name()} + ' #' + ${r.targetId()}"></span>
+            <span th:if="${r.openReportsOnTarget() > 1}" class="badge badge-pending"
+                  th:text="'대기 ' + ${r.openReportsOnTarget()} + '건'"></span>
+          </td>
+          <td style="max-width:320px; white-space:pre-wrap; word-break:break-word;"
+              th:text="${r.contentPreview() != null} ? ${r.contentPreview()} : '—'"></td>
+          <td th:text="${r.targetAuthorNickname()} + ' (' + ${r.targetAuthorId()} + ')'"></td>
+          <td th:text="${r.reporterNickname()}"></td>
+          <td>
+            <strong th:text="${r.reason().name()}"></strong>
+            <div class="text-muted" style="font-size:12px; white-space:pre-wrap;" th:if="${r.detail() != null}" th:text="${r.detail()}"></div>
+          </td>
+          <td style="color:var(--text-muted); font-size:12px;"
+              th:text="${r.createdAt()}"></td>
+          <td>
+            <div th:if="${r.status().name() == 'OPEN'}" style="display:flex; gap:4px; flex-wrap:wrap;">
+              <form th:if="${r.targetType().name() != 'MEMBER'}" class="inline-form"
+                    th:action="@{/admin/reports/{id}/resolve(id=${r.id()})}" method="post"
+                    onsubmit="return confirm('이 콘텐츠를 내리시겠습니까?')">
+                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                <input type="hidden" name="resolution" value="REMOVE_CONTENT"/>
+                <button type="submit" class="btn btn-danger btn-sm">콘텐츠 내리기</button>
+              </form>
+              <form class="inline-form"
+                    th:action="@{/admin/reports/{id}/resolve(id=${r.id()})}" method="post"
+                    onsubmit="return confirm('작성자를 정지하시겠습니까?')">
+                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                <input type="hidden" name="resolution" value="SUSPEND_AUTHOR"/>
+                <button type="submit" class="btn btn-warning btn-sm">작성자 정지</button>
+              </form>
+              <form class="inline-form"
+                    th:action="@{/admin/reports/{id}/resolve(id=${r.id()})}" method="post">
+                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                <input type="hidden" name="resolution" value="DISMISS"/>
+                <button type="submit" class="btn btn-ghost btn-sm">기각</button>
+              </form>
+            </div>
+            <span th:if="${r.status().name() != 'OPEN'}" class="text-muted" th:text="${r.resolution()}"></span>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+</body>
+</html>

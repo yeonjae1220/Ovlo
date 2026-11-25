@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, type FormEvent } from 'react'
+import Link from 'next/link'
 import { useGlobalUniversitySearch } from '../../hooks/useUniversity'
 import { useCompleteOnboarding } from '../../hooks/useAuth'
 import { useI18n } from '../../i18n/I18nProvider'
@@ -116,6 +117,21 @@ export default function OnboardingPage() {
         <h2 style={{ margin: 0, fontSize: 22, fontWeight: 800, color: 'var(--color-text)' }}>{t('onboarding.title')}</h2>
         <p style={{ margin: '8px 0 0', fontSize: 13, color: 'var(--color-text-muted)' }}>{t('onboarding.subtitle')}</p>
       </div>
+
+      {/* Google 등 소셜 가입은 회원가입 화면을 거치지 않으므로, 가입을 마치는 이 화면에서 약관과 무관용 정책을 알린다. */}
+      <p style={{ margin: '0 0 12px', fontSize: 12, lineHeight: 1.6, color: 'var(--color-text-dim)' }}>
+        {t('register.legal.prefix')}
+        <Link href="/terms" style={{ color: 'var(--color-primary)' }}>{t('legal.terms')}</Link>
+        {t('register.legal.between')}
+        <Link href="/privacy" style={{ color: 'var(--color-primary)' }}>{t('legal.privacy')}</Link>
+        {t('register.legal.suffix')}
+      </p>
+      <p
+        role="note"
+        style={{ margin: '0 0 20px', padding: '10px 12px', fontSize: 12, lineHeight: 1.6, color: 'var(--color-text-secondary)', border: '1px solid var(--color-border)', borderRadius: 10, background: 'var(--color-surface-soft)' }}
+      >
+        {t('register.legal.ugc')}
+      </p>
 
       <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
         {/* UI Language — shown first so the rest of the form renders in chosen language */}

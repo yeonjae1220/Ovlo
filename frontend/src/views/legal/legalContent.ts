@@ -215,8 +215,8 @@ export const PRIVACY_POLICY: Record<'ko' | 'en', LegalDocument> = {
 
 export const TERMS_OF_SERVICE: Record<'ko' | 'en', LegalDocument> = {
   ko: {
-    version: 'v2',
-    updatedAt: '2026-11-24',
+    version: 'v3',
+    updatedAt: '2026-11-25',
     title: '이용약관',
     intro: '이 약관은 Ovlo(이하 "서비스")의 이용 조건과 절차, 이용자와 서비스의 권리·의무를 정합니다.',
     sections: [
@@ -257,13 +257,35 @@ export const TERMS_OF_SERVICE: Record<'ko' | 'en', LegalDocument> = {
         ],
       },
       {
-        heading: '6. 제휴 안내',
+        heading: '6. 불쾌한 콘텐츠와 악성 이용자에 대한 무관용 원칙',
+        paragraphs: [
+          '서비스는 불쾌하거나 부적절한 콘텐츠와 다른 이용자를 괴롭히는 이용자를 일절 용인하지 않습니다. 회원가입 시 이 원칙에 동의해야 하며, 게시글·댓글·채팅 메시지·프로필 등 회원이 올리는 모든 콘텐츠에 적용됩니다. 특히 다음 콘텐츠는 금지됩니다.',
+        ],
+        bullets: [
+          '스팸·광고·사기 또는 같은 내용의 반복 게시',
+          '괴롭힘·따돌림·위협, 특정인을 겨냥한 모욕',
+          '인종·민족·국적·종교·성별·성적 지향·장애 등에 근거한 혐오 표현과 차별',
+          '음란물·성적으로 노골적인 콘텐츠, 미성년자를 성적으로 다루는 모든 콘텐츠',
+          '폭력·자해를 조장하거나 미화하는 콘텐츠',
+          '불법 상품·서비스 거래, 그 밖에 법령을 위반하는 콘텐츠',
+          '타인의 연락처·주소·신분증 등 개인정보를 동의 없이 공개하는 행위',
+        ],
+      },
+      {
+        heading: '7. 신고·차단과 처리 기한',
+        paragraphs: [
+          '회원은 게시글·댓글·채팅 메시지·회원 프로필의 "신고" 기능으로 위 콘텐츠나 이용자를 신고할 수 있고, "차단" 기능으로 특정 회원을 차단할 수 있습니다. 차단하면 서로의 게시글과 댓글이 보이지 않고, 서로 메시지를 주고받을 수 없으며, 서로의 팔로우가 해제됩니다. 차단은 프로필의 "차단한 회원" 화면에서 언제든 해제할 수 있습니다.',
+          '접수된 신고는 운영자가 24시간 이내에 검토하고, 위반이 확인되면 해당 콘텐츠를 삭제하며, 위반한 이용자의 이용을 제한하거나 계정을 정지·탈퇴 처리합니다. 허위 신고나 신고 기능의 남용도 이용 제한 사유가 됩니다.',
+        ],
+      },
+      {
+        heading: '8. 제휴 안내',
         paragraphs: [
           '서비스는 유심·보험·숙소·픽업 등 정착에 필요한 외부 서비스를 "제휴"로 표시해 안내할 수 있고, 그 이용으로 수수료를 받을 수 있습니다. 제휴 표시는 항상 붙이며 국제처 승인 안내 본문에는 넣지 않습니다. 외부 서비스의 계약과 책임은 해당 사업자에게 있습니다.',
         ],
       },
       {
-        heading: '7. 외부 영상 링크(YouTube)',
+        heading: '9. 외부 영상 링크(YouTube)',
         paragraphs: [
           '서비스는 대학 리포트 화면에 그 대학과 관련된 YouTube 공개 영상의 링크를 제목·채널명·미리보기 이미지와 함께 보여 줍니다. 영상을 서비스에 저장하거나 서비스 안에서 재생하지 않으며, 링크를 누르면 YouTube 로 이동합니다. 이 기능은 YouTube API 서비스를 사용하며, 이 기능을 이용하는 이용자는 YouTube 서비스 약관에도 동의하는 것으로 봅니다.',
           `영상의 내용과 권리는 각 영상의 게시자에게 있고, 서비스는 영상의 내용을 보증하지 않습니다. 삭제되거나 비공개로 바뀐 영상의 링크는 주기적으로 확인해 내립니다. 영상 게시자나 영상에 등장하는 분이 링크를 내려 달라고 요청하면 지체 없이 내립니다. 요청: ${LEGAL_CONTACT_PLACEHOLDER}`,
@@ -271,28 +293,28 @@ export const TERMS_OF_SERVICE: Record<'ko' | 'en', LegalDocument> = {
         links: [{ label: 'YouTube 서비스 약관', href: YOUTUBE_TERMS_URL }],
       },
       {
-        heading: '8. 서비스의 변경·중단',
+        heading: '10. 서비스의 변경·중단',
         paragraphs: [
           '서비스는 기능을 추가·변경·중단할 수 있으며, 중요한 변경은 사전에 공지합니다. 천재지변·시스템 장애 등 불가피한 사유로 일시 중단될 수 있습니다.',
         ],
       },
       {
-        heading: '9. 계약 해지',
+        heading: '11. 계약 해지',
         paragraphs: ['회원은 언제든지 프로필 화면에서 탈퇴할 수 있습니다. 탈퇴 시 개인정보는 개인정보처리방침에 따라 처리됩니다.'],
       },
       {
-        heading: '10. 준거법과 분쟁',
+        heading: '12. 준거법과 분쟁',
         paragraphs: ['이 약관은 대한민국 법을 따르며, 분쟁은 민사소송법에 따른 관할 법원에서 다룹니다.'],
       },
       {
-        heading: '11. 약관의 변경',
+        heading: '13. 약관의 변경',
         paragraphs: [`약관을 바꿀 때는 시행 7일 전(이용자에게 불리한 변경은 30일 전)에 공지합니다. 문의: ${LEGAL_CONTACT_PLACEHOLDER}`],
       },
     ],
   },
   en: {
-    version: 'v2',
-    updatedAt: '2026-11-24',
+    version: 'v3',
+    updatedAt: '2026-11-25',
     title: 'Terms of Service',
     intro: 'These terms set out the conditions for using Ovlo (the "Service") and the rights and obligations of users and the Service.',
     sections: [
@@ -333,13 +355,35 @@ export const TERMS_OF_SERVICE: Record<'ko' | 'en', LegalDocument> = {
         ],
       },
       {
-        heading: '6. Partner notices',
+        heading: '6. Zero tolerance for objectionable content and abusive users',
+        paragraphs: [
+          'The Service has zero tolerance for objectionable content and for users who abuse others. You must agree to this when you sign up, and it applies to everything members post, including posts, comments, chat messages and profiles. In particular, the following content is prohibited:',
+        ],
+        bullets: [
+          'Spam, advertising, scams or repeated posting of the same content',
+          'Harassment, bullying, threats or insults aimed at a person',
+          'Hate speech or discrimination based on race, ethnicity, nationality, religion, sex, sexual orientation, disability or similar characteristics',
+          'Pornographic or sexually explicit content, and any content that sexualizes minors',
+          'Content that promotes or glorifies violence or self-harm',
+          'Trading in illegal goods or services, or other content that breaks the law',
+          'Sharing other people\'s contact details, addresses, ID documents or other personal data without consent',
+        ],
+      },
+      {
+        heading: '7. Reporting, blocking and review',
+        paragraphs: [
+          'You can report such content or users with the "Report" option on posts, comments, chat messages and member profiles, and you can block a member with the "Block" option. When you block someone, you no longer see each other\'s posts and comments, you cannot message each other, and any follows between you are removed. You can unblock at any time from "Blocked members" in your profile.',
+          'Our moderators review reports within 24 hours. When a violation is confirmed, we remove the content and restrict, suspend or terminate the offending account. False reports and misuse of the reporting tools may also lead to restrictions.',
+        ],
+      },
+      {
+        heading: '8. Partner notices',
         paragraphs: [
           'The Service may present external settlement services such as SIM cards, insurance, housing and airport pickup labeled as "Partner", and may receive a fee when you use them. The label is always shown and partner links never appear inside office-approved guidance. Contracts with and responsibility for external services rest with those providers.',
         ],
       },
       {
-        heading: '7. External video links (YouTube)',
+        heading: '9. External video links (YouTube)',
         paragraphs: [
           'On university report pages the Service shows links to public YouTube videos related to that university, with their title, channel name and preview image. Videos are not stored or played within the Service; following a link takes you to YouTube. This feature uses YouTube API Services, and by using it you also agree to be bound by the YouTube Terms of Service.',
           `The content of and rights in each video belong to its publisher, and the Service does not guarantee video content. Links to videos that are deleted or made private are checked periodically and removed. If a video's publisher or a person appearing in it asks us to remove a link, we remove it without delay. Requests: ${LEGAL_CONTACT_PLACEHOLDER}`,
@@ -347,19 +391,19 @@ export const TERMS_OF_SERVICE: Record<'ko' | 'en', LegalDocument> = {
         links: [{ label: 'YouTube Terms of Service', href: YOUTUBE_TERMS_URL }],
       },
       {
-        heading: '8. Changes and interruptions',
+        heading: '10. Changes and interruptions',
         paragraphs: ['The Service may add, change or discontinue features, with advance notice for significant changes. Service may be interrupted for unavoidable reasons such as disasters or system failures.'],
       },
       {
-        heading: '9. Termination',
+        heading: '11. Termination',
         paragraphs: ['You may withdraw at any time from your profile screen. Personal data is then handled under the Privacy Policy.'],
       },
       {
-        heading: '10. Governing law',
+        heading: '12. Governing law',
         paragraphs: ['These terms are governed by the laws of the Republic of Korea; disputes are heard by the competent court under the Civil Procedure Act.'],
       },
       {
-        heading: '11. Changes to these terms',
+        heading: '13. Changes to these terms',
         paragraphs: [`We announce changes at least 7 days in advance (30 days for changes unfavorable to users). Contact: ${LEGAL_CONTACT_PLACEHOLDER}`],
       },
     ],

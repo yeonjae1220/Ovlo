@@ -83,9 +83,9 @@ public class PostApiController {
             @AuthenticationPrincipal Long memberId
     ) {
         if (authorId != null) {
-            return ResponseEntity.ok(getPostQuery.listByAuthor(authorId, page, size));
+            return ResponseEntity.ok(getPostQuery.listByAuthor(authorId, memberId, page, size));
         }
-        return ResponseEntity.ok(getPostQuery.listAll(page, size));
+        return ResponseEntity.ok(getPostQuery.listAll(memberId, page, size));
     }
 
     @Operation(summary = "게시글 작성")
@@ -143,9 +143,10 @@ public class PostApiController {
     public ResponseEntity<PageResult<CommentResult>> getComments(
             @PathVariable Long id,
             @RequestParam(defaultValue = "0") @Min(0) int page,
-            @RequestParam(defaultValue = "50") @Min(1) @Max(200) int size
+            @RequestParam(defaultValue = "50") @Min(1) @Max(200) int size,
+            @AuthenticationPrincipal Long memberId
     ) {
-        return ResponseEntity.ok(getPostQuery.getComments(new PostId(id), page, size));
+        return ResponseEntity.ok(getPostQuery.getComments(new PostId(id), memberId, page, size));
     }
 
     @Operation(summary = "댓글 작성")

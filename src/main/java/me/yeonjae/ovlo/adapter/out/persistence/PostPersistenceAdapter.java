@@ -24,6 +24,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Component
@@ -56,10 +57,10 @@ public class PostPersistenceAdapter implements LoadPostPort, SavePostPort, me.ye
     }
 
     @Override
-    public List<Post> findByBoardId(BoardId boardId, int offset, int limit) {
+    public List<Post> findByBoardId(BoardId boardId, Set<Long> excludedAuthorIds, int offset, int limit) {
         // 쿼리 1: 게시글 페이지 로드 (최신순)
         PageRequest pageable = PageRequest.of(offset / limit, limit, Sort.by("id").descending());
-        List<PostJpaEntity> entities = postJpaRepository.findByBoardIdAndDeletedFalseAndHiddenByWithdrawalFalse(boardId.value(), pageable);
+        List<PostJpaEntity> entities = postJpaRepository.findByBoardIdAndDeletedFalseAndHiddenByWithdrawalFalseAndAuthorIdNotIn(boardId.value(), notInSafe(excludedAuthorIds), pageable);
 
         if (entities.isEmpty()) {
             return Collections.emptyList();
@@ -80,22 +81,51 @@ public class PostPersistenceAdapter implements LoadPostPort, SavePostPort, me.ye
     }
 
     @Override
-    public long countByBoardId(BoardId boardId) {
-        return postJpaRepository.countByBoardIdAndDeletedFalseAndHiddenByWithdrawalFalse(boardId.value());
+    public long countByBoardId(BoardId boardId, Set<Long> excludedAuthorIds) {
+        return postJpaRepository.countByBoardIdAndDeletedFalseAndHiddenByWithdrawalFalseAndAuthorIdNotIn(boardId.value(), notInSafe(excludedAuthorIds));
     }
 
     @Override
-    public List<Comment> findCommentsByPostId(PostId postId, int offset, int limit) {
+    public List<Comment> findCommentsByPostId(PostId postId, Set<Long> excludedAuthorIds, int offset, int limit) {
         PageRequest pageable = PageRequest.of(offset / limit, limit, Sort.by("id").ascending());
-        return commentJpaRepository.findByPostIdAndDeletedFalseAndHiddenByWithdrawalFalse(postId.value(), pageable)
+        return commentJpaRepository.findByPostIdAndDeletedFalseAndHiddenByWithdrawalFalseAndAuthorIdNotIn(postId.value(), notInSafe(excludedAuthorIds), pageable)
                 .stream()
                 .map(postMapper::toCommentDomain)
                 .toList();
     }
 
     @Override
-    public long countCommentsByPostId(PostId postId) {
-        return commentJpaRepository.countByPostIdAndDeletedFalseAndHiddenByWithdrawalFalse(postId.value());
+    public long countCommentsByPostId(PostId postId, Set<Long> excludedAuthorIds) {
+        return commentJpaRepository.countByPostIdAndDeletedFalseAndHiddenByWithdrawalFalseAndAuthorIdNotIn(postId.value(), notInSafe(excludedAuthorIds));
+    }
+
+    /** 빈 NOT IN 은 JPQL 에서 깨지므로, 존재할 수 없는 ID 하나로 채운다. */
+    private static Set<Long> notInSafe(Set<Long> excludedAuthorIds) {
+        return excludedAuthorIds == null || excludedAuthorIds.isEmpty() ? Set.of(-1L) : excludedAuthorIds;
+    }
+
+    @Override
+    public List<Post> findAll(Set<Long> excludedAuthorIds, int offset, int limit) {
+        PageRequest pageable = PageRequest.of(offset / limit, limit, Sort.by("id").descending());
+        return withReactions(postJpaRepository.findAllByDeletedFalseAndHiddenByWithdrawalFalseAndAuthorIdNotIn(notInSafe(excludedAuthorIds), pageable));
+    }
+
+    @Override
+    public long count(Set<Long> excludedAuthorIds) {
+        return postJpaRepository.countByDeletedFalseAndHiddenByWithdrawalFalseAndAuthorIdNotIn(notInSafe(excludedAuthorIds));
+    }
+
+    private List<Post> withReactions(List<PostJpaEntity> entities) {
+        if (entities.isEmpty()) return Collections.emptyList();
+        List<Long> postIds = entities.stream().map(PostJpaEntity::getId).toList();
+        Map<Long, List<PostReactionJpaEntity>> reactionsByPostId = postReactionJpaRepository
+                .findByIdPostIdIn(postIds)
+                .stream()
+                .collect(Collectors.groupingBy(PostReactionJpaEntity::getPostId));
+        return entities.stream()
+                .map(e -> postMapper.toDomain(e, Collections.emptyList(),
+                        reactionsByPostId.getOrDefault(e.getId(), Collections.emptyList())))
+                .toList();
     }
 
     @Override
@@ -192,9 +222,9 @@ public class PostPersistenceAdapter implements LoadPostPort, SavePostPort, me.ye
     }
 
     @Override
-    public Map<Long, Long> countComments(List<Long> ids) {
+    public Map<Long, Long> countComments(List<Long> ids, Set<Long> excludedAuthorIds) {
         if (ids.isEmpty()) return Map.of();
-        return commentJpaRepository.countVisibleByPostIds(ids).stream()
+        return commentJpaRepository.countVisibleByPostIds(ids, notInSafe(excludedAuthorIds)).stream()
                 .collect(Collectors.toMap(CommentJpaRepository.CommentCount::getPostId, CommentJpaRepository.CommentCount::getTotal));
     }
 

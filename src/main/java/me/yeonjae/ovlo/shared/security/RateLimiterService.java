@@ -83,6 +83,9 @@ public class RateLimiterService {
         check("rl:inquiry:day:member:" + memberId, inquiryPerDay, 24 * 60 * 60);
     }
 
+    /** 신고는 남용되면 관리자 대기열을 덮는다. 정상 사용은 10분에 몇 건이 넘지 않는다. */
+    public void checkReportRate(Long member) { check("rl:report:" + member, 20, 600); }
+
     public void checkMarketplaceWriteRate(Long member) { check("rl:market:write:" + member, 30, 600); }
     public void checkMarketplaceUploadRate(Long member) { check("rl:market:photo:" + member, 80, 3600); }
     public void checkMarketplaceTranslationRate(Long member) {

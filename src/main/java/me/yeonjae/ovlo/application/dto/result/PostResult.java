@@ -5,6 +5,7 @@ import me.yeonjae.ovlo.domain.post.model.ReactionType;
 
 import java.time.Instant;
 import java.util.List;
+import java.util.Set;
 
 public record PostResult(
         Long id,
@@ -82,6 +83,17 @@ public record PostResult(
                 post.getCreatedAt(),
                 false, 0
         );
+    }
+
+    /** 조회자와 차단 관계인 회원의 댓글을 뺀다. 댓글 수도 다시 센다. */
+    public PostResult withoutCommentsBy(Set<Long> hiddenAuthorIds) {
+        if (hiddenAuthorIds.isEmpty() || comments.isEmpty()) return this;
+        List<CommentResult> visible = comments.stream()
+                .filter(c -> !hiddenAuthorIds.contains(c.authorId()))
+                .toList();
+        return new PostResult(id, boardId, boardName, authorId, title, content, deleted,
+                likeCount, dislikeCount, visible, createdAt, likedByMe,
+                visible.stream().filter(c -> !c.deleted()).count());
     }
 
     public PostResult withCommentCount(long count) {

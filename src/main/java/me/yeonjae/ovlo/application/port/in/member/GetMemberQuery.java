@@ -14,6 +14,7 @@ public interface GetMemberQuery {
      * 계정 이메일·생년월일을 뺀다.
      */
     MemberResult getProfile(MemberId target, MemberId viewer);
-    List<MemberSummaryResult> searchByNickname(String keyword);
+    /** viewerId 와 차단 관계(어느 쪽이든)인 회원은 결과에서 뺀다. */
+    List<MemberSummaryResult> searchByNickname(String keyword, Long viewerId);
     boolean isNicknameAvailable(String nickname);
 }

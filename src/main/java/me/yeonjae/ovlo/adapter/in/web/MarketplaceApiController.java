@@ -20,7 +20,10 @@ public class MarketplaceApiController {
     private final MarketplaceUseCase market;
     private final TranslateListingUseCase translations;
     private final RateLimiterService limiter;
-    public MarketplaceApiController(MarketplaceUseCase market,TranslateListingUseCase translations,RateLimiterService limiter) {this.market=market;this.translations=translations;this.limiter=limiter;}
+    // 차단은 회원 단위다(중고거래에서 막으면 게시판·DM에서도 막힌다).
+    private final me.yeonjae.ovlo.application.port.in.moderation.BlockMemberUseCase blocks;
+    public MarketplaceApiController(MarketplaceUseCase market,TranslateListingUseCase translations,RateLimiterService limiter,
+            me.yeonjae.ovlo.application.port.in.moderation.BlockMemberUseCase blocks) {this.market=market;this.translations=translations;this.limiter=limiter;this.blocks=blocks;}
     public record ListingRequest(@NotBlank @Size(max=120) String title,@NotBlank @Size(max=5000) String description,
             @NotBlank String sourceLanguage,@NotBlank String category,@NotBlank String condition,
             boolean free,boolean bundle,boolean partialPickup,@NotNull AskingPrice price,@NotNull PickupLocation location,
@@ -70,6 +73,6 @@ public class MarketplaceApiController {
     }
     @GetMapping("/blocks") public MarketplaceUseCase.BlockedMemberPage blocks(@AuthenticationPrincipal Long actor,
             @RequestParam(required=false) @Positive Long before) {return market.blockedMembers(actor,before);}
-    @PutMapping("/blocks/{target}") @ResponseStatus(HttpStatus.NO_CONTENT) public void block(@AuthenticationPrincipal Long actor,@PathVariable long target) {market.block(actor,target,true);}
-    @DeleteMapping("/blocks/{target}") @ResponseStatus(HttpStatus.NO_CONTENT) public void unblock(@AuthenticationPrincipal Long actor,@PathVariable long target) {market.block(actor,target,false);}
+    @PutMapping("/blocks/{target}") @ResponseStatus(HttpStatus.NO_CONTENT) public void block(@AuthenticationPrincipal Long actor,@PathVariable long target) {blocks.block(actor,target);}
+    @DeleteMapping("/blocks/{target}") @ResponseStatus(HttpStatus.NO_CONTENT) public void unblock(@AuthenticationPrincipal Long actor,@PathVariable long target) {blocks.unblock(actor,target);}
 }

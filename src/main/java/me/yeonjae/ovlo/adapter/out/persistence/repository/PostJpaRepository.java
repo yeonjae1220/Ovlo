@@ -7,13 +7,17 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.util.Collection;
 import java.util.List;
 
 public interface PostJpaRepository extends JpaRepository<PostJpaEntity, Long> {
-    List<PostJpaEntity> findByBoardIdAndDeletedFalseAndHiddenByWithdrawalFalse(Long boardId, Pageable pageable);
-    long countByBoardIdAndDeletedFalseAndHiddenByWithdrawalFalse(Long boardId);
+    // excludedAuthorIds 는 비어 있으면 안 된다(빈 NOT IN). 어댑터가 존재할 수 없는 ID 로 채운다.
+    List<PostJpaEntity> findByBoardIdAndDeletedFalseAndHiddenByWithdrawalFalseAndAuthorIdNotIn(Long boardId, Collection<Long> excludedAuthorIds, Pageable pageable);
+    long countByBoardIdAndDeletedFalseAndHiddenByWithdrawalFalseAndAuthorIdNotIn(Long boardId, Collection<Long> excludedAuthorIds);
     List<PostJpaEntity> findAllByDeletedFalseAndHiddenByWithdrawalFalse(Pageable pageable);
     long countByDeletedFalseAndHiddenByWithdrawalFalse();
+    List<PostJpaEntity> findAllByDeletedFalseAndHiddenByWithdrawalFalseAndAuthorIdNotIn(Collection<Long> excludedAuthorIds, Pageable pageable);
+    long countByDeletedFalseAndHiddenByWithdrawalFalseAndAuthorIdNotIn(Collection<Long> excludedAuthorIds);
     List<PostJpaEntity> findByAuthorIdAndDeletedFalseAndHiddenByWithdrawalFalse(Long authorId, Pageable pageable);
     long countByAuthorIdAndDeletedFalseAndHiddenByWithdrawalFalse(Long authorId);
 

@@ -164,7 +164,7 @@ public class ChatPersistenceAdapter implements LoadChatPort, SaveChatPort, SaveR
         args.add(memberId.value());
         jdbc.query("SELECT m.chat_room_id, COUNT(*) FROM message m JOIN (VALUES " + values
                 + ") AS cut(room_id,since) ON cut.room_id=m.chat_room_id WHERE m.sender_id<>?"
-                + " AND m.sent_at>cut.since AND m.hidden_by_withdrawal=false"
+                + " AND m.sent_at>cut.since AND m.hidden_by_withdrawal=false AND m.hidden_by_moderation=false"
                 + " AND NOT EXISTS (SELECT 1 FROM office_consultation c WHERE c.chat_room_id=m.chat_room_id"
                 + " AND (c.personal_data_erased_at IS NOT NULL OR c.personal_data_expires_at<=CURRENT_TIMESTAMP))"
                 + " GROUP BY m.chat_room_id",

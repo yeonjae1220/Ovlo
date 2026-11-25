@@ -47,6 +47,8 @@ class PostCommandServiceTest {
     @Mock LoadBoardPort loadBoardPort;
     @Mock GetMyVerificationStatusQuery getMyVerificationStatusQuery;
 
+    @Mock me.yeonjae.ovlo.application.port.out.moderation.MemberBlockPort memberBlockPort;
+
     @InjectMocks
     PostCommandService service;
 
