@@ -17,12 +17,12 @@ import { BlockConfirmDialog } from '../../components/moderation/BlockConfirmDial
 
 const PAGE_SIZE = 50
 /**
- * 서버는 차단된 DM 으로 보낸 STOMP 메시지를 오류 프레임 없이 버린다.
- * 내 메시지가 이 시간 안에 /topic 으로 되돌아오지 않으면 '전달되지 않음'으로 표시한다.
+ * 서버가 거절한 전송은 /user/queue/errors 로 곧바로 알려 온다.
+ * 그 알림도 방송도 이 시간 안에 오지 않으면(연결이 끊겼거나 구버전 서버) '전달되지 않음'으로 표시한다.
  */
 const SEND_ACK_TIMEOUT_MS = 8000
 
-type PendingSend = { content: string; timer: ReturnType<typeof setTimeout> | undefined }
+type PendingSend = { clientId: string; content: string; timer: ReturnType<typeof setTimeout> | undefined }
 const C = {
   border: 'var(--color-border)',
   surface: 'var(--color-surface)',
@@ -75,6 +75,8 @@ export default function ChatRoomPage() {
   // 보냈지만 아직 서버 방송으로 되돌아오지 않은 내 메시지(보낸 순서)
   // 같은 배열을 제자리에서 고친다 — 소켓 콜백과 타이머가 서로 다른 렌더에서 같은 목록을 봐야 한다.
   const pendingSendsRef = useRef<PendingSend[]>([])
+  // 소켓 콜백(doConnect)은 첫 렌더의 클로저를 쥐므로 최신 실패 처리기를 ref 로 넘긴다.
+  const markSendFailedRef = useRef<(entry: PendingSend) => void>(() => {})
   const currentUserIdRef = useRef(currentUser?.id)
   useEffect(() => { currentUserIdRef.current = currentUser?.id }, [currentUser?.id])
 
@@ -154,6 +156,14 @@ export default function ChatRoomPage() {
       stompClient.subscribeRead(roomId, () => {
         queryClient.invalidateQueries({ queryKey: ['chatRoom', roomId] })
       })
+      stompClient.subscribeErrors((error) => {
+        if (String(error.roomId) !== roomId) return
+        const pending = pendingSendsRef.current
+        const failed = error.clientMessageId === null
+          ? pending[0]
+          : pending.find((p) => p.clientId === error.clientMessageId)
+        if (failed) markSendFailedRef.current(failed)
+      })
       stompClient.subscribe(roomId, (incoming) => {
         if (String(incoming.senderId) === String(currentUserIdRef.current)) {
           const acknowledged = pendingSendsRef.current.shift()
@@ -223,25 +233,29 @@ export default function ChatRoomPage() {
   const blockedByMe = blockStatus.data?.blockedByMe ?? false
   const unblock = useUnblockMember()
 
-  const handleSendTimeout = (entry: PendingSend) => {
+  const markSendFailed = (entry: PendingSend) => {
     const pending = pendingSendsRef.current
     const index = pending.indexOf(entry)
     if (index < 0) return
     pending.splice(index, 1)
+    clearTimeout(entry.timer)
     const content = entry.content
     setSendFailed(true)
     setInput((current) => (current.trim() ? current : content))
     if (dmPartnerId !== null) void blockStatus.refetch()
   }
 
+  useEffect(() => { markSendFailedRef.current = markSendFailed })
+
   const sendMessage = () => {
     if (!input.trim() || !connected || blockedByMe) return
     const content = input
-    if (stompClient.publish(id!, content)) {
+    const clientId = crypto.randomUUID()
+    if (stompClient.publish(id!, content, clientId)) {
       setInput('')
       setSendFailed(false)
-      const entry: PendingSend = { content, timer: undefined }
-      entry.timer = setTimeout(() => handleSendTimeout(entry), SEND_ACK_TIMEOUT_MS)
+      const entry: PendingSend = { clientId, content, timer: undefined }
+      entry.timer = setTimeout(() => markSendFailedRef.current(entry), SEND_ACK_TIMEOUT_MS)
       pendingSendsRef.current.push(entry)
     } else {
       setConnected(false)

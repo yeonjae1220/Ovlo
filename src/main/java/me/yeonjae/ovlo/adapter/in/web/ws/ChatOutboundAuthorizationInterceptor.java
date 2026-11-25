@@ -24,7 +24,10 @@ public class ChatOutboundAuthorizationInterceptor implements ChannelInterceptor 
         if (SimpMessageHeaderAccessor.getMessageType(message.getHeaders()) != SimpMessageType.MESSAGE) return message;
         String session = SimpMessageHeaderAccessor.getSessionId(message.getHeaders());
         Long member = session == null ? null : members.get(session);
-        Long room = ChatSubscriptionInterceptor.topicRoom(SimpMessageHeaderAccessor.getDestination(message.getHeaders()));
+        String destination = SimpMessageHeaderAccessor.getDestination(message.getHeaders());
+        // 전송 실패 알림은 그 세션 자신의 큐로만 나간다.
+        if (member != null && ChatWebSocketHandler.errorQueueOf(session).equals(destination)) return message;
+        Long room = ChatSubscriptionInterceptor.topicRoom(destination);
         if (member == null || room == null) return null;
         // A failed authorization lookup must never fall back to an old subscription.
         try { return rooms.isMemberOfRoom(room, member) ? message : null; }
