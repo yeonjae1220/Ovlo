@@ -11,6 +11,7 @@ const BASE_URL = 'https://ovlo.mungji.com'
 
 export const metadata: Metadata = {
   metadataBase: new URL(BASE_URL),
+  icons: { icon: { url: '/icons/icon-192.svg', type: 'image/svg+xml' } },
   title: {
     default: 'Ovlo',
     template: '%s | Ovlo',

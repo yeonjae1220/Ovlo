@@ -9,7 +9,7 @@ import { useI18n } from '../../i18n/I18nProvider'
 
 function stripReportSuffix(title: string) {
   return title
-    .replace(/\s*(교환학생\s*가이드|Exchange\s*(Student\s*)?Guide|Austauschführer|Guide d'échange|Guía de intercambio|Trao đổi sinh viên|交换生指南|交換学生ガイド)\s*$/i, '')
+    .replace(/\s*[—–-]?\s*(교환학생\s*가이드|Exchange\s*(Student\s*)?Guide|Austauschführer|Guide d'échange|Guía de intercambio|Trao đổi sinh viên|交换生指南|交換学生ガイド)\s*$/i, '')
     .replace(/:\s*$/, '')
     .trim()
 }
