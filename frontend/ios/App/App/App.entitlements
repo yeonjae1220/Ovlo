@@ -9,5 +9,10 @@
 	<array>
 		<string>applinks:ovlo.mungji.com</string>
 	</array>
+	<!-- Sign in with Apple. Xcode 에서 같은 capability 를 켜면 이 키가 쓰인다(위와 같이 계정 준비 후). -->
+	<key>com.apple.developer.applesignin</key>
+	<array>
+		<string>Default</string>
+	</array>
 </dict>
 </plist>

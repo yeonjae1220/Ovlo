@@ -326,6 +326,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/api/v1/auth/login").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/v1/auth/refresh").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/v1/auth/google").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/v1/auth/apple").permitAll()
                         // 가입 화면의 닉네임 중복 확인 — 사용 가능 여부만 준다.
                         // /members/search 는 다른 회원 정보를 돌려주므로 여기에 열면 안 된다 (MemberSearchApiSecurityTest)
                         .requestMatchers(HttpMethod.GET, "/api/v1/members/check-nickname").permitAll()

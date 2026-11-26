@@ -83,6 +83,13 @@ google:
     token-uri: https://oauth2.googleapis.com/token
     userinfo-uri: https://www.googleapis.com/oauth2/v3/userinfo
 
+apple:
+  oauth2:
+    # identity token 의 aud 로 받아들일 값. 웹 Services ID 와 iOS 번들 ID 를 쉼표로 나열한다.
+    # 비어 있으면 Apple 로그인은 모든 요청을 거절한다.
+    client-ids: ${APPLE_CLIENT_IDS:}
+    jwks-uri: https://appleid.apple.com/auth/keys
+
 ovlo:
   storage:
     local:

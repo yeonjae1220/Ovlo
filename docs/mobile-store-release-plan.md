@@ -43,7 +43,7 @@
 |---|---|---|---|
 | B1 | **웹사이트 래퍼로 보임** | Apple 4.2 최소 기능 | 원격 URL 로드 + 플러그인 2개뿐. 네이티브 기능 사실상 없음 |
 | B2 | **게시글·댓글·채팅·회원 신고/차단 없음** | Apple 1.2 UGC, Google UGC 정책 | 신고·차단은 **마켓플레이스에만** 있음(`/marketplace/{id}/reports`, `/marketplace/blocks`) |
-| B3 | **Sign in with Apple 없음** | Apple 4.8 — 제3자 로그인(Google)을 제공하면 동급 개인정보 보호 로그인 옵션 필요 | 이메일/비밀번호 + Google 만 |
+| B3 | **Sign in with Apple** | Apple 4.8 — 제3자 로그인(Google)을 제공하면 동급 개인정보 보호 로그인 옵션 필요 | 코드 완료(`feat/sign-in-with-apple`). 아래 §3.1 설정 전에는 버튼이 숨겨짐. 탈퇴 시 Apple 토큰 폐기는 후속 |
 | B4 | AASA 의 `TEAMID` 자리표시자 | Universal Links 검증 실패 → OAuth 콜백이 앱으로 안 돌아옴 | `appIDs: ["TEAMID.com.mungji.ovlo"]` |
 | B5 | `assetlinks.json` 지문 | Play App Signing 을 쓰면 **Google 이 재서명**해 지문이 바뀜 → App Links 검증 실패 | 현재 지문 1개(로컬 키로 추정) |
 | B6 | Privacy Manifest 없음 | Apple 필수(2024~) | `PrivacyInfo.xcprivacy` 없음 |
@@ -83,8 +83,25 @@
    - 차단 시: 피드·댓글·채팅에서 상대 콘텐츠 숨김, DM 차단
    - 관리자 신고 처리 화면(기존 admin 에 탭 추가), 24시간 내 처리 원칙을 약관에 명시
    - 가입 시 "불쾌한 콘텐츠 무관용" 약관 동의(Apple 1.2 요구 문구)
-2. **B3 Sign in with Apple** — 백엔드 `/api/v1/auth/apple` (identity token 검증, `sub` 로 회원 연결), 웹은 Apple JS, 앱은 시스템 브라우저 OAuth 경로 재사용 가능. 이메일 숨김(relay) 주소 처리.
+2. **B3 Sign in with Apple** — 구현됨. 백엔드 `POST /api/v1/auth/apple`(identity token 서명·iss·aud·exp 검증, 원본 nonce 의 SHA-256 대조, `sub` 로 회원 연결),
+   웹은 Apple JS 팝업, iOS 앱은 앱 안 네이티브 플러그인(`AppleSignInPlugin.swift` — 커뮤니티 플러그인은 Capacitor 7 SPM 에 묶여 8 과 충돌),
+   Android 앱은 버튼 숨김. 같은 이메일이 다른 방법으로 가입돼 있으면 합치지 않고 409. 설정 절차는 §3.1.
 3. **B4·B5 딥링크 정합** — AASA 에 실제 Team ID, assetlinks 에 Play App Signing 지문(+업로드 키 지문) 추가 후 배포·검증.
+
+### 3.1 Sign in with Apple 켜기 (계정 준비 후, 순서대로)
+
+1. Apple Developer → Identifiers: App ID `com.mungji.ovlo` 에 **Sign in with Apple** capability 켜기.
+2. Services ID 생성(예: `com.mungji.ovlo.web`) → Sign in with Apple 설정에 도메인 `ovlo.mungji.com`,
+   Return URL `https://ovlo.mungji.com/login` 등록(웹 팝업의 `redirectURI` 와 같아야 한다).
+3. Xcode → Signing & Capabilities 에 Sign in with Apple 추가. `App.entitlements` 에 키는 이미 있다
+   (Associated Domains 와 함께 이때 `CODE_SIGN_ENTITLEMENTS` 가 연결된다).
+4. 백엔드: `ovlo-secret` 에 `APPLE_CLIENT_IDS=com.mungji.ovlo.web,com.mungji.ovlo` 추가 후 재시작(없으면 모든 Apple 요청 401).
+5. 프론트: GitHub repo **variable** `APPLE_SERVICES_ID=com.mungji.ovlo.web` (공개값이라 secret 아님) → 다음 배포부터 버튼이 보인다.
+6. 개인정보처리방침에 Apple(로그인 제공자, 수집 항목: 이메일·이름·Apple 사용자 식별자)을 추가한 뒤에 5번을 한다.
+7. 확인: 웹(Safari·Chrome)에서 가입→온보딩→재로그인, iOS 실기기에서 같은 계정으로 로그인되는지(`sub` 는 웹·앱 공통).
+
+**출시 전 남은 것**: 회원 탈퇴 때 Apple REST API 로 토큰 폐기(Apple 5.1.1(v)) — 로그인 때 authorization code 를
+client secret(.p8 키로 서명한 JWT)으로 교환해 refresh token 을 보관해야 한다. 이번 범위에서 뺐다.
 
 ### Phase 2 — 네이티브 가치 추가 (2~3주) — B1 대응
 

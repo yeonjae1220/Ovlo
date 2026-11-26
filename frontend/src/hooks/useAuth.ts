@@ -8,6 +8,7 @@ import { memberApi } from '../api/member'
 import { useAuthStore } from '../store/authStore'
 import { safeReturnPath, loginPath } from '../utils/returnPath'
 import { refreshAuth } from '../utils/refreshAuth'
+import type { AppleCredential } from '../utils/appleSignIn'
 import { captureAuthSession, isCurrentAuthSession, isEndedAuthSession } from '../utils/authSession'
 import type { CompleteOnboardingRequest } from '../types'
 
@@ -85,6 +86,26 @@ export function useGoogleLogin() {
       if (!isCurrentAuthSession(result.session)) return
       const next = safeReturnPath(sessionStorage.getItem('ovlo-oauth-next'))
       sessionStorage.removeItem('ovlo-oauth-next')
+      router.push(result.newMember ? '/onboarding?next=' + encodeURIComponent(next) : next)
+    },
+  })
+}
+
+/**
+ * Apple 인증 결과(진행 중인 Promise)로 로그인한다. 인증은 클릭 핸들러에서 이미 시작해 넘겨야 한다 —
+ * mutationFn 은 비동기로 늦게 불려 그 안에서 팝업을 열면 Safari 가 막는다. 돌아갈 곳은 ?next= 를 따른다.
+ */
+export function useAppleLogin() {
+  const router = useRouter()
+
+  return useMutation({
+    mutationFn: async (pending: Promise<AppleCredential>) => {
+      const credential = await pending
+      return authApi.appleLogin(credential.identityToken, credential.nonce, credential.name)
+    },
+    onSuccess: (result) => {
+      if (!isCurrentAuthSession(result.session)) return
+      const next = safeReturnPath(new URLSearchParams(window.location.search).get('next'))
       router.push(result.newMember ? '/onboarding?next=' + encodeURIComponent(next) : next)
     },
   })
