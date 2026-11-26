@@ -14,6 +14,7 @@ import me.yeonjae.ovlo.domain.member.model.MemberRole;
 import me.yeonjae.ovlo.domain.member.model.Password;
 import me.yeonjae.ovlo.domain.university.model.UniversityId;
 import me.yeonjae.ovlo.shared.security.JwtTokenProvider;
+import me.yeonjae.ovlo.shared.exception.TooManyRequestsException;
 import me.yeonjae.ovlo.shared.security.RateLimiterService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -31,6 +32,7 @@ import org.springframework.web.context.WebApplicationContext;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.BDDMockito.then;
 import static org.mockito.BDDMockito.willThrow;
 import static org.mockito.Mockito.never;
@@ -114,6 +116,36 @@ class MemberWithdrawApiTest {
                 .andExpect(status().isForbidden());
 
         then(withdrawMemberUseCase).should(never()).withdraw(any());
+    }
+
+    @Test
+    @DisplayName("본인 탈퇴 요청은 회원 기준 rate limit 을 거친다")
+    void withdraw_checksMemberRate() throws Exception {
+        mvc.perform(delete("/api/v1/members/" + me).header("Authorization", token))
+                .andExpect(status().isNoContent());
+
+        then(limiter).should().checkWithdrawRate(me);
+    }
+
+    @Test
+    @DisplayName("탈퇴 rate limit 을 넘으면 429 — 유스케이스(Apple 호출)까지 가지 않는다")
+    void withdraw_rateLimited_tooManyRequests() throws Exception {
+        willThrow(new TooManyRequestsException("too many")).given(limiter).checkWithdrawRate(me);
+
+        mvc.perform(delete("/api/v1/members/" + me).header("Authorization", token)
+                        .contentType(MediaType.APPLICATION_JSON).content(APPLE_BODY))
+                .andExpect(status().isTooManyRequests());
+
+        then(withdrawMemberUseCase).should(never()).withdraw(any());
+    }
+
+    @Test
+    @DisplayName("다른 회원 탈퇴 시도는 그 회원의 rate limit 버킷을 소모하지 않는다")
+    void otherMember_doesNotConsumeTheirBucket() throws Exception {
+        mvc.perform(delete("/api/v1/members/" + other).header("Authorization", token))
+                .andExpect(status().isForbidden());
+
+        then(limiter).should(never()).checkWithdrawRate(anyLong());
     }
 
     @Test
