@@ -10,6 +10,7 @@ import { useLogin } from '../../hooks/useAuth'
 import { useI18n } from '../../i18n/I18nProvider'
 import { Button, Card, FieldGroup, TextField } from '../../components/ui'
 import { Brand } from '../../components/ui/Brand'
+import { AppleSignInButton } from '../../components/auth/AppleSignInButton'
 
 const GOOGLE_CLIENT_ID = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || null
 const C = {
@@ -135,6 +136,7 @@ export default function LoginPage() {
           </svg>
           {t('login.google.btn')}
         </button>
+        <AppleSignInButton labelKey="login.apple.btn" />
 
         <p style={{ color: C.muted }}>
           {t('login.noAccount')} <Link href="/register">{t('login.register')}</Link>

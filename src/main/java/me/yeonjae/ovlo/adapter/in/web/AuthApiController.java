@@ -3,16 +3,21 @@ package me.yeonjae.ovlo.adapter.in.web;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import me.yeonjae.ovlo.adapter.in.web.dto.request.AppleLoginRequest;
 import me.yeonjae.ovlo.adapter.in.web.dto.request.GoogleLoginRequest;
 import me.yeonjae.ovlo.adapter.in.web.dto.request.LoginRequest;
 import me.yeonjae.ovlo.adapter.in.web.dto.response.GoogleAuthResponse;
 import me.yeonjae.ovlo.adapter.in.web.dto.response.LoginResponse;
+import me.yeonjae.ovlo.adapter.in.web.dto.response.SocialAuthResponse;
+import me.yeonjae.ovlo.application.dto.command.AppleLoginCommand;
 import me.yeonjae.ovlo.application.dto.command.GoogleLoginCommand;
 import me.yeonjae.ovlo.application.dto.command.LoginCommand;
 import me.yeonjae.ovlo.application.dto.command.LogoutCommand;
 import me.yeonjae.ovlo.application.dto.command.RefreshTokenCommand;
 import me.yeonjae.ovlo.application.dto.result.GoogleLoginResult;
+import me.yeonjae.ovlo.application.dto.result.SocialLoginResult;
 import me.yeonjae.ovlo.application.dto.result.TokenPairResult;
+import me.yeonjae.ovlo.application.port.in.auth.AppleLoginUseCase;
 import me.yeonjae.ovlo.application.port.in.auth.GoogleLoginUseCase;
 import me.yeonjae.ovlo.application.port.in.auth.LoginUseCase;
 import me.yeonjae.ovlo.application.port.in.auth.LogoutUseCase;
@@ -42,6 +47,7 @@ public class AuthApiController {
     private final RefreshTokenUseCase refreshTokenUseCase;
     private final LogoutUseCase logoutUseCase;
     private final GoogleLoginUseCase googleLoginUseCase;
+    private final AppleLoginUseCase appleLoginUseCase;
     private final RateLimiterService rateLimiterService;
     private final Environment environment;
     private final ClientIpResolver clientIpResolver;
@@ -54,6 +60,7 @@ public class AuthApiController {
             RefreshTokenUseCase refreshTokenUseCase,
             LogoutUseCase logoutUseCase,
             GoogleLoginUseCase googleLoginUseCase,
+            AppleLoginUseCase appleLoginUseCase,
             RateLimiterService rateLimiterService,
             Environment environment,
             ClientIpResolver clientIpResolver,
@@ -63,6 +70,7 @@ public class AuthApiController {
         this.refreshTokenUseCase = refreshTokenUseCase;
         this.logoutUseCase = logoutUseCase;
         this.googleLoginUseCase = googleLoginUseCase;
+        this.appleLoginUseCase = appleLoginUseCase;
         this.rateLimiterService = rateLimiterService;
         this.environment = environment;
         this.clientIpResolver = clientIpResolver;
@@ -115,13 +123,26 @@ public class AuthApiController {
     @PostMapping("/google")
     public ResponseEntity<GoogleAuthResponse> googleLogin(@Valid @RequestBody GoogleLoginRequest request,
                                                           HttpServletRequest httpRequest) {
-        rateLimiterService.checkLoginRate(clientIpResolver.resolve(httpRequest), "google");
+        rateLimiterService.checkSocialLoginRate(clientIpResolver.resolve(httpRequest));
         GoogleLoginResult result = googleLoginUseCase.loginWithGoogle(
                 new GoogleLoginCommand(request.code(), request.redirectUri())
         );
         return ResponseEntity.ok()
                 .header(HttpHeaders.SET_COOKIE, buildRefreshCookie(result.refreshToken()).toString())
                 .body(new GoogleAuthResponse(result.accessToken(), result.memberId(), result.newMember()));
+    }
+
+    @Operation(summary = "Apple 로그인 (Sign in with Apple)")
+    @PostMapping("/apple")
+    public ResponseEntity<SocialAuthResponse> appleLogin(@Valid @RequestBody AppleLoginRequest request,
+                                                         HttpServletRequest httpRequest) {
+        rateLimiterService.checkSocialLoginRate(clientIpResolver.resolve(httpRequest));
+        SocialLoginResult result = appleLoginUseCase.loginWithApple(
+                new AppleLoginCommand(request.identityToken(), request.nonce(), request.name())
+        );
+        return ResponseEntity.ok()
+                .header(HttpHeaders.SET_COOKIE, buildRefreshCookie(result.refreshToken()).toString())
+                .body(new SocialAuthResponse(result.accessToken(), result.memberId(), result.newMember()));
     }
 
     private ResponseCookie buildRefreshCookie(String refreshToken) {

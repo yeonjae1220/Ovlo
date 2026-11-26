@@ -7,6 +7,7 @@ import me.yeonjae.ovlo.application.port.out.member.LoadMemberPort;
 import me.yeonjae.ovlo.application.port.out.member.SaveMemberPort;
 import me.yeonjae.ovlo.domain.member.model.Member;
 import me.yeonjae.ovlo.domain.member.model.MemberId;
+import me.yeonjae.ovlo.domain.member.model.OAuthProvider;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -52,6 +53,12 @@ public class MemberPersistenceAdapter implements LoadMemberPort, SaveMemberPort 
     @Override
     public Optional<Member> findByEmail(String email) {
         return memberJpaRepository.findByEmail(email)
+                .map(memberMapper::toDomain);
+    }
+
+    @Override
+    public Optional<Member> findByProvider(OAuthProvider provider, String providerId) {
+        return memberJpaRepository.findFirstByProviderAndProviderId(provider, providerId)
                 .map(memberMapper::toDomain);
     }
 

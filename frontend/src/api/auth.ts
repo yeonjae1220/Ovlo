@@ -36,4 +36,7 @@ export const authApi = {
   },
 
   googleLogin: (code: string, redirectUri: string) => login<GoogleLoginResult>('google', { code, redirectUri }),
+
+  appleLogin: (identityToken: string, nonce: string, name: string | null) =>
+    login<GoogleLoginResult>('apple', { identityToken, nonce, name }),
 }

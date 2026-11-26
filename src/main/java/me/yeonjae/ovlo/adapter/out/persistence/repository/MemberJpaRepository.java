@@ -1,6 +1,7 @@
 package me.yeonjae.ovlo.adapter.out.persistence.repository;
 
 import me.yeonjae.ovlo.adapter.out.persistence.entity.MemberJpaEntity;
+import me.yeonjae.ovlo.domain.member.model.OAuthProvider;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -11,6 +12,8 @@ import java.util.Optional;
 
 public interface MemberJpaRepository extends JpaRepository<MemberJpaEntity, Long> {
     Optional<MemberJpaEntity> findByEmail(String email);
+    Optional<MemberJpaEntity> findFirstByProviderAndProviderId(
+            OAuthProvider provider, String providerId);
     boolean existsByEmail(String email);
     boolean existsByIdAndStatus(Long id, me.yeonjae.ovlo.domain.member.model.MemberStatus status);
     boolean existsByNickname(String nickname);

@@ -92,6 +92,13 @@ spec:
                 secretKeyRef:
                   name: ovlo-secret
                   key: CORS_ALLOWED_ORIGINS
+            # 웹 Services ID·iOS 번들 ID(쉼표 구분). 없으면 Apple 로그인만 꺼진 채로 뜬다.
+            - name: APPLE_CLIENT_IDS
+              valueFrom:
+                secretKeyRef:
+                  name: ovlo-secret
+                  key: APPLE_CLIENT_IDS
+                  optional: true
             - name: GOOGLE_CLIENT_ID
               valueFrom:
                 secretKeyRef:

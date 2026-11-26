@@ -15,6 +15,7 @@ import { SUPPORTED_UI_LANGUAGES, LANGUAGE_LABELS } from '../../i18n/messages'
 import type { MessageKey } from '../../i18n/messages'
 import { QueryErrorNotice } from '../../components/ui'
 import { Brand } from '../../components/ui/Brand'
+import { AppleSignInButton } from '../../components/auth/AppleSignInButton'
 
 const GOOGLE_CLIENT_ID = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || null
 
@@ -509,6 +510,7 @@ export default function RegisterPage() {
         </svg>
         {t('register.google.btn')}
       </button>
+      <AppleSignInButton labelKey="register.apple.btn" />
 
       <p style={{ marginTop: 16, textAlign: 'center', fontSize: 13, color: 'var(--color-text-muted)' }}>
         {t('register.hasAccount')} <Link href="/login" style={{ color: 'var(--color-accent)', fontWeight: 700 }}>{t('register.login')}</Link>

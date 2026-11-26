@@ -59,6 +59,14 @@ public class RateLimiterService {
         check("rl:login:acc:" + email, loginLimit * 3);
     }
 
+    /**
+     * 소셜 로그인(Google·Apple) — IP 기준만. 요청 시점엔 계정을 모르므로 checkLoginRate 의 계정 키에
+     * 제공자 이름을 넣으면 모든 사용자가 한 버킷을 나눠 써, 아무나 그 버킷을 비워 전원을 막을 수 있다.
+     */
+    public void checkSocialLoginRate(String clientIp) {
+        check("rl:login:ip:" + clientIp, loginLimit);
+    }
+
     public void checkRefreshRate(String clientIp) {
         check("rl:refresh:" + clientIp, refreshLimit);
     }

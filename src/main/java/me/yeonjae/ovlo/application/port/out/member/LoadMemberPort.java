@@ -2,6 +2,7 @@ package me.yeonjae.ovlo.application.port.out.member;
 
 import me.yeonjae.ovlo.domain.member.model.Member;
 import me.yeonjae.ovlo.domain.member.model.MemberId;
+import me.yeonjae.ovlo.domain.member.model.OAuthProvider;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
@@ -14,6 +15,7 @@ public interface LoadMemberPort {
     boolean isActive(MemberId memberId);
     List<Member> findAllByIds(List<MemberId> ids);
     Optional<Member> findByEmail(String email);
+    Optional<Member> findByProvider(OAuthProvider provider, String providerId);
     boolean existsByEmail(String email);
     boolean existsByNickname(String nickname);
     List<Member> searchByNickname(String keyword, int limit);
