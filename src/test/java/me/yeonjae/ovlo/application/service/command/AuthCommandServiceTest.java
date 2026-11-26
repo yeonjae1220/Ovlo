@@ -156,6 +156,76 @@ class AuthCommandServiceTest {
                     .isInstanceOf(AuthException.class)
                     .hasMessageContaining("이메일 또는 비밀번호가 올바르지 않습니다");
         }
+
+        @Test
+        @DisplayName("없는 이메일·소셜 전용 계정·틀린 비밀번호는 모두 같은 예외 타입과 메시지로 실패한다")
+        void shouldFailIdentically_forUnknownEmailSocialAccountAndWrongPassword() {
+            given(loadMemberCredentialsPort.findByEmail("none@example.com")).willReturn(Optional.empty());
+            given(loadMemberCredentialsPort.findByEmail("social@example.com"))
+                    .willReturn(Optional.of(new MemberCredentials(new MemberId(2L), null, MemberRole.MEMBER)));
+            given(loadMemberCredentialsPort.findByEmail("local@example.com"))
+                    .willReturn(Optional.of(new MemberCredentials(new MemberId(3L), "$2a$10$hashed", MemberRole.MEMBER)));
+            given(passwordHasherPort.matches(anyString(), anyString())).willReturn(false);
+
+            AuthException unknown = catchAuthException("none@example.com");
+            AuthException social = catchAuthException("social@example.com");
+            AuthException wrong = catchAuthException("local@example.com");
+
+            assertThat(social.getMessage()).isEqualTo(unknown.getMessage()).isEqualTo(wrong.getMessage())
+                    .isEqualTo("이메일 또는 비밀번호가 올바르지 않습니다");
+            assertThat(social.getErrorType()).isEqualTo(unknown.getErrorType()).isEqualTo(wrong.getErrorType());
+            then(jwtTokenProvider).should(never()).generateAccessToken(any(), any(), any());
+            then(tokenStorePort).should(never()).save(any());
+        }
+
+        @Test
+        @DisplayName("없는 이메일이어도 더미 해시로 비밀번호 비교를 한 번 수행한다(응답 시간 평준화)")
+        void shouldRunDummyHashComparison_whenEmailNotFound() {
+            given(loadMemberCredentialsPort.findByEmail(anyString())).willReturn(Optional.empty());
+
+            catchAuthException("none@example.com");
+
+            then(passwordHasherPort).should().matches("pw", AuthCommandService.DUMMY_PASSWORD_HASH);
+        }
+
+        @Test
+        @DisplayName("소셜 전용 계정(비밀번호 없음)이어도 더미 해시로 비밀번호 비교를 한 번 수행한다")
+        void shouldRunDummyHashComparison_whenSocialOnlyAccount() {
+            given(loadMemberCredentialsPort.findByEmail(anyString()))
+                    .willReturn(Optional.of(new MemberCredentials(new MemberId(2L), null, MemberRole.MEMBER)));
+
+            catchAuthException("social@example.com");
+
+            then(passwordHasherPort).should().matches("pw", AuthCommandService.DUMMY_PASSWORD_HASH);
+        }
+
+        @Test
+        @DisplayName("소셜 전용 계정은 더미 해시가 우연히 일치해도 로그인되지 않는다")
+        void shouldRejectSocialOnlyAccount_evenIfDummyHashMatches() {
+            given(loadMemberCredentialsPort.findByEmail(anyString()))
+                    .willReturn(Optional.of(new MemberCredentials(new MemberId(2L), null, MemberRole.MEMBER)));
+            given(passwordHasherPort.matches(anyString(), anyString())).willReturn(true);
+
+            assertThat(catchAuthException("social@example.com").getMessage())
+                    .isEqualTo("이메일 또는 비밀번호가 올바르지 않습니다");
+            then(tokenStorePort).should(never()).save(any());
+        }
+
+        @Test
+        @DisplayName("더미 해시는 실제 인코더와 같은 cost(10)의 유효한 BCrypt 형식이다")
+        void dummyHashIsValidBcryptWithEncoderCost() {
+            assertThat(AuthCommandService.DUMMY_PASSWORD_HASH)
+                    .hasSize(60)
+                    .matches("^\\$2[ab]\\$10\\$[./A-Za-z0-9]{53}$");
+            var encoder = new org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder();
+            assertThat(encoder.upgradeEncoding(AuthCommandService.DUMMY_PASSWORD_HASH)).isFalse();
+            assertThat(encoder.matches("pw", AuthCommandService.DUMMY_PASSWORD_HASH)).isFalse();
+        }
+
+        private AuthException catchAuthException(String email) {
+            return org.assertj.core.api.Assertions.catchThrowableOfType(AuthException.class,
+                    () -> sut.login(new LoginCommand(email, "pw")));
+        }
     }
 
     @Nested

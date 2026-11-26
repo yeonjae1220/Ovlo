@@ -34,6 +34,14 @@ public class AuthCommandService implements LoginUseCase, LogoutUseCase, RefreshT
 
     private static final Logger log = LoggerFactory.getLogger(AuthCommandService.class);
 
+    private static final String INVALID_CREDENTIALS_MESSAGE = "이메일 또는 비밀번호가 올바르지 않습니다";
+
+    /**
+     * 비밀번호가 없는 경우(없는 이메일·소셜 전용 계정)에 비교할 고정 BCrypt 해시. 평문은 무작위로 만들고 버렸다.
+     * cost 는 {@code BCryptPasswordHasherAdapter} 의 인코더 기본값(10)과 같아야 비교 시간이 맞는다.
+     */
+    static final String DUMMY_PASSWORD_HASH = "$2a$10$rsiPi9yvj7r5E0QTPYKhAe1UTW8EPG9L6m6p1GyEVMkdrG9mfYSaa";
+
     private final LoadMemberCredentialsPort loadMemberCredentialsPort;
     private final PasswordHasherPort passwordHasherPort;
     private final TokenStorePort tokenStorePort;
@@ -60,15 +68,16 @@ public class AuthCommandService implements LoginUseCase, LogoutUseCase, RefreshT
 
     @Override
     public TokenPairResult login(LoginCommand command) {
-        MemberCredentials credentials = loadMemberCredentialsPort.findByEmail(command.email())
-                .orElseThrow(() -> new AuthException("이메일 또는 비밀번호가 올바르지 않습니다"));
+        // 가입 여부를 응답으로 드러내지 않는다: 없는 이메일·소셜 전용 계정·틀린 비밀번호를 같은 예외로 합치고,
+        // 비밀번호가 없는 경우에도 더미 해시로 BCrypt 비교를 한 번 돌려 응답 시간을 맞춘다.
+        MemberCredentials credentials = loadMemberCredentialsPort.findByEmail(command.email()).orElse(null);
+        String storedHash = credentials == null ? null : credentials.hashedPassword();
+        boolean hasPassword = storedHash != null;
+        boolean passwordMatches = passwordHasherPort.matches(
+                command.rawPassword(), hasPassword ? storedHash : DUMMY_PASSWORD_HASH);
 
-        if (credentials.hashedPassword() == null) {
-            throw new AuthException("소셜 로그인 계정입니다. Google 로그인을 사용해 주세요");
-        }
-
-        if (!passwordHasherPort.matches(command.rawPassword(), credentials.hashedPassword())) {
-            throw new AuthException("이메일 또는 비밀번호가 올바르지 않습니다");
+        if (!hasPassword || !passwordMatches) {
+            throw new AuthException(INVALID_CREDENTIALS_MESSAGE);
         }
 
         requireActive(credentials.memberId());
