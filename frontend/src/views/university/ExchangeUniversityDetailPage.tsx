@@ -206,11 +206,17 @@ export default function ExchangeUniversityDetailPage() {
               <p style={{ margin: '0 0 14px', fontSize: 14, color: C.textSec, lineHeight: 1.8 }}>{aiReport.summary}</p>
             )}
             {(() => {
-              let parsed: { costs?: { monthly_total?: string; currency?: string; rent?: string }; housing?: { dorm_available?: boolean; dorm_price?: string; dorm_type?: string }; visa?: { type?: string; cost?: string; processing_days?: string }; academics?: { difficulty?: string; gpa_req?: string; language_req?: string } } | null = null
+              let parsed: { costs?: { monthly_total?: string; currency?: string; rent?: string }; housing?: { dorm_available?: boolean | null; dorm_price?: string; dorm_type?: string }; visa?: { type?: string; cost?: string; processing_days?: string }; academics?: { difficulty?: string; gpa_req?: string; language_req?: string } } | null = null
               if (aiReport.content) {
                 try { parsed = typeof aiReport.content === 'string' ? JSON.parse(aiReport.content) : aiReport.content } catch { /* ignore */ }
               }
               if (!parsed) return null
+              const dormAvailability = parsed.housing?.dorm_available
+              const dormStatus = dormAvailability === true
+                ? { color: C.recommendTx, label: t('exch.detail.dormAvailable') }
+                : dormAvailability === false
+                  ? { color: C.notRecTx, label: t('exch.detail.dormNotAvailable') }
+                  : { color: C.textSec, label: t('univ.detail.dormUnknown') }
               return (
                 <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', marginBottom: 10 }}>
                   {parsed.costs && (parsed.costs.monthly_total || parsed.costs.rent) && (
@@ -224,8 +230,8 @@ export default function ExchangeUniversityDetailPage() {
                   {parsed.housing && (
                     <div style={{ flex: 1, minWidth: 130, background: C.bg, borderRadius: 8, padding: '10px 12px', border: `1px solid ${C.border}` }}>
                       <div style={{ fontSize: 10, fontWeight: 700, color: C.textDim, textTransform: 'uppercase', marginBottom: 4 }}>🏠 {t('exch.detail.dorm')}</div>
-                      <div style={{ fontSize: 13, fontWeight: 600, color: parsed.housing.dorm_available ? C.recommendTx : C.notRecTx }}>
-                        {parsed.housing.dorm_available ? t('exch.detail.dormAvailable') : t('exch.detail.dormNotAvailable')}
+                      <div style={{ fontSize: 13, fontWeight: 600, color: dormStatus.color }}>
+                        {dormStatus.label}
                       </div>
                       {parsed.housing.dorm_price && <div style={{ fontSize: 11, color: C.textMuted }}>{parsed.housing.dorm_price}</div>}
                     </div>
