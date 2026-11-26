@@ -91,6 +91,13 @@ public class RateLimiterService {
         check("rl:inquiry:day:member:" + memberId, inquiryPerDay, 24 * 60 * 60);
     }
 
+    /**
+     * 회원 탈퇴 — 회원 기준. Apple 회원은 요청마다 Apple 토큰 교환·폐기를 외부 호출하므로,
+     * 탈취된 액세스 토큰이나 재시도 루프가 Apple 쪽 호출을 무한히 일으키지 못하게 한다.
+     * 정상 사용자는 재인증 실패 후 몇 번 다시 시도하는 정도라 10분에 5회면 충분하다.
+     */
+    public void checkWithdrawRate(Long memberId) { check("rl:withdraw:member:" + memberId, 5, 600); }
+
     /** 신고는 남용되면 관리자 대기열을 덮는다. 정상 사용은 10분에 몇 건이 넘지 않는다. */
     public void checkReportRate(Long member) { check("rl:report:" + member, 20, 600); }
 

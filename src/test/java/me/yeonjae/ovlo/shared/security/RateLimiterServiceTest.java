@@ -68,4 +68,15 @@ class RateLimiterServiceTest {
         assertThatThrownBy(() -> rateLimiterService(5).checkOfficeInquiryRate(1L))
                 .isInstanceOf(IllegalStateException.class);
     }
+
+    @Test
+    void checkWithdrawRate_usesMemberKeyAndBlocksAboveLimit() {
+        given(redisTemplate.execute(any(RedisScript.class), eq(List.of("rl:withdraw:member:7")), eq("600")))
+                .willReturn(5L, 6L);
+
+        RateLimiterService limiter = rateLimiterService(5);
+        assertThatNoException().isThrownBy(() -> limiter.checkWithdrawRate(7L));
+        assertThatThrownBy(() -> limiter.checkWithdrawRate(7L))
+                .isInstanceOf(TooManyRequestsException.class);
+    }
 }

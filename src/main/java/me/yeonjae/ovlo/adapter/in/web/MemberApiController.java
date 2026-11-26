@@ -183,6 +183,8 @@ public class MemberApiController {
         if (!id.equals(memberId)) {
             throw new MemberException("본인 계정만 탈퇴할 수 있습니다", MemberException.ErrorType.FORBIDDEN);
         }
+        // 본인 확인 뒤에 센다 — 남이 내 id 로 요청해 내 버킷을 비우는 일을 막는다.
+        rateLimiterService.checkWithdrawRate(id);
         WithdrawMemberRequest.AppleReauthRequest apple = request == null ? null : request.apple();
         withdrawMemberUseCase.withdraw(new WithdrawMemberCommand(id, apple == null ? null
                 : new AppleReauthorization(apple.identityToken(), apple.nonce(), apple.authorizationCode(),
