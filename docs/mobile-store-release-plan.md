@@ -43,7 +43,7 @@
 |---|---|---|---|
 | B1 | **웹사이트 래퍼로 보임** | Apple 4.2 최소 기능 | 원격 URL 로드 + 플러그인 2개뿐. 네이티브 기능 사실상 없음 |
 | B2 | **게시글·댓글·채팅·회원 신고/차단 없음** | Apple 1.2 UGC, Google UGC 정책 | 신고·차단은 **마켓플레이스에만** 있음(`/marketplace/{id}/reports`, `/marketplace/blocks`) |
-| B3 | **Sign in with Apple** | Apple 4.8 — 제3자 로그인(Google)을 제공하면 동급 개인정보 보호 로그인 옵션 필요 | 코드 완료(`feat/sign-in-with-apple`). 아래 §3.1 설정 전에는 버튼이 숨겨짐. 탈퇴 시 Apple 토큰 폐기는 후속 |
+| B3 | **Sign in with Apple** | Apple 4.8 — 제3자 로그인(Google)을 제공하면 동급 개인정보 보호 로그인 옵션 필요 | 코드 완료(`feat/sign-in-with-apple`). 아래 §3.1 설정 전에는 버튼이 숨겨짐. 탈퇴 시 Apple 토큰 폐기 코드 완료(`feat/apple-token-revocation`, §3.1 4번 키 필요) |
 | B4 | AASA 의 `TEAMID` 자리표시자 | Universal Links 검증 실패 → OAuth 콜백이 앱으로 안 돌아옴 | `appIDs: ["TEAMID.com.mungji.ovlo"]` |
 | B5 | `assetlinks.json` 지문 | Play App Signing 을 쓰면 **Google 이 재서명**해 지문이 바뀜 → App Links 검증 실패 | 현재 지문 1개(로컬 키로 추정) |
 | B6 | Privacy Manifest 없음 | Apple 필수(2024~) | `PrivacyInfo.xcprivacy` 없음 |
@@ -96,12 +96,21 @@
 3. Xcode → Signing & Capabilities 에 Sign in with Apple 추가. `App.entitlements` 에 키는 이미 있다
    (Associated Domains 와 함께 이때 `CODE_SIGN_ENTITLEMENTS` 가 연결된다).
 4. 백엔드: `ovlo-secret` 에 `APPLE_CLIENT_IDS=com.mungji.ovlo.web,com.mungji.ovlo` 추가 후 재시작(없으면 모든 Apple 요청 401).
+   탈퇴 시 토큰 폐기용으로 Keys 에서 Sign in with Apple 키(.p8)를 만들고 같은 secret 에
+   `APPLE_TEAM_ID`(10자)·`APPLE_KEY_ID`(10자)·`APPLE_PRIVATE_KEY`(.p8 내용 그대로, 줄바꿈은 `\n` 도 됨)를 넣는다.
+   셋 중 하나라도 없으면 Apple 회원의 탈퇴가 503 으로 막힌다(오류 로그 `Apple 토큰 폐기 설정…`) — 5번보다 먼저.
 5. 프론트: GitHub repo **variable** `APPLE_SERVICES_ID=com.mungji.ovlo.web` (공개값이라 secret 아님) → 다음 배포부터 버튼이 보인다.
 6. 개인정보처리방침에 Apple(로그인 제공자, 수집 항목: 이메일·이름·Apple 사용자 식별자)을 추가한 뒤에 5번을 한다.
 7. 확인: 웹(Safari·Chrome)에서 가입→온보딩→재로그인, iOS 실기기에서 같은 계정으로 로그인되는지(`sub` 는 웹·앱 공통).
+8. 탈퇴 확인: 웹·iOS 에서 Apple 계정 탈퇴 → 설정 > Apple ID > 'Apple로 로그인' 목록에서 Ovlo 가 사라지는지.
 
-**출시 전 남은 것**: 회원 탈퇴 때 Apple REST API 로 토큰 폐기(Apple 5.1.1(v)) — 로그인 때 authorization code 를
-client secret(.p8 키로 서명한 JWT)으로 교환해 refresh token 을 보관해야 한다. 이번 범위에서 뺐다.
+**탈퇴 시 토큰 폐기(Apple 5.1.1(v))**: refresh token 을 저장하지 않고 **탈퇴 시점에 재인증**한다.
+프로필 → 회원 탈퇴 → 'Apple로 확인하고 탈퇴' 가 Apple 인증을 다시 받아 `{identityToken, nonce, authorizationCode,
+redirectUri}` 를 `DELETE /api/v1/members/{id}` 본문으로 보낸다. 서버(`MemberWithdrawalService`)는 토큰 검증·nonce·
+`sub` 일치를 확인하고, code 를 `/auth/token` 에서 교환(교환 결과의 `sub` 도 재확인)한 뒤 `/auth/revoke` 로 폐기하고,
+**폐기가 성공해야만** DB 탈퇴를 한다(Apple 호출은 트랜잭션 밖). 웹 code 는 팝업의 `redirectURI` 와 같은 값으로 교환한다.
+- 저장하지 않는 이유: 장기 자격증명(refresh token)을 DB 에 두지 않아도 되고, 재인증이 '본인 확인' 역할도 한다.
+- **Android 앱은 Apple 인증을 띄울 수 없어** Apple 계정 탈퇴는 웹·iOS 앱에서 하도록 안내 문구만 보인다.
 
 ### Phase 2 — 네이티브 가치 추가 (2~3주) — B1 대응
 

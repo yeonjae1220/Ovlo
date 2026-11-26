@@ -99,6 +99,25 @@ spec:
                   name: ovlo-secret
                   key: APPLE_CLIENT_IDS
                   optional: true
+            # 탈퇴 시 Apple 토큰 폐기(.p8 키). 없으면 Apple 회원 탈퇴만 503.
+            - name: APPLE_TEAM_ID
+              valueFrom:
+                secretKeyRef:
+                  name: ovlo-secret
+                  key: APPLE_TEAM_ID
+                  optional: true
+            - name: APPLE_KEY_ID
+              valueFrom:
+                secretKeyRef:
+                  name: ovlo-secret
+                  key: APPLE_KEY_ID
+                  optional: true
+            - name: APPLE_PRIVATE_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: ovlo-secret
+                  key: APPLE_PRIVATE_KEY
+                  optional: true
             - name: GOOGLE_CLIENT_ID
               valueFrom:
                 secretKeyRef:

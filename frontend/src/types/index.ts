@@ -57,6 +57,17 @@ export interface Member {
   universityExperiences: UniversityExperience[]
   contactInfos: ContactInfo[]
   createdAt: string
+  /** 본인 조회에서만 온다. Apple 계정은 탈퇴 때 Apple 재인증이 필요하다. */
+  loginProvider?: 'LOCAL' | 'GOOGLE' | 'APPLE'
+}
+
+export interface WithdrawMemberRequest {
+  apple?: {
+    identityToken: string
+    nonce: string
+    authorizationCode: string
+    redirectUri: string | null
+  }
 }
 
 /** 닉네임 검색 결과 — 다른 회원에게 보여도 되는 필드만 온다 (이메일·생년월일·연락처 없음). */

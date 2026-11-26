@@ -89,6 +89,13 @@ apple:
     # 비어 있으면 Apple 로그인은 모든 요청을 거절한다.
     client-ids: ${APPLE_CLIENT_IDS:}
     jwks-uri: https://appleid.apple.com/auth/keys
+    # 탈퇴 때 Apple 토큰 폐기용(App Store 5.1.1(v)). Sign in with Apple 키(.p8)와 그 Key ID, Team ID.
+    # 비어 있으면 Apple 로그인 회원의 탈퇴가 503 으로 막힌다 — Apple 로그인을 켤 때 함께 넣어야 한다.
+    team-id: ${APPLE_TEAM_ID:}
+    key-id: ${APPLE_KEY_ID:}
+    private-key: ${APPLE_PRIVATE_KEY:}
+    token-uri: https://appleid.apple.com/auth/token
+    revoke-uri: https://appleid.apple.com/auth/revoke
 
 ovlo:
   storage:

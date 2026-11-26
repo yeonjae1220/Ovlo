@@ -12,6 +12,8 @@ import me.yeonjae.ovlo.application.dto.command.CompleteOnboardingCommand;
 import me.yeonjae.ovlo.application.dto.command.RegisterMemberCommand;
 import me.yeonjae.ovlo.application.dto.command.UpdateMemberProfileCommand;
 import me.yeonjae.ovlo.application.dto.command.UpdateProfileImageCommand;
+import me.yeonjae.ovlo.adapter.in.web.dto.request.WithdrawMemberRequest;
+import me.yeonjae.ovlo.application.dto.command.AppleReauthorization;
 import me.yeonjae.ovlo.application.dto.command.WithdrawMemberCommand;
 import me.yeonjae.ovlo.application.dto.result.MemberResult;
 import me.yeonjae.ovlo.application.dto.result.MemberSummaryResult;
@@ -175,12 +177,16 @@ public class MemberApiController {
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> withdraw(
             @PathVariable Long id,
-            @AuthenticationPrincipal Long memberId
+            @AuthenticationPrincipal Long memberId,
+            @Valid @RequestBody(required = false) WithdrawMemberRequest request
     ) {
         if (!id.equals(memberId)) {
             throw new MemberException("본인 계정만 탈퇴할 수 있습니다", MemberException.ErrorType.FORBIDDEN);
         }
-        withdrawMemberUseCase.withdraw(new WithdrawMemberCommand(id));
+        WithdrawMemberRequest.AppleReauthRequest apple = request == null ? null : request.apple();
+        withdrawMemberUseCase.withdraw(new WithdrawMemberCommand(id, apple == null ? null
+                : new AppleReauthorization(apple.identityToken(), apple.nonce(), apple.authorizationCode(),
+                        apple.redirectUri())));
         return ResponseEntity.noContent().build();
     }
 }

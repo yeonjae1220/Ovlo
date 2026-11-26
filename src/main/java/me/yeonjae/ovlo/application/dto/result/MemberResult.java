@@ -21,7 +21,9 @@ public record MemberResult(
         String profileImageMediaId,
         List<LanguageSkillInfo> languageSkills,
         List<UniversityExperienceInfo> universityExperiences,
-        List<ContactInfoData> contactInfos
+        List<ContactInfoData> contactInfos,
+        /** 가입 방법(LOCAL·GOOGLE·APPLE). 본인 조회에만 — 탈퇴 화면이 Apple 재인증을 띄울지 정한다. */
+        String loginProvider
 ) {
 
     public record MajorInfo(String majorName, String degreeType, int gradeLevel) {}
@@ -33,12 +35,12 @@ public record MemberResult(
     public record ContactInfoData(String type, String value) {}
 
     /**
-     * 다른 회원에게 보여줄 사본 — 계정 이메일과 생년월일을 뺀다.
+     * 다른 회원에게 보여줄 사본 — 계정 이메일·생년월일·가입 방법을 뺀다.
      * 연락처(contactInfos)는 본인이 교류용으로 직접 등록한 것이라 남긴다.
      */
     public MemberResult withoutPrivateFields() {
         return new MemberResult(id, nickname, name, hometown, null, homeUniversityId, major, status, role,
-                bio, null, profileImageMediaId, languageSkills, universityExperiences, contactInfos);
+                bio, null, profileImageMediaId, languageSkills, universityExperiences, contactInfos, null);
     }
 
     public static MemberResult from(Member member) {
@@ -77,7 +79,8 @@ public record MemberResult(
                 member.getProfileImageMediaId(),
                 skills,
                 experiences,
-                contacts
+                contacts,
+                member.getProvider() != null ? member.getProvider().name() : null
         );
     }
 }

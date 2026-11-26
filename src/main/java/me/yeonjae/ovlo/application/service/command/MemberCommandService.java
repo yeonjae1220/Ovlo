@@ -10,7 +10,6 @@ import me.yeonjae.ovlo.application.port.in.member.CompleteOnboardingUseCase;
 import me.yeonjae.ovlo.application.port.in.member.RegisterMemberUseCase;
 import me.yeonjae.ovlo.application.port.in.member.UpdateMemberProfileUseCase;
 import me.yeonjae.ovlo.application.port.in.member.UpdateProfileImageUseCase;
-import me.yeonjae.ovlo.application.port.in.member.WithdrawMemberUseCase;
 import me.yeonjae.ovlo.application.port.out.auth.PasswordHasherPort;
 import me.yeonjae.ovlo.application.port.out.media.MediaAccessPort;
 import me.yeonjae.ovlo.domain.media.exception.MediaException;
@@ -29,7 +28,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional
 public class MemberCommandService implements
         RegisterMemberUseCase, UpdateMemberProfileUseCase, UpdateProfileImageUseCase,
-        WithdrawMemberUseCase, CompleteOnboardingUseCase {
+        CompleteOnboardingUseCase {
 
     private final LoadMemberPort loadMemberPort;
     private final SaveMemberPort saveMemberPort;
@@ -136,7 +135,10 @@ public class MemberCommandService implements
         return MemberResult.from(saved);
     }
 
-    @Override
+    /**
+     * 탈퇴의 DB 부분. 진입점은 {@link MemberWithdrawalService} — Apple 회원은 거기서 Apple 토큰을 먼저
+     * 폐기한 뒤에 이 메서드가 불린다. 다른 경로에서 직접 부르지 말 것.
+     */
     public void withdraw(WithdrawMemberCommand command) {
         Member member = loadMemberPort.findById(new MemberId(command.memberId()))
                 .orElseThrow(() -> new MemberException("회원을 찾을 수 없습니다: " + command.memberId(), MemberException.ErrorType.NOT_FOUND));

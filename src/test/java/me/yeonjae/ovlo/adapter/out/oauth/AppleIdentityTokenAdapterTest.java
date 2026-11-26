@@ -54,6 +54,7 @@ class AppleIdentityTokenAdapterTest {
         assertThat(identity.subject()).isEqualTo("apple-sub");
         assertThat(identity.email()).isEqualTo("hidden@privaterelay.appleid.com");
         assertThat(identity.nonce()).isEqualTo("hashed-nonce");
+        assertThat(identity.audience()).isEqualTo(APP_CLIENT);
     }
 
     @Test

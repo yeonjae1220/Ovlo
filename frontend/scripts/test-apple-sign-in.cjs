@@ -76,7 +76,7 @@ async function main() {
   // 웹: Apple 에는 원본 nonce 의 SHA-256 hex 를, 서버에는 원본을 준다.
   {
     const appleJs = appleJsStub(async (config) => ({
-      authorization: { id_token: 'web-token', state: config.state },
+      authorization: { id_token: 'web-token', code: 'web-code', state: config.state },
       user: { name: { firstName: ' Gildong ', lastName: 'Hong' } },
     }))
     const { api, head } = load({ appleJs })
@@ -90,6 +90,10 @@ async function main() {
     assert.equal(config.usePopup, true)
     assert.equal(config.scope, 'name email')
     assert.equal(credential.name, 'Gildong Hong')
+    // 탈퇴 때 서버가 Apple 토큰으로 바꿔 폐기할 code 와, 그 교환에 필요한 redirect_uri.
+    assert.equal(credential.authorizationCode, 'web-code')
+    assert.equal(credential.redirectUri, 'https://ovlo.test/login')
+    assert.equal(config.redirectURI, credential.redirectUri)
     assert.equal(head.appended.length, 1)
     assert.equal(head.appended[0].src, 'https://appleid.cdn-apple.com/appleauth/static/jsapi/appleid/1/en_US/appleid.auth.js')
   }
@@ -149,13 +153,15 @@ async function main() {
       platform: 'ios',
       nativeAuthorize: async (options) => {
         received = options
-        return { identityToken: 'native-token', givenName: '길동', familyName: null }
+        return { identityToken: 'native-token', authorizationCode: 'native-code', givenName: '길동', familyName: null }
       },
     })
     const credential = await api.requestAppleCredential()
     assert.equal(received.nonce, sha256(credential.nonce))
     assert.equal(credential.identityToken, 'native-token')
     assert.equal(credential.name, '길동')
+    assert.equal(credential.authorizationCode, 'native-code')
+    assert.equal(credential.redirectUri, null)
 
     const again = load({
       platform: 'ios',

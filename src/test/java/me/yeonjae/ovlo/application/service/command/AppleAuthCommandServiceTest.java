@@ -196,7 +196,7 @@ class AppleAuthCommandServiceTest {
     @DisplayName("토큰의 nonce 가 보낸 nonce 의 SHA-256 과 다르면 재사용된 토큰으로 보고 거절한다")
     void nonceMismatch_rejected() {
         given(appleIdentityTokenPort.verify(TOKEN))
-                .willReturn(new AppleIdentity(SUB, "a@example.com", sha256Hex("other-nonce")));
+                .willReturn(new AppleIdentity(SUB, "a@example.com", sha256Hex("other-nonce"), "com.mungji.ovlo"));
 
         assertThatThrownBy(() -> sut.loginWithApple(new AppleLoginCommand(TOKEN, RAW_NONCE, null)))
                 .isInstanceOf(AuthException.class);
@@ -207,7 +207,7 @@ class AppleAuthCommandServiceTest {
     @Test
     @DisplayName("토큰에 nonce 가 아예 없으면 거절한다")
     void missingNonceClaim_rejected() {
-        given(appleIdentityTokenPort.verify(TOKEN)).willReturn(new AppleIdentity(SUB, "a@example.com", null));
+        given(appleIdentityTokenPort.verify(TOKEN)).willReturn(new AppleIdentity(SUB, "a@example.com", null, "com.mungji.ovlo"));
 
         assertThatThrownBy(() -> sut.loginWithApple(new AppleLoginCommand(TOKEN, RAW_NONCE, null)))
                 .isInstanceOf(AuthException.class);
@@ -227,7 +227,7 @@ class AppleAuthCommandServiceTest {
     }
 
     private void givenVerifiedToken(String email) {
-        given(appleIdentityTokenPort.verify(TOKEN)).willReturn(new AppleIdentity(SUB, email, sha256Hex(RAW_NONCE)));
+        given(appleIdentityTokenPort.verify(TOKEN)).willReturn(new AppleIdentity(SUB, email, sha256Hex(RAW_NONCE), "com.mungji.ovlo"));
     }
 
     private static Member appleMember(MemberId id, MemberStatus status) {
