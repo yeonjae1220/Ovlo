@@ -3,9 +3,11 @@ package me.yeonjae.ovlo.adapter.in.web;
 import lombok.RequiredArgsConstructor;
 import me.yeonjae.ovlo.adapter.in.web.dto.response.AdminMemberResponse;
 import me.yeonjae.ovlo.adapter.in.web.dto.response.AdminUniversityResponse;
+import me.yeonjae.ovlo.application.dto.command.AdminWithdrawMemberCommand;
 import me.yeonjae.ovlo.application.dto.command.CreateOfficeCommand;
 import me.yeonjae.ovlo.application.dto.command.InviteOfficeStaffCommand;
 import me.yeonjae.ovlo.application.dto.command.IssueManualVerificationCommand;
+import me.yeonjae.ovlo.application.port.in.member.AdminWithdrawMemberUseCase;
 import me.yeonjae.ovlo.application.port.in.office.AdministerOfficeUseCase;
 import me.yeonjae.ovlo.application.port.in.office.GetOfficeQuery;
 import me.yeonjae.ovlo.application.port.in.office.ManageOfficeStaffUseCase;
@@ -46,6 +48,7 @@ public class AdminPageController {
     private final ManageOfficeStaffUseCase manageOfficeStaffUseCase;
     private final GetOfficeQuery getOfficeQuery;
     private final ManagePartnerUseCase managePartnerUseCase;
+    private final AdminWithdrawMemberUseCase adminWithdrawMemberUseCase;
 
     @GetMapping({"", "/", "/dashboard"})
     public String dashboard(Model model) {
@@ -85,6 +88,26 @@ public class AdminPageController {
     public String unsuspendMember(@PathVariable Long id, RedirectAttributes redirectAttributes) {
         adminService.unsuspendMember(id);
         redirectAttributes.addFlashAttribute("successMessage", "멤버 정지가 해제되었습니다.");
+        return "redirect:/admin/members";
+    }
+
+    /** Apple 재인증을 할 수 없는 회원의 탈퇴 대체 경로. 본인 확인은 문의 채널에서 먼저 끝낸다. */
+    @PostMapping("/members/{id}/withdraw")
+    public String withdrawMember(@PathVariable Long id,
+                                 @RequestParam(required = false) String reason,
+                                 Authentication authentication,
+                                 RedirectAttributes redirectAttributes) {
+        try {
+            adminWithdrawMemberUseCase.withdrawByAdmin(
+                    new AdminWithdrawMemberCommand(id, reason, adminName(authentication)));
+            redirectAttributes.addFlashAttribute("successMessage",
+                    "탈퇴 처리했습니다. Apple 회원이면 설정 > Apple ID > 'Apple로 로그인'에서 Ovlo 를 지우도록 안내하세요.");
+        } catch (MemberException | IllegalArgumentException | IllegalStateException e) {
+            redirectAttributes.addFlashAttribute("errorMessage", "탈퇴 처리 실패: " + e.getMessage());
+        } catch (RuntimeException e) {
+            log.error("[AdminWithdraw] 탈퇴 처리 중 예기치 못한 오류 member={}", id, e);
+            redirectAttributes.addFlashAttribute("errorMessage", "탈퇴 처리 중 오류가 발생했습니다. 잠시 후 다시 시도하세요.");
+        }
         return "redirect:/admin/members";
     }
 

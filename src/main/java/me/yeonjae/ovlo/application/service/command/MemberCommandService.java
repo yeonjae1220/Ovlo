@@ -137,7 +137,8 @@ public class MemberCommandService implements
 
     /**
      * 탈퇴의 DB 부분. 진입점은 {@link MemberWithdrawalService} — Apple 회원은 거기서 Apple 토큰을 먼저
-     * 폐기한 뒤에 이 메서드가 불린다. 다른 경로에서 직접 부르지 말 것.
+     * 폐기한 뒤에 이 메서드가 불린다(관리자 수동 탈퇴 {@code withdrawByAdmin} 만 폐기 없이 부른다).
+     * 다른 경로에서 직접 부르지 말 것.
      */
     public void withdraw(WithdrawMemberCommand command) {
         Member member = loadMemberPort.findById(new MemberId(command.memberId()))
