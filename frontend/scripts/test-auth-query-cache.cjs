@@ -41,7 +41,7 @@ async function withdrawThroughProfile(fail = false) {
     ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX)
   let expression
   function visit(node) {
-    if (ts.isVariableDeclaration(node) && node.name.getText(file) === 'handleWithdraw') expression = node.initializer.getText(file)
+    if (ts.isVariableDeclaration(node) && node.name.getText(file) === 'performWithdraw') expression = node.initializer.getText(file)
     ts.forEachChild(node, visit)
   }
   visit(file)
@@ -50,11 +50,12 @@ async function withdrawThroughProfile(fail = false) {
     { compilerOptions: { target: ts.ScriptTarget.ES2020, module: ts.ModuleKind.CommonJS } }).outputText
   const m = { exports: {} }
   let error = '', redirected = false
+  // performWithdraw: 확인(confirm·Apple 패널) 뒤의 실제 탈퇴. 세션 가드와 캐시 정리는 여기에 있다.
   new Function('memberApi', 'id', 'clearAuth', 'router', 'confirm', 't', 'module', 'captureAuthSession', 'isCurrentAuthSession',
-    'withdrawing', 'setActionError', 'setWithdrawing', code)(
+    'withdrawing', 'setActionError', 'setWithdrawing', 'AppleSignInCanceledError', code)(
     { withdraw: async () => { if (fail) throw new Error('synthetic outage') } }, 42, store().clearAuth,
     { push: () => { redirected = true } }, () => true, x => x, m, sessions.captureAuthSession, sessions.isCurrentAuthSession,
-    false, value => { error = value }, () => {})
+    false, value => { error = value }, () => {}, class AppleSignInCanceledError extends Error {})
   await m.exports()
   if (fail) { assert.ok(error); assert.equal(redirected, false); assert.equal(store().currentUser.id, '42') }
 }
