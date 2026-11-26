@@ -42,16 +42,20 @@
 | # | 갭 | 근거 | 현재 |
 |---|---|---|---|
 | B1 | **웹사이트 래퍼로 보임** | Apple 4.2 최소 기능 | 원격 URL 로드 + 플러그인 2개뿐. 네이티브 기능 사실상 없음 |
-| B2 | **게시글·댓글·채팅·회원 신고/차단 없음** | Apple 1.2 UGC, Google UGC 정책 | 신고·차단은 **마켓플레이스에만** 있음(`/marketplace/{id}/reports`, `/marketplace/blocks`) |
+| B2 | **게시글·댓글·채팅·회원 신고/차단 없음** | Apple 1.2 UGC, Google UGC 정책 | 완료 — PR #119(게시글·댓글·채팅 메시지·회원 신고, 회원 차단, 신고 누적 숨김) |
 | B3 | **Sign in with Apple** | Apple 4.8 — 제3자 로그인(Google)을 제공하면 동급 개인정보 보호 로그인 옵션 필요 | 코드 완료(`feat/sign-in-with-apple`). 아래 §3.1 설정 전에는 버튼이 숨겨짐. 탈퇴 시 Apple 토큰 폐기 코드 완료(`feat/apple-token-revocation`, §3.1 4번 키 필요) |
 | B4 | AASA 의 `TEAMID` 자리표시자 | Universal Links 검증 실패 → OAuth 콜백이 앱으로 안 돌아옴 | `appIDs: ["TEAMID.com.mungji.ovlo"]` |
 | B5 | `assetlinks.json` 지문 | Play App Signing 을 쓰면 **Google 이 재서명**해 지문이 바뀜 → App Links 검증 실패 | 현재 지문 1개(로컬 키로 추정) |
-| B6 | Privacy Manifest 없음 | Apple 필수(2024~) | `PrivacyInfo.xcprivacy` 없음 |
+| B6 | Privacy Manifest 없음 | Apple 필수(2024~) | 완료 — `ios/App/App/PrivacyInfo.xcprivacy`. 추적 없음, Required Reason API 없음(빌드 산출물 `nm -u` 로 확인, Capacitor·Cordova 는 자체 빈 매니페스트), 수집 데이터 10종(개인정보처리방침 §1 기준) |
 
 ### 🟡 출시 전 준비 (코드 외)
 
 - **심사용 데모 계정** — 이메일 인증·학교 인증 없이 핵심 기능(게시판·채팅·마켓)을 볼 수 있는 계정. 심사 노트에 기재.
 - **Apple 개인정보 라벨 / Google 데이터 보안 양식** — 수집 항목: 이메일, 닉네임, 학교, 사진(업로드), 채팅 내용, 기기 식별자(푸시 도입 시).
+  App Store Connect 라벨은 `PrivacyInfo.xcprivacy` 의 `NSPrivacyCollectedDataTypes` 와 **같게** 적는다(이메일·이름·전화번호·
+  기타 연락처·사용자 ID·사진·메시지·기타 사용자 콘텐츠·기타 사용 데이터·기타 데이터, 전부 '사용자에게 연결'·'추적 안 함'·'앱 기능').
+  푸시·분석·크래시 SDK 를 넣으면 매니페스트(Required Reason API 포함)와 라벨을 같이 고친다.
+  Apple 로그인을 켤 때 처리방침 §1 에 Apple 항목을 넣는 것과 함께, 매니페스트 주석의 대응표도 확인한다.
 - **Google Play 계정 삭제 URL** — 앱 밖에서도 삭제 요청할 수 있는 웹 경로 필요 (웹 프로필 탈퇴 화면 또는 안내 페이지).
 - **스크린샷·아이콘** — iOS 6.9"/6.5" 아이폰(+iPad 지원 시 13"), Android 폰 스크린샷·512 아이콘·1024×500 피처 그래픽.
 - **연령 등급** — 사용자 간 채팅·UGC 가 있어 iOS 는 12+~17+ 설문 결과로 정해짐, Google 은 IARC 설문.
