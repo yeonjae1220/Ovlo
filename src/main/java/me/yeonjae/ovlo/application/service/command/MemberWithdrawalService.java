@@ -24,6 +24,10 @@ import org.springframework.stereotype.Service;
  * Apple 과의 통신은 DB 트랜잭션 밖에서 먼저 하고, 성공한 뒤에만 {@link MemberCommandService#withdraw}
  * (트랜잭션)를 부른다. 폐기가 실패하면 탈퇴하지 않는다 — 사용자가 다시 시도하면 된다. 폐기 뒤 탈퇴가
  * 실패하면 Apple 연결만 끊긴 채 계정이 남는데, 다음 Apple 로그인이 연결을 다시 만들 뿐이라 해가 없다.
+ *
+ * <p>Apple 재인증을 아예 할 수 없는 회원(Apple ID 분실, Apple 장애·키 미설정으로 폐기가 계속 실패)은
+ * {@link AdminMemberWithdrawalService} 로 관리자가 대신 탈퇴시킨다. 이때 Apple 토큰은 폐기하지 못하므로, 사용자에게
+ * 설정 &gt; Apple ID &gt; 'Apple로 로그인' 에서 Ovlo 를 직접 지우도록 안내한다.
  */
 @Service
 public class MemberWithdrawalService implements WithdrawMemberUseCase {
