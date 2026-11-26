@@ -23,6 +23,10 @@ export interface AppleCredential {
   identityToken: string
   nonce: string
   name: string | null
+  /** 1회용(5분). 탈퇴 시 서버가 Apple 토큰으로 바꿔 폐기한다. */
+  authorizationCode: string
+  /** 웹에서 받은 code 는 교환할 때 같은 redirect_uri 가 필요하다. 앱(네이티브)은 null. */
+  redirectUri: string | null
 }
 
 /** 사용자가 Apple 시트·팝업을 닫았다. 오류로 보여 주지 않는다. */
@@ -102,6 +106,7 @@ async function freshNonce(): Promise<PreparedNonce> {
 
 interface NativeAppleResult {
   identityToken: string
+  authorizationCode: string
   givenName?: string | null
   familyName?: string | null
 }
@@ -121,7 +126,13 @@ async function authorizeNative({ nonce, hashedNonce }: PreparedNonce): Promise<A
   }
   try {
     const result = await nativePlugin.authorize({ nonce: hashedNonce })
-    return { identityToken: result.identityToken, nonce, name: joinName(result.givenName, result.familyName) }
+    return {
+      identityToken: result.identityToken,
+      nonce,
+      name: joinName(result.givenName, result.familyName),
+      authorizationCode: result.authorizationCode,
+      redirectUri: null,
+    }
   } catch (error) {
     if ((error as { code?: string })?.code === 'CANCELED') throw new AppleSignInCanceledError()
     throw error
@@ -131,7 +142,7 @@ async function authorizeNative({ nonce, hashedNonce }: PreparedNonce): Promise<A
 // ─── 웹 (Apple JS SDK 팝업) ──────────────────────────────────────────────────
 
 interface AppleJsResponse {
-  authorization: { id_token: string; state?: string }
+  authorization: { id_token: string; code: string; state?: string }
   user?: { name?: { firstName?: string; lastName?: string } }
 }
 
@@ -153,11 +164,12 @@ type AppleJs = NonNullable<Window['AppleID']>
 /** init·signIn 은 await 없이 곧바로 부른다(팝업이 클릭 안에서 열리도록). */
 function authorizeWeb(appleId: AppleJs, clientId: string, { nonce, hashedNonce }: PreparedNonce): Promise<AppleCredential> {
   const state = randomHex(16)
+  const redirectURI = `${window.location.origin}/login`
   appleId.auth.init({
     clientId,
     scope: 'name email',
     // 팝업 모드라 이 주소로 이동하지는 않지만, Services ID 의 Return URLs 에 등록된 값과 같아야 한다.
-    redirectURI: `${window.location.origin}/login`,
+    redirectURI,
     state,
     nonce: hashedNonce,
     usePopup: true,
@@ -166,7 +178,13 @@ function authorizeWeb(appleId: AppleJs, clientId: string, { nonce, hashedNonce }
     (response) => {
       if (response.authorization.state !== state) throw new Error('Apple sign-in state mismatch')
       const name = response.user?.name
-      return { identityToken: response.authorization.id_token, nonce, name: joinName(name?.firstName, name?.lastName) }
+      return {
+        identityToken: response.authorization.id_token,
+        nonce,
+        name: joinName(name?.firstName, name?.lastName),
+        authorizationCode: response.authorization.code,
+        redirectUri: redirectURI,
+      }
     },
     (error: unknown) => {
       const code = (error as { error?: string })?.error ?? ''

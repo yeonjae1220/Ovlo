@@ -24,6 +24,8 @@ import { Avatar, QueryErrorNotice } from '../../components/ui'
 import { useBlockStatus, useUnblockMember } from '../../hooks/useModeration'
 import { ReportDialog } from '../../components/moderation/ReportDialog'
 import { BlockConfirmDialog } from '../../components/moderation/BlockConfirmDialog'
+import { AppleSignInCanceledError, type AppleCredential } from '../../utils/appleSignIn'
+import { AppleWithdrawPanel } from './AppleWithdrawPanel'
 
 const C = {
   card:        'var(--color-surface)',
@@ -64,6 +66,7 @@ export default function ProfilePage() {
   const [myPostsPage, setMyPostsPage] = useState(0)
   const [actionError, setActionError] = useState('')
   const [withdrawing, setWithdrawing] = useState(false)
+  const [appleWithdrawOpen, setAppleWithdrawOpen] = useState(false)
   const [savingPhoto, setSavingPhoto] = useState(false)
 
   const { data: myPostsData, isLoading: myPostsLoading, isError: myPostsError, refetch: refetchPosts } = usePostsByAuthor(id, myPostsPage, 10)
@@ -133,20 +136,41 @@ export default function ProfilePage() {
     }
   }
 
-  const handleWithdraw = async () => {
-    if (withdrawing || !confirm(t('profile.withdraw.confirm'))) return
+  // Apple 계정은 서버가 Apple 토큰을 폐기해야 탈퇴할 수 있어, 확인 패널에서 Apple 재인증을 받는다.
+  const handleWithdraw = () => {
+    if (withdrawing) return
+    if (member?.loginProvider === 'APPLE') {
+      setActionError('')
+      setAppleWithdrawOpen(true)
+      return
+    }
+    if (!confirm(t('profile.withdraw.confirm'))) return
+    void performWithdraw()
+  }
+
+  const performWithdraw = async (appleCredential?: Promise<AppleCredential>) => {
     const session = captureAuthSession()
     setActionError('')
     setWithdrawing(true)
     try {
-      await memberApi.withdraw(id!)
+      const apple = appleCredential ? await appleCredential : null
+      await memberApi.withdraw(id!, apple ? {
+        apple: {
+          identityToken: apple.identityToken,
+          nonce: apple.nonce,
+          authorizationCode: apple.authorizationCode,
+          redirectUri: apple.redirectUri,
+        },
+      } : undefined)
       if (isCurrentAuthSession(session)) {
         clearAuth()
         router.push('/login')
       }
-    } catch {
+    } catch (error) {
+      if (error instanceof AppleSignInCanceledError) return
       console.error('Account withdrawal failed')
-      if (isCurrentAuthSession(session)) setActionError(t('common.actionFailed'))
+      const serverMessage = (error as { response?: { data?: { error?: string } } }).response?.data?.error
+      if (isCurrentAuthSession(session)) setActionError(serverMessage ?? t('common.actionFailed'))
     } finally {
       if (isCurrentAuthSession(session)) setWithdrawing(false)
     }
@@ -374,6 +398,14 @@ export default function ProfilePage() {
               {t('profile.withdraw')}
             </button>
           </div>
+          {appleWithdrawOpen && (
+            <AppleWithdrawPanel
+              pending={withdrawing}
+              error={actionError}
+              onConfirm={(credential) => void performWithdraw(credential)}
+              onCancel={() => setAppleWithdrawOpen(false)}
+            />
+          )}
         </>
       )}
       {reportOpen && viewedMemberId !== null && (

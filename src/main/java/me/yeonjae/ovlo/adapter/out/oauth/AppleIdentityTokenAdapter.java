@@ -23,7 +23,6 @@ import java.security.interfaces.RSAPublicKey;
 import java.time.Clock;
 import java.time.Duration;
 import java.time.Instant;
-import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -89,14 +88,17 @@ public class AppleIdentityTokenAdapter implements AppleIdentityTokenPort {
         }
         Claims claims = parse(identityToken);
         Set<String> audience = claims.getAudience();
-        if (audience == null || Collections.disjoint(audience, clientIds)) {
+        String matchedClient = audience == null ? null
+                : audience.stream().filter(clientIds::contains).findFirst().orElse(null);
+        if (matchedClient == null) {
             throw new AuthException(FAILURE);
         }
         String subject = claims.getSubject();
         if (subject == null || subject.isBlank()) {
             throw new AuthException(FAILURE);
         }
-        return new AppleIdentity(subject, claims.get("email", String.class), claims.get("nonce", String.class));
+        return new AppleIdentity(subject, claims.get("email", String.class), claims.get("nonce", String.class),
+                matchedClient);
     }
 
     private Claims parse(String identityToken) {

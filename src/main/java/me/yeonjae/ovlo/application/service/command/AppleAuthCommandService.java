@@ -21,12 +21,8 @@ import me.yeonjae.ovlo.shared.security.JwtTokenProvider;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.nio.charset.StandardCharsets;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.time.Instant;
-import java.util.HexFormat;
 import java.util.Optional;
 
 /**
@@ -72,7 +68,7 @@ public class AppleAuthCommandService implements AppleLoginUseCase {
     @Override
     public SocialLoginResult loginWithApple(AppleLoginCommand command) {
         AppleIdentity identity = appleIdentityTokenPort.verify(command.identityToken());
-        requireMatchingNonce(command.rawNonce(), identity.nonce());
+        AppleNonce.requireMatching(command.rawNonce(), identity.nonce());
 
         Optional<Member> existing = loadMemberPort.findByProvider(OAuthProvider.APPLE, identity.subject());
         Member member;
@@ -86,17 +82,6 @@ public class AppleAuthCommandService implements AppleLoginUseCase {
             newMember = true;
         }
         return issueSession(member, newMember);
-    }
-
-    /** 토큰의 nonce 는 클라이언트 원본 nonce 의 해시여야 한다 — 가로챈 토큰만으로는 원본을 만들 수 없다. */
-    private static void requireMatchingNonce(String rawNonce, String tokenNonce) {
-        if (rawNonce == null || rawNonce.isBlank() || tokenNonce == null) {
-            throw new AuthException("Apple 인증을 확인할 수 없습니다. 다시 시도해 주세요");
-        }
-        byte[] expected = sha256Hex(rawNonce).getBytes(StandardCharsets.UTF_8);
-        if (!MessageDigest.isEqual(expected, tokenNonce.getBytes(StandardCharsets.UTF_8))) {
-            throw new AuthException("Apple 인증을 확인할 수 없습니다. 다시 시도해 주세요");
-        }
     }
 
     private static void requireUsable(Member member) {
@@ -154,14 +139,5 @@ public class AppleAuthCommandService implements AppleLoginUseCase {
         Instant expiresAt = Instant.now().plus(jwtTokenProvider.refreshTokenTtl());
         tokenStorePort.save(AuthSession.create(member.getId(), refreshToken, expiresAt));
         return new SocialLoginResult(accessToken, refreshToken, member.getId().value(), newMember);
-    }
-
-    private static String sha256Hex(String value) {
-        try {
-            return HexFormat.of().formatHex(
-                    MessageDigest.getInstance("SHA-256").digest(value.getBytes(StandardCharsets.UTF_8)));
-        } catch (NoSuchAlgorithmException e) {
-            throw new IllegalStateException("SHA-256 을 쓸 수 없습니다", e);
-        }
     }
 }

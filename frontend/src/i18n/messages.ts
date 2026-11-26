@@ -684,6 +684,9 @@ const en: Messages = {
   'profile.theirPosts': 'Posts',
   'profile.postsLoading': 'Loading...',
   'profile.withdraw.confirm': 'Are you sure you want to delete your account? This cannot be undone.',
+  'profile.withdraw.apple.description': 'This account uses Sign in with Apple. Confirm with Apple once more to delete it — Ovlo will also be disconnected from your Apple ID. This cannot be undone.',
+  'profile.withdraw.apple.btn': 'Confirm with Apple and delete',
+  'profile.withdraw.apple.unavailable': 'Accounts created with Sign in with Apple can be deleted on the Ovlo website or in the iOS app.',
 
   // Verification
   'common.cancel': 'Cancel',
@@ -1417,6 +1420,9 @@ const ko: Messages = {
   'profile.theirPosts': '작성한 글',
   'profile.postsLoading': '불러오는 중...',
   'profile.withdraw.confirm': '정말 탈퇴하시겠습니까? 이 작업은 되돌릴 수 없습니다.',
+  'profile.withdraw.apple.description': 'Apple로 로그인한 계정입니다. 탈퇴하려면 Apple 인증을 한 번 더 해 주세요. Apple ID와 Ovlo의 연결도 함께 해제됩니다. 이 작업은 되돌릴 수 없습니다.',
+  'profile.withdraw.apple.btn': 'Apple로 확인하고 탈퇴',
+  'profile.withdraw.apple.unavailable': 'Apple로 가입한 계정은 Ovlo 웹사이트나 iOS 앱에서 탈퇴할 수 있습니다.',
 
   // Verification
   'common.cancel': '취소',
@@ -1894,6 +1900,9 @@ const ja: Messages = {
   'profile.theirPosts': '投稿',
   'profile.postsLoading': '読み込み中...',
   'profile.withdraw.confirm': '本当にアカウントを削除しますか？この操作は取り消せません。',
+  'profile.withdraw.apple.description': 'このアカウントは「Appleでサインイン」を使っています。削除するにはもう一度Appleで確認してください。Apple IDとOvloの連携も解除されます。この操作は取り消せません。',
+  'profile.withdraw.apple.btn': 'Appleで確認して削除',
+  'profile.withdraw.apple.unavailable': '「Appleでサインイン」で作成したアカウントは、OvloのウェブサイトまたはiOSアプリから削除できます。',
   // ── 신고·차단 (UGC moderation) ──
   "moderation.report.action": "通報",
   "moderation.report.memberAction": "メンバーを通報",
@@ -2329,6 +2338,9 @@ const zh: Messages = {
   'profile.theirPosts': '帖子',
   'profile.postsLoading': '加载中...',
   'profile.withdraw.confirm': '确定要删除账号吗？此操作无法撤销。',
+  'profile.withdraw.apple.description': '此账号使用“通过 Apple 登录”。删除前请再通过 Apple 验证一次，Ovlo 与你的 Apple ID 的关联也会一并解除。此操作无法撤销。',
+  'profile.withdraw.apple.btn': '通过 Apple 确认并删除',
+  'profile.withdraw.apple.unavailable': '通过 Apple 登录创建的账号可以在 Ovlo 网站或 iOS 应用中删除。',
   // ── 신고·차단 (UGC moderation) ──
   "moderation.report.action": "举报",
   "moderation.report.memberAction": "举报成员",
@@ -2764,6 +2776,9 @@ const es: Messages = {
   'profile.theirPosts': 'Publicaciones',
   'profile.postsLoading': 'Cargando...',
   'profile.withdraw.confirm': '¿Seguro que quieres eliminar tu cuenta? Esta acción no se puede deshacer.',
+  'profile.withdraw.apple.description': 'Esta cuenta usa Iniciar sesión con Apple. Confirma con Apple una vez más para eliminarla; Ovlo también se desvinculará de tu Apple ID. Esta acción no se puede deshacer.',
+  'profile.withdraw.apple.btn': 'Confirmar con Apple y eliminar',
+  'profile.withdraw.apple.unavailable': 'Las cuentas creadas con Iniciar sesión con Apple se pueden eliminar en el sitio web de Ovlo o en la app de iOS.',
   // ── 신고·차단 (UGC moderation) ──
   "moderation.report.action": "Denunciar",
   "moderation.report.memberAction": "Denunciar miembro",
@@ -3199,6 +3214,9 @@ const fr: Messages = {
   'profile.theirPosts': 'Publications',
   'profile.postsLoading': 'Chargement...',
   'profile.withdraw.confirm': 'Êtes-vous sûr de vouloir supprimer votre compte ? Cette action est irréversible.',
+  'profile.withdraw.apple.description': 'Ce compte utilise Se connecter avec Apple. Confirmez une nouvelle fois avec Apple pour le supprimer ; Ovlo sera aussi dissocié de votre identifiant Apple. Cette action est irréversible.',
+  'profile.withdraw.apple.btn': 'Confirmer avec Apple et supprimer',
+  'profile.withdraw.apple.unavailable': 'Les comptes créés avec Se connecter avec Apple peuvent être supprimés sur le site web d’Ovlo ou dans l’app iOS.',
   // ── 신고·차단 (UGC moderation) ──
   "moderation.report.action": "Signaler",
   "moderation.report.memberAction": "Signaler le membre",
@@ -3634,6 +3652,9 @@ const de: Messages = {
   'profile.theirPosts': 'Beiträge',
   'profile.postsLoading': 'Laden...',
   'profile.withdraw.confirm': 'Möchtest du dein Konto wirklich löschen? Diese Aktion kann nicht rückgängig gemacht werden.',
+  'profile.withdraw.apple.description': 'Dieses Konto nutzt „Mit Apple anmelden“. Bestätige zum Löschen noch einmal mit Apple – Ovlo wird dabei auch von deiner Apple‑ID getrennt. Diese Aktion kann nicht rückgängig gemacht werden.',
+  'profile.withdraw.apple.btn': 'Mit Apple bestätigen und löschen',
+  'profile.withdraw.apple.unavailable': 'Mit „Mit Apple anmelden“ erstellte Konten kannst du auf der Ovlo-Website oder in der iOS-App löschen.',
   // ── 신고·차단 (UGC moderation) ──
   "moderation.report.action": "Melden",
   "moderation.report.memberAction": "Mitglied melden",
@@ -4054,6 +4075,9 @@ const pt: Messages = {
   "profile.theirPosts": "Posts",
   "profile.postsLoading": "Carregando...",
   "profile.withdraw.confirm": "Tem certeza de que deseja excluir sua conta? Isso não pode ser desfeito.",
+  "profile.withdraw.apple.description": "Esta conta usa Iniciar sessão com a Apple. Confirme com a Apple mais uma vez para excluí-la — o Ovlo também será desvinculado do seu ID Apple. Isso não pode ser desfeito.",
+  "profile.withdraw.apple.btn": "Confirmar com a Apple e excluir",
+  "profile.withdraw.apple.unavailable": "Contas criadas com Iniciar sessão com a Apple podem ser excluídas no site do Ovlo ou no app para iOS.",
   "common.cancel": "Cancelar",
   "verification.section.title": "Verificação de estudante",
   "verification.section.hint": "Comprove que você tem um e-mail da escola para ganhar um selo verificado.",
@@ -4516,6 +4540,9 @@ const ru: Messages = {
   "profile.theirPosts": "Посты",
   "profile.postsLoading": "Загрузка...",
   "profile.withdraw.confirm": "Вы точно хотите удалить аккаунт? Это действие необратимо.",
+  "profile.withdraw.apple.description": "Этот аккаунт использует «Вход с Apple». Чтобы удалить его, подтвердите вход через Apple ещё раз — Ovlo также будет отвязан от вашего Apple ID. Это действие необратимо.",
+  "profile.withdraw.apple.btn": "Подтвердить через Apple и удалить",
+  "profile.withdraw.apple.unavailable": "Аккаунты, созданные через «Вход с Apple», можно удалить на сайте Ovlo или в приложении для iOS.",
   "common.cancel": "Отмена",
   "verification.section.title": "Подтверждение студента",
   "verification.section.hint": "Подтвердите, что у вас есть университетская почта, чтобы получить значок.",

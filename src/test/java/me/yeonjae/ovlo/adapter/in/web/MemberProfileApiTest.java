@@ -83,7 +83,7 @@ class MemberProfileApiTest {
     void othersProfile_passesViewerAndHidesPrivateFields() throws Exception {
         MemberResult publicView = new MemberResult(7L, "kimchi", "김치", "Seoul", null, 1L, null,
                 "ACTIVE", MemberRole.MEMBER, "안녕하세요", null, null,
-                List.of(), List.of(), List.of(new MemberResult.ContactInfoData("SNS", "@kimchi")));
+                List.of(), List.of(), List.of(new MemberResult.ContactInfoData("SNS", "@kimchi")), null);
         given(getMemberQuery.getProfile(new MemberId(7L), new MemberId(VIEWER_ID))).willReturn(publicView);
 
         mockMvc.perform(get("/api/v1/members/7"))

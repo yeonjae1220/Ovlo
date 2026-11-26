@@ -6,6 +6,7 @@ import type {
   RegisterMemberRequest,
   UpdateMemberProfileRequest,
   CompleteOnboardingRequest,
+  WithdrawMemberRequest,
 } from '../types'
 
 export const memberApi = {
@@ -27,7 +28,9 @@ export const memberApi = {
   updateProfileImage: (id: string, mediaId: string) =>
     apiClient.patch<Member>(`/members/${id}/profile-image`, { mediaId }).then((r) => r.data),
 
-  withdraw: (id: string) => apiClient.delete(`/members/${id}`),
+  /** Apple 로그인 계정은 apple 재인증을 함께 보내야 한다 — 서버가 Apple 토큰을 폐기한 뒤 탈퇴시킨다. */
+  withdraw: (id: string, body?: WithdrawMemberRequest) =>
+    apiClient.delete(`/members/${id}`, body ? { data: body } : undefined),
 
   completeOnboarding: (req: CompleteOnboardingRequest) =>
     apiClient.patch<Member>('/members/me/onboarding', req).then((r) => r.data),
