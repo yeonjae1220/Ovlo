@@ -1,5 +1,5 @@
 import type { LegalDocument } from '../legalContent'
-import { GOOGLE_PRIVACY_URL, LEGAL_CONTACT_PLACEHOLDER } from '../legalConstants'
+import { GOOGLE_PRIVACY_URL, LEGAL_CONTACT } from '../legalConstants'
 
 /** 개인정보처리방침 러시아어 번역. 정본은 legalContent.ts 의 한국어(ko). 원문을 바꾸면 이 파일도 같이 고치고 version 을 맞춘다. */
 export const PRIVACY_RU: LegalDocument = {
@@ -87,7 +87,7 @@ export const PRIVACY_RU: LegalDocument = {
     {
       heading: '10. Ответственный за защиту персональных данных и контакты',
       paragraphs: [
-        `Ответственный за защиту персональных данных: оператор Сервиса · Контакты: ${LEGAL_CONTACT_PLACEHOLDER}`,
+        `Ответственный за защиту персональных данных: оператор Сервиса · Контакты: ${LEGAL_CONTACT}`,
         'С сообщениями о нарушениях в сфере персональных данных и за консультацией вы можете обратиться в Центр приёма сообщений о нарушениях в сфере персональной информации (privacy.kisa.or.kr, 118) или в Комитет по урегулированию споров в сфере персональной информации (kopico.go.kr, 1833-6972).',
       ],
     },

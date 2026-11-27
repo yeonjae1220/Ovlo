@@ -1,5 +1,5 @@
 import type { LegalDocument } from '../legalContent'
-import { LEGAL_CONTACT_PLACEHOLDER, YOUTUBE_TERMS_URL } from '../legalConstants'
+import { LEGAL_CONTACT, YOUTUBE_TERMS_URL } from '../legalConstants'
 
 /** 이용약관 프랑스어 번역. 정본은 legalContent.ts 의 한국어(ko). 원문을 바꾸면 이 파일도 같이 고치고 version 을 맞춘다. */
 export const TERMS_FR: LegalDocument = {
@@ -79,7 +79,7 @@ export const TERMS_FR: LegalDocument = {
       heading: '9. Liens vers des vidéos externes (YouTube)',
       paragraphs: [
         'Sur les pages de rapport d’une université, le Service affiche des liens vers des vidéos YouTube publiques liées à cette université, accompagnés de leur titre, du nom de la chaîne et d’une image d’aperçu. Les vidéos ne sont ni stockées ni lues au sein du Service ; cliquer sur un lien vous redirige vers YouTube. Cette fonctionnalité utilise les services d’API YouTube, et en l’utilisant, vous êtes réputé accepter également les Conditions d’utilisation de YouTube.',
-        `Le contenu de chaque vidéo et les droits qui s’y rattachent appartiennent à son auteur, et le Service ne garantit pas le contenu des vidéos. Les liens vers des vidéos supprimées ou devenues privées sont vérifiés périodiquement et retirés. Si l’auteur d’une vidéo ou une personne qui y apparaît demande le retrait d’un lien, celui-ci est retiré sans délai. Demandes : ${LEGAL_CONTACT_PLACEHOLDER}`,
+        `Le contenu de chaque vidéo et les droits qui s’y rattachent appartiennent à son auteur, et le Service ne garantit pas le contenu des vidéos. Les liens vers des vidéos supprimées ou devenues privées sont vérifiés périodiquement et retirés. Si l’auteur d’une vidéo ou une personne qui y apparaît demande le retrait d’un lien, celui-ci est retiré sans délai. Demandes : ${LEGAL_CONTACT}`,
       ],
       links: [{ label: 'Conditions d’utilisation de YouTube', href: YOUTUBE_TERMS_URL }],
     },
@@ -104,7 +104,7 @@ export const TERMS_FR: LegalDocument = {
     {
       heading: '13. Modification des conditions',
       paragraphs: [
-        `Toute modification des présentes conditions est annoncée 7 jours avant son entrée en vigueur (30 jours pour les modifications défavorables aux utilisateurs). Contact : ${LEGAL_CONTACT_PLACEHOLDER}`,
+        `Toute modification des présentes conditions est annoncée 7 jours avant son entrée en vigueur (30 jours pour les modifications défavorables aux utilisateurs). Contact : ${LEGAL_CONTACT}`,
       ],
     },
     {

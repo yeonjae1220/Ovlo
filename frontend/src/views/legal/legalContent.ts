@@ -3,10 +3,10 @@
  * 번역이 없는 언어는 영어를 보여 준다.
  * 문서 버전은 서버에 기록되는 동의 기록과 맞춰야 하므로 바꿀 때 version 과 updatedAt 을 모든 언어에서 같이 올린다.
  *
- * ⚠️ 대외 연락처가 아직 정해지지 않았다. CONTACT_PLACEHOLDER 가 남아 있는 동안은 회원 대규모 모집·파일럿을 시작하지 않는다.
+ * ⚠️ 외부 AI 처리 업체·보관 정책이 확정되기 전(LEGAL_DOCS_DRAFT)에는 회원 대규모 모집·파일럿을 시작하지 않는다.
  */
 import type { UiLanguage } from '@/i18n/messages'
-import { GOOGLE_PRIVACY_URL, LEGAL_CONTACT_PLACEHOLDER, YOUTUBE_TERMS_URL } from './legalConstants'
+import { GOOGLE_PRIVACY_URL, LEGAL_CONTACT, YOUTUBE_TERMS_URL } from './legalConstants'
 import { PRIVACY_DE } from './privacy/de'
 import { PRIVACY_ES } from './privacy/es'
 import { PRIVACY_FR } from './privacy/fr'
@@ -22,7 +22,6 @@ import { TERMS_PT } from './terms/pt'
 import { TERMS_RU } from './terms/ru'
 import { TERMS_ZH } from './terms/zh'
 
-export { LEGAL_CONTACT_PLACEHOLDER }
 
 export type LegalLink = { label: string; href: string }
 export type LegalSection = { heading: string; paragraphs: string[]; bullets?: string[]; links?: LegalLink[] }
@@ -124,7 +123,7 @@ export const PRIVACY_POLICY: LegalDocuments = {
       {
         heading: '10. 개인정보 보호책임자와 문의',
         paragraphs: [
-          `개인정보 보호책임자: 서비스 운영자 · 연락처: ${LEGAL_CONTACT_PLACEHOLDER}`,
+          `개인정보 보호책임자: 서비스 운영자 · 연락처: ${LEGAL_CONTACT}`,
           '개인정보 침해에 대한 신고·상담은 개인정보침해신고센터(privacy.kisa.or.kr, 118), 개인정보분쟁조정위원회(kopico.go.kr, 1833-6972)에 문의할 수 있습니다.',
         ],
       },
@@ -223,7 +222,7 @@ export const PRIVACY_POLICY: LegalDocuments = {
       {
         heading: '10. Data protection officer and contact',
         paragraphs: [
-          `Data protection officer: the Service operator · Contact: ${LEGAL_CONTACT_PLACEHOLDER}`,
+          `Data protection officer: the Service operator · Contact: ${LEGAL_CONTACT}`,
           'You may also contact the Korea Personal Information Infringement Report Center (privacy.kisa.or.kr, 118) or the Personal Information Dispute Mediation Committee (kopico.go.kr, 1833-6972).',
         ],
       },
@@ -321,7 +320,7 @@ export const TERMS_OF_SERVICE: LegalDocuments = {
         heading: '9. 외부 영상 링크(YouTube)',
         paragraphs: [
           '서비스는 대학 리포트 화면에 그 대학과 관련된 YouTube 공개 영상의 링크를 제목·채널명·미리보기 이미지와 함께 보여 줍니다. 영상을 서비스에 저장하거나 서비스 안에서 재생하지 않으며, 링크를 누르면 YouTube 로 이동합니다. 이 기능은 YouTube API 서비스를 사용하며, 이 기능을 이용하는 이용자는 YouTube 서비스 약관에도 동의하는 것으로 봅니다.',
-          `영상의 내용과 권리는 각 영상의 게시자에게 있고, 서비스는 영상의 내용을 보증하지 않습니다. 삭제되거나 비공개로 바뀐 영상의 링크는 주기적으로 확인해 내립니다. 영상 게시자나 영상에 등장하는 분이 링크를 내려 달라고 요청하면 지체 없이 내립니다. 요청: ${LEGAL_CONTACT_PLACEHOLDER}`,
+          `영상의 내용과 권리는 각 영상의 게시자에게 있고, 서비스는 영상의 내용을 보증하지 않습니다. 삭제되거나 비공개로 바뀐 영상의 링크는 주기적으로 확인해 내립니다. 영상 게시자나 영상에 등장하는 분이 링크를 내려 달라고 요청하면 지체 없이 내립니다. 요청: ${LEGAL_CONTACT}`,
         ],
         links: [{ label: 'YouTube 서비스 약관', href: YOUTUBE_TERMS_URL }],
       },
@@ -341,7 +340,7 @@ export const TERMS_OF_SERVICE: LegalDocuments = {
       },
       {
         heading: '13. 약관의 변경',
-        paragraphs: [`약관을 바꿀 때는 시행 7일 전(이용자에게 불리한 변경은 30일 전)에 공지합니다. 문의: ${LEGAL_CONTACT_PLACEHOLDER}`],
+        paragraphs: [`약관을 바꿀 때는 시행 7일 전(이용자에게 불리한 변경은 30일 전)에 공지합니다. 문의: ${LEGAL_CONTACT}`],
       },
       {
         heading: '14. 언어',
@@ -423,7 +422,7 @@ export const TERMS_OF_SERVICE: LegalDocuments = {
         heading: '9. External video links (YouTube)',
         paragraphs: [
           'On university report pages the Service shows links to public YouTube videos related to that university, with their title, channel name and preview image. Videos are not stored or played within the Service; following a link takes you to YouTube. This feature uses YouTube API Services, and by using it you also agree to be bound by the YouTube Terms of Service.',
-          `The content of and rights in each video belong to its publisher, and the Service does not guarantee video content. Links to videos that are deleted or made private are checked periodically and removed. If a video's publisher or a person appearing in it asks us to remove a link, we remove it without delay. Requests: ${LEGAL_CONTACT_PLACEHOLDER}`,
+          `The content of and rights in each video belong to its publisher, and the Service does not guarantee video content. Links to videos that are deleted or made private are checked periodically and removed. If a video's publisher or a person appearing in it asks us to remove a link, we remove it without delay. Requests: ${LEGAL_CONTACT}`,
         ],
         links: [{ label: 'YouTube Terms of Service', href: YOUTUBE_TERMS_URL }],
       },
@@ -441,7 +440,7 @@ export const TERMS_OF_SERVICE: LegalDocuments = {
       },
       {
         heading: '13. Changes to these terms',
-        paragraphs: [`We announce changes at least 7 days in advance (30 days for changes unfavorable to users). Contact: ${LEGAL_CONTACT_PLACEHOLDER}`],
+        paragraphs: [`We announce changes at least 7 days in advance (30 days for changes unfavorable to users). Contact: ${LEGAL_CONTACT}`],
       },
       {
         heading: '14. Language',

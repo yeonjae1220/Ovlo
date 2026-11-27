@@ -1,5 +1,5 @@
 import type { LegalDocument } from '../legalContent'
-import { LEGAL_CONTACT_PLACEHOLDER, YOUTUBE_TERMS_URL } from '../legalConstants'
+import { LEGAL_CONTACT, YOUTUBE_TERMS_URL } from '../legalConstants'
 
 /** 이용약관 포르투갈어 번역. 정본은 legalContent.ts 의 한국어(ko). 원문을 바꾸면 이 파일도 같이 고치고 version 을 맞춘다. */
 export const TERMS_PT: LegalDocument = {
@@ -79,7 +79,7 @@ export const TERMS_PT: LegalDocument = {
       heading: '9. Links para vídeos externos (YouTube)',
       paragraphs: [
         'Nas telas de relatório de universidade, o Serviço exibe links para vídeos públicos do YouTube relacionados a essa universidade, com título, nome do canal e imagem de prévia. Os vídeos não são armazenados nem reproduzidos dentro do Serviço; ao tocar em um link, você é levado ao YouTube. Esta função utiliza os Serviços de API do YouTube e, ao utilizá-la, você também concorda com os Termos de Serviço do YouTube.',
-        `O conteúdo e os direitos de cada vídeo pertencem a quem o publicou, e o Serviço não garante o conteúdo dos vídeos. Os links para vídeos excluídos ou tornados privados são verificados periodicamente e removidos. Se quem publicou o vídeo ou uma pessoa que aparece nele pedir a remoção de um link, nós o removeremos sem demora. Pedidos: ${LEGAL_CONTACT_PLACEHOLDER}`,
+        `O conteúdo e os direitos de cada vídeo pertencem a quem o publicou, e o Serviço não garante o conteúdo dos vídeos. Os links para vídeos excluídos ou tornados privados são verificados periodicamente e removidos. Se quem publicou o vídeo ou uma pessoa que aparece nele pedir a remoção de um link, nós o removeremos sem demora. Pedidos: ${LEGAL_CONTACT}`,
       ],
       links: [{ label: 'Termos de Serviço do YouTube', href: YOUTUBE_TERMS_URL }],
     },
@@ -104,7 +104,7 @@ export const TERMS_PT: LegalDocument = {
     {
       heading: '13. Alteração dos termos',
       paragraphs: [
-        `As alterações destes termos são comunicadas 7 dias antes de entrarem em vigor (30 dias antes, no caso de alterações desfavoráveis aos usuários). Contato: ${LEGAL_CONTACT_PLACEHOLDER}`,
+        `As alterações destes termos são comunicadas 7 dias antes de entrarem em vigor (30 dias antes, no caso de alterações desfavoráveis aos usuários). Contato: ${LEGAL_CONTACT}`,
       ],
     },
     {

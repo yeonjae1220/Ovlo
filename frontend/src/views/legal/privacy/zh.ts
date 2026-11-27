@@ -1,5 +1,5 @@
 import type { LegalDocument } from '../legalContent'
-import { GOOGLE_PRIVACY_URL, LEGAL_CONTACT_PLACEHOLDER } from '../legalConstants'
+import { GOOGLE_PRIVACY_URL, LEGAL_CONTACT } from '../legalConstants'
 
 /** 개인정보처리방침 중국어(간체) 번역. 정본은 legalContent.ts 의 한국어(ko). 원문을 바꾸면 이 파일도 같이 고치고 version 을 맞춘다. */
 export const PRIVACY_ZH: LegalDocument = {
@@ -87,7 +87,7 @@ export const PRIVACY_ZH: LegalDocument = {
     {
       heading: '10. 个人信息保护负责人和咨询',
       paragraphs: [
-        `个人信息保护负责人：本服务运营者 · 联系方式：${LEGAL_CONTACT_PLACEHOLDER}`,
+        `个人信息保护负责人：本服务运营者 · 联系方式：${LEGAL_CONTACT}`,
         '关于个人信息侵害的举报和咨询，可联系个人信息侵害举报中心（privacy.kisa.or.kr，118）或个人信息纠纷调解委员会（kopico.go.kr，1833-6972）。',
       ],
     },

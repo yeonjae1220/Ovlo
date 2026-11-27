@@ -1,5 +1,5 @@
 import type { LegalDocument } from '../legalContent'
-import { LEGAL_CONTACT_PLACEHOLDER, YOUTUBE_TERMS_URL } from '../legalConstants'
+import { LEGAL_CONTACT, YOUTUBE_TERMS_URL } from '../legalConstants'
 
 /** 이용약관 일본어 번역. 정본은 legalContent.ts 의 한국어(ko). 원문을 바꾸면 이 파일도 같이 고치고 version 을 맞춘다. */
 export const TERMS_JA: LegalDocument = {
@@ -76,7 +76,7 @@ export const TERMS_JA: LegalDocument = {
       heading: '9. 外部動画リンク（YouTube）',
       paragraphs: [
         '本サービスは、大学レポート画面に当該大学に関連する YouTube の公開動画へのリンクを、タイトル・チャンネル名・プレビュー画像とともに表示します。動画を本サービスに保存したり、本サービス内で再生したりすることはなく、リンクを押すと YouTube に移動します。この機能は YouTube API サービスを使用しており、この機能を利用する利用者は YouTube 利用規約にも同意したものとみなされます。',
-        `動画の内容と権利は各動画の投稿者に帰属し、本サービスは動画の内容を保証しません。削除された動画や非公開に変更された動画のリンクは定期的に確認して取り下げます。動画の投稿者または動画に登場する方からリンクの取り下げを求められた場合は、遅滞なく取り下げます。お申し出先：${LEGAL_CONTACT_PLACEHOLDER}`,
+        `動画の内容と権利は各動画の投稿者に帰属し、本サービスは動画の内容を保証しません。削除された動画や非公開に変更された動画のリンクは定期的に確認して取り下げます。動画の投稿者または動画に登場する方からリンクの取り下げを求められた場合は、遅滞なく取り下げます。お申し出先：${LEGAL_CONTACT}`,
       ],
       links: [{ label: 'YouTube 利用規約', href: YOUTUBE_TERMS_URL }],
     },
@@ -96,7 +96,7 @@ export const TERMS_JA: LegalDocument = {
     },
     {
       heading: '13. 規約の変更',
-      paragraphs: [`本規約を変更する場合は、施行の7日前（利用者に不利な変更は30日前）までに告知します。お問い合わせ：${LEGAL_CONTACT_PLACEHOLDER}`],
+      paragraphs: [`本規約を変更する場合は、施行の7日前（利用者に不利な変更は30日前）までに告知します。お問い合わせ：${LEGAL_CONTACT}`],
     },
     {
       heading: '14. 言語',

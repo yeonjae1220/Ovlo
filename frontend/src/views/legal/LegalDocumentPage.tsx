@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import { useI18n } from '@/i18n/I18nProvider'
 import type { LegalDocuments } from './legalContent'
-import { LEGAL_CONTACT_PLACEHOLDER } from './legalContent'
+import { LEGAL_DOCS_DRAFT } from './legalConstants'
 
 type Props = {
   documents: LegalDocuments
@@ -25,7 +25,6 @@ export default function LegalDocumentPage({ documents, related, path, original =
   const translated = documents[language] ?? documents.en
   const doc = original ? documents.ko : translated
   const docLanguage = doc === documents.ko ? 'ko' : doc === documents[language] ? language : 'en'
-  const hasPlaceholder = JSON.stringify(doc).includes(LEGAL_CONTACT_PLACEHOLDER)
   const isTranslation = doc !== documents.ko
   // 한국어가 아닌 UI 에서 원문을 열었다면 읽던 번역본으로 돌아갈 길을 남긴다
   const canReturnToTranslation = original && translated !== documents.ko
@@ -43,7 +42,7 @@ export default function LegalDocumentPage({ documents, related, path, original =
         </p>
       </header>
 
-      {hasPlaceholder && (
+      {LEGAL_DOCS_DRAFT && (
         <p
           role="note"
           style={{

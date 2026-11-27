@@ -1,5 +1,5 @@
 import type { LegalDocument } from '../legalContent'
-import { LEGAL_CONTACT_PLACEHOLDER, YOUTUBE_TERMS_URL } from '../legalConstants'
+import { LEGAL_CONTACT, YOUTUBE_TERMS_URL } from '../legalConstants'
 
 /** 이용약관 독일어 번역. 정본은 legalContent.ts 의 한국어(ko). 원문을 바꾸면 이 파일도 같이 고치고 version 을 맞춘다. */
 export const TERMS_DE: LegalDocument = {
@@ -79,7 +79,7 @@ export const TERMS_DE: LegalDocument = {
       heading: '9. Externe Videolinks (YouTube)',
       paragraphs: [
         'Auf den Seiten der Hochschulberichte zeigt der Dienst Links zu öffentlichen YouTube-Videos mit Bezug zur jeweiligen Hochschule zusammen mit Titel, Kanalname und Vorschaubild an. Die Videos werden weder im Dienst gespeichert noch innerhalb des Dienstes abgespielt; ein Klick auf einen Link führt dich zu YouTube. Diese Funktion nutzt die YouTube-API-Dienste, und wer diese Funktion nutzt, stimmt damit auch den YouTube-Nutzungsbedingungen zu.',
-        `Inhalt und Rechte an jedem Video liegen beim jeweiligen Urheber des Videos, und der Dienst übernimmt keine Gewähr für den Inhalt der Videos. Links zu Videos, die gelöscht oder auf privat gestellt wurden, werden regelmäßig überprüft und entfernt. Wenn der Urheber eines Videos oder eine im Video erscheinende Person die Entfernung eines Links verlangt, entfernen wir ihn unverzüglich. Anfragen: ${LEGAL_CONTACT_PLACEHOLDER}`,
+        `Inhalt und Rechte an jedem Video liegen beim jeweiligen Urheber des Videos, und der Dienst übernimmt keine Gewähr für den Inhalt der Videos. Links zu Videos, die gelöscht oder auf privat gestellt wurden, werden regelmäßig überprüft und entfernt. Wenn der Urheber eines Videos oder eine im Video erscheinende Person die Entfernung eines Links verlangt, entfernen wir ihn unverzüglich. Anfragen: ${LEGAL_CONTACT}`,
       ],
       links: [{ label: 'YouTube-Nutzungsbedingungen', href: YOUTUBE_TERMS_URL }],
     },
@@ -104,7 +104,7 @@ export const TERMS_DE: LegalDocument = {
     {
       heading: '13. Änderung der Nutzungsbedingungen',
       paragraphs: [
-        `Änderungen dieser Nutzungsbedingungen werden 7 Tage vor ihrem Inkrafttreten angekündigt (Änderungen zum Nachteil der Nutzer 30 Tage vorher). Kontakt: ${LEGAL_CONTACT_PLACEHOLDER}`,
+        `Änderungen dieser Nutzungsbedingungen werden 7 Tage vor ihrem Inkrafttreten angekündigt (Änderungen zum Nachteil der Nutzer 30 Tage vorher). Kontakt: ${LEGAL_CONTACT}`,
       ],
     },
     {

@@ -118,8 +118,8 @@ redirectUri}` 를 `DELETE /api/v1/members/{id}` 본문으로 보낸다. 서버(`
   사용자가 문의로 요청하고, 관리자가 본인 확인 뒤 `/admin/members` 의 '탈퇴 처리'(사유 필수)로 탈퇴시킨다.
   이때 Apple 토큰은 폐기되지 않으므로 사용자에게 설정 > Apple ID > 'Apple로 로그인' 에서 Ovlo 를 직접 지우도록 안내한다.
   감사 기록은 앱 로그 `[AdminWithdraw] admin=… member=… reason=…` 한 줄뿐이다(사유에 개인정보 적지 말 것).
-  ADMIN 역할 회원은 이 경로로 탈퇴시킬 수 없다. ⚠️ 문의 연락처가 아직 법적 문서에 미기재(placeholder)라
-  출시 전에 연락처를 확정해야 이 경로가 실제로 쓸모 있다.
+  ADMIN 역할 회원은 이 경로로 탈퇴시킬 수 없다. 문의 창구는 법적 문서에 적힌 `support@mungji.com`
+  (Cloudflare Email Routing → 운영자 Gmail 전달, 2026-11-27)이다.
 - **Android 앱은 Apple 인증을 띄울 수 없어** Apple 계정 탈퇴는 웹·iOS 앱에서 하도록 안내 문구만 보인다.
 
 ### Phase 2 — 네이티브 가치 추가 (2~3주) — B1 대응
