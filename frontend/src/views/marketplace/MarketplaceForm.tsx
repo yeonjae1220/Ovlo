@@ -6,6 +6,7 @@ import {useMutation, useQuery, useQueryClient} from '@tanstack/react-query'
 import {marketplaceApi} from '../../api/marketplace'
 import type {Listing, ListingDetails} from '../../api/marketplace'
 import {useAuthStore} from '../../store/authStore'
+import {useMyVerification} from '../../hooks/useVerification'
 import {LANGUAGE_LABELS, SUPPORTED_UI_LANGUAGES} from '../../i18n/messages'
 import {categories, conditions, tags, useMarketText} from './marketplaceText'
 import {Photo, MarketError, SchoolPicker, CountryOptions} from './MarketplaceShared'
@@ -25,6 +26,8 @@ export default function MarketplaceForm({listing, loadError, onRetry}: {listing?
   const [schoolName, setSchoolName] = useState(listing?.universityName || '')
   const [uploading, setUploading] = useState(false)
   const [uploadError, setUploadError] = useState<unknown>(null)
+  const verification = useMyVerification(!!user)
+  const unverified = verification.data?.trustLevel === 'UNVERIFIED'
   const options = useQuery({queryKey:['market-options',user],queryFn:marketplaceApi.options})
   const save = useMutation({mutationFn: () => base ? marketplaceApi.edit(base,form) : marketplaceApi.create(form),
     onError: async error => {
@@ -45,7 +48,14 @@ export default function MarketplaceForm({listing, loadError, onRetry}: {listing?
     if (selected.length + form.photoIds.length > 8 || selected.some(f => f.size > 8*1024*1024 || !['image/jpeg','image/png'].includes(f.type))) {setUploadError(new Error(text('photoLimit')));return}
     setUploading(true)
     try { for(const file of selected) {const id = await marketplaceApi.upload(file);setForm(current => ({...current,photoIds:[...current.photoIds,id]}))} }
-    catch(error) {console.error('Marketplace photo upload failed',error);setUploadError(error)} finally {setUploading(false)}
+    catch(error) {
+      console.error('Marketplace photo upload failed',error)
+      // 인증 상태 조회가 끝나기 전에 서버가 거절했다면, 다시 조회해 미인증일 때만 현재 언어 안내로 바꾼다.
+      // (MARKETPLACE_FORBIDDEN 은 비활성 회원에게도 쓰이므로 코드만 보고 바꾸지 않는다.)
+      const forbidden = (error as {response?: {data?: {code?: string}}}).response?.data?.code === 'MARKETPLACE_FORBIDDEN'
+      const latest = forbidden ? (await verification.refetch()).data : undefined
+      setUploadError(latest?.trustLevel === 'UNVERIFIED' ? new Error(text('verifyRequired')) : error)
+    } finally {setUploading(false)}
   }
   const move = (index: number, delta: number) => { const photos = [...form.photoIds];[photos[index],photos[index+delta]] = [photos[index+delta],photos[index]];change({photoIds:photos}) }
   const valid = form.title.trim() && form.description.trim() && form.location.countryCode && form.location.city.trim() && form.location.meetingPoint.trim() && form.photoIds.length > 0 && (form.free || Number(form.price.amount) > 0)
@@ -60,12 +70,13 @@ export default function MarketplaceForm({listing, loadError, onRetry}: {listing?
     <MarketError error={loadError}/>{!!loadError && <button type="button" className={s.button} onClick={onRetry}>{text('retry')}</button>}
     <form onSubmit={e => {e.preventDefault();if(valid && !uploading && !save.isPending && !conflict && !unavailable && options.data) save.mutate()}}>
       <section className={s.panel}><h2 className={s.sectionTitle}>{text('photos')} · {form.photoIds.length}/8</h2><p className={s.muted}>{text('photoHint')}</p>
+        {unverified && <div className={s.notice} role="status"><p>{text('verifyRequired')}</p><Link className={s.button} href={`/profile/${user}#verification`}>{text('verifyNow')}</Link></div>}
         <div className={s.thumbs}>{form.photoIds.map((id,i) => <div key={id}><div className={s.thumb}><Photo id={id} alt={`${text('photos')} ${i+1}`}/></div><div className={s.photoActions}>
           <button type="button" className={s.button} disabled={i===0 || uploading} aria-label={text('moveLeft')} onClick={() => move(i,-1)}>←</button>
           <button type="button" className={s.button} disabled={i===form.photoIds.length-1 || uploading} aria-label={text('moveRight')} onClick={() => move(i,1)}>→</button>
           <button type="button" className={s.button} disabled={uploading} onClick={() => change({photoIds:form.photoIds.filter(p => p !== id)})}>{text('remove')}</button>
         </div></div>)}</div>
-        <label className={s.field}>{text('addPhotos')}<input className={s.file} type="file" accept="image/jpeg,image/png" multiple disabled={uploading || save.isPending || conflict || unavailable || form.photoIds.length>=8} onChange={e => {void upload(e.target.files);e.target.value=''}}/></label>
+        <label className={s.field}>{text('addPhotos')}<input className={s.file} type="file" accept="image/jpeg,image/png" multiple disabled={uploading || save.isPending || conflict || unavailable || form.photoIds.length>=8 || unverified} onChange={e => {void upload(e.target.files);e.target.value=''}}/></label>
         {uploading && <p role="status">{text('uploading')}</p>}<MarketError error={uploadError}/>
       </section>
       <section className={s.panel}><div className={s.fields}>

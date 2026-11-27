@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
 import Link from 'next/link'
 import { useParams } from 'next/navigation'
@@ -73,6 +73,12 @@ export default function ProfilePage() {
   const { data: myPostsData, isLoading: myPostsLoading, isError: myPostsError, refetch: refetchPosts } = usePostsByAuthor(id, myPostsPage, 10)
 
   const isOwner = String(currentUser?.id) === id
+  // 중고거래 등에서 `#verification` 으로 들어오면 학생 인증 섹션으로 내린다. 위의 글 목록이 다 그려진 뒤에
+  // 내려야 섹션이 화면 위쪽에 맞는다(먼저 내리면 글 목록이 늘어나며 다시 밀린다).
+  useEffect(() => {
+    if (isOwner && member && !myPostsLoading && window.location.hash === '#verification')
+      document.getElementById('verification')?.scrollIntoView({ block: 'start' })
+  }, [isOwner, member, myPostsLoading])
   const { data: followingIds } = useFollowingStatus(isOwner || !id ? [] : [id])
   const isFollowing = followingIds?.has(String(id)) ?? false
   const { data: myVerification } = useMyVerification(isOwner)
@@ -309,7 +315,7 @@ export default function ProfilePage() {
       {isOwner && (
         <>
           {/* 학생 인증 */}
-          <div style={{ marginTop: 32, paddingTop: 24, borderTop: `1px solid ${C.border}` }}>
+          <div id="verification" style={{ marginTop: 32, paddingTop: 24, borderTop: `1px solid ${C.border}`, scrollMarginTop: 72 }}>
             <h3 style={{ margin: '0 0 4px', fontSize: 16, fontWeight: 700, color: C.textPrimary }}>
               {t('verification.section.title')}
             </h3>
