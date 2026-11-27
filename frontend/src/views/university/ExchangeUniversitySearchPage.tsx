@@ -8,7 +8,7 @@ import {
 } from '../../hooks/useUniversity'
 import { useDebounce } from '../../hooks/useDebounce'
 import { useI18n } from '../../i18n/I18nProvider'
-import { CATALOG_COUNTRY_LOCK } from '../../config/pilotFocus'
+import { CATALOG_COUNTRY_LOCK, catalogTextKey } from '../../config/pilotFocus'
 import type { UniversityCatalogItem } from '../../types'
 import { resolveUniversityDisplayName } from '../../utils/universityDisplayName'
 import { Badge, Button, Card, EmptyState, PageHeader, QueryErrorNotice, SearchBox, SelectField, SkeletonLines } from '../../components/ui'
@@ -79,17 +79,17 @@ export default function ExchangeUniversitySearchPage() {
         {t('exch.back').replace('← ', '')}
       </Button>
       <PageHeader
-        title={t('exch.title')}
-        description={t('exch.subtitle')}
+        title={t(catalogTextKey('exch.title'))}
+        description={t(catalogTextKey('exch.subtitle'))}
       />
 
       <Card className="exchange-filter-card" style={{ marginBottom: 18 }}>
         <div className="exchange-filter-grid" style={CATALOG_COUNTRY_LOCK === null ? undefined : { gridTemplateColumns: 'minmax(0, 1fr)' }}>
           <SearchBox
-            placeholder={t('exch.searchPlaceholder')}
+            placeholder={t(catalogTextKey('exch.searchPlaceholder'))}
             value={query}
             onChange={(event) => handleQueryChange(event.target.value)}
-            aria-label={t('exch.searchPlaceholder')}
+            aria-label={t(catalogTextKey('exch.searchPlaceholder'))}
           />
 
           {CATALOG_COUNTRY_LOCK === null && <SelectField
@@ -124,7 +124,7 @@ export default function ExchangeUniversitySearchPage() {
         <EmptyState
           icon="⌕"
           title={t('exch.empty')}
-          description={t('exch.searchHint')}
+          description={t(catalogTextKey('exch.searchHint'))}
           action={CATALOG_COUNTRY_LOCK === null ? <Button variant="secondary" onClick={handleAllClear}>{t('exch.countryAll')}</Button> : undefined}
         />
       )}
@@ -132,8 +132,8 @@ export default function ExchangeUniversitySearchPage() {
       {!hasSearched && !isLoading && (
         <EmptyState
           icon="⌕"
-          title={t('exch.searchHint')}
-          description={t('exch.subtitle')}
+          title={t(catalogTextKey('exch.searchHint'))}
+          description={t(catalogTextKey('exch.subtitle'))}
         />
       )}
 

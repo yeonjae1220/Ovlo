@@ -24,6 +24,12 @@ export function resolveUiLang(input: string | null | undefined): UiLanguage {
 type Messages = Record<string, string>
 
 const en: Messages = {
+  // 대학 카탈로그를 한국으로 고정했을 때 문구 (config/pilotFocus.ts CATALOG_COUNTRY_LOCK='KR')
+  'nav.exchange.kr': 'Korean Universities',
+  'exch.title.kr': 'Korean Universities',
+  'exch.subtitle.kr': 'Find guides to universities in Korea. Guides are compiled from public sources and do not replace official university information.',
+  'exch.searchPlaceholder.kr': 'Search university name',
+  'exch.searchHint.kr': 'Enter a university name to search.',
   "legal.versionLine": "Version {version} · Effective {date}",
   "legal.draftNotice": "This document is a draft in preparation. The external AI processing provider and retention policy must be confirmed before finalization.",
   "legal.viewKoreanOriginal": "View the Korean original",
@@ -790,6 +796,12 @@ const en: Messages = {
 }
 
 const ko: Messages = {
+  // 대학 카탈로그를 한국으로 고정했을 때 문구 (config/pilotFocus.ts CATALOG_COUNTRY_LOCK='KR')
+  'nav.exchange.kr': '한국 대학',
+  'exch.title.kr': '한국 대학',
+  'exch.subtitle.kr': '국내 대학별 가이드를 찾아보세요. 가이드는 공개 자료를 정리한 것으로, 학교 공식 안내를 대신하지 않습니다.',
+  'exch.searchPlaceholder.kr': '대학 이름 검색 (한/영 모두 가능)',
+  'exch.searchHint.kr': '대학 이름을 입력해 검색하세요.',
   "legal.versionLine": "버전 {version} · 시행 {date}",
   "legal.draftNotice": "이 문서는 준비 중인 초안입니다. 외부 AI 처리 업체·보관 정책을 확인한 뒤 확정합니다.",
   "legal.viewKoreanOriginal": "한국어 원문 보기",
@@ -1526,6 +1538,12 @@ const ko: Messages = {
 }
 
 const ja: Messages = {
+  // 대학 카탈로그를 한국으로 고정했을 때 문구 (config/pilotFocus.ts CATALOG_COUNTRY_LOCK='KR')
+  'nav.exchange.kr': '韓国の大学',
+  'exch.title.kr': '韓国の大学',
+  'exch.subtitle.kr': '韓国の大学ガイドを検索できます。ガイドは公開資料をまとめたもので、大学の公式案内に代わるものではありません。',
+  'exch.searchPlaceholder.kr': '大学名を検索',
+  'exch.searchHint.kr': '大学名を入力して検索してください。',
   "partner.category.SIM": "SIMカード",
   "partner.category.INSURANCE": "保険",
   "partner.category.HOUSING": "住まい",
@@ -1964,6 +1982,12 @@ const ja: Messages = {
 }
 
 const zh: Messages = {
+  // 대학 카탈로그를 한국으로 고정했을 때 문구 (config/pilotFocus.ts CATALOG_COUNTRY_LOCK='KR')
+  'nav.exchange.kr': '韩国大学',
+  'exch.title.kr': '韩国大学',
+  'exch.subtitle.kr': '查找韩国各大学的指南。指南根据公开资料整理，不能代替学校的官方信息。',
+  'exch.searchPlaceholder.kr': '搜索大学名称',
+  'exch.searchHint.kr': '请输入大学名称进行搜索。',
   "partner.category.SIM": "电话卡",
   "partner.category.INSURANCE": "保险",
   "partner.category.HOUSING": "住宿",
@@ -2402,6 +2426,12 @@ const zh: Messages = {
 }
 
 const es: Messages = {
+  // 대학 카탈로그를 한국으로 고정했을 때 문구 (config/pilotFocus.ts CATALOG_COUNTRY_LOCK='KR')
+  'nav.exchange.kr': 'Universidades de Corea',
+  'exch.title.kr': 'Universidades de Corea',
+  'exch.subtitle.kr': 'Busca guías de universidades de Corea. Las guías se elaboran con fuentes públicas y no sustituyen la información oficial de cada universidad.',
+  'exch.searchPlaceholder.kr': 'Buscar universidad',
+  'exch.searchHint.kr': 'Ingresa un nombre de universidad para buscar.',
   "partner.category.SIM": "Tarjeta SIM",
   "partner.category.INSURANCE": "Seguro",
   "partner.category.HOUSING": "Alojamiento",
@@ -2840,6 +2870,12 @@ const es: Messages = {
 }
 
 const fr: Messages = {
+  // 대학 카탈로그를 한국으로 고정했을 때 문구 (config/pilotFocus.ts CATALOG_COUNTRY_LOCK='KR')
+  'nav.exchange.kr': 'Universités coréennes',
+  'exch.title.kr': 'Universités coréennes',
+  'exch.subtitle.kr': 'Recherchez des guides sur les universités en Corée. Ils sont compilés à partir de sources publiques et ne remplacent pas les informations officielles des universités.',
+  'exch.searchPlaceholder.kr': 'Rechercher une université',
+  'exch.searchHint.kr': 'Entrez un nom d\'université pour rechercher.',
   "partner.category.SIM": "Carte SIM",
   "partner.category.INSURANCE": "Assurance",
   "partner.category.HOUSING": "Logement",
@@ -3278,6 +3314,12 @@ const fr: Messages = {
 }
 
 const de: Messages = {
+  // 대학 카탈로그를 한국으로 고정했을 때 문구 (config/pilotFocus.ts CATALOG_COUNTRY_LOCK='KR')
+  'nav.exchange.kr': 'Hochschulen in Korea',
+  'exch.title.kr': 'Hochschulen in Korea',
+  'exch.subtitle.kr': 'Ratgeber zu Hochschulen in Korea finden. Sie beruhen auf öffentlichen Quellen und ersetzen keine offiziellen Informationen der Hochschulen.',
+  'exch.searchPlaceholder.kr': 'Universitätsname suchen',
+  'exch.searchHint.kr': 'Universitätsnamen eingeben, um zu suchen.',
   "partner.category.SIM": "SIM-Karte",
   "partner.category.INSURANCE": "Versicherung",
   "partner.category.HOUSING": "Unterkunft",
@@ -3716,6 +3758,12 @@ const de: Messages = {
 }
 
 const pt: Messages = {
+  // 대학 카탈로그를 한국으로 고정했을 때 문구 (config/pilotFocus.ts CATALOG_COUNTRY_LOCK='KR')
+  'nav.exchange.kr': 'Universidades da Coreia',
+  'exch.title.kr': 'Universidades da Coreia',
+  'exch.subtitle.kr': 'Encontre guias de universidades da Coreia. Os guias são compilados a partir de fontes públicas e não substituem as informações oficiais de cada universidade.',
+  'exch.searchPlaceholder.kr': 'Pesquisar universidade',
+  'exch.searchHint.kr': 'Digite o nome de uma universidade para pesquisar.',
   "partner.category.SIM": "Chip de celular (SIM)",
   "partner.category.INSURANCE": "Seguro",
   "partner.category.HOUSING": "Moradia",
@@ -4181,6 +4229,12 @@ const pt: Messages = {
 }
 
 const ru: Messages = {
+  // 대학 카탈로그를 한국으로 고정했을 때 문구 (config/pilotFocus.ts CATALOG_COUNTRY_LOCK='KR')
+  'nav.exchange.kr': 'Университеты Кореи',
+  'exch.title.kr': 'Университеты Кореи',
+  'exch.subtitle.kr': 'Путеводители по университетам Кореи. Они составлены по открытым источникам и не заменяют официальную информацию вузов.',
+  'exch.searchPlaceholder.kr': 'Поиск по названию университета',
+  'exch.searchHint.kr': 'Введите название университета для поиска.',
   "partner.category.SIM": "SIM-карта",
   "partner.category.INSURANCE": "Страхование",
   "partner.category.HOUSING": "Жильё",

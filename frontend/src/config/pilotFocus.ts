@@ -21,6 +21,14 @@ export const SHOW_OUTBOUND_EXCHANGE = false
  */
 export const CATALOG_COUNTRY_LOCK: string | null = 'KR'
 
+/**
+ * 카탈로그 메뉴·제목·설명 문구 키. 나라를 고정하면 `<key>.<나라코드 소문자>` 문구를 쓴다
+ * (예: 'exch.title' → 'exch.title.kr'). CATALOG_COUNTRY_LOCK 을 null 로 되돌리면 원래 문구로 돌아간다.
+ */
+export function catalogTextKey(key: string): string {
+  return CATALOG_COUNTRY_LOCK === null ? key : `${key}.${CATALOG_COUNTRY_LOCK.toLowerCase()}`
+}
+
 /** 상단·모바일 '더보기'에 대학 정보 메뉴를 보일지. */
 export const SHOW_CATALOG_MENU = SHOW_OUTBOUND_EXCHANGE || CATALOG_COUNTRY_LOCK !== null
 
