@@ -12,6 +12,7 @@ import { useBreakpoint } from '../../hooks/useBreakpoint'
 import type { CreateBoardRequest, BoardCategory, LocationScope, Post } from '../../types'
 import { useI18n } from '../../i18n/I18nProvider'
 import { resolveReportLang } from '../../utils/resolveReportLang'
+import { SHOW_OUTBOUND_EXCHANGE } from '../../config/pilotFocus'
 import { Badge, Button, Card, EmptyState, PageHeader, QueryErrorNotice, SelectField, Tabs, TextField } from '../../components/ui'
 
 const C = {
@@ -67,14 +68,14 @@ export default function BoardListPage() {
   const { data: tipsPage, isLoading: tipsLoading, isError: tipsError, refetch: refetchTips } = useUniversityReports(language, '', 0, 20)
   const { data: reportsPage, isLoading: reportsLoading, isError: reportsError, refetch: refetchReports } = useUniversityReports(language, '', 0, 20)
 
-  const allLoading = allPostsLoading || tipsLoading
+  const allLoading = allPostsLoading || (SHOW_OUTBOUND_EXCHANGE && tipsLoading)
   // 혼합 피드는 두 소스를 합치므로 **한쪽만 실패해도** 화면의 목록이 조용히 반쪽이 된다.
   // 부분 성공을 '전부 이것뿐'처럼 보여주지 않기 위해 둘 중 하나라도 실패하면 실패로 표시한다
   // (GLOBAL-PIT-108 ⑤: 실패 시 파생값을 그리지 않는다).
-  const allError = allPostsError || tipsError
+  const allError = allPostsError || (SHOW_OUTBOUND_EXCHANGE && tipsError)
   const allFeedItems: FeedItem[] = (() => {
     const posts = (allPostsPage?.content ?? []).map((p): FeedItem => ({ type: 'post', data: p }))
-    const tips = (tipsPage?.content ?? []).map((r): FeedItem => ({ type: 'tip', data: r }))
+    const tips = (SHOW_OUTBOUND_EXCHANGE ? tipsPage?.content ?? [] : []).map((r): FeedItem => ({ type: 'tip', data: r }))
     return [...posts, ...tips].sort((a, b) => {
       const dateA = a.data.createdAt
       const dateB = b.data.createdAt
@@ -179,7 +180,7 @@ export default function BoardListPage() {
             { value: 'all', label: t('tab.all'), icon: '◎' },
             { value: 'boards', label: t('board.directory'), icon: '☷' },
             { value: 'free', label: t('tab.free'), icon: '⌂' },
-            { value: 'reports', label: t('tab.tips'), icon: '✦' },
+            ...(SHOW_OUTBOUND_EXCHANGE ? [{ value: 'reports' as const, label: t('tab.tips'), icon: '✦' }] : []),
           ]}
         />
       </div>
@@ -239,7 +240,7 @@ export default function BoardListPage() {
 
       {activeTab === 'free' && !freeError && freePosts && freePosts.totalPages > 1 && <Pagination page={freePage} total={freePosts.totalElements} hasNext={freePosts.hasNext} onPrev={() => setFreePage(p => p - 1)} onNext={() => setFreePage(p => p + 1)} />}
 
-      {activeTab === 'reports' && (
+      {SHOW_OUTBOUND_EXCHANGE && activeTab === 'reports' && (
         <ReportFeed
           reports={reportsPage?.content ?? []}
           isLoading={reportsLoading}

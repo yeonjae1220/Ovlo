@@ -6,7 +6,8 @@ import { useGlobalUniversitySearch } from '../../hooks/useUniversity'
 import { useCompleteOnboarding } from '../../hooks/useAuth'
 import { useI18n } from '../../i18n/I18nProvider'
 import { useDebounce } from '../../hooks/useDebounce'
-import { SUPPORTED_UI_LANGUAGES, LANGUAGE_LABELS } from '../../i18n/messages'
+import { LANGUAGE_LABELS } from '../../i18n/messages'
+import { uiLanguageOptions } from '../../config/pilotFocus'
 
 const DEGREE_TYPES = [
   { value: 'BACHELOR' },
@@ -138,7 +139,7 @@ export default function OnboardingPage() {
         <div style={fieldStyle}>
           <label style={labelStyle}>{t('onboarding.uiLanguage')}</label>
           <select style={selectStyle} value={language} onChange={(e) => setLanguage(e.target.value)}>
-            {SUPPORTED_UI_LANGUAGES.map((lang) => (
+            {uiLanguageOptions(language).map((lang) => (
               <option key={lang} value={lang}>{LANGUAGE_LABELS[lang]}</option>
             ))}
           </select>

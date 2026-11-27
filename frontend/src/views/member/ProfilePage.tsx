@@ -15,7 +15,8 @@ import { authApi } from '../../api/auth'
 import { captureAuthSession, isCurrentAuthSession } from '@/utils/authSession'
 import { usePostsByAuthor } from '../../hooks/usePost'
 import { useI18n } from '../../i18n/I18nProvider'
-import { SUPPORTED_UI_LANGUAGES, LANGUAGE_LABELS } from '../../i18n/messages'
+import { LANGUAGE_LABELS } from '../../i18n/messages'
+import { uiLanguageOptions } from '../../config/pilotFocus'
 import { useTheme, type ThemeMode } from '../../theme/themeContext'
 import { useMyVerification } from '../../hooks/useVerification'
 import { TrustBadge } from '../verification/TrustBadge'
@@ -322,7 +323,7 @@ export default function ProfilePage() {
               {t('profile.uiLanguage')}
             </h3>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
-              {SUPPORTED_UI_LANGUAGES.map((lang) => (
+              {uiLanguageOptions(language).map((lang) => (
                 <button
                   key={lang}
                   onClick={() => setLanguage(lang)}
