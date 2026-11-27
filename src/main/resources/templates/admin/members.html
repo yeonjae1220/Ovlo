@@ -67,9 +67,9 @@
             <!-- 정지 / 해제 -->
             <form th:if="${m.status().name() != 'SUSPENDED'}" class="inline-form"
                   th:action="@{/admin/members/{id}/suspend(id=${m.id()})}" method="post"
-                  onsubmit="return confirm('이 멤버를 정지하시겠습니까?')">
+                  data-confirm="이 멤버를 정지하시겠습니까?">
               <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
-              <button type="submit" class="btn btn-warning btn-sm">정지</button>
+              <button disabled type="submit" class="btn btn-warning btn-sm">정지</button>
             </form>
             <form th:if="${m.status().name() == 'SUSPENDED'}" class="inline-form"
                   th:action="@{/admin/members/{id}/unsuspend(id=${m.id()})}" method="post">
@@ -79,11 +79,11 @@
             <!-- 수동 탈퇴: Apple 재인증을 할 수 없는 회원의 대체 경로. 사유는 감사 로그에 남는다. -->
             <form th:if="${m.status().name() != 'WITHDRAWN' and m.role().name() != 'ADMIN'}" class="inline-form"
                   th:action="@{/admin/members/{id}/withdraw(id=${m.id()})}" method="post"
-                  onsubmit="return confirm('이 회원을 탈퇴 처리하시겠습니까? 되돌릴 수 없습니다. Apple 토큰은 폐기되지 않습니다.')">
+                  data-confirm="이 회원을 탈퇴 처리하시겠습니까? 되돌릴 수 없습니다. Apple 토큰은 폐기되지 않습니다.">
               <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
               <input type="text" name="reason" required maxlength="500" aria-label="탈퇴 처리 사유"
                      placeholder="사유(문의 번호 등, 개인정보 제외)"/>
-              <button type="submit" class="btn btn-danger btn-sm">탈퇴 처리</button>
+              <button disabled type="submit" class="btn btn-danger btn-sm">탈퇴 처리</button>
             </form>
           </td>
         </tr>

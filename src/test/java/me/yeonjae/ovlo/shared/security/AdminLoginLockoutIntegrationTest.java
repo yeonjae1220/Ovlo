@@ -85,7 +85,10 @@ class AdminLoginLockoutIntegrationTest {
     @DisplayName("GET /admin/login 폼은 가드 없이 200 으로 렌더된다")
     void loginPage_isReachableWithoutLockCheck() throws Exception {
         mockMvc.perform(get("/admin/login"))
-                .andExpect(status().isOk());
+                .andExpect(status().isOk())
+                .andExpect(header().string("Content-Security-Policy",
+                        org.hamcrest.Matchers.endsWith("; frame-ancestors https://lab.mungji.com")))
+                .andExpect(header().string("X-Frame-Options", "DENY"));
 
         verify(attemptService, never()).checkLock(any(), any());
     }

@@ -45,9 +45,9 @@
           <td>
             <form th:if="${!p.deleted()}" class="inline-form"
                   th:action="@{/admin/posts/{id}/delete(id=${p.id()})}" method="post"
-                  onsubmit="return confirm('게시글을 삭제하시겠습니까?')">
+                  data-confirm="게시글을 삭제하시겠습니까?">
               <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
-              <button type="submit" class="btn btn-danger btn-sm">삭제</button>
+              <button disabled type="submit" class="btn btn-danger btn-sm">삭제</button>
             </form>
             <span th:if="${p.deleted()}" class="text-muted">—</span>
           </td>
