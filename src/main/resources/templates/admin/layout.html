@@ -154,7 +154,23 @@
 
     .text-muted { color: var(--text-muted); font-size: 12px; }
     .mb-3 { margin-bottom: 12px; }
+    .main { min-width: 0; }
+    .sidebar-nav { overflow-y: auto; }
+    .confirm-dialog { margin: auto; max-width: min(28rem, 92vw); padding: 20px; border: 1px solid var(--border); border-radius: 8px; background: var(--surface); color: var(--text); }
+    .confirm-dialog::backdrop { background: rgba(0,0,0,.65); }
+    .confirm-dialog form { display: flex; justify-content: flex-end; gap: 8px; margin-top: 16px; }
+    @media (max-width: 760px) {
+      body { display: block; }
+      .sidebar { position: static; width: 100%; }
+      .sidebar-brand, .sidebar-footer { padding: 8px 12px; }
+      .sidebar-nav { display: flex; overflow-x: auto; padding: 0; }
+      .sidebar-nav a { white-space: nowrap; padding: 8px 12px; }
+      .main { margin-left: 0; }
+      .topbar, .content { padding: 14px; }
+      .content { overflow-x: auto; }
+    }
   </style>
+  <script defer th:src="@{/admin/confirm.js}"></script>
 </head>
 <body>
 
@@ -192,6 +208,7 @@
     <a th:href="@{/admin/partners}" th:class="${activePage == 'partners'} ? 'active' : ''">
       <span class="nav-icon">★</span> 정착 제휴
     </a>
+    <a th:href="@{/admin/marketplace}" th:class="${activePage == 'marketplace'} ? 'active' : ''">중고거래 신고</a>
   </nav>
   <div class="sidebar-footer">
     <!-- MEDIUM-5 fix: GET 로그아웃 → POST form (CSRF 공격으로 강제 로그아웃 방지) -->
@@ -215,5 +232,12 @@
   </div>
 </div>
 
+<dialog id="action-confirm" class="confirm-dialog" aria-labelledby="confirm-message">
+  <p id="confirm-message"></p>
+  <form method="dialog">
+    <button type="submit" class="btn btn-ghost" value="cancel" autofocus>취소</button>
+    <button type="submit" class="btn btn-danger" value="confirm">확인</button>
+  </form>
+</dialog>
 </body>
 </html>

@@ -274,7 +274,7 @@ public class SecurityConfig {
                 .csrf(Customizer.withDefaults()) // MEDIUM-1 fix: withDefaults()로 의도 명확화
                 .headers(headers -> headers
                         .contentSecurityPolicy(csp -> csp.policyDirectives(
-                                "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; frame-ancestors 'none'"))
+                                "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; frame-ancestors https://lab.mungji.com"))
                         .frameOptions(f -> f.deny())
                 )
                 .build();

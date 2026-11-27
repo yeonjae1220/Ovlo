@@ -142,10 +142,10 @@
             <td>
               <form th:if="${c.status() == 'VERIFIED'}" class="inline-form"
                     th:action="@{/admin/verifications/{id}/revoke(id=${c.credentialId()})}" method="post"
-                    onsubmit="return confirm('이 자격을 취소(만료)하시겠습니까?')">
+                    data-confirm="이 자격을 취소(만료)하시겠습니까?">
                 <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
                 <input type="hidden" name="memberId" th:value="${memberId}"/>
-                <button type="submit" class="btn btn-danger btn-sm">취소</button>
+                <button disabled type="submit" class="btn btn-danger btn-sm">취소</button>
               </form>
             </td>
           </tr>
