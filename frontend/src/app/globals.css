@@ -193,6 +193,12 @@ body::before {
   gap: clamp(48px, 7vw, 96px);
 }
 
+/* 해외 파견 진입점을 숨겼을 때(config/pilotFocus) 오른쪽 예시 카드 칸이 비지 않게 한 칸으로 */
+.landing-hero.landing-hero--single {
+  grid-template-columns: minmax(0, 760px);
+  min-height: 0;
+}
+
 .landing-hero::before {
   content: "";
   position: absolute;

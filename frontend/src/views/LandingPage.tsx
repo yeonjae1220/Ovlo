@@ -10,6 +10,7 @@ import { Badge, LinkButton, SearchBox } from '../components/ui'
 import { Brand } from '../components/ui/Brand'
 import { UiLanguageSwitcher } from '../components/ui/UiLanguageSwitcher'
 import { ThemeToggle } from '../components/ui/ThemeToggle'
+import { SHOW_OUTBOUND_EXCHANGE } from '../config/pilotFocus'
 
 export default function LandingPage() {
   const { t } = useI18n()
@@ -26,10 +27,10 @@ export default function LandingPage() {
   }
 
   const journeyItems = [
-    { number: '01', title: t('landing.feature1.title'), body: t('landing.feature1.desc') },
-    { number: '02', title: t('landing.feature3.title'), body: t('landing.feature3.desc') },
-    { number: '03', title: t('landing.feature4.title'), body: t('landing.feature4.desc') },
-  ]
+    ...(SHOW_OUTBOUND_EXCHANGE ? [{ title: t('landing.feature1.title'), body: t('landing.feature1.desc') }] : []),
+    { title: t('landing.feature3.title'), body: t('landing.feature3.desc') },
+    { title: t('landing.feature4.title'), body: t('landing.feature4.desc') },
+  ].map((item, index) => ({ ...item, number: String(index + 1).padStart(2, '0') }))
 
   return (
     <div className="landing-shell">
@@ -39,9 +40,11 @@ export default function LandingPage() {
           <nav className="landing-nav" aria-label="Primary">
             <span className="landing-nav__theme"><ThemeToggle /></span>
             <UiLanguageSwitcher />
-            <Link className="landing-nav__search" href="/exchange-universities">
-              {t('landing.nav.search')}
-            </Link>
+            {SHOW_OUTBOUND_EXCHANGE && (
+              <Link className="landing-nav__search" href="/exchange-universities">
+                {t('landing.nav.search')}
+              </Link>
+            )}
             {isLoggedIn ? (
               <LinkButton href="/boards" variant="primary">
                 {userLabel || t('landing.cta.community')}
@@ -57,7 +60,7 @@ export default function LandingPage() {
       </header>
 
       <main>
-        <section className="landing-hero">
+        <section className={SHOW_OUTBOUND_EXCHANGE ? 'landing-hero' : 'landing-hero landing-hero--single'}>
           <div className="landing-hero__copy">
             <Badge tone="accent">{t('landing.badge')}</Badge>
             <h1 className="landing-hero__title">
@@ -66,7 +69,7 @@ export default function LandingPage() {
             </h1>
             <p className="landing-hero__description">{t('landing.hero.desc')}</p>
 
-            <form className="landing-search" action="/exchange-universities" method="get" onSubmit={handleSearch}>
+            {SHOW_OUTBOUND_EXCHANGE && <form className="landing-search" action="/exchange-universities" method="get" onSubmit={handleSearch}>
               <SearchBox
                 name="q"
                 value={query}
@@ -77,20 +80,20 @@ export default function LandingPage() {
               <button className="ui-button ui-button--primary" type="submit">
                 {t('landing.cta.search')}
               </button>
-            </form>
+            </form>}
 
             <div className="landing-hero__actions">
               <LinkButton href={isLoggedIn ? '/boards' : '/register'} variant="secondary">
                 {isLoggedIn ? t('landing.cta.community') : t('landing.cta.start')}
               </LinkButton>
-              <div className="landing-proof">
+              {SHOW_OUTBOUND_EXCHANGE && <div className="landing-proof">
                 <span className="landing-proof__rule" aria-hidden="true" />
                 <span>{t('landing.feature1.title')} · {t('landing.feature2.title')}</span>
-              </div>
+              </div>}
             </div>
           </div>
 
-          <aside className="field-note" aria-label={t('landing.feature1.title')}>
+          {SHOW_OUTBOUND_EXCHANGE && <aside className="field-note" aria-label={t('landing.feature1.title')}>
             <div className="field-note__topline">
               <span>{t('landing.fieldNote.example')}</span>
               <span>OVLO / 01</span>
@@ -116,7 +119,7 @@ export default function LandingPage() {
               <Badge tone="success">✓ {t('verification.badge.exchange')}</Badge>
               <span>{t('landing.feature1.title')}</span>
             </div>
-          </aside>
+          </aside>}
         </section>
 
         <section className="landing-journey">

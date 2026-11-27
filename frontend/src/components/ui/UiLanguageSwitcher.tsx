@@ -1,7 +1,8 @@
 'use client'
 
 import { useI18n } from '@/i18n/I18nProvider'
-import { SUPPORTED_UI_LANGUAGES, LANGUAGE_LABELS } from '@/i18n/messages'
+import { LANGUAGE_LABELS } from '@/i18n/messages'
+import { uiLanguageOptions } from '@/config/pilotFocus'
 
 /**
  * 비로그인 사용자도 UI 언어를 바꿀 수 있는 경량 스위처.
@@ -26,7 +27,7 @@ export function UiLanguageSwitcher() {
         cursor: 'pointer',
       }}
     >
-      {SUPPORTED_UI_LANGUAGES.map((code) => (
+      {uiLanguageOptions(language).map((code) => (
         <option key={code} value={code}>
           {LANGUAGE_LABELS[code]}
         </option>
