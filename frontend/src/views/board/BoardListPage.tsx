@@ -65,8 +65,8 @@ export default function BoardListPage() {
 
   const { data: allPostsPage, isLoading: allPostsLoading, isError: allPostsError, refetch: refetchAllPosts } = useAllPosts(allPage, 20)
   const { data: freePosts, isLoading: freeLoading, isError: freeError, refetch: refetchFree } = usePosts(freeBoard?.id ? String(freeBoard.id) : '', freePage)
-  const { data: tipsPage, isLoading: tipsLoading, isError: tipsError, refetch: refetchTips } = useUniversityReports(language, '', 0, 20)
-  const { data: reportsPage, isLoading: reportsLoading, isError: reportsError, refetch: refetchReports } = useUniversityReports(language, '', 0, 20)
+  const { data: tipsPage, isLoading: tipsLoading, isError: tipsError, refetch: refetchTips } = useUniversityReports(language, '', 0, 20, SHOW_OUTBOUND_EXCHANGE)
+  const { data: reportsPage, isLoading: reportsLoading, isError: reportsError, refetch: refetchReports } = useUniversityReports(language, '', 0, 20, SHOW_OUTBOUND_EXCHANGE)
 
   const allLoading = allPostsLoading || (SHOW_OUTBOUND_EXCHANGE && tipsLoading)
   // 혼합 피드는 두 소스를 합치므로 **한쪽만 실패해도** 화면의 목록이 조용히 반쪽이 된다.
@@ -206,7 +206,7 @@ export default function BoardListPage() {
             isError={allError}
             onRetry={() => {
               void refetchAllPosts()
-              void refetchTips()
+              if (SHOW_OUTBOUND_EXCHANGE) void refetchTips()
             }}
             emptyText={t('community.empty')}
             language={language}

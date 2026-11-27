@@ -47,11 +47,12 @@ export function useExchangeUniversityReviews(id: number, direction?: string) {
   })
 }
 
-export function useUniversityReports(lang: string, keyword: string, page = 0, size = 20) {
+export function useUniversityReports(lang: string, keyword: string, page = 0, size = 20, enabled = true) {
   return useQuery({
     queryKey: ['university-reports', lang, keyword, page, size],
     queryFn: () => universityReportApi.list(lang, keyword, page, size),
     staleTime: 1000 * 60 * 5,
+    enabled,
   })
 }
 

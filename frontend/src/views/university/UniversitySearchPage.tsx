@@ -4,6 +4,7 @@ import { useState } from 'react'
 import Link from 'next/link'
 import { useUniversitySearch } from '../../hooks/useUniversity'
 import { useI18n } from '../../i18n/I18nProvider'
+import { SHOW_OUTBOUND_EXCHANGE } from '../../config/pilotFocus'
 import { QueryErrorNotice } from '../../components/ui'
 
 const C = {
@@ -21,11 +22,11 @@ export default function UniversitySearchPage() {
   return (
     <div>
       <h1>{t('univ.search.title')}</h1>
-      <p style={{ marginBottom: 12, fontSize: 13, color: C.muted }}>
+      {SHOW_OUTBOUND_EXCHANGE && <p style={{ marginBottom: 12, fontSize: 13, color: C.muted }}>
         {t('univ.search.info')}{' '}
         <Link href="/exchange-universities" style={{ color: C.accent, fontWeight: 600 }}>{t('univ.search.infoLink')}</Link>
         {t('univ.search.infoTrail')}
-      </p>
+      </p>}
       <div style={{ display: 'flex', gap: 8, marginBottom: 16 }}>
         <input
           placeholder={t('univ.search.placeholder')}
