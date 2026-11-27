@@ -9,7 +9,7 @@ import { Avatar } from '../ui'
 import { Brand } from '../ui/Brand'
 import { ThemeToggle } from '../ui/ThemeToggle'
 import { UiLanguageSwitcher } from '../ui/UiLanguageSwitcher'
-import { SHOW_OUTBOUND_EXCHANGE } from '../../config/pilotFocus'
+import { SHOW_CATALOG_MENU } from '../../config/pilotFocus'
 
 type NavIconName = 'home' | 'globe' | 'chat' | 'profile' | 'calendar' | 'market'
 
@@ -58,7 +58,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
   const navItems: Array<{ to: string; label: string; icon: NavIconName }> = [
     { to: '/boards', label: t('nav.home'), icon: 'home' },
     { to: '/marketplace', label: language === 'ko' ? '중고거래' : 'Market', icon: 'market' },
-    ...(SHOW_OUTBOUND_EXCHANGE ? [{ to: '/exchange-universities', label: t('nav.exchange'), icon: 'globe' as const }] : []),
+    ...(SHOW_CATALOG_MENU ? [{ to: '/exchange-universities', label: t('nav.exchange'), icon: 'globe' as const }] : []),
     { to: '/chat', label: t('nav.chat'), icon: 'chat' },
     { to: '/calendar', label: language === 'ko' ? '캘린더' : 'Calendar', icon: 'calendar' },
     { to: '/my-university', label: t('nav.myUniversity'), icon: 'globe' },

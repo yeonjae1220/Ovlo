@@ -6,6 +6,7 @@ import { useParams, useSearchParams } from 'next/navigation'
 import { useRouter } from 'next/navigation'
 import { useUniversityReport, useUniversityReportLanguages } from '../../hooks/useUniversity'
 import { useI18n } from '../../i18n/I18nProvider'
+import { SHOW_OUTBOUND_EXCHANGE } from '../../config/pilotFocus'
 import { QueryErrorNotice } from '../../components/ui'
 import VideoLinkSection from './VideoLinkSection'
 import ReportEvidencePanel from './ReportEvidencePanel'
@@ -99,7 +100,7 @@ export default function UniversityReportDetailPage() {
   return (
     <div style={{ padding: '32px 20px', fontFamily: 'system-ui, sans-serif' }}>
       <button
-        onClick={() => router.push('/university-reports')}
+        onClick={() => router.push(SHOW_OUTBOUND_EXCHANGE ? '/university-reports' : '/exchange-universities')}
         style={{ background: 'none', border: 'none', cursor: 'pointer', color: C.textMuted, fontSize: 14, marginBottom: 20, padding: 0 }}
       >
         {t('univ.detail.back')}

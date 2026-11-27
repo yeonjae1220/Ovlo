@@ -8,6 +8,7 @@ import {
 } from '../../hooks/useUniversity'
 import { useDebounce } from '../../hooks/useDebounce'
 import { useI18n } from '../../i18n/I18nProvider'
+import { CATALOG_COUNTRY_LOCK } from '../../config/pilotFocus'
 import type { UniversityCatalogItem } from '../../types'
 import { resolveUniversityDisplayName } from '../../utils/universityDisplayName'
 import { Badge, Button, Card, EmptyState, PageHeader, QueryErrorNotice, SearchBox, SelectField, SkeletonLines } from '../../components/ui'
@@ -34,11 +35,12 @@ export default function ExchangeUniversitySearchPage() {
   const initialQuery = searchParams?.get('q')?.trim() ?? ''
 
   const [query, setQuery] = useState(initialQuery)
-  const [countryCode, setCountryCode] = useState('')
+  const [selectedCountry, setSelectedCountry] = useState('')
+  const countryCode = CATALOG_COUNTRY_LOCK ?? selectedCountry
   const [page, setPage] = useState(0)
   const debouncedQuery = useDebounce(query.trim(), 300)
 
-  const { data: countries = [] } = useUniversityCatalogCountries()
+  const { data: countries = [] } = useUniversityCatalogCountries(CATALOG_COUNTRY_LOCK === null)
   const { data: pageData, isLoading, isError, refetch } = useUniversityCatalogSearch(
     debouncedQuery,
     countryCode,
@@ -58,7 +60,7 @@ export default function ExchangeUniversitySearchPage() {
 
   const handleAllClear = () => {
     setQuery('')
-    setCountryCode('')
+    setSelectedCountry('')
     resetPage()
   }
 
@@ -82,7 +84,7 @@ export default function ExchangeUniversitySearchPage() {
       />
 
       <Card className="exchange-filter-card" style={{ marginBottom: 18 }}>
-        <div className="exchange-filter-grid">
+        <div className="exchange-filter-grid" style={CATALOG_COUNTRY_LOCK === null ? undefined : { gridTemplateColumns: 'minmax(0, 1fr)' }}>
           <SearchBox
             placeholder={t('exch.searchPlaceholder')}
             value={query}
@@ -90,10 +92,10 @@ export default function ExchangeUniversitySearchPage() {
             aria-label={t('exch.searchPlaceholder')}
           />
 
-          <SelectField
+          {CATALOG_COUNTRY_LOCK === null && <SelectField
             value={countryCode}
             onChange={(event) => {
-              setCountryCode(event.target.value)
+              setSelectedCountry(event.target.value)
               resetPage()
             }}
             aria-label={t('exch.countryAll')}
@@ -104,10 +106,10 @@ export default function ExchangeUniversitySearchPage() {
                 {new Intl.DisplayNames([language], { type: 'region' }).of(c.countryCode) ?? c.country} ({c.universityCount})
               </option>
             ))}
-          </SelectField>
+          </SelectField>}
         </div>
 
-        {countryCode && (
+        {countryCode && CATALOG_COUNTRY_LOCK === null && (
           <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 12 }}>
             <Badge tone="info">{countryCode}</Badge>
           </div>
@@ -123,7 +125,7 @@ export default function ExchangeUniversitySearchPage() {
           icon="⌕"
           title={t('exch.empty')}
           description={t('exch.searchHint')}
-          action={<Button variant="secondary" onClick={handleAllClear}>{t('exch.countryAll')}</Button>}
+          action={CATALOG_COUNTRY_LOCK === null ? <Button variant="secondary" onClick={handleAllClear}>{t('exch.countryAll')}</Button> : undefined}
         />
       )}
 

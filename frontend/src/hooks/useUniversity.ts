@@ -3,11 +3,12 @@
 import { useQuery } from '@tanstack/react-query'
 import { globalUniversityApi, exchangeUniversityApi, universityCatalogApi, universityReportApi, universityVideoLinkApi } from '../api/university'
 
-export function useUniversityCatalogCountries() {
+export function useUniversityCatalogCountries(enabled = true) {
   return useQuery({
     queryKey: ['university-catalog-countries'],
     queryFn: () => universityCatalogApi.countries(),
     staleTime: 1000 * 60 * 10,
+    enabled,
   })
 }
 
