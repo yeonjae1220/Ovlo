@@ -1,5 +1,5 @@
 import type { LegalDocument } from '../legalContent'
-import { LEGAL_CONTACT_PLACEHOLDER, YOUTUBE_TERMS_URL } from '../legalConstants'
+import { LEGAL_CONTACT, YOUTUBE_TERMS_URL } from '../legalConstants'
 
 /** 이용약관 스페인어 번역. 정본은 legalContent.ts 의 한국어(ko). 원문을 바꾸면 이 파일도 같이 고치고 version 을 맞춘다. */
 export const TERMS_ES: LegalDocument = {
@@ -79,7 +79,7 @@ export const TERMS_ES: LegalDocument = {
       heading: '9. Enlaces a vídeos externos (YouTube)',
       paragraphs: [
         'En las páginas de informes universitarios, el Servicio muestra enlaces a vídeos públicos de YouTube relacionados con esa universidad, junto con su título, el nombre del canal y una imagen de vista previa. Los vídeos no se almacenan ni se reproducen dentro del Servicio; al pulsar un enlace se te redirige a YouTube. Esta función utiliza los Servicios de API de YouTube, y al utilizarla se entiende que también aceptas los Términos del Servicio de YouTube.',
-        `El contenido de cada vídeo y los derechos sobre él pertenecen a quien lo publicó, y el Servicio no garantiza su contenido. Los enlaces a vídeos eliminados o que hayan pasado a ser privados se revisan periódicamente y se retiran. Si quien publicó un vídeo o una persona que aparece en él solicita que se retire un enlace, lo retiramos sin demora. Solicitudes: ${LEGAL_CONTACT_PLACEHOLDER}`,
+        `El contenido de cada vídeo y los derechos sobre él pertenecen a quien lo publicó, y el Servicio no garantiza su contenido. Los enlaces a vídeos eliminados o que hayan pasado a ser privados se revisan periódicamente y se retiran. Si quien publicó un vídeo o una persona que aparece en él solicita que se retire un enlace, lo retiramos sin demora. Solicitudes: ${LEGAL_CONTACT}`,
       ],
       links: [{ label: 'Términos del Servicio de YouTube', href: YOUTUBE_TERMS_URL }],
     },
@@ -104,7 +104,7 @@ export const TERMS_ES: LegalDocument = {
     {
       heading: '13. Modificación de los términos',
       paragraphs: [
-        `Cuando modifiquemos estos términos, lo anunciaremos 7 días antes de su entrada en vigor (30 días antes si el cambio es desfavorable para los usuarios). Contacto: ${LEGAL_CONTACT_PLACEHOLDER}`,
+        `Cuando modifiquemos estos términos, lo anunciaremos 7 días antes de su entrada en vigor (30 días antes si el cambio es desfavorable para los usuarios). Contacto: ${LEGAL_CONTACT}`,
       ],
     },
     {

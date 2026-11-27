@@ -1,5 +1,5 @@
 import type { LegalDocument } from '../legalContent'
-import { GOOGLE_PRIVACY_URL, LEGAL_CONTACT_PLACEHOLDER } from '../legalConstants'
+import { GOOGLE_PRIVACY_URL, LEGAL_CONTACT } from '../legalConstants'
 
 /** 개인정보처리방침 독일어 번역. 정본은 legalContent.ts 의 한국어(ko). 원문을 바꾸면 이 파일도 같이 고치고 version 을 맞춘다. */
 export const PRIVACY_DE: LegalDocument = {
@@ -91,7 +91,7 @@ export const PRIVACY_DE: LegalDocument = {
     {
       heading: '10. Datenschutzbeauftragter und Kontakt',
       paragraphs: [
-        `Datenschutzbeauftragter: der Betreiber des Dienstes · Kontakt: ${LEGAL_CONTACT_PLACEHOLDER}`,
+        `Datenschutzbeauftragter: der Betreiber des Dienstes · Kontakt: ${LEGAL_CONTACT}`,
         'Für Meldungen und Beratung zu Verletzungen des Schutzes personenbezogener Daten kannst du dich an das koreanische Meldezentrum für Verletzungen personenbezogener Daten (Personal Information Infringement Report Center; privacy.kisa.or.kr, 118) und an den Schlichtungsausschuss für Streitigkeiten über personenbezogene Daten (Personal Information Dispute Mediation Committee; kopico.go.kr, 1833-6972) wenden.',
       ],
     },

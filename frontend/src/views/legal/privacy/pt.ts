@@ -1,5 +1,5 @@
 import type { LegalDocument } from '../legalContent'
-import { GOOGLE_PRIVACY_URL, LEGAL_CONTACT_PLACEHOLDER } from '../legalConstants'
+import { GOOGLE_PRIVACY_URL, LEGAL_CONTACT } from '../legalConstants'
 
 /** 개인정보처리방침 포르투갈어 번역. 정본은 legalContent.ts 의 한국어(ko). 원문을 바꾸면 이 파일도 같이 고치고 version 을 맞춘다. */
 export const PRIVACY_PT: LegalDocument = {
@@ -91,7 +91,7 @@ export const PRIVACY_PT: LegalDocument = {
     {
       heading: '10. Encarregado pela proteção de dados pessoais e contato',
       paragraphs: [
-        `Encarregado pela proteção de dados pessoais: o operador do Serviço · Contato: ${LEGAL_CONTACT_PLACEHOLDER}`,
+        `Encarregado pela proteção de dados pessoais: o operador do Serviço · Contato: ${LEGAL_CONTACT}`,
         'Para denúncias e orientações sobre violações de dados pessoais, você pode entrar em contato com o Centro de Denúncias de Violação de Informações Pessoais (privacy.kisa.or.kr, 118) ou com o Comitê de Mediação de Disputas sobre Informações Pessoais (kopico.go.kr, 1833-6972).',
       ],
     },

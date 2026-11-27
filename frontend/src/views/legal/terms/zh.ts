@@ -1,5 +1,5 @@
 import type { LegalDocument } from '../legalContent'
-import { LEGAL_CONTACT_PLACEHOLDER, YOUTUBE_TERMS_URL } from '../legalConstants'
+import { LEGAL_CONTACT, YOUTUBE_TERMS_URL } from '../legalConstants'
 
 /** 이용약관 중국어(간체) 번역. 정본은 legalContent.ts 의 한국어(ko). 원문을 바꾸면 이 파일도 같이 고치고 version 을 맞춘다. */
 export const TERMS_ZH: LegalDocument = {
@@ -76,7 +76,7 @@ export const TERMS_ZH: LegalDocument = {
       heading: '9. 外部视频链接（YouTube）',
       paragraphs: [
         '本服务在大学报告页面上展示与该大学相关的 YouTube 公开视频链接，并附有标题、频道名称和预览图片。本服务不会存储视频，也不会在服务内播放视频；点击链接后将跳转至 YouTube。此功能使用 YouTube API 服务，使用此功能的用户即视为同时同意 YouTube 服务条款。',
-        `视频的内容和权利归各视频的发布者所有，本服务不对视频内容作任何保证。对于已被删除或已设为非公开的视频，本服务会定期检查并下架其链接。如视频发布者或视频中出现的人士要求下架链接，本服务将立即下架。请求方式：${LEGAL_CONTACT_PLACEHOLDER}`,
+        `视频的内容和权利归各视频的发布者所有，本服务不对视频内容作任何保证。对于已被删除或已设为非公开的视频，本服务会定期检查并下架其链接。如视频发布者或视频中出现的人士要求下架链接，本服务将立即下架。请求方式：${LEGAL_CONTACT}`,
       ],
       links: [{ label: 'YouTube 服务条款', href: YOUTUBE_TERMS_URL }],
     },
@@ -96,7 +96,7 @@ export const TERMS_ZH: LegalDocument = {
     },
     {
       heading: '13. 条款的变更',
-      paragraphs: [`变更本条款时，将于生效 7 日前（对用户不利的变更为 30 日前）进行公告。联系方式：${LEGAL_CONTACT_PLACEHOLDER}`],
+      paragraphs: [`变更本条款时，将于生效 7 日前（对用户不利的变更为 30 日前）进行公告。联系方式：${LEGAL_CONTACT}`],
     },
     {
       heading: '14. 语言',
