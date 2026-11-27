@@ -35,12 +35,12 @@ export default function ExchangeUniversitySearchPage() {
   const initialQuery = searchParams?.get('q')?.trim() ?? ''
 
   const [query, setQuery] = useState(initialQuery)
-  const [selectedCountry, setCountryCode] = useState('')
+  const [selectedCountry, setSelectedCountry] = useState('')
   const countryCode = CATALOG_COUNTRY_LOCK ?? selectedCountry
   const [page, setPage] = useState(0)
   const debouncedQuery = useDebounce(query.trim(), 300)
 
-  const { data: countries = [] } = useUniversityCatalogCountries()
+  const { data: countries = [] } = useUniversityCatalogCountries(CATALOG_COUNTRY_LOCK === null)
   const { data: pageData, isLoading, isError, refetch } = useUniversityCatalogSearch(
     debouncedQuery,
     countryCode,
@@ -60,7 +60,7 @@ export default function ExchangeUniversitySearchPage() {
 
   const handleAllClear = () => {
     setQuery('')
-    setCountryCode('')
+    setSelectedCountry('')
     resetPage()
   }
 
@@ -95,7 +95,7 @@ export default function ExchangeUniversitySearchPage() {
           {CATALOG_COUNTRY_LOCK === null && <SelectField
             value={countryCode}
             onChange={(event) => {
-              setCountryCode(event.target.value)
+              setSelectedCountry(event.target.value)
               resetPage()
             }}
             aria-label={t('exch.countryAll')}
@@ -125,7 +125,7 @@ export default function ExchangeUniversitySearchPage() {
           icon="⌕"
           title={t('exch.empty')}
           description={t('exch.searchHint')}
-          action={<Button variant="secondary" onClick={handleAllClear}>{t('exch.countryAll')}</Button>}
+          action={CATALOG_COUNTRY_LOCK === null ? <Button variant="secondary" onClick={handleAllClear}>{t('exch.countryAll')}</Button> : undefined}
         />
       )}
 
