@@ -32,6 +32,7 @@ export const marketplaceApi = {
   report: (id: number, reason: string) => api.post(`/marketplace/${id}/reports`, {reason}),
 }
 export function marketError(error: unknown) {
-  const e = error as {response?: {data?: {message?: string}}; message?: string}
-  return e.response?.data?.message || e.message || 'Request failed. Please try again.'
+  // 백엔드 ErrorResponse 는 사유를 `error` 필드에 담는다(`message` 는 구형 응답 호환용).
+  const e = error as {response?: {data?: {error?: string; message?: string}}; message?: string}
+  return e.response?.data?.error || e.response?.data?.message || e.message || 'Request failed. Please try again.'
 }

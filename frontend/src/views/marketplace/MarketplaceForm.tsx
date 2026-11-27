@@ -6,6 +6,7 @@ import {useMutation, useQuery, useQueryClient} from '@tanstack/react-query'
 import {marketplaceApi} from '../../api/marketplace'
 import type {Listing, ListingDetails} from '../../api/marketplace'
 import {useAuthStore} from '../../store/authStore'
+import {useMyVerification} from '../../hooks/useVerification'
 import {LANGUAGE_LABELS, SUPPORTED_UI_LANGUAGES} from '../../i18n/messages'
 import {categories, conditions, tags, useMarketText} from './marketplaceText'
 import {Photo, MarketError, SchoolPicker, CountryOptions} from './MarketplaceShared'
@@ -25,6 +26,8 @@ export default function MarketplaceForm({listing, loadError, onRetry}: {listing?
   const [schoolName, setSchoolName] = useState(listing?.universityName || '')
   const [uploading, setUploading] = useState(false)
   const [uploadError, setUploadError] = useState<unknown>(null)
+  const verification = useMyVerification(!!user)
+  const unverified = verification.data?.trustLevel === 'UNVERIFIED'
   const options = useQuery({queryKey:['market-options',user],queryFn:marketplaceApi.options})
   const save = useMutation({mutationFn: () => base ? marketplaceApi.edit(base,form) : marketplaceApi.create(form),
     onError: async error => {
@@ -60,12 +63,13 @@ export default function MarketplaceForm({listing, loadError, onRetry}: {listing?
     <MarketError error={loadError}/>{!!loadError && <button type="button" className={s.button} onClick={onRetry}>{text('retry')}</button>}
     <form onSubmit={e => {e.preventDefault();if(valid && !uploading && !save.isPending && !conflict && !unavailable && options.data) save.mutate()}}>
       <section className={s.panel}><h2 className={s.sectionTitle}>{text('photos')} · {form.photoIds.length}/8</h2><p className={s.muted}>{text('photoHint')}</p>
+        {unverified && <div className={s.notice} role="status"><p>{text('verifyRequired')}</p><Link className={s.button} href={`/profile/${user}`}>{text('verifyNow')}</Link></div>}
         <div className={s.thumbs}>{form.photoIds.map((id,i) => <div key={id}><div className={s.thumb}><Photo id={id} alt={`${text('photos')} ${i+1}`}/></div><div className={s.photoActions}>
           <button type="button" className={s.button} disabled={i===0 || uploading} aria-label={text('moveLeft')} onClick={() => move(i,-1)}>←</button>
           <button type="button" className={s.button} disabled={i===form.photoIds.length-1 || uploading} aria-label={text('moveRight')} onClick={() => move(i,1)}>→</button>
           <button type="button" className={s.button} disabled={uploading} onClick={() => change({photoIds:form.photoIds.filter(p => p !== id)})}>{text('remove')}</button>
         </div></div>)}</div>
-        <label className={s.field}>{text('addPhotos')}<input className={s.file} type="file" accept="image/jpeg,image/png" multiple disabled={uploading || save.isPending || conflict || unavailable || form.photoIds.length>=8} onChange={e => {void upload(e.target.files);e.target.value=''}}/></label>
+        <label className={s.field}>{text('addPhotos')}<input className={s.file} type="file" accept="image/jpeg,image/png" multiple disabled={uploading || save.isPending || conflict || unavailable || form.photoIds.length>=8 || unverified} onChange={e => {void upload(e.target.files);e.target.value=''}}/></label>
         {uploading && <p role="status">{text('uploading')}</p>}<MarketError error={uploadError}/>
       </section>
       <section className={s.panel}><div className={s.fields}>
