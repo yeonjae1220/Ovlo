@@ -156,6 +156,20 @@ class UniversityCatalogPersistenceAdapterIntegrationTest {
                 .isEqualTo("Japan");
     }
 
+    @Test void productionVerificationFixtureIsHiddenWithoutTouchingRealUniversities() {
+        jdbc.update("INSERT INTO global_universities(id,name_en,country,country_en,country_code,domain) VALUES"
+                + "(20307,'[TEST ONLY] Ovlo Production Verification 20261112','대한민국','South Korea','KR','ovlo-test.invalid')");
+        Long real = insertGlobal("Seoul National University", "서울대학교", "대한민국", "KR", "Seoul");
+        var script = new org.springframework.jdbc.datasource.init.ResourceDatabasePopulator(
+                new org.springframework.core.io.ClassPathResource("db/migration/V61__hide_production_verification_university.sql"));
+        script.execute(jdbc.getDataSource());
+        script.execute(jdbc.getDataSource()); // The repair is safe to verify repeatedly.
+        assertThat(jdbc.queryForObject("SELECT inactive_reason FROM global_universities WHERE id=20307", String.class))
+                .isEqualTo("TEST_FIXTURE");
+        assertThat(jdbc.queryForObject("SELECT inactive_reason FROM global_universities WHERE id=?", String.class, real))
+                .isNull();
+    }
+
     @Test void unavailableVideosDoNotCountAsPublishedContent() {
         Long exchange = insertExchange(emptyGlobalId, "숨겨진 영상", "Hidden video university", "France", "FR", "Paris");
         insertReview(exchange, "https://youtu.be/hidden", 0);
