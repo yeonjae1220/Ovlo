@@ -84,7 +84,7 @@ public class KeywordNoticeSearchAdapter implements NoticeSearchPort {
         return sb.toString();
     }
 
-    static int score(Set<String> queryTokens, String text) {
+    public static int score(Set<String> queryTokens, String text) {
         Set<String> textTokens = tokens(text);
         int hits = 0;
         for (String q : queryTokens) {
@@ -94,7 +94,7 @@ public class KeywordNoticeSearchAdapter implements NoticeSearchPort {
     }
 
     /** 라틴·키릴 문자 단어(2자 이상)와 CJK 글자 bigram. 숫자는 그대로 토큰. */
-    static Set<String> tokens(String text) {
+    public static Set<String> tokens(String text) {
         Set<String> out = new HashSet<>();
         if (text == null) return out;
         String lower = text.toLowerCase(Locale.ROOT);
