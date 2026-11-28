@@ -86,7 +86,7 @@ class VerificationCredentialPersistenceAdapterIntegrationTest {
     @BeforeEach
     void setUp() {
         universityId = jdbc.queryForObject(
-                "INSERT INTO global_universities (name_en) VALUES ('Test University') RETURNING id",
+                "INSERT INTO global_universities (name_en) VALUES ('Test University ' || gen_random_uuid()) RETURNING id",
                 Long.class);
     }
 

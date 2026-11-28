@@ -49,7 +49,7 @@ class NoticeGovernanceIntegrationTest {
     Long office,actor;
     @BeforeEach void setup() {
         when(clock.instant()).thenReturn(NOW);when(clock.getZone()).thenReturn(ZoneOffset.UTC);
-        Long university=jdbc.queryForObject("INSERT INTO global_universities(name_en) VALUES ('Source tests') RETURNING id",Long.class);
+        Long university=jdbc.queryForObject("INSERT INTO global_universities(name_en) VALUES ('Source tests ' || gen_random_uuid()) RETURNING id",Long.class);
         int seq=SEQ.incrementAndGet();
         actor=members.save(Member.create("source"+seq,"담당자","Seoul",new Email("source"+seq+"@example.com"),new Password("hashed"),
                 new UniversityId(university),new Major("IA",DegreeType.BACHELOR,4))).getId().value();

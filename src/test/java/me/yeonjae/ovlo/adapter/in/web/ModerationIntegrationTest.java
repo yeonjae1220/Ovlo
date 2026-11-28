@@ -74,7 +74,7 @@ class ModerationIntegrationTest {
 
     @BeforeEach void setup() {
         mvc = webAppContextSetup(context).apply(springSecurity()).build();
-        school = db.queryForObject("INSERT INTO global_universities(name_en,country_code) VALUES('Moderation Test','KR') RETURNING id", Long.class);
+        school = db.queryForObject("INSERT INTO global_universities(name_en,country_code) VALUES('Moderation Test ' || gen_random_uuid(),'KR') RETURNING id", Long.class);
         author = member("author");
         viewer = member("viewer");
         outsider = member("outsider");

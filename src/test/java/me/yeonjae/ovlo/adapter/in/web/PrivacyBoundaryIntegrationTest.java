@@ -46,7 +46,7 @@ class PrivacyBoundaryIntegrationTest {
     long school, owner, viewer, media;
     @BeforeEach void setup() {
         mvc = webAppContextSetup(context).apply(springSecurity()).build();
-        school = db.queryForObject("INSERT INTO global_universities(name_en,country_code) VALUES('Privacy Test','KR') RETURNING id", Long.class);
+        school = db.queryForObject("INSERT INTO global_universities(name_en,country_code) VALUES('Privacy Test ' || gen_random_uuid(),'KR') RETURNING id", Long.class);
         owner = member(); viewer = member();
         media = db.queryForObject("""
             INSERT INTO media_file(uploader_id,media_type,storage_path,storage_type,original_filename,file_size,created_at)

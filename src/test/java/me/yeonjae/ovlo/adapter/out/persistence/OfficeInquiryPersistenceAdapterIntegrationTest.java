@@ -77,7 +77,7 @@ class OfficeInquiryPersistenceAdapterIntegrationTest {
     @BeforeEach
     void setUp() {
         Long universityId = jdbc.queryForObject(
-                "INSERT INTO global_universities (name_en) VALUES ('Inquiry Test University') RETURNING id", Long.class);
+                "INSERT INTO global_universities (name_en) VALUES ('Inquiry Test University ' || gen_random_uuid()) RETURNING id", Long.class);
         int n = SEQ.incrementAndGet();
         Member m = Member.create("asker" + n, "학생", "Hanoi", new Email("asker" + n + "@example.com"),
                 new Password("hashedPassword"), new UniversityId(universityId), new Major("CS", DegreeType.BACHELOR, 1));

@@ -195,6 +195,19 @@ class UniversityInactiveIntegrationTest {
     }
 
     @Test
+    @DisplayName("마이그레이션만으로 만든 DB 에도 운영과 같은 name_en UNIQUE 제약이 있다")
+    void freshDatabaseHasTheProductionNameUniqueConstraint() {
+        assertThat(jdbc.queryForObject(
+                "SELECT pg_get_constraintdef(oid) FROM pg_constraint "
+                        + "WHERE conrelid = 'global_universities'::regclass AND conname = 'uq_global_univ_name_en'",
+                String.class)).isEqualTo("UNIQUE (name_en)");
+        insertGlobal("Name Unique Probe University", "probe.example");
+        org.assertj.core.api.Assertions.assertThatThrownBy(
+                        () -> insertGlobal("Name Unique Probe University", "probe2.example"))
+                .isInstanceOf(org.springframework.dao.DataIntegrityViolationException.class);
+    }
+
+    @Test
     @DisplayName("V42 데이터 UPDATE 는 도메인(대소문자 무시)·영문명·국가가 맞고 중복이 아닌 행만 표시한다")
     void migrationUpdateMarksOnlyIntendedRows() throws IOException {
         // name_en 은 UNIQUE 라 같은 이름의 미끼를 둘 수 없다 — 조건마다 한 가지씩만 어긋난 행으로 본다.

@@ -63,7 +63,7 @@ class MarketplaceIntegrationTest {
     MockMvc mvc; long school,seller,buyer,other; byte[] png;
     @BeforeEach void setup() throws Exception {
         mvc=webAppContextSetup(context).apply(springSecurity()).build();
-        school=jdbc.queryForObject("INSERT INTO global_universities(name_en,country_code,city,domain) VALUES('Market University','FR','Paris','school.fr') RETURNING id",Long.class);
+        school=jdbc.queryForObject("INSERT INTO global_universities(name_en,country_code,city,domain) VALUES('Market University ' || gen_random_uuid(),'FR','Paris','school.fr') RETURNING id",Long.class);
         seller=member();buyer=member();other=member();
         when(verification.getByMemberId(anyLong())).thenReturn(new VerificationStatusResult("STUDENT",List.of()));
         when(storage.store(any(),any(),any())).thenAnswer(i->new StoragePath(UUID.randomUUID().toString(),StorageType.LOCAL));
