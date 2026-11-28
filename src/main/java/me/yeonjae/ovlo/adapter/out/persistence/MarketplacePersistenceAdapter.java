@@ -148,7 +148,7 @@ public class MarketplacePersistenceAdapter implements MarketplaceStore {
         jdbc.update("INSERT INTO marketplace_report(listing_id,reporter_id,reason) VALUES(:l,:r,:reason) ON CONFLICT DO NOTHING",Map.of("l",listing,"r",reporter,"reason",reason));
     }
     @Override public List<Report> reports() {
-        return jdbc.query("SELECT r.id,r.listing_id,l.title,r.reason,l.hidden,l.version FROM marketplace_report r JOIN marketplace_listing l ON l.id=r.listing_id ORDER BY r.id DESC LIMIT 100",Map.of(),
+        return jdbc.query("SELECT r.id,r.listing_id,l.title,r.reason,l.hidden,l.version FROM marketplace_report r JOIN marketplace_listing l ON l.id=r.listing_id WHERE r.anonymized_at IS NULL ORDER BY r.id DESC LIMIT 100",Map.of(),
                 (r,n)->new Report(r.getLong(1),r.getLong(2),r.getString(3),r.getString(4),r.getBoolean(5),r.getLong(6)));
     }
     @Override public void audit(long listing,String actor,String action) {

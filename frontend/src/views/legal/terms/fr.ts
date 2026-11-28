@@ -3,8 +3,8 @@ import { LEGAL_CONTACT, YOUTUBE_TERMS_URL } from '../legalConstants'
 
 /** 이용약관 프랑스어 번역. 정본은 legalContent.ts 의 한국어(ko). 원문을 바꾸면 이 파일도 같이 고치고 version 을 맞춘다. */
 export const TERMS_FR: LegalDocument = {
-  version: 'v3',
-  updatedAt: '2026-11-25',
+  version: 'v4',
+  updatedAt: '2026-11-28',
   title: 'Conditions d’utilisation',
   intro:
     'Les présentes conditions définissent les conditions et modalités d’utilisation d’Ovlo (ci-après le « Service »), ainsi que les droits et obligations des utilisateurs et du Service.',
@@ -12,7 +12,7 @@ export const TERMS_FR: LegalDocument = {
     {
       heading: '1. Contenu du Service',
       paragraphs: [
-        'Le Service fournit aux étudiants en échange et aux étudiants internationaux des informations sur les universités, des fonctionnalités communautaires (tableaux et chat), la vérification de l’adresse e-mail universitaire, ainsi qu’une fonctionnalité d’orientation et de mise en relation pour des consultations fondée sur des documents approuvés par le service des relations internationales de l’université (en préparation).',
+        'Le Service fournit aux étudiants en échange et aux étudiants internationaux des informations sur les universités, des fonctionnalités communautaires (tableaux, chat, annonces de seconde main, calendrier), la vérification de l’adresse e-mail universitaire, une orientation automatique fondée sur des documents approuvés par le service des relations internationales de l’université avec mise en relation avec son personnel pour des consultations, ainsi qu’une aide à l’utilisation du Service.',
       ],
     },
     {

@@ -53,10 +53,12 @@ class MarketplaceListingPhotoSchema {
 @Entity @Table(name="marketplace_report",uniqueConstraints=@UniqueConstraint(columnNames={"listing_id","reporter_id"}))
 class MarketplaceReportSchema {
     @Id @GeneratedValue(strategy=GenerationType.IDENTITY) Long id;
-    @Column(name="listing_id",nullable=false) long listing;
-    @Column(name="reporter_id",nullable=false) long reporter;
-    @Column(length=1000,nullable=false) String reason;
+    // 접수 1년 뒤 익명화되면 게시글·신고자·사유가 비워진다(V63).
+    @Column(name="listing_id") Long listing;
+    @Column(name="reporter_id") Long reporter;
+    @Column(length=1000) String reason;
     @Column(name="created_at",columnDefinition="timestamp with time zone default current_timestamp") Instant createdAt;
+    @Column(name="anonymized_at") Instant anonymizedAt;
 }
 @Entity @Table(name="marketplace_audit")
 class MarketplaceAuditSchema {

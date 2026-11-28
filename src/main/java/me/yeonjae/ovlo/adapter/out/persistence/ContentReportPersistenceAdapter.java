@@ -58,7 +58,7 @@ public class ContentReportPersistenceAdapter implements ContentReportPort {
                 FROM content_report r
                 JOIN member author ON author.id = r.target_author_id
                 JOIN member reporter ON reporter.id = r.reporter_id
-                WHERE r.status = :status
+                WHERE r.status = :status AND r.anonymized_at IS NULL
                 ORDER BY r.id DESC
                 LIMIT :limit
                 """, Map.of("status", status.name(), "limit", limit), (rs, n) -> new ReportSummaryResult(
