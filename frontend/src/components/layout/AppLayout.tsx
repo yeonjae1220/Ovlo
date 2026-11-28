@@ -86,6 +86,9 @@ export default function AppLayout({ children }: { children: ReactNode }) {
                 {t('nav.profile')}
               </Link>
             )}
+            <Link href="/help" className={isActive('/help') ? 'app-nav-link app-nav-link--active' : 'app-nav-link'}>
+              {t('nav.help')}
+            </Link>
           </nav>
 
           <div className="app-header__tools">
@@ -119,6 +122,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
           {moreOpen && <div id="mobile-more-links" className="app-mobile-more__links">
             {navItems.filter(({ to }) => ['/exchange-universities', '/my-university'].includes(to)).map(({to,label}) => <Link key={to} href={to} onClick={() => setMoreOpen(false)}>{label}</Link>)}
             {currentUser && <Link href={`/profile/${currentUser.id}`} onClick={() => setMoreOpen(false)}>{t('nav.profile')}</Link>}
+            <Link href="/help" onClick={() => setMoreOpen(false)}>{t('nav.help')}</Link>
           </div>}
         </div>
       </nav>

@@ -334,6 +334,8 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/api/v1/global-universities/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/v1/exchange-universities/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/v1/university-reports/**").permitAll()
+                        // Static help articles written by the Ovlo team: no member data, bounded by MAX_CORPUS_BYTES.
+                        .requestMatchers(HttpMethod.GET, "/api/v1/help/articles").permitAll()
                         .requestMatchers("/ws/**").permitAll()
                         // HIGH-5 fix: 람다 AuthorizationDecision → 명시적 분기
                         .requestMatchers("/swagger-ui.html", "/swagger-ui/**", "/v3/api-docs/**")

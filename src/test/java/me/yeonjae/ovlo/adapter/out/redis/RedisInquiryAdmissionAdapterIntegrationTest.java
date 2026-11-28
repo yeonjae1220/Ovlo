@@ -25,7 +25,20 @@ class RedisInquiryAdmissionAdapterIntegrationTest {
     @AfterAll static void disconnect() { connection.destroy(); }
     @BeforeEach void clear() { try(var c=connection.getConnection()) { c.serverCommands().flushAll(); } }
     RedisInquiryAdmissionAdapter adapter(int office, int global, long budget) {
-        return new RedisInquiryAdmissionAdapter(redis,clock,office,global,budget,budget,40,40);
+        return new RedisInquiryAdmissionAdapter(redis,clock,office,global,budget,budget,40,40,office,budget,40);
+    }
+    @Test void serviceHelpHasItsOwnScopeButSharesGlobalAndMemberLimits() {
+        var adapter=adapter(1,2,100*InquiryAdmissionPort.RESERVATION);
+        try(var help=adapter.acquireServiceHelp(1L)) {
+            // The same member cannot run a help call and a school call at once.
+            assertThatThrownBy(() -> adapter.acquire(1L,1L)).isInstanceOf(InquiryException.class);
+            help.complete();
+        }
+        assertThat(redis.opsForValue().get("ai:{inquiry}:2026-11-13:help:count")).isEqualTo("1");
+        assertThat(redis.opsForValue().get("ai:{inquiry}:2026-11-13:office:1:count")).isNull();
+        // Help usage does not consume the school's daily slot, but does consume the shared global count.
+        try(var school=adapter.acquire(1L,2L)) { school.complete(); }
+        assertThatThrownBy(() -> adapter.acquireServiceHelp(3L)).isInstanceOf(InquiryException.class);
     }
     @Test void concurrentRequestsCannotOvershootLastOfficeSlot() throws Exception {
         var adapter=adapter(1,100,100*InquiryAdmissionPort.RESERVATION);

@@ -91,6 +91,12 @@ public class RateLimiterService {
         check("rl:inquiry:day:member:" + memberId, inquiryPerDay, 24 * 60 * 60);
     }
 
+    /** 서비스 도움말 AI 질문. 국제처 질문과 따로 센다 — 도움말은 소속과 무관하게 모든 회원이 쓴다. */
+    public void checkServiceHelpRate(Long memberId) {
+        check("rl:help:min:member:" + memberId, 5, 60);
+        check("rl:help:day:member:" + memberId, 30, 24 * 60 * 60);
+    }
+
     /**
      * 회원 탈퇴 — 회원 기준. Apple 회원은 요청마다 Apple 토큰 교환·폐기를 외부 호출하므로,
      * 탈취된 액세스 토큰이나 재시도 루프가 Apple 쪽 호출을 무한히 일으키지 못하게 한다.

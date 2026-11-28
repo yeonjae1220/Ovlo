@@ -1,5 +1,6 @@
 package me.yeonjae.ovlo.adapter.out.redis;
 
+import me.yeonjae.ovlo.application.port.out.help.ServiceHelpAdmissionPort;
 import me.yeonjae.ovlo.application.port.out.office.InquiryAdmissionPort;
 import me.yeonjae.ovlo.domain.office.exception.InquiryException;
 import org.springframework.beans.factory.annotation.Value;
@@ -13,7 +14,7 @@ import java.util.UUID;
 
 /** Single Redis script reserves counts, weighted tokens and concurrency. Redis errors never allow a call. */
 @Component
-public class RedisInquiryAdmissionAdapter implements InquiryAdmissionPort {
+public class RedisInquiryAdmissionAdapter implements InquiryAdmissionPort, ServiceHelpAdmissionPort {
     private static final RedisScript<Long> ACQUIRE = RedisScript.of("""
         local now = tonumber(ARGV[1])
         redis.call('ZREMRANGEBYSCORE', KEYS[5], '-inf', now)
@@ -43,30 +44,44 @@ public class RedisInquiryAdmissionAdapter implements InquiryAdmissionPort {
     private final Clock clock;
     private final int officeDaily, globalDaily, officeConcurrent, globalConcurrent;
     private final long officeBudget, globalBudget;
+    private final int helpDaily, helpConcurrent;
+    private final long helpBudget;
     public RedisInquiryAdmissionAdapter(RedisTemplate<String, String> redis, Clock clock,
         @Value("${ovlo.office.inquiry-office-daily-limit:500}") int officeDaily,
         @Value("${ovlo.office.ai-global-daily-limit:5000}") int globalDaily,
         @Value("${ovlo.office.ai-office-weighted-token-budget:25000000}") long officeBudget,
         @Value("${ovlo.office.ai-global-weighted-token-budget:100000000}") long globalBudget,
         @Value("${ovlo.office.ai-office-concurrent-limit:5}") int officeConcurrent,
-        @Value("${ovlo.office.ai-global-concurrent-limit:20}") int globalConcurrent) {
+        @Value("${ovlo.office.ai-global-concurrent-limit:20}") int globalConcurrent,
+        @Value("${ovlo.help.ai-daily-limit:1000}") int helpDaily,
+        @Value("${ovlo.help.ai-weighted-token-budget:20000000}") long helpBudget,
+        @Value("${ovlo.help.ai-concurrent-limit:5}") int helpConcurrent) {
         if (officeDaily < 1 || globalDaily < 1 || officeBudget < RESERVATION || globalBudget < RESERVATION
-            || officeConcurrent < 1 || globalConcurrent < 1) throw new IllegalArgumentException("Invalid AI limits");
+            || officeConcurrent < 1 || globalConcurrent < 1 || helpDaily < 1 || helpBudget < RESERVATION
+            || helpConcurrent < 1) throw new IllegalArgumentException("Invalid AI limits");
+        this.helpDaily=helpDaily; this.helpBudget=helpBudget; this.helpConcurrent=helpConcurrent;
         this.redis=redis; this.clock=clock; this.officeDaily=officeDaily; this.globalDaily=globalDaily;
         this.officeBudget=officeBudget; this.globalBudget=globalBudget;
         this.officeConcurrent=officeConcurrent; this.globalConcurrent=globalConcurrent;
     }
     @Override public Lease acquire(Long officeId, Long memberId) {
+        return acquire("office:"+officeId, officeDaily, officeBudget, officeConcurrent, memberId);
+    }
+    /** Service help is its own scope; global budget and the member's single in-flight call stay shared with schools. */
+    @Override public Lease acquireServiceHelp(Long memberId) {
+        return acquire("help", helpDaily, helpBudget, helpConcurrent, memberId);
+    }
+    private Lease acquire(String scope, int scopeDaily, long scopeBudget, int scopeConcurrent, Long memberId) {
         String day=clock.instant().atZone(ZoneOffset.UTC).toLocalDate().toString();
         // Common hash tag also keeps atomic operations on one Redis Cluster slot.
         String prefix="ai:{inquiry}:";
-        List<String> keys=List.of(prefix+day+":office:"+officeId+":count", prefix+day+":global:count",
-            prefix+day+":office:"+officeId+":budget", prefix+day+":global:budget",
-            prefix+"office:"+officeId+":active", prefix+"global:active", prefix+"member:"+memberId+":active");
+        List<String> keys=List.of(prefix+day+":"+scope+":count", prefix+day+":global:count",
+            prefix+day+":"+scope+":budget", prefix+day+":global:budget",
+            prefix+scope+":active", prefix+"global:active", prefix+"member:"+memberId+":active");
         String owner=UUID.randomUUID().toString();
         Long result=redis.execute(ACQUIRE, keys, String.valueOf(clock.millis()), owner,
-            String.valueOf(officeDaily), String.valueOf(globalDaily), String.valueOf(officeBudget),
-            String.valueOf(globalBudget), String.valueOf(officeConcurrent), String.valueOf(globalConcurrent), String.valueOf(RESERVATION));
+            String.valueOf(scopeDaily), String.valueOf(globalDaily), String.valueOf(scopeBudget),
+            String.valueOf(globalBudget), String.valueOf(scopeConcurrent), String.valueOf(globalConcurrent), String.valueOf(RESERVATION));
         if (!Long.valueOf(1).equals(result)) throw new InquiryException("진행 중인 질문이 있거나 오늘의 이용 한도에 도달했습니다. 잠시 후 다시 시도해 주세요.", InquiryException.ErrorType.RATE_LIMITED);
         return new Lease() {
             private long used;
