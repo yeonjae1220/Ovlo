@@ -54,7 +54,7 @@ class ChatAccessIntegrationTest {
     long school, office, student, staff;
     @BeforeEach void setup() {
         mvc=webAppContextSetup(context).apply(springSecurity()).build();
-        school=db.queryForObject("INSERT INTO global_universities(name_en,country_code) VALUES('Security Test','KR') RETURNING id",Long.class);
+        school=db.queryForObject("INSERT INTO global_universities(name_en,country_code) VALUES('Security Test ' || gen_random_uuid(),'KR') RETURNING id",Long.class);
         office=db.queryForObject("INSERT INTO office(global_univ_id,name,status) VALUES(?,'Test Office','PILOT') RETURNING id",Long.class,school);
         student=member(); staff=member();
         db.update("INSERT INTO office_staff(office_id,member_id,role,status,invited_by,invited_at) VALUES(?,?,'OFFICE_ADMIN','ACTIVE','test',now())",office,staff);

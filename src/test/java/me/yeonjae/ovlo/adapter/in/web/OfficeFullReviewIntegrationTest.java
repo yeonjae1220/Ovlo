@@ -71,7 +71,7 @@ class OfficeFullReviewIntegrationTest {
         mvc = webAppContextSetup(context).apply(springSecurity()).build();
         Instant now = Instant.now();
         LocalDate today = LocalDate.now(ZoneOffset.UTC);
-        Long university = jdbc.queryForObject("INSERT INTO global_universities(name_en) VALUES ('Retranslation tests') RETURNING id", Long.class);
+        Long university = jdbc.queryForObject("INSERT INTO global_universities(name_en) VALUES ('Retranslation tests ' || gen_random_uuid()) RETURNING id", Long.class);
         String unique = UUID.randomUUID().toString().substring(0, 8);
         actor = members.save(Member.create(unique, "담당자", "Seoul", new Email(unique + "@example.com"), new Password("hashed"),
                 new UniversityId(university), new Major("IA", DegreeType.BACHELOR, 4))).getId().value();

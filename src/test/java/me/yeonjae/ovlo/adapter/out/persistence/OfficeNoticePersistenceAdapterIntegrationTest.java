@@ -72,7 +72,7 @@ class OfficeNoticePersistenceAdapterIntegrationTest {
     @BeforeEach
     void setUp() {
         Long universityId = jdbc.queryForObject(
-                "INSERT INTO global_universities (name_en) VALUES ('Notice Test University') RETURNING id", Long.class);
+                "INSERT INTO global_universities (name_en) VALUES ('Notice Test University ' || gen_random_uuid()) RETURNING id", Long.class);
         int n = SEQ.incrementAndGet();
         Member m = Member.create("notice" + n, "담당자", "Seoul", new Email("notice" + n + "@example.com"),
                 new Password("hashedPassword"), new UniversityId(universityId), new Major("IA", DegreeType.BACHELOR, 4));

@@ -76,7 +76,7 @@ class OfficeConsultationPersistenceAdapterIntegrationTest {
     @BeforeEach
     void setUp() {
         Long universityId = jdbc.queryForObject(
-                "INSERT INTO global_universities (name_en) VALUES ('Consultation Test University') RETURNING id", Long.class);
+                "INSERT INTO global_universities (name_en) VALUES ('Consultation Test University ' || gen_random_uuid()) RETURNING id", Long.class);
         studentId = newMember(universityId);
         staffId = newMember(universityId);
         officeId = officeAdapter.save(Office.create(universityId, "국제처", NOW)).getId().value();

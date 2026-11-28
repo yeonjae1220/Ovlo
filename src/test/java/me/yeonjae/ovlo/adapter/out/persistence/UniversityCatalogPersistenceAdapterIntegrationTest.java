@@ -126,7 +126,7 @@ class UniversityCatalogPersistenceAdapterIntegrationTest {
 
     @Test void countryRepairTargetsOnlyTheVerifiedKoreanUniversity() {
         jdbc.update("INSERT INTO global_universities(id,name_en,country,country_code) VALUES(5056,'Korea University','일본','KR')");
-        Long japanese = insertGlobal("Korea University", "조선대학교", "일본", "JP", "Tokyo");
+        Long japanese = insertGlobal("Korea University (Japan)", "조선대학교", "일본", "JP", "Tokyo");
         Long koreanExchange = insertExchange(5056L, "고려대학교", "Korea University", "Japan", "KR", "Seoul");
         Long japaneseExchange = insertExchange(japanese, "조선대학교", "Korea University (Japan)", "Japan", "JP", "Tokyo");
         var script = new org.springframework.jdbc.datasource.init.ResourceDatabasePopulator(
@@ -159,7 +159,7 @@ class UniversityCatalogPersistenceAdapterIntegrationTest {
     @Test void productionVerificationFixtureIsHiddenWithoutTouchingRealUniversities() {
         jdbc.update("INSERT INTO global_universities(id,name_en,country,country_en,country_code,domain) VALUES"
                 + "(20307,'[TEST ONLY] Ovlo Production Verification 20261112','대한민국','South Korea','KR','ovlo-test.invalid')");
-        Long real = insertGlobal("Seoul National University", "서울대학교", "대한민국", "KR", "Seoul");
+        Long real = insertGlobal("Yonsei University", "연세대학교", "대한민국", "KR", "Seoul");
         var script = new org.springframework.jdbc.datasource.init.ResourceDatabasePopulator(
                 new org.springframework.core.io.ClassPathResource("db/migration/V61__hide_production_verification_university.sql"));
         script.execute(jdbc.getDataSource());
