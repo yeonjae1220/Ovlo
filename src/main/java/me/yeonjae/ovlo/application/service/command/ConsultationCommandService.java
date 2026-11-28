@@ -116,10 +116,10 @@ public class ConsultationCommandService implements OpenConsultationUseCase, Mana
             if (loadInquiryPort.findByPreviousInquiryId(c.inquiryId()).isPresent())
                 throw InquiryHistory.conflict("새 질문이 있습니다. 최신 대화를 확인한 뒤 전달해 주세요");
             inquiry.get().assertCanContinue();
-            if (inquiry.get().getPreviousInquiryId() != null && !"v2".equals(c.consentVersion())) {
+            if (inquiry.get().getPreviousInquiryId() != null && !ConsultationConsent.sharesFullConversation(c.consentVersion())) {
                 throw new ConsultationException("대화 전달 동의를 다시 확인해 주세요", ConsultationException.ErrorType.CONSENT_REQUIRED);
             }
-            if ("v2".equals(c.consentVersion())) {
+            if (ConsultationConsent.sharesFullConversation(c.consentVersion())) {
                 transcript = InquiryHistory.transcript(InquiryHistory.load(loadInquiryPort, c.officeId(), c.memberId(), c.inquiryId()));
             }
         }

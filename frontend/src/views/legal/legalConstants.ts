@@ -4,10 +4,9 @@
 export const LEGAL_CONTACT = 'support@mungji.com'
 
 /**
- * 외부 AI 처리 업체·보관 정책이 아직 확정되지 않아 문서 상단에 '초안' 안내를 띄운다.
- * 확정하면 false 로 바꾸고 모든 언어의 version·updatedAt 을 함께 올린다.
+ * true 면 문서 상단에 '초안' 안내를 띄운다. 방침 v4(2026-11-28)에서 AI 처리 업체·국외 이전·보관 기간을 적고 내렸다.
  */
-export const LEGAL_DOCS_DRAFT = true
+export const LEGAL_DOCS_DRAFT = false
 
 export const YOUTUBE_TERMS_URL = 'https://www.youtube.com/t/terms'
 export const GOOGLE_PRIVACY_URL = 'https://policies.google.com/privacy'

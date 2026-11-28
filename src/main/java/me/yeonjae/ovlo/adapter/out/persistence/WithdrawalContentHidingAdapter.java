@@ -43,6 +43,8 @@ public class WithdrawalContentHidingAdapter implements HideContentByWithdrawnMem
             WHERE member_id=?
             """, memberId);
         jdbc.update("UPDATE office_staff SET status='REMOVED' WHERE member_id=?", memberId);
+        // 탈퇴 계정은 복원되지 않으므로 양방향 차단 기록을 남길 이유가 없다(개인정보처리방침: 차단 해제 또는 탈퇴 시까지).
+        jdbc.update("DELETE FROM member_block WHERE actor_id=? OR target_id=?", memberId, memberId);
         jdbc.update("""
             INSERT INTO media_deletion_job(media_id) SELECT id FROM media_file WHERE uploader_id=?
             ON CONFLICT (media_id) DO NOTHING

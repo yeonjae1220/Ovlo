@@ -3,15 +3,15 @@ import { LEGAL_CONTACT, YOUTUBE_TERMS_URL } from '../legalConstants'
 
 /** 이용약관 중국어(간체) 번역. 정본은 legalContent.ts 의 한국어(ko). 원문을 바꾸면 이 파일도 같이 고치고 version 을 맞춘다. */
 export const TERMS_ZH: LegalDocument = {
-  version: 'v3',
-  updatedAt: '2026-11-25',
+  version: 'v4',
+  updatedAt: '2026-11-28',
   title: '服务条款',
   intro: '本条款规定 Ovlo（以下简称“本服务”）的使用条件和程序，以及用户与本服务的权利和义务。',
   sections: [
     {
       heading: '1. 服务内容',
       paragraphs: [
-        '本服务为交换生和留学生提供大学信息、社区（版块和聊天）、学校邮箱验证，以及基于大学国际处批准资料的指引和咨询转接功能（筹备中）。',
+        '本服务为交换生和留学生提供大学信息、社区（版块、聊天、二手交易和日历）、学校邮箱验证、基于大学国际处批准资料的自动指引和与国际处负责人的咨询转接，以及服务使用方法指引。',
       ],
     },
     {
