@@ -139,6 +139,23 @@ class UniversityCatalogPersistenceAdapterIntegrationTest {
         assertThat(jdbc.queryForObject("SELECT country FROM exchange_universities WHERE id=?", String.class, japaneseExchange)).isEqualTo("Japan");
     }
 
+    @Test void englishCountryRepairTargetsOnlyTheVerifiedKoreanUniversity() {
+        jdbc.update("INSERT INTO global_universities(id,name_en,country,country_en,country_code) "
+                + "VALUES(5056,'Korea University','대한민국','Japan','KR')");
+        Long japanese = insertGlobal("Korea University (Japan)", "조선대학교", "일본", "JP", "Tokyo");
+        jdbc.update("UPDATE global_universities SET country_en='Japan' WHERE id=?", japanese);
+        var script = new org.springframework.jdbc.datasource.init.ResourceDatabasePopulator(
+                new org.springframework.core.io.ClassPathResource("db/migration/V60__korea_university_country_en.sql"));
+        script.execute(jdbc.getDataSource());
+        script.execute(jdbc.getDataSource()); // The repair is safe to verify repeatedly.
+        assertThat(jdbc.queryForObject("SELECT country_en FROM global_universities WHERE id=5056", String.class))
+                .isEqualTo("Korea, Republic of");
+        assertThat(jdbc.queryForObject("SELECT country FROM global_universities WHERE id=5056", String.class))
+                .isEqualTo("대한민국");
+        assertThat(jdbc.queryForObject("SELECT country_en FROM global_universities WHERE id=?", String.class, japanese))
+                .isEqualTo("Japan");
+    }
+
     @Test void unavailableVideosDoNotCountAsPublishedContent() {
         Long exchange = insertExchange(emptyGlobalId, "숨겨진 영상", "Hidden video university", "France", "FR", "Paris");
         insertReview(exchange, "https://youtu.be/hidden", 0);
